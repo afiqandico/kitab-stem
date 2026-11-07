@@ -1,488 +1,488 @@
-# Spesifikasi 32 bab — Edisi Pertama
+# Specification of the 32 chapters — First Edition
 
-> **Catatan penomoran (Oktober 2026).** Berkas ini mula-mula menomori tiga puluh bab.
-> Setelah Bab 16 (Persamaan Diferensial dan Sistem Dinamik) dan Bab 21 (Regresi dan
-> Statistika Terapan) disisipkan, penomoran bergeser: 1--15 tetap; 16--19 menjadi
-> 17--20; 20 menjadi 22; 21--30 menjadi 23--32. Judul bab di bawah tetap sah sebagai
-> isi; nomornya mengikuti peta itu. Spesifikasi dua bab baru ada di bagian akhir berkas.
+> **Numbering note (October 2026).** This file originally numbered thirty chapters.
+> After Chapter 16 (Differential Equations and Dynamical Systems) and Chapter 21 (Regression and
+> Applied Statistics) were inserted, the numbering shifted: 1--15 stay; 16--19 become
+> 17--20; 20 becomes 22; 21--30 become 23--32. The chapter titles below remain valid as
+> content; the numbers follow that map. The specifications of the two new chapters are at the end of the file.
 
-Baca `PANDUAN-BAB-ED2.md` lebih dulu (aturan mutlak **dan bagian "Empat lapisan
-pembaca"**). Berkas ini hanya memberi isi.
+Read `PANDUAN-BAB-ED2.md` first (the absolute rules **and the "Four reader
+tiers" section**). This file only supplies content.
 
-Pengingat lintas bab (berlaku untuk semua bab di bawah): setiap bab wajib memuat
-2-4 kotak `untukanak`, 1 `untukdosen`, 1 `untukpeneliti`, minimal 3 `\kamus`, dan
-setiap `\section` diberi `\tingkat{dasar|menengah|lanjut}`. Kotak lapisan tidak
-menggantikan prosa utama: isi teorinya tetap lengkap dan formal, sedangkan kotak
-adalah pintu masuk dan catatan untuk pembaca lain.
+Cross-chapter reminder (applies to every chapter below): each chapter must contain
+2-4 `untukanak` boxes, 1 `untukdosen`, 1 `untukpeneliti`, at least 3 `\kamus`, and
+every `\section` given a `\tingkat{dasar|menengah|lanjut}`. The tier boxes do not
+replace the main prose: the theory content stays complete and formal, while the boxes
+are entrances and notes for other readers.
 
-Sumber PDF ada di `~/Documents/05_Archive/kitab-stem-sumber-2026-11-07/<folder>/`. Baca sepotong dengan
-`pdftotext -f N -l M "<berkas>" -` (jangan dump seluruh berkas; batasi 2-4 halaman
-per bacaan dan cari dengan `grep -n` pada hasilnya). Python: `source ~/venv/bin/activate`.
+The source PDFs are in `~/Documents/05_Archive/kitab-stem-sumber-2026-11-07/<folder>/`. Read a slice with
+`pdftotext -f N -l M "<berkas>" -` (do not dump the whole file; limit yourself to 2-4 pages
+per read and search the result with `grep -n`). Python: `source ~/venv/bin/activate`.
 
-Kolom **Basis** menunjuk bab edisi pertama di `../_buku/` yang boleh kamu baca sebagai
-bahan awal. Perluas dan perdalam; jangan salin mentah, dan angka lama wajib kamu
-verifikasi ulang sendiri.
+The **Basis** column points to a first-edition chapter in `../_buku/` that you may read as
+starting material. Expand and deepen it; do not copy it raw, and you must re-verify
+the old numbers yourself.
 
 ---
 
-## Bab 1 — Bahasa Matematika dan Seni Membuktikan
-Basis: `../_buku/ch01.tex`. Bagian: (1) pernyataan, penghubung logika, tabel
-kebenaran, kuantor dan cara menegasikannya; (2) membaca definisi secara harfiah
-(definisi sebagai syarat perlu-dan-cukup, contoh penyangkal); (3) empat pola bukti:
-langsung, kontraposisi, kontradiksi, konstruktif; (4) induksi matematika dan induksi
-kuat; (5) ketika bukti gagal: klaim $n^2+n+41$ prima untuk semua $n \ge 0$ patah di
-$n=40$, satu bukti keliru khas dan di mana cacatnya; (6) menulis bukti yang bisa
-diperiksa orang lain (struktur kalimat, notasi, apa yang boleh dilewati).
-Wajib dihitung: nilai $n^2+n+41$ untuk $n=0..40$ dan faktorisasi di $n=40$; jumlah
-$1+3+\dots+(2n-1)$ untuk beberapa $n$; negasi dari dua pernyataan berkuantor.
-Sumber: `Analisis Real/Abbott - Understanding analysis.pdf` (bagian awal tentang
-himpunan dan bukti), `Metode Formal & Lean 4/mathematics_in_lean.pdf` (pendahuluan).
+## Chapter 1 — Mathematical Language and the Art of Proof
+Basis: `../_buku/ch01.tex`. Sections: (1) statements, logical connectives, truth
+tables, quantifiers and how to negate them; (2) reading definitions literally
+(definitions as necessary-and-sufficient conditions, counterexamples); (3) four proof patterns:
+direct, contrapositive, contradiction, constructive; (4) mathematical induction and strong
+induction; (5) when proof fails: the claim that $n^2+n+41$ is prime for all $n \ge 0$ breaks at
+$n=40$, one typical flawed proof and where its defect lies; (6) writing a proof that others
+can check (sentence structure, notation, what may be skipped).
+Must be computed: the value of $n^2+n+41$ for $n=0..40$ and the factorization at $n=40$; the sum
+$1+3+\dots+(2n-1)$ for several $n$; the negation of two quantified statements.
+Sources: `Analisis Real/Abbott - Understanding analysis.pdf` (the opening part on
+sets and proofs), `Metode Formal & Lean 4/mathematics_in_lean.pdf` (introduction).
 
-## Bab 2 — Himpunan, Relasi, Fungsi, dan Kardinalitas
-Basis: tidak ada (bab baru). Bagian: (1) himpunan, operasi, hukum De Morgan, kuasa
-himpunan; (2) hasilkali kartesius dan relasi; (3) relasi ekuivalensi dan partisi;
-(4) fungsi: injektif, surjektif, bijektif, komposisi, invers; (5) himpunan berhingga,
-terhitung, dan tak terhitung; diagonal Cantor; (6) ketaksamaan, nilai mutlak, dan
-supremum sebagai alat (tanpa membangun $\mathbb{R}$; itu Bab 3).
-Wajib dihitung: banyaknya himpunan bagian $2^n$ untuk $n$ kecil dan pemeriksaan
-enumerasi dengan Python; pasangan Cantor sebagai bijeksi $\mathbb{N}\times\mathbb{N}
-\to \mathbb{N}$ (periksa 10 nilai); enumerasi $\mathbb{Q}$ positif.
-Sumber: `Analisis Real/Abbott - Understanding analysis.pdf` (bagian himpunan,
-kardinalitas, himpunan tak hingga), `Aljabar Linear/Kenneth M Hoffman, Ray Kunze -
-Linear Algebra (2nd Edition)-Prentice Hall (1971).pdf` (bab tentang himpunan dan
-fungsi), `Metode Formal & Lean 4/mathematics_in_lean.pdf` (himpunan dan fungsi).
+## Chapter 2 — Sets, Relations, Functions, and Cardinality
+Basis: none (new chapter). Sections: (1) sets, operations, De Morgan's laws, power
+sets; (2) Cartesian products and relations; (3) equivalence relations and partitions;
+(4) functions: injective, surjective, bijective, composition, inverse; (5) finite,
+countable, and uncountable sets; Cantor's diagonal argument; (6) inequalities, absolute value, and
+supremum as a tool (without constructing $\mathbb{R}$; that is Chapter 3).
+Must be computed: the number of subsets $2^n$ for small $n$ and a check of the
+enumeration with Python; the Cantor pairing as a bijection $\mathbb{N}\times\mathbb{N}
+\to \mathbb{N}$ (check 10 values); an enumeration of the positive $\mathbb{Q}$.
+Sources: `Analisis Real/Abbott - Understanding analysis.pdf` (the parts on sets,
+cardinality, infinite sets), `Aljabar Linear/Kenneth M Hoffman, Ray Kunze -
+Linear Algebra (2nd Edition)-Prentice Hall (1971).pdf` (the chapters on sets and
+functions), `Metode Formal & Lean 4/mathematics_in_lean.pdf` (sets and functions).
 
-## Bab 3 — Aksioma Bilangan Real dan Supremum
-Basis: paruh pertama `../_buku/ch02.tex`. Bagian: (1) aksioma lapangan; (2) aksioma
-urutan dan akibatnya; (3) nilai mutlak dan ketaksamaan segitiga; (4) kelengkapan:
-batas atas terkecil, sifat supremum, akibat (Archimedes, kerapatan $\mathbb{Q}$);
-(5) mengapa $\mathbb{Q}$ belum cukup dan keberadaan $\sqrt{2}$ (bukti + aproksimasi
-Newton); (6) interval, titik akumulasi, himpunan terbuka dan tertutup (ringkas,
-tanpa topologi penuh).
-Wajib dihitung: iterasi Newton untuk $\sqrt{2}$ 5 langkah dengan galat relatif tiap
-langkah; barisan aproksimasi rasional dengan galat $<10^{-6}$; verifikasi bahwa
-$\{q \in \mathbb{Q}: q^2<2\}$ tidak punya maksimum.
-Sumber: `Analisis Real/Rudin Principles of Mathematical Analysis.pdf` (bab sistem
-bilangan real), `Analisis Real/Abbott - Understanding analysis.pdf` (bab bilangan
-real).
+## Chapter 3 — Axioms of the Real Numbers and Supremum
+Basis: the first half of `../_buku/ch02.tex`. Sections: (1) field axioms; (2) order
+axioms and their consequences; (3) absolute value and the triangle inequality; (4) completeness:
+least upper bound, the supremum property, consequences (Archimedes, density of $\mathbb{Q}$);
+(5) why $\mathbb{Q}$ is not enough and the existence of $\sqrt{2}$ (proof + Newton
+approximation); (6) intervals, accumulation points, open and closed sets (briefly,
+without full topology).
+Must be computed: 5 Newton iterations for $\sqrt{2}$ with the relative error at each
+step; a sequence of rational approximations with error $<10^{-6}$; verification that
+$\{q \in \mathbb{Q}: q^2<2\}$ has no maximum.
+Sources: `Analisis Real/Rudin Principles of Mathematical Analysis.pdf` (the chapter on the
+real number system), `Analisis Real/Abbott - Understanding analysis.pdf` (the chapter on real
+numbers).
 
-## Bab 4 — Barisan dan Limit
-Basis: paruh kedua `../_buku/ch02.tex`. Bagian: (1) definisi $\varepsilon$-$N$ dan
-cara memakainya; (2) ketunggalan limit, sifat aljabar limit (bukti); (3) teorema
-apit dan uji rasio barisan; (4) barisan monoton dan teorema kekonvergenan monoton;
-(5) subbarisan, Bolzano-Weierstrass, barisan Cauchy dan kelengkapan; (6) limit
-superior dan inferior.
-Wajib dihitung: $N$ eksplisit untuk $(3n+1)/(n+2) \to 3$ pada $\varepsilon=10^{-2}$
-dan $10^{-4}$; $(1+1/n)^n$ untuk $n=10,10^2,\dots,10^7$; barisan rekursif
-$x_{n+1}=\sqrt{2+x_n}$ (batas dan galat).
-Sumber: Rudin (bab barisan dan deret bilangan), Abbott (bab barisan dan deret).
+## Chapter 4 — Sequences and Limits
+Basis: the second half of `../_buku/ch02.tex`. Sections: (1) the $\varepsilon$-$N$ definition and
+how to use it; (2) uniqueness of the limit, algebraic properties of limits (proof); (3) the
+squeeze theorem and the ratio test for sequences; (4) monotone sequences and the monotone convergence theorem;
+(5) subsequences, Bolzano-Weierstrass, Cauchy sequences and completeness; (6) limit
+superior and inferior.
+Must be computed: an explicit $N$ for $(3n+1)/(n+2) \to 3$ at $\varepsilon=10^{-2}$
+and $10^{-4}$; $(1+1/n)^n$ for $n=10,10^2,\dots,10^7$; the recursive sequence
+$x_{n+1}=\sqrt{2+x_n}$ (limit and error).
+Sources: Rudin (the chapter on sequences and series of numbers), Abbott (the chapter on sequences and series).
 
-## Bab 5 — Deret Tak Hingga
-Basis: tidak ada (bab baru; jangan memakai ulang isi Bab 4 sebagai prosa). Bagian:
-(1) deret, jumlah parsial, deret geometri dan teleskopik; (2) uji suku ke-$n$ dan
-uji pembanding; (3) uji rasio, uji akar, deret-$p$; (4) deret berganti tanda dan
-uji Leibniz dengan batas galat; (5) kekonvergenan mutlak, pengelompokan ulang, dan
-teorema susunan ulang Riemann (pernyataan); (6) deret harmonik divergen sangat
-lambat: mengapa $H_{10^6}$ masih sekitar 14.
-Wajib dihitung: $H_{10^6}$ dengan numpy (dan taksiran $\ln n+\gamma$); galat
-pemotongan deret Leibniz untuk $\pi/4$ pada 1000 suku; jumlah $\sum 1/n^2$ numerik
-vs $\pi^2/6$; uji rasio pada dua deret yang hasilnya berbeda.
-Sumber: Rudin (bab barisan dan deret bilangan), Abbott (bab barisan dan deret).
+## Chapter 5 — Infinite Series
+Basis: none (new chapter; do not reuse the content of Chapter 4 as prose). Sections:
+(1) series, partial sums, geometric and telescoping series; (2) the $n$-th term test and
+the comparison test; (3) the ratio test, the root test, $p$-series; (4) alternating series and
+the Leibniz test with its error bound; (5) absolute convergence, regrouping, and
+the Riemann rearrangement theorem (statement); (6) the very slowly divergent harmonic
+series: why $H_{10^6}$ is still about 14.
+Must be computed: $H_{10^6}$ with numpy (and the estimate $\ln n+\gamma$); the truncation
+error of the Leibniz series for $\pi/4$ at 1000 terms; the sum $\sum 1/n^2$ numerically
+vs $\pi^2/6$; the ratio test on two series with different outcomes.
+Sources: Rudin (the chapter on sequences and series of numbers), Abbott (the chapter on sequences and series).
 
-## Bab 6 — Ruang Vektor dan Subruang
-Basis: paruh pertama `../_buku/ch03.tex`. Bagian: (1) aksioma ruang vektor dan
-contoh ($\mathbb{R}^n$, ruang matriks, ruang fungsi, ruang polinomial); (2) subruang
-dan uji subruang; (3) kombinasi linear dan span; (4) kebebasan linear dan
-ketergantungan; (5) basis dan dimensi (teorema pertukaran, bukti); (6) jumlah
-langsung dan subruang komplemen.
-Wajib dihitung: rank dan basis ruang kolom sebuah matriks $3\times4$ (numpy +
-eliminasi manual); pemeriksaan bahwa tiga vektor di $\mathbb{R}^3$ bergantung;
-dimensi ruang polinomial derajat $\le 3$.
-Sumber: `Aljabar Linear/Book_H_Anton_11_Ed_Linear_Algebra.pdf` (bab ruang vektor
-umum), `Aljabar Linear/LADR4e.pdf` (bab ruang vektor dan ruang vektor
-berdimensi hingga).
+## Chapter 6 — Vector Spaces and Subspaces
+Basis: the first half of `../_buku/ch03.tex`. Sections: (1) vector space axioms and
+examples ($\mathbb{R}^n$, matrix spaces, function spaces, polynomial spaces); (2) subspaces
+and the subspace test; (3) linear combinations and span; (4) linear independence and
+dependence; (5) basis and dimension (the exchange theorem, with proof); (6) direct
+sums and complementary subspaces.
+Must be computed: the rank and a column-space basis of a $3\times4$ matrix (numpy +
+manual elimination); a check that three vectors in $\mathbb{R}^3$ are dependent;
+the dimension of the polynomial space of degree $\le 3$.
+Sources: `Aljabar Linear/Book_H_Anton_11_Ed_Linear_Algebra.pdf` (the chapter on general
+vector spaces), `Aljabar Linear/LADR4e.pdf` (the chapters on vector spaces and
+finite-dimensional vector spaces).
 
-## Bab 7 — Basis, Dimensi, dan Transformasi Linear
-Basis: paruh kedua `../_buku/ch03.tex`. Bagian: (1) koordinat terhadap basis dan
-matriks transisi; (2) transformasi linear, kernel, jangkauan; (3) matriks
-representasi dan kaitan dengan perkalian matriks; (4) rank-nullity dengan bukti;
-(5) isomorfisme dan invarian dimensi; (6) transformasi linear pada ruang berdimensi
-hingga dinyatakan sebagai matriks (ruang $\mathcal{L}(V,W)$).
-Wajib dihitung: matriks $3\times3$ dengan satu baris bergantung: rank, nullity,
-basis kernel dan jangkauan langkah demi langkah; verifikasi `numpy.linalg.matrix_rank`
-dan `scipy.linalg.null_space`; matriks representasi satu transformasi pada dua basis
-berbeda dan pemeriksaan $[T]_{\mathcal{B}'} = P^{-1}[T]_{\mathcal{B}}P$.
-Sumber: Anton (bab transformasi linear umum), Axler (bab peta linear), Hoffman-Kunze
-(bab transformasi linear).
+## Chapter 7 — Basis, Dimension, and Linear Transformations
+Basis: the second half of `../_buku/ch03.tex`. Sections: (1) coordinates relative to a basis and
+change-of-basis matrices; (2) linear transformations, kernel, range; (3) representation
+matrices and their link to matrix multiplication; (4) rank-nullity with proof;
+(5) isomorphisms and dimension invariance; (6) linear transformations on finite-dimensional
+spaces expressed as matrices (the space $\mathcal{L}(V,W)$).
+Must be computed: a $3\times3$ matrix with one dependent row: rank, nullity,
+kernel and range bases step by step; verification with `numpy.linalg.matrix_rank`
+and `scipy.linalg.null_space`; the representation matrix of one transformation in two different
+bases and a check that $[T]_{\mathcal{B}'} = P^{-1}[T]_{\mathcal{B}}P$.
+Sources: Anton (the chapter on general linear transformations), Axler (the chapter on linear maps), Hoffman-Kunze
+(the chapter on linear transformations).
 
-## Bab 8 — Sistem Persamaan Linear, Determinan, dan Invers
-Basis: tidak ada (bab baru). Bagian: (1) bentuk eselon baris dan eliminasi Gauss,
-kasus solusi tunggal/banyak/tidak ada; (2) determinan: definisi aksiomatik
-(multilinear dan bergantian), sifat, ekspansi kofaktor; (3) aturan Cramer dan
-adjoin; (4) invers matriks, matriks elementer, dan syarat invertibilitas yang
-setara; (5) biaya komputasi dan bilangan kondisi (jembatan ke Bab 20).
-Wajib dihitung: satu sistem $3\times3$ diselesaikan dua cara (eliminasi dan Cramer);
-determinan $4\times4$ dengan ekspansi kofaktor vs `numpy.linalg.det`; bilangan
-kondisi matriks Hilbert $4\times4$; sistem yang hampir singular (solusi melompat).
-Sumber: Anton (bab sistem persamaan linear dan matriks, bab determinan),
-Hoffman-Kunze (bab persamaan linear, bab determinan).
+## Chapter 8 — Linear Systems, Determinants, and Inverses
+Basis: none (new chapter). Sections: (1) row echelon form and Gaussian elimination,
+the single/many/no-solution cases; (2) determinants: the axiomatic definition
+(multilinear and alternating), properties, cofactor expansion; (3) Cramer's rule and
+the adjugate; (4) matrix inverses, elementary matrices, and equivalent
+invertibility conditions; (5) computational cost and condition number (a bridge to Chapter 20).
+Must be computed: one $3\times3$ system solved two ways (elimination and Cramer);
+a $4\times4$ determinant by cofactor expansion vs `numpy.linalg.det`; the condition
+number of a $4\times4$ Hilbert matrix; a nearly singular system (the solution jumps).
+Sources: Anton (the chapter on linear systems and matrices, the chapter on determinants),
+Hoffman-Kunze (the chapter on linear equations, the chapter on determinants).
 
-## Bab 9 — Nilai Eigen dan Diagonalisasi
-Basis: paruh pertama `../_buku/ch04.tex`. Bagian: (1) polinomial karakteristik dan
-nilai eigen sebagai akarnya; (2) ruang eigen, multiplisitas aljabar dan geometrik;
-(3) syarat diagonalisasi (bukti); (4) matriks serupa dan invarian; (5) contoh
-$2\times2$ yang gagal didiagonalkan; (6) penerapan: pangkat matriks, sistem
-diferensial linear, rantai Markov singkat.
-Wajib dihitung: nilai eigen dan vektor eigen satu matriks $3\times3$ (numpy, dengan
-pemeriksaan $A\mathbf{v}=\lambda\mathbf{v}$); $A^{10}$ lewat diagonalisasi vs
-perkalian langsung; satu matriks defective dan rank ruang eigennya.
-Sumber: Anton (bab nilai eigen), Axler (bab nilai eigen dan vektor eigen, bab
-operator pada ruang vektor kompleks), Hoffman-Kunze (bab bentuk kanonik elementer).
+## Chapter 9 — Eigenvalues and Diagonalization
+Basis: the first half of `../_buku/ch04.tex`. Sections: (1) the characteristic polynomial and
+eigenvalues as its roots; (2) eigenspaces, algebraic and geometric multiplicity;
+(3) the diagonalizability condition (proof); (4) similar matrices and invariants; (5) an example
+$2\times2$ that fails to diagonalize; (6) applications: matrix powers, linear
+differential systems, a short Markov chain.
+Must be computed: the eigenvalues and eigenvectors of one $3\times3$ matrix (numpy, with
+a check of $A\mathbf{v}=\lambda\mathbf{v}$); $A^{10}$ via diagonalization vs
+direct multiplication; one defective matrix and the rank of its eigenspace.
+Sources: Anton (the chapter on eigenvalues), Axler (the chapter on eigenvalues and eigenvectors, the chapter on
+operators on complex vector spaces), Hoffman-Kunze (the chapter on elementary canonical forms).
 
-## Bab 10 — Ortogonalitas, SVD, dan Kuadrat Terkecil
-Basis: paruh kedua `../_buku/ch04.tex`. Bagian: (1) hasilkali dalam, norma,
-ketaksamaan Cauchy-Schwarz (bukti); (2) himpunan ortogonal, proyeksi, Gram-Schmidt
-dan ketidakstabilan klasiknya; (3) kuadrat terkecil: persamaan normal, tafsir
-geometris; (4) dekomposisi nilai singular $A=U\Sigma V^{\top}$ dan kaitannya dengan
-nilai eigen $A^{\top}A$; (5) pseudoinverse dan solusi norma minimum; (6) mengapa SVD
-lebih aman daripada persamaan normal secara numerik.
-Wajib dihitung: proyeksi satu vektor pada subruang berdimensi dua; kuadrat terkecil
-matriks $5\times2$ lewat persamaan normal vs `numpy.linalg.lstsq` (selisih galat
-dan bilangan kondisi); SVD satu matriks $3\times2$ (nilai singular, rank, rasio
-kondisi); Gram-Schmidt manual vs `numpy.linalg.qr` (ortogonalitas $\|Q^{\top}Q-I\|$).
-Sumber: Axler (bab ruang hasilkali dalam, bab operator pada ruang hasilkali dalam),
-`Introduction to Linear Algebra 6th edition...pdf` (bab ortogonalitas, bab SVD),
-Anton (bab ruang hasilkali dalam).
+## Chapter 10 — Orthogonality, SVD, and Least Squares
+Basis: the second half of `../_buku/ch04.tex`. Sections: (1) inner products, norms,
+the Cauchy-Schwarz inequality (proof); (2) orthogonal sets, projections, Gram-Schmidt
+and its classical instability; (3) least squares: normal equations, geometric
+interpretation; (4) the singular value decomposition $A=U\Sigma V^{\top}$ and its link to
+the eigenvalues of $A^{\top}A$; (5) the pseudoinverse and the minimum-norm solution; (6) why SVD
+is numerically safer than the normal equations.
+Must be computed: the projection of one vector onto a two-dimensional subspace; least squares
+for a $5\times2$ matrix via normal equations vs `numpy.linalg.lstsq` (error difference
+and condition number); the SVD of one $3\times2$ matrix (singular values, rank, condition
+ratio); manual Gram-Schmidt vs `numpy.linalg.qr` (orthogonality $\|Q^{\top}Q-I\|$).
+Sources: Axler (the chapter on inner product spaces, the chapter on operators on inner product spaces),
+`Introduction to Linear Algebra 6th edition...pdf` (the chapter on orthogonality, the chapter on the SVD),
+Anton (the chapter on inner product spaces).
 
-## Bab 11 — Kekontinuan dan Kekontinuan Seragam
-Basis: paruh pertama `../_buku/ch05.tex`. Bagian: (1) limit fungsi dan definisi
-$\varepsilon$-$\delta$; (2) kekontinuan, sifat aljabar, komposisi; (3) teorema nilai
-antara dan teorema nilai ekstrem (bukti ringkas); (4) kekontinuan seragam dan
-perbedaannya dengan kekontinuan titik demi titik; (5) $x^2$ tidak seragam di
-$\mathbb{R}$ tetapi seragam di $[0,1]$; Lipschitz; (6) fungsi yang kontinu hanya di
-satu titik, dan fungsi Dirichlet termodifikasi.
-Wajib dihitung: $\delta$ eksplisit untuk $f(x)=x^2$ di $x_0=2$ pada
-$\varepsilon=10^{-3}$; pencarian $\delta$ yang gagal seragam pada $x_0$ besar
-(tabel numerik); kekontinuan $1/x$ pada $[1,\infty)$ vs $(0,1]$.
-Sumber: Rudin (bab kekontinuan), Abbott (bab limit fungsi dan kekontinuan).
+## Chapter 11 — Continuity and Uniform Continuity
+Basis: the first half of `../_buku/ch05.tex`. Sections: (1) limits of functions and the
+$\varepsilon$-$\delta$ definition; (2) continuity, algebraic properties, composition; (3) the intermediate
+value theorem and the extreme value theorem (brief proofs); (4) uniform continuity and
+how it differs from pointwise continuity; (5) $x^2$ is not uniformly continuous on
+$\mathbb{R}$ but is on $[0,1]$; Lipschitz; (6) a function continuous at only
+one point, and a modified Dirichlet function.
+Must be computed: an explicit $\delta$ for $f(x)=x^2$ at $x_0=2$ for
+$\varepsilon=10^{-3}$; a search for a $\delta$ that fails to be uniform at large $x_0$
+(numerical table); the continuity of $1/x$ on $[1,\infty)$ vs $(0,1]$.
+Sources: Rudin (the chapter on continuity), Abbott (the chapter on limits of functions and continuity).
 
-## Bab 12 — Turunan: Satu dan Banyak Variabel
-Basis: paruh kedua `../_buku/ch05.tex`. Bagian: (1) definisi turunan dan aturan
-dasar; (2) aturan rantai dengan bukti; (3) teorema nilai rata-rata dan akibatnya
-(monotonisitas, turunan nol, ketaksamaan); (4) polinomial Taylor dengan sisa;
-(5) turunan parsial, gradien, Jacobian; diferensiabilitas vs parsial ada (contoh
-penyangkal); (6) aturan rantai multivariabel dan matriks Hessian.
-Wajib dihitung: beda hingga vs turunan analitik untuk satu fungsi di beberapa $h$;
-gradien dan Jacobian satu fungsi $\mathbb{R}^2\to\mathbb{R}^2$ di satu titik;
-pemeriksaan aturan rantai multivariabel lewat komposisi numerik; contoh fungsi yang
-parsialnya ada di $(0,0)$ tetapi tidak kontinu.
-Sumber: Rudin (bab diferensiasi), Abbott (bab turunan),
-`Kalkulus Multivariabel/Stewart.pdf` (bab turunan parsial),
-`Kalkulus Multivariabel/spivak-calculus-on-manifolds.pdf` (bab diferensiasi).
+## Chapter 12 — Derivatives: One and Several Variables
+Basis: the second half of `../_buku/ch05.tex`. Sections: (1) the definition of the derivative and
+basic rules; (2) the chain rule with proof; (3) the mean value theorem and its consequences
+(monotonicity, zero derivative, inequalities); (4) Taylor polynomials with remainder;
+(5) partial derivatives, gradient, Jacobian; differentiability vs partials existing (a
+counterexample); (6) the multivariable chain rule and the Hessian matrix.
+Must be computed: finite differences vs the analytic derivative for one function at several $h$;
+the gradient and Jacobian of one function $\mathbb{R}^2\to\mathbb{R}^2$ at one point;
+a check of the multivariable chain rule via numerical composition; an example of a function whose
+partials exist at $(0,0)$ but which is not continuous.
+Sources: Rudin (the chapter on differentiation), Abbott (the chapter on derivatives),
+`Kalkulus Multivariabel/Stewart.pdf` (the chapter on partial derivatives),
+`Kalkulus Multivariabel/spivak-calculus-on-manifolds.pdf` (the chapter on differentiation).
 
-## Bab 13 — Integral Riemann dan Teorema Dasar Kalkulus
-Basis: paruh pertama `../_buku/ch06.tex`. Bagian: (1) partisi, jumlah atas dan
-bawah, kriteria keterintegralan; (2) kelas fungsi yang terintegralkan (kontinu,
-monoton) dan contoh fungsi tidak terintegralkan; (3) teorema dasar kalkulus bagian
-1 dan 2 dengan bukti; (4) substitusi dan integral parsial; (5) teorema nilai rata-rata
-untuk integral; (6) integral tak wajar singkat dan kaitannya dengan deret (Bab 5).
-Wajib dihitung: jumlah Riemann kiri/kanan/titik tengah untuk $\int_0^1 x^2\,dx$
-dengan $n=10,100,1000$ dan laju galatnya ($\mathcal{O}(1/n)$, $\mathcal{O}(1/n^2)$);
-perbandingan dengan `scipy.integrate.quad`; satu integral yang nilainya tidak bisa
-dihitung dengan antiturunan elementer.
-Sumber: Rudin (bab integral Riemann-Stieltjes), Abbott (bab integral Riemann).
+## Chapter 13 — Riemann Integrals and the Fundamental Theorem of Calculus
+Basis: the first half of `../_buku/ch06.tex`. Sections: (1) partitions, upper and lower
+sums, the integrability criterion; (2) classes of integrable functions (continuous,
+monotone) and an example of a non-integrable function; (3) the fundamental theorem of calculus, parts
+1 and 2 with proofs; (4) substitution and integration by parts; (5) the mean value theorem
+for integrals; (6) improper integrals briefly and their link to series (Chapter 5).
+Must be computed: left/right/midpoint Riemann sums for $\int_0^1 x^2\,dx$
+with $n=10,100,1000$ and their error rates ($\mathcal{O}(1/n)$, $\mathcal{O}(1/n^2)$);
+a comparison with `scipy.integrate.quad`; one integral whose value cannot
+be computed with an elementary antiderivative.
+Sources: Rudin (the chapter on the Riemann-Stieltjes integral), Abbott (the chapter on the Riemann integral).
 
-## Bab 14 — Deret Fungsi dan Pertukaran Limit
-Basis: paruh kedua `../_buku/ch06.tex`. Bagian: (1) kekonvergenan titik demi titik
-vs seragam; (2) uji Weierstrass M dan contoh $x^n$ pada $[0,1]$; (3) pertukaran limit
-dengan kekontinuan, turunan, dan integral (tiga teorema + sketsa bukti); (4) deret
-pangkat, radius konvergensi, turunan dan integral suku demi suku; (5) contoh di mana
-pertukaran gagal dan kerugian praktisnya; (6) aproksimasi fungsi dengan deret dan
-batas galatnya.
-Wajib dihitung: $\sup_{x\in[0,1]} |x^n - 0|$ untuk beberapa $n$; galat aproksimasi
-$\exp(x)$ dengan deret Taylor pada $x=1$ untuk suku ke-$N$; radius konvergensi tiga
-deret pangkat.
-Sumber: Rudin (bab barisan dan deret fungsi), Abbott (bab barisan dan deret fungsi).
+## Chapter 14 — Series of Functions and the Exchange of Limits
+Basis: the second half of `../_buku/ch06.tex`. Sections: (1) pointwise vs uniform
+convergence; (2) the Weierstrass M-test and the example $x^n$ on $[0,1]$; (3) exchanging limits
+with continuity, differentiation, and integration (three theorems + proof sketches); (4) power
+series, radius of convergence, term-by-term differentiation and integration; (5) an example where
+the exchange fails and its practical cost; (6) approximating functions with series and
+the resulting error bounds.
+Must be computed: $\sup_{x\in[0,1]} |x^n - 0|$ for several $n$; the approximation error
+of $\exp(x)$ with a Taylor series at $x=1$ up to term $N$; the radius of convergence of three
+power series.
+Sources: Rudin (the chapter on sequences and series of functions), Abbott (the chapter on sequences and series of functions).
 
-## Bab 15 — Integral Lipat, Perubahan Variabel, dan Teorema Lapangan Vektor
-Basis: tidak ada (bab baru). Bagian: (1) integral lipat dua dan tiga, teorema
-Fubini; (2) perubahan variabel dan determinan Jacobian; koordinat polar, silinder,
-bola; (3) integral garis dan medan konservatif; (4) teorema Green, Gauss, dan Stokes
-(pernyataan + satu contoh masing-masing); (5) bentuk diferensial sebagai bahasa
-umum (perkenalan dengan Spivak, tanpa formalisme penuh); (6) kapan teorema lapangan
-vektor gagal (syarat batas dan singularitas).
-Wajib dihitung: satu integral lipat di daerah lingkaran dihitung dua cara (Cartesius
-vs polar) dan dicek dengan `scipy.integrate.dblquad`; volume bola dengan Jacobian
-bola; satu integral garis dihitung langsung vs lewat potensial.
-Sumber: `Kalkulus Multivariabel/Stewart.pdf` dan `.../Calculus Early
-Transcendentals 9th Edition...pdf` (bab integral lipat, bab kalkulus vektor),
-`Kalkulus Multivariabel/acm-full-text.pdf` (Active Calculus: integral lipat dan
-kalkulus vektor), `Kalkulus Multivariabel/spivak-calculus-on-manifolds.pdf`
-(integrasi pada rantai dan manifold).
+## Chapter 15 — Multiple Integrals, Change of Variables, and Vector Field Theorems
+Basis: none (new chapter). Sections: (1) double and triple integrals, Fubini's
+theorem; (2) change of variables and the Jacobian determinant; polar, cylindrical,
+and spherical coordinates; (3) line integrals and conservative fields; (4) Green, Gauss, and Stokes
+theorems (statement + one example each); (5) differential forms as the general
+language (an introduction via Spivak, without full formalism); (6) when the vector field
+theorems fail (boundary conditions and singularities).
+Must be computed: one multiple integral over a circular region computed two ways (Cartesian
+vs polar) and checked with `scipy.integrate.dblquad`; the volume of a ball with the spherical
+Jacobian; one line integral computed directly vs via a potential.
+Sources: `Kalkulus Multivariabel/Stewart.pdf` and `.../Calculus Early
+Transcendentals 9th Edition...pdf` (the chapter on multiple integrals, the chapter on vector calculus),
+`Kalkulus Multivariabel/acm-full-text.pdf` (Active Calculus: multiple integrals and
+vector calculus), `Kalkulus Multivariabel/spivak-calculus-on-manifolds.pdf`
+(integration on chains and manifolds).
 
-## Bab 16 — Peluang dan Peluang Bersyarat
-Basis: paruh pertama `../_buku/ch07.tex`. Bagian: (1) aksioma peluang dan akibatnya;
-(2) pencacahan dan peluang kombinatorial; (3) peluang bersyarat dan aturan
-perkalian; (4) teorema Bayes dengan contoh dua langkah dan tafsir medis; (5)
-independensi dan kesalahpahaman "saling lepas"; (6) paradoks yang menuntut hitungan
-(masalah ulang tahun, Monty Hall).
-Wajib dihitung: peluang Bayes untuk uji diagnostik dengan sensitivitas dan
-spesifisitas tertentu; peluang ulang tahun untuk $n=23$ dan $n=50$; simulasi Monty
-Hall minimal $10^4$ percobaan dengan numpy.
-Sumber: `Probabilitas & Statistika/preview-9780429766749_A36188955.pdf`
-(Blitzstein-Hwang: peluang dan pencacahan, peluang bersyarat).
+## Chapter 16 — Probability and Conditional Probability
+Basis: the first half of `../_buku/ch07.tex`. Sections: (1) probability axioms and their consequences;
+(2) counting and combinatorial probability; (3) conditional probability and the multiplication
+rule; (4) Bayes' theorem with a two-step example and a medical interpretation; (5)
+independence and the "mutually exclusive" misunderstanding; (6) paradoxes that demand computation
+(the birthday problem, Monty Hall).
+Must be computed: the Bayes probability for a diagnostic test with given sensitivity and
+specificity; the birthday probability for $n=23$ and $n=50$; a Monty Hall
+simulation with at least $10^4$ trials in numpy.
+Sources: `Probabilitas & Statistika/preview-9780429766749_A36188955.pdf`
+(Blitzstein-Hwang: probability and counting, conditional probability).
 
-## Bab 17 — Variabel Acak dan Distribusi
-Basis: paruh kedua `../_buku/ch07.tex`. Bagian: (1) variabel acak, fungsi massa,
-kepadatan, fungsi distribusi kumulatif; (2) harapan, variansi, momen; (3) distribusi
-Bernoulli, binomial, geometrik, Poisson; (4) distribusi normal, eksponensial, dan
-kaitannya; (5) distribusi bersama, kovarians, korelasi; (6) transformasi variabel
-acak dan Jacobian.
-Wajib dihitung: turunkan rata-rata dan variansi binomial, lalu cocokkan dengan
-Monte Carlo $10^5$; jumlah pmf Poisson untuk beberapa $\lambda$ (harus 1 dalam galat
-mesin); transformasi $Y=X^2$ untuk $X$ seragam dan pemeriksaan kepadatan hasil.
-Sumber: Blitzstein-Hwang (variabel acak dan distribusinya, harapan),
-`Probabilitas & Statistika/2004 - wasserman - all of statistics.pdf` (peluang,
-variabel acak, harapan).
+## Chapter 17 — Random Variables and Distributions
+Basis: the second half of `../_buku/ch07.tex`. Sections: (1) random variables, mass functions,
+densities, cumulative distribution functions; (2) expectation, variance, moments; (3) the
+Bernoulli, binomial, geometric, Poisson distributions; (4) the normal and exponential distributions, and
+their link; (5) joint distributions, covariance, correlation; (6) transformations of random
+variables and the Jacobian.
+Must be computed: derive the binomial mean and variance, then match them against a
+$10^5$ Monte Carlo; the sum of the Poisson pmf for several $\lambda$ (must be 1 within machine
+error); the transformation $Y=X^2$ for uniform $X$ and a check of the resulting density.
+Sources: Blitzstein-Hwang (random variables and their distributions, expectation),
+`Probabilitas & Statistika/2004 - wasserman - all of statistics.pdf` (probability,
+random variables, expectation).
 
-## Bab 18 — Hukum Bilangan Besar dan Teorema Limit Pusat
-Basis: paruh ketiga `../_buku/ch07.tex`. Bagian: (1) barisan variabel acak dan
-konvergensi dalam peluang; (2) hukum bilangan besar lemah (bukti lewat ketaksamaan
-Chebyshev) dan hukum kuat (pernyataan); (3) teorema limit pusat dan sketsa bukti
-lewat fungsi karakteristik; (4) aproksimasi normal, koreksi kontinuitas; (5) laju
-galat Monte Carlo dan mengapa $1/\sqrt{n}$ itu lambat; (6) kapan CLT menyesatkan
-(ekor berat, variansi tak hingga).
-Wajib dihitung: simulasi LLN untuk rata-rata dadu pada $n=10,10^2,\dots,10^5$;
-simulasi CLT untuk rata-rata eksponensial (bandingkan kuantil dengan normal, uji
-Kolmogorov-Smirnov lewat scipy); galat baku Monte Carlo empiris vs $1/\sqrt{n}$;
-satu contoh distribusi ekor berat (Cauchy) yang melanggar CLT.
-Sumber: Blitzstein-Hwang (bagian kekonvergenan), Wasserman (bab konvergensi
-variabel acak, bab pertidaksamaan).
+## Chapter 18 — The Law of Large Numbers and the Central Limit Theorem
+Basis: the third part of `../_buku/ch07.tex`. Sections: (1) sequences of random variables and
+convergence in probability; (2) the weak law of large numbers (proof via Chebyshev's
+inequality) and the strong law (statement); (3) the central limit theorem and a proof sketch
+via characteristic functions; (4) the normal approximation, continuity correction; (5) the
+Monte Carlo error rate and why $1/\sqrt{n}$ is slow; (6) when the CLT misleads
+(heavy tails, infinite variance).
+Must be computed: an LLN simulation for the mean of a die at $n=10,10^2,\dots,10^5$;
+a CLT simulation for exponential means (compare quantiles with the normal, test
+Kolmogorov-Smirnov via scipy); the empirical Monte Carlo standard error vs $1/\sqrt{n}$;
+one heavy-tailed distribution example (Cauchy) that violates the CLT.
+Sources: Blitzstein-Hwang (the convergence part), Wasserman (the chapter on convergence of
+random variables, the chapter on inequalities).
 
-## Bab 19 — Estimasi, Interval Kepercayaan, dan Uji Hipotesis
-Basis: paruh keempat `../_buku/ch07.tex` + bagian Wilson dan rule of three dari
-`../_buku/ch11.tex`. Bagian: (1) estimator, bias, variansi, galat baku; (2) interval
-kepercayaan rata-rata (normal dan t); (3) interval kepercayaan proporsi: Wald vs
-Wilson, dengan tabel perbandingan; (4) aturan tiga untuk nol kejadian; (5) uji
-hipotesis, nilai-p, galat tipe I/II, daya; (6) salah tafsir nilai-p yang paling
-umum, dan cara melaporkan hasil dengan benar.
-Wajib dihitung: Wilson dan Wald untuk 33/50 dan 53/100 (bandingkan lebar dan
-perilaku di dekat 0 dan 1); aturan tiga untuk $n=100$; simulasi daya uji proporsi
-untuk satu skenario (numpy) dan bandingkan dengan rumus aproksimasi normal.
-Sumber: Wasserman (bab inferensi statistik dan pembelajaran, bab inferensi
-parametrik, bab uji hipotesis dan nilai-p), Blitzstein-Hwang (bagian harapan dan
-kekonvergenan).
+## Chapter 19 — Estimation, Confidence Intervals, and Hypothesis Testing
+Basis: the fourth part of `../_buku/ch07.tex` + the Wilson and rule-of-three parts of
+`../_buku/ch11.tex`. Sections: (1) estimators, bias, variance, standard error; (2) confidence
+intervals for a mean (normal and t); (3) confidence intervals for a proportion: Wald vs
+Wilson, with a comparison table; (4) the rule of three for zero events; (5) hypothesis
+testing, p-values, type I/II errors, power; (6) the most common
+p-value misinterpretations, and how to report results correctly.
+Must be computed: Wilson and Wald for 33/50 and 53/100 (compare the width and
+behaviour near 0 and 1); the rule of three for $n=100$; a power simulation for a proportion test
+for one scenario (numpy) and a comparison with the normal approximation formula.
+Sources: Wasserman (the chapter on statistical inference and learning, the chapter on
+parametric inference, the chapter on hypothesis testing and p-values), Blitzstein-Hwang (the expectation and
+convergence parts).
 
-## Bab 20 — Aritmetika Floating-Point dan Analisis Galat
-Basis: `../_buku/ch08.tex`. Bagian: (1) format IEEE-754: tanda, eksponen, mantissa,
-bias; normal dan subnormal; (2) pembulatan, ULP, epsilon mesin; (3) $0{,}1+0{,}2 \ne
-0{,}3$ dan selisih sebenarnya dalam ULP; (4) galat absolut/relatif, bilangan
-kondisi, hilangnya digit signifikan; (5) ketidakstabilan algoritma: $(1-\cos x)/x^2$
-untuk $x$ kecil, penjumlahan berurutan vs penjumlahan Kahan; (6) pedoman praktis
-menulis kode numerik.
-Wajib dihitung: bitfield `struct`/`numpy.float32` untuk beberapa bilangan dan
-`float.hex()`; ULP dan epsilon mesin; penjumlahan Kahan vs naif untuk $10^6$ suku;
-galat relatif $(1-\cos x)/x^2$ pada $x=10^{-1},\dots,10^{-10}$ dan pembanding
-deret Taylor.
-Sumber: `Numerik/goldberg.pdf`.
+## Chapter 20 — Floating-Point Arithmetic and Error Analysis
+Basis: `../_buku/ch08.tex`. Sections: (1) the IEEE-754 format: sign, exponent, mantissa,
+bias; normal and subnormal; (2) rounding, ULP, machine epsilon; (3) $0.1+0.2 \ne
+0.3$ and the actual difference in ULP; (4) absolute/relative error, condition
+number, loss of significant digits; (5) algorithmic instability: $(1-\cos x)/x^2$
+for small $x$, sequential summation vs Kahan summation; (6) practical guidelines
+for writing numerical code.
+Must be computed: the `struct`/`numpy.float32` bitfields for several numbers and
+`float.hex()`; ULP and machine epsilon; Kahan vs naive summation for $10^6$ terms;
+the relative error of $(1-\cos x)/x^2$ at $x=10^{-1},\dots,10^{-10}$ and a comparison
+with the Taylor series.
+Sources: `Numerik/goldberg.pdf`.
 
-## Bab 21 — Optimasi Konveks dan Dualitas
-Basis: paruh pertama `../_buku/ch09.tex`. Bagian: (1) himpunan konveks dan
-kombinasi konveks; (2) fungsi konveks, uji orde pertama dan kedua (Hessian definit
-positif); (3) bentuk baku masalah optimasi dan mengapa konveks berarti optimum
-global; (4) Lagrangian, dual Lagrange, dualitas lemah dengan bukti, dualitas kuat
-dan syarat Slater (pernyataan); (5) kondisi KKT dan tafsir pengali; (6) contoh
-kuadratik kecil diselesaikan lewat KKT.
-Wajib dihitung: satu masalah QP dua variabel dengan kendala, diselesaikan lewat KKT
-manual lalu `scipy.optimize.minimize` (bandingkan $x^{*}$ dan pengali); uji
-konveksitas Hessian satu fungsi dua variabel (nilai eigen); ilustrasi celah dualitas
-pada satu masalah nonkonveks kecil.
-Sumber: `Optimasi & Neural Networks/bv_cvxbook.pdf` (bab himpunan konveks, bab
-fungsi konveks, bab masalah optimasi konveks, bab dualitas).
+## Chapter 21 — Convex Optimization and Duality
+Basis: the first half of `../_buku/ch09.tex`. Sections: (1) convex sets and
+convex combinations; (2) convex functions, first- and second-order tests (positive definite
+Hessian); (3) the standard form of an optimization problem and why convex means a global
+optimum; (4) the Lagrangian, the Lagrange dual, weak duality with proof, strong duality
+and Slater's condition (statement); (5) the KKT conditions and the interpretation of multipliers; (6) a small
+quadratic example solved via KKT.
+Must be computed: one two-variable QP with constraints, solved via KKT
+by hand then `scipy.optimize.minimize` (compare $x^{*}$ and the multipliers); a
+Hessian convexity test for one function of two variables (eigenvalues); an illustration of the duality gap
+on one small nonconvex problem.
+Sources: `Optimasi & Neural Networks/bv_cvxbook.pdf` (the chapter on convex sets, the chapter on
+convex functions, the chapter on convex optimization problems, the chapter on duality).
 
-## Bab 22 — Pemrograman Linear dan Integer
-Basis: paruh kedua `../_buku/ch09.tex`. Bagian: (1) bentuk baku LP dan formulasi;
-(2) geometri: titik ekstrem dan verteks; (3) metode simpleks: satu tabel
-dikerjakan penuh; (4) dualitas LP, complementary slackness, dan tafsir harga bayangan;
-(5) relaksasi LP untuk program integer, integrality gap, branch and bound; (6) satu
-program integer kecil diselesaikan dengan enumerasi dan dengan `scipy.optimize.milp`.
-Wajib dihitung: satu LP dua variabel secara grafik dan dengan `scipy.optimize.linprog`
-(nilai optimum dan harga bayangan); dual dan pemeriksaan dualitas kuat secara
-numerik; satu IP (knapsack 4 barang) lewat enumerasi vs MILP, plus integrality gap
-relaksasinya.
-Sumber: `Optimasi & Neural Networks/WSPrinted.pdf` (Bertsimas-Tsitsiklis: formulasi,
-geometri, simpleks, dualitas), `Optimasi & Neural Networks/IntegerProgramming-Wolsey.pdf`
-(formulasi dan relaksasi).
+## Chapter 22 — Linear and Integer Programming
+Basis: the second half of `../_buku/ch09.tex`. Sections: (1) standard LP form and formulation;
+(2) geometry: extreme points and vertices; (3) the simplex method: one tableau
+worked through in full; (4) LP duality, complementary slackness, and the interpretation of shadow prices;
+(5) LP relaxation for integer programs, integrality gap, branch and bound; (6) one small
+integer program solved by enumeration and with `scipy.optimize.milp`.
+Must be computed: one two-variable LP graphically and with `scipy.optimize.linprog`
+(optimal value and shadow prices); the dual and a numerical check of strong
+duality; one IP (a 4-item knapsack) via enumeration vs MILP, plus the integrality gap
+of its relaxation.
+Sources: `Optimasi & Neural Networks/WSPrinted.pdf` (Bertsimas-Tsitsiklis: formulation,
+geometry, simplex, duality), `Optimasi & Neural Networks/IntegerProgramming-Wolsey.pdf`
+(formulation and relaxation).
 
-## Bab 23 — Jaringan Saraf dan Turunan Balik
-Basis: `../_buku/ch10.tex`. Bagian: (1) perceptron dan batas linear; (2) MLP,
-fungsi aktivasi (ReLU, sigmoid), universal approximation (pernyataan); (3) softmax
-dan cross-entropy; (4) turunan balik lengkap untuk jaringan 4 masukan - 2 unit ReLU
-- 1 keluaran sigmoid, semua angka eksak; (5) pemeriksaan gradien numerik; (6)
-gradien terhadap masukan (jembatan ke Bab 27) dan satu langkah gradient descent.
-Wajib dihitung: forward pass eksak dengan bobot yang ditentukan; gradien setiap
-bobot manual dan dengan numpy (selisih harus di bawah $10^{-12}$); satu langkah
-gradient descent dengan learning rate yang diberikan; gradien terhadap masukan
-diverifikasi dengan beda hingga.
-Sumber: `Optimasi & Neural Networks/book.pdf` (Nielsen, bab 1-2),
-`Optimasi & Neural Networks/Deep+Learning+Ian+Goodfellow.pdf` (bagian deep
-feedforward networks).
+## Chapter 23 — Neural Networks and Backpropagation
+Basis: `../_buku/ch10.tex`. Sections: (1) the perceptron and linear boundaries; (2) MLPs,
+activation functions (ReLU, sigmoid), universal approximation (statement); (3) softmax
+and cross-entropy; (4) complete backpropagation for a network with 4 inputs - 2 ReLU units
+- 1 sigmoid output, all numbers exact; (5) numerical gradient checking; (6)
+the gradient with respect to the inputs (a bridge to Chapter 27) and one gradient descent step.
+Must be computed: an exact forward pass with prescribed weights; the gradient of every
+weight by hand and with numpy (the difference must be below $10^{-12}$); one
+gradient descent step with a given learning rate; the gradient with respect to the inputs
+verified by finite differences.
+Sources: `Optimasi & Neural Networks/book.pdf` (Nielsen, chapters 1-2),
+`Optimasi & Neural Networks/Deep+Learning+Ian+Goodfellow.pdf` (the deep
+feedforward networks part).
 
-## Bab 24 — Generalisasi, Regularisasi, dan Pelatihan
-Basis: tidak ada (bab baru). Bagian: (1) galat latih vs galat uji; underfitting dan
-overfitting; (2) dekomposisi bias-variansi; (3) regularisasi L2, L1, early stopping,
-dropout; (4) standardisasi fitur memakai statistik data latih saja (kebocoran data);
-(5) penurun gradien: SGD, momentum, Adam — perbedaan pembaruan; (6) jadwal learning
-rate, pemilihan hiperparameter, dan protokol validasi yang jujur.
-Wajib dihitung: eksperimen numpy kecil (regresi logistik atau MLP satu lapis) pada
-data sintetis dengan tiga setelan (tanpa regularisasi, L2, L1) — laporkan galat
-latih dan validasi, dan tunjukkan overfitting secara nyata; satu lintasan optimasi
-SGD vs Adam (jumlah langkah sampai ambang galat).
-Sumber: Goodfellow (bab regularization for deep learning, bab optimization for
-training deep models), Nielsen (bab improving the way neural networks learn).
+## Chapter 24 — Generalization, Regularization, and Training
+Basis: none (new chapter). Sections: (1) training vs test error; underfitting and
+overfitting; (2) the bias-variance decomposition; (3) L2 and L1 regularization, early stopping,
+dropout; (4) feature standardization using training-data statistics only (data leakage);
+(5) gradient descent: SGD, momentum, Adam — how the updates differ; (6) learning
+rate schedules, hyperparameter selection, and an honest validation protocol.
+Must be computed: a small numpy experiment (logistic regression or a one-layer MLP) on
+synthetic data with three settings (no regularization, L2, L1) — report the training and
+validation error, and show overfitting concretely; one optimization trajectory
+SGD vs Adam (number of steps to an error threshold).
+Sources: Goodfellow (the chapter on regularization for deep learning, the chapter on optimization for
+training deep models), Nielsen (the chapter on improving the way neural networks learn).
 
-## Bab 25 — Evaluasi Model yang Jujur
-Basis: `../_buku/ch11.tex` (kecuali bagian Wilson yang sudah dipakai Bab 19) dan
-contoh dari `../note.md` bila relevan. Bagian: (1) matriks konfusi dan metrik turunan
-(precision, recall, F1) beserta kapan tiap metrik menyesatkan; (2) kurva ROC dan AUC,
-serta ketergantungannya pada prevalensi; (3) ketidakseimbangan kelas dan akurasi yang
-menipu; (4) ketidakpastian metrik: interval untuk proporsi (rujuk Bab 19), aturan
-tiga, interval untuk selisih dua model; (5) kebocoran data, pemisahan latih/uji,
-validasi silang yang benar; (6) checklist pelaporan hasil eksperimen.
-Wajib dihitung: matriks konfusi contoh dengan 1000 prediksi (precision/recall/F1
-manual vs `sklearn` bila tersedia, kalau tidak numpy); AUC dari data skor kecil
-dihitung manual; efek prevalensi pada precision pada recall tetap; contoh kebocoran
-data yang menaikkan akurasi uji secara palsu (simulasi kecil).
-Sumber: Wasserman (bab model, inferensi statistik dan pembelajaran),
-`../note.md` (contoh kerja penulis sendiri, sebutkan batasnya).
+## Chapter 25 — Honest Model Evaluation
+Basis: `../_buku/ch11.tex` (except the Wilson part already used in Chapter 19) and
+examples from `../note.md` where relevant. Sections: (1) confusion matrices and derived metrics
+(precision, recall, F1) and when each metric misleads; (2) ROC curves and AUC,
+and their dependence on prevalence; (3) class imbalance and deceptive
+accuracy; (4) metric uncertainty: intervals for proportions (see Chapter 19), the rule
+of three, intervals for the difference between two models; (5) data leakage, train/test splits,
+correct cross-validation; (6) a checklist for reporting experimental results.
+Must be computed: an example confusion matrix with 1000 predictions (precision/recall/F1
+by hand vs `sklearn` if available, otherwise numpy); AUC from a small score dataset
+computed by hand; the effect of prevalence on precision at fixed recall; an example of leakage
+that artificially raises test accuracy (a small simulation).
+Sources: Wasserman (the chapter on models, statistical inference and learning),
+`../note.md` (the author's own worked example; state its limits).
 
-## Bab 26 — Metode Formal dengan Lean 4
-Basis: `../_buku/ch12.tex`. Bagian: (1) proposisi sebagai tipe, bukti sebagai term;
-(2) kuantor dan aturan intro/eliminasi; (3) taktik dasar (`intro`, `exact`, `rw`,
-`simp`, `induction`, `linarith`); (4) satu bukti induksi lengkap (jumlah bilangan
-ganjil $=n^2$) ditulis bertahap dengan penjelasan tiap taktik; (5) struktur,
-typeclass, dan `native_decide`: apa yang benar-benar dijamin, apa yang diasumsikan;
-(6) batas formalisasi: spesifikasi salah menghasilkan bukti yang tak berguna;
-kaitannya dengan sertifikat dan evaluasi model jujur (Bab 25).
-Wajib disebut jujur: Lean **tidak terpasang** di mesin ini, jadi potongan kode tidak
-dieksekusi; kode dicocokkan dengan `mathematics_in_lean.pdf` dan `print.pdf` dan
-dinyatakan begitu di dalam bab. Angka yang dihitung (mis. jumlah bilangan ganjil
-untuk beberapa $n$) tetap diverifikasi Python.
-Sumber: `Metode Formal & Lean 4/mathematics_in_lean.pdf`,
+## Chapter 26 — Formal Methods with Lean 4
+Basis: `../_buku/ch12.tex`. Sections: (1) propositions as types, proofs as terms;
+(2) quantifiers and introduction/elimination rules; (3) basic tactics (`intro`, `exact`, `rw`,
+`simp`, `induction`, `linarith`); (4) one complete induction proof (the sum of odd
+numbers $=n^2$) written in stages with an explanation of each tactic; (5) structures,
+typeclasses, and `native_decide`: what is actually guaranteed, what is assumed;
+(6) the limits of formalization: a wrong specification yields a useless proof;
+its link to certificates and honest model evaluation (Chapter 25).
+Must be stated honestly: Lean is **not installed** on this machine, so the code snippets are not
+executed; the code was matched against `mathematics_in_lean.pdf` and `print.pdf` and
+the chapter says so. The numbers computed (e.g. the sum of odd numbers
+for several $n$) are still verified with Python.
+Sources: `Metode Formal & Lean 4/mathematics_in_lean.pdf`,
 `.../matematika-dalam-lean-bahasa-indonesia.pdf`, `.../print.pdf` (Theorem Proving
 in Lean 4).
 
-## Bab 27 — Adversarial Machine Learning: Serangan dan Pertahanan
-Basis: paruh pertama `../_buku/ch13.tex`. Bagian: (1) definisi ancaman: norma
-$L_\infty$, $\varepsilon$, tujuan penyerang; (2) mengapa tanda gradien cukup:
-derivasi FGSM dari linearisasi; (3) PGD dan formulasi min-max, adversarial training;
-(4) transferabilitas dan serangan black-box; (5) contoh numerik pada model linear
-dan MLP kecil (gradien terhadap masukan, perubahan prediksi); (6) biaya komputasi
-dan keterbatasan praktis.
-Wajib dihitung: FGSM pada model linear dengan bobot tertentu (perubahan keluaran
-eksak); PGD beberapa langkah pada MLP kecil: akurasi bersih vs akurasi di bawah
-serangan untuk beberapa $\varepsilon$; perbandingan dengan beda hingga gradien.
-Sumber: `Adversarial ML/1412.6572v3.pdf` (FGSM),
+## Chapter 27 — Adversarial Machine Learning: Attacks and Defenses
+Basis: the first half of `../_buku/ch13.tex`. Sections: (1) threat definitions: the
+$L_\infty$ norm, $\varepsilon$, the attacker's goal; (2) why the sign of the gradient suffices:
+deriving FGSM from linearization; (3) PGD and the min-max formulation, adversarial training;
+(4) transferability and black-box attacks; (5) numerical examples on a linear model
+and a small MLP (gradient with respect to the inputs, change in prediction); (6) computational cost
+and practical limitations.
+Must be computed: FGSM on a linear model with given weights (the exact change in output);
+multi-step PGD on a small MLP: clean accuracy vs accuracy under
+attack for several $\varepsilon$; a comparison with finite-difference gradients.
+Sources: `Adversarial ML/1412.6572v3.pdf` (FGSM),
 `Adversarial ML/1706.06083v4.pdf` (PGD, adversarial training).
 
-## Bab 28 — Batas Serangan: Gradien Dikaburkan dan Evasi NIDS
-Basis: paruh kedua `../_buku/ch13.tex` + `../note.md`. Bagian: (1) tujuh teknik
-mengaburkan gradien dan mengapa evaluasi menjadi menyesatkan; (2) serangan yang
-menembusnya: BPDA, EOT, reparameterisasi; (3) bagaimana merancang evaluasi yang
-jujur (anggaran adaptif, beberapa seed, laporkan variansi); (4) studi kasus: evasi
-terhadap NIDS berbasis ML, mengapa NIDS dinamis lebih tahan; (5) hasil kerja penulis
-sendiri dari `note.md` — sebutkan sebagai kerja penulis, sertakan batasnya secara
-eksplisit, dan jangan mengklaim lebih dari yang ada di catatan; (6) daftar periksa
-untuk klaim "serangan berhasil".
-Wajib dihitung: simulasi serangan pada klasifikasi dengan gradien yang sengaja
-dikaburkan (mis. kuantisasi keluaran) dan demonstrasi bahwa serangan naif gagal
-padahal model tetap rapuh (BPDA sederhana, numpy); metrik keberhasilan dengan
-beberapa seed (rata-rata dan simpangan).
-Sumber: `Adversarial ML/1802.00420v4.pdf` (obfuscated gradients),
+## Chapter 28 — The Limits of Attack: Obfuscated Gradients and NIDS Evasion
+Basis: the second half of `../_buku/ch13.tex` + `../note.md`. Sections: (1) seven techniques
+for obfuscating gradients and why evaluation becomes misleading; (2) attacks that
+break through them: BPDA, EOT, reparameterization; (3) how to design an honest
+evaluation (adaptive budget, several seeds, report the variance); (4) case study: evasion
+against ML-based NIDS, why dynamic NIDS are more robust; (5) the author's own results
+from `note.md` — label them as the author's work, include their limits
+explicitly, and do not claim more than the notes contain; (6) a checklist
+for a claim that "the attack succeeded".
+Must be computed: an attack simulation on a classifier with deliberately obfuscated
+gradients (e.g. output quantization) and a demonstration that a naive attack fails
+while the model stays fragile (a simple BPDA, numpy); success metrics with
+several seeds (mean and spread).
+Sources: `Adversarial ML/1802.00420v4.pdf` (obfuscated gradients),
 `main/Evasion Adversarial Attacks Remain Impractical Against ML-based Network
 Intrusion Detection Systems, Especially Dynamic Ones.pdf`, `../note.md`.
 
-## Bab 29 — Kriptografi: Bilangan Bulat Modular sampai Ancaman Kuantum
+## Chapter 29 — Cryptography: Modular Integers to the Quantum Threat
 
-Prasyarat: Bab 2, 3, 26. Ditambahkan 2026-10-24 atas keputusan penulis agar judul
-"ke Keamanan Machine Learning" tidak berhenti pada serangan adversarial.
-Isi: aritmetika modular dan kelas sisa; gcd, Euklid, invers modular; Fermat kecil dan
-Euler dengan bukti; grup siklik secukupnya; Diffie-Hellman dengan contoh angka yang
-dihitung Python; RSA (mengapa bekerja, mengapa tanpa padding salah); hash dan MAC;
-tanda tangan; model keamanan komputasi sebagai asumsi, bukan teorema; Shor dan apa
-yang runtuh; kriptografi pasca-kuantum secara konseptual; satu bagian yang
-menghubungkan kebocoran lewat keluaran ke pola ancaman Bab 27-28.
-Gambar wajib: jam modular dan/atau alur Diffie-Hellman (TikZ, ber-caption, dirujuk).
+Prerequisites: Chapters 2, 3, 26. Added 2026-10-24 by the author's decision so that the title
+"to Machine Learning Security" would not stop at adversarial attacks.
+Content: modular arithmetic and residue classes; gcd, Euclid, modular inverses; Fermat's little
+theorem and Euler's theorem with proofs; cyclic groups, just enough; Diffie-Hellman with a worked
+example computed in Python; RSA (why it works, why it is wrong without padding); hashes and MACs;
+signatures; computational security as an assumption, not a theorem; Shor and what it
+collapses; post-quantum cryptography conceptually; one section that
+links leakage through outputs to the threat patterns of Chapters 27-28.
+Required figure: a modular clock and/or the Diffie-Hellman flow (TikZ, captioned, referenced).
 
-## Bab 30 — Privasi Diferensial dan Fondasi Matematis QML
+## Chapter 30 — Differential Privacy and the Mathematical Foundations of QML
 
-Prasyarat: Bab 10, 16, 17. Ditambahkan 2026-10-24 untuk menutup celah "privasi" dan
-"kuantum" yang nol kemunculan pada edisi sebelumnya.
-Isi: kebocoran data lewat model dan serangan inferensi keanggotaan; definisi
-$\varepsilon$-$\delta$ dan alasan memilih jaminan terburuk, bukan rata-rata;
-sensitivitas global; mekanisme Laplace dengan bukti jaminan; Gaussian secukupnya;
-komposisi dan anggaran privasi; DP-SGD (clipping + noise) serta trade-off
-privasi-utilitas; batas klaim DP. Lalu fondasi QML: bilangan kompleks, modulus dan
-fase, ruang Hilbert berdimensi hingga, bra-ket, gerbang uniter dan kekekalan norma,
-Fourier sebagai perubahan basis, aturan Born, satu sirkuit 1-2 qubit dihitung tangan,
-dan ledakan dimensi $2^{n}$ sebagai alasan klaim keunggulan harus dijaga.
-Gambar wajib: kurva trade-off dari eksperimen nyata atau diagram fase (TikZ).
-Kejujuran: QML belum punya bukti keunggulan praktis yang mapan; sebutkan batasnya.
+Prerequisites: Chapters 10, 16, 17. Added 2026-10-24 to close the gap on "privacy" and
+"quantum", which had zero occurrences in the previous edition.
+Content: data leakage through models and membership inference attacks; the
+$\varepsilon$-$\delta$ definition and why we choose a worst-case guarantee, not an average one;
+global sensitivity; the Laplace mechanism with a proof of its guarantee; Gaussian, just enough;
+composition and the privacy budget; DP-SGD (clipping + noise) and the privacy-utility
+trade-off; the limits of DP claims. Then the foundations of QML: complex numbers, modulus and
+phase, finite-dimensional Hilbert space, bra-ket, unitary gates and norm preservation,
+Fourier as a change of basis, the Born rule, one 1-2 qubit circuit computed by hand,
+and the $2^{n}$ dimension explosion as the reason advantage claims must be kept in check.
+Required figure: a trade-off curve from a real experiment or a phase diagram (TikZ).
+Honesty: QML has no settled proof of practical advantage yet; state its limits.
 
-
----
-
-## Bab 16 — Persamaan Diferensial dan Sistem Dinamik
-
-**Berkas:** `ch16.tex` · **Bagian III** · **Prasyarat:** Bab 12, 14, 15
-**Pesan utama:** sebuah persamaan diferensial bukan rumus yang harus ditebak, melainkan
-janji bahwa keadaan besok ditentukan keadaan hari ini — dan janji itu perlu syarat agar
-tidak pecah.
-
-Isi minimum:
-1. ODE orde satu: pemisahan variabel, persamaan linear + faktor integrasi, contoh laju
-   peluruhan dan pendinginan Newton.
-2. Kapan solusi ada dan tunggal: syarat Lipschitz, teorema Picard-Lindelof (pernyataan
-   lengkap, bukti sketsa lewat iterasi Picard), contoh $x'=\sqrt{|x|}$ yang gagal tunggal.
-3. Sistem otonom dan bidang fase: dua dimensi, trayektori, titik setimbang, linearisasi
-   memakai nilai eigen (sambung Bab 9), klasifikasi simpul/pelana/pusat.
-4. Osilator harmonik, redaman, pendulum tak linear: mengapa linearisasi hanya berlaku lokal.
-5. Metode numerik: Euler (galat lokal orde 2, global orde 1), Runge-Kutta orde 4,
-   perbandingan pada satu soal yang solusi eksaknya diketahui; kekakuan secara kualitatif.
-6. Kestabilan Lyapunov: definisi, fungsi Lyapunov sederhana, contoh pendulum dengan energi.
-7. Satu kotak peneliti: mengapa integrasi numerik jangka panjang bisa memberi jawaban
-   yang tampak masuk akal tetapi salah secara kualitatif.
-
-**Gambar (3):** (a) bidang fase pendulum dengan beberapa trayektori; (b) galat Euler vs
-RK4 terhadap ukuran langkah pada skala log-log; (c) diagram klasifikasi titik setimbang
-berdasarkan tanda dan jenis nilai eigen.
 
 ---
 
-## Bab 21 — Regresi dan Statistika Terapan
+## Chapter 16 — Differential Equations and Dynamical Systems
 
-**Berkas:** `ch21.tex` · **Bagian IV** · **Prasyarat:** Bab 10, 20
-**Pesan utama:** regresi adalah proyeksi, dan setiap angka yang keluar darinya hanya
-sejujur asumsi yang menyertainya.
+**File:** `ch16.tex` · **Part III** · **Prerequisites:** Chapters 12, 14, 15
+**Key message:** a differential equation is not a formula to be guessed, but
+a promise that tomorrow's state is determined by today's state — and that promise needs conditions so it
+does not break.
 
-Isi minimum:
-1. Regresi linear sederhana dan berganda dari kuadrat terkecil; persamaan normal
-   $X^{\top}X\hat{\beta}=X^{\top}y$ diturunkan lewat proyeksi ortogonal (Bab 10).
-2. Tafsiran koefisien beserta satuannya; apa yang berubah bila satu peubah penjelas
-   diskalakan.
-3. Asumsi Gauss-Markov dan arti "penaksir tak bias terbaik linear"; kapan asumsi itu
-   dilanggar dan apa akibatnya.
-4. $R^2$, korelasinya dengan sisa, dan mengapa $R^2$ tinggi bukan bukti model benar.
-5. Selang kepercayaan dan uji $t$ untuk koefisien (sambung Bab 20); selang prediksi
-   versus selang rata-rata.
-6. Diagnostik residu: pola, heteroskedastisitas, pencilan; multikolinearitas dan VIF.
-7. Regresi logistik secara ringkas: mengapa OLS tidak dipakai untuk keluaran biner,
-   dan bagaimana koefisiennya ditafsirkan lewat rasio odds.
-8. Korelasi bukan kausalitas, dengan paradoks Simpson memakai tabel angka yang dihitung
-   penuh di dalam bab.
-9. Kotak peneliti: pelaporan yang jujur — jumlah pengamatan, pemisahan data, larangan
-   memilih model setelah melihat hasil.
+Minimum content:
+1. First-order ODEs: separation of variables, linear equations + integrating factor, examples of decay
+   rate and Newton cooling.
+2. When a solution exists and is unique: the Lipschitz condition, the Picard-Lindelof theorem (full
+   statement, proof sketch via Picard iteration), the example $x'=\sqrt{|x|}$ that fails uniqueness.
+3. Autonomous systems and phase portraits: two dimensions, trajectories, equilibrium points, linearization
+   using eigenvalues (links to Chapter 9), classification of nodes/saddles/centers.
+4. The harmonic oscillator, damping, the nonlinear pendulum: why linearization only holds locally.
+5. Numerical methods: Euler (local error order 2, global order 1), 4th-order Runge-Kutta,
+   a comparison on one problem whose exact solution is known; stiffness qualitatively.
+6. Lyapunov stability: definition, a simple Lyapunov function, the pendulum example with energy.
+7. One researcher box: why long-run numerical integration can give answers
+   that look plausible but are qualitatively wrong.
 
-**Gambar (2-3):** (a) titik data + garis kuadrat terkecil + residu sebagai segmen tegak;
-(b) bidang regresi berganda diproyeksikan sebagai kontur pada dua peubah; (c) paradoks
-Simpson: dua tren kelompok yang berlawanan dengan tren gabungan.
+**Figures (3):** (a) the pendulum phase portrait with several trajectories; (b) Euler vs
+RK4 error against step size on a log-log scale; (c) a classification diagram of equilibrium points
+by the sign and type of the eigenvalues.
+
+---
+
+## Chapter 21 — Regression and Applied Statistics
+
+**File:** `ch21.tex` · **Part IV** · **Prerequisites:** Chapters 10, 20
+**Key message:** regression is a projection, and every number that comes out of it is only
+as honest as the assumptions that accompany it.
+
+Minimum content:
+1. Simple and multiple linear regression from least squares; the normal equations
+   $X^{\top}X\hat{\beta}=X^{\top}y$ derived via orthogonal projection (Chapter 10).
+2. Interpretation of coefficients together with their units; what changes when one explanatory variable
+   is rescaled.
+3. The Gauss-Markov assumptions and the meaning of "best linear unbiased estimator"; when those assumptions
+   are violated and what follows.
+4. $R^2$, its correlation with the residuals, and why a high $R^2$ is not proof that the model is right.
+5. Confidence intervals and the $t$ test for coefficients (links to Chapter 20); prediction intervals
+   versus intervals for the mean.
+6. Residual diagnostics: patterns, heteroscedasticity, outliers; multicollinearity and VIF.
+7. Logistic regression briefly: why OLS is not used for binary outcomes,
+   and how its coefficients are interpreted via odds ratios.
+8. Correlation is not causation, with Simpson's paradox using a table of numbers computed
+   in full inside the chapter.
+9. Researcher box: honest reporting — number of observations, data splits, and the ban on
+   choosing a model after seeing the results.
+
+**Figures (2-3):** (a) data points + least-squares line + residuals as vertical segments;
+(b) the multiple-regression surface projected as contours on two variables; (c) Simpson's
+paradox: two group trends running opposite to the pooled trend.

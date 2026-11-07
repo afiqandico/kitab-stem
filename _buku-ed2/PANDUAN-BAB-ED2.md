@@ -1,109 +1,109 @@
-# Panduan menulis bab — Edisi Pertama
-## *Kenapa Mesin Bisa Salah? Dari Aljabar Linear sampai Keamanan Machine Learning*
+# Chapter writing guide — First Edition
+## *Why Machines Can Be Wrong? From Linear Algebra to Machine Learning Security*
 
-Buku ajar berbahasa Indonesia, **6 bagian, 32 bab**, dibangun dengan pdfLaTeX.
-Kamu menulis **satu bab** sebagai berkas `.tex` berisi badan bab saja (tanpa preamble).
+A textbook written in Indonesian, **6 parts, 32 chapters**, built with pdfLaTeX.
+You write **one chapter** as a `.tex` file containing only the chapter body (no preamble).
 
-Buku ini harus bisa dibaca **empat lapis pembaca sekaligus**: anak SD/SMP yang penasaran,
-mahasiswa S1, dosen yang mengajar, dan peneliti yang mencari batas pengetahuan.
-Mereka tidak membaca buku yang berbeda; mereka membaca bab yang sama lewat jalur berbeda.
-Karena itu setiap bab **wajib** memuat kotak lapisan di bawah ini.
+The book must be readable by **four reader tiers at once**: curious primary and lower-secondary
+pupils, S1 undergraduates, the lecturers who teach it, and researchers probing the limits of knowledge.
+They do not read a different book; they read the same chapter along different paths.
+That is why every chapter **must** contain the tier boxes below.
 
-## Aturan mutlak
+## Absolute rules
 
-1. Keluaran: satu berkas, path persis yang diberikan (`_buku-ed2/chNN.tex`). Tidak ada
-   berkas lain yang boleh kamu buat di `_buku-ed2/` selain di direktori uji `_wrap/chNN/`.
-2. **Tanpa** `\documentclass`, `\usepackage`, `\begin{document}`, `\cite`, `\footnote`,
-   dan tanpa float `table`. Bab dimasukkan lewat `\input{}` ke `main.tex`.
-   **Gambar diperbolehkan** hanya sebagai `figure` berisi TikZ/pgfplots (tanpa berkas
-   gambar luar), wajib punya `\caption{}` dan `\label{fig:...}`, dan wajib dirujuk di
-   teks dengan `\ref{fig:...}` pada berkas yang sama. Maksimal **3 gambar** per bab,
-   lebar tidak melebihi `\linewidth`, dan gambar harus menjelaskan gagasan yang sudah
-   disebut di teks, bukan menggantikannya. `\label`/`\ref` untuk gambar saja;
-   `\eqref` dan `\pageref` tetap dilarang.
-3. Tanpa Unicode di luar mode matematika (jangan tulis ε, ≈, ⇒, ×, √, α sebagai teks).
-   Di dalam `$...$` pakai `\varepsilon`, `\approx`, `\Rightarrow`, `\times`,
+1. Output: one file, at the exact path given (`_buku-ed2/chNN.tex`). No
+   other file may be created inside `_buku-ed2/` except in the test directory `_wrap/chNN/`.
+2. **No** `\documentclass`, `\usepackage`, `\begin{document}`, `\cite`, `\footnote`,
+   and no `table` float. The chapter is pulled in with `\input{}` from `main.tex`.
+   **Figures are allowed** only as a `figure` containing TikZ/pgfplots (with no external
+   image file), must have a `\caption{}` and `\label{fig:...}`, and must be referenced in
+   the text with `\ref{fig:...}` in the same file. At most **3 figures** per chapter,
+   width not exceeding `\linewidth`, and a figure must explain an idea already
+   stated in the text, not replace it. `\label`/`\ref` for figures only;
+   `\eqref` and `\pageref` remain forbidden.
+3. No Unicode outside math mode (do not write ε, ≈, ⇒, ×, √, α as text).
+   Inside `$...$` use `\varepsilon`, `\approx`, `\Rightarrow`, `\times`,
    `\sqrt{2}`, `\alpha`, `\mathbb{R}`, `\mathbf{x}`, `\nabla`, `\sum`, `\int`,
    `\mathcal{O}`, `\mathbb{E}`.
-4. Lingkungan yang tersedia: `definisi`, `teorema`, `lemma`, `akibat`, `proposisi`,
+4. Available environments: `definisi`, `teorema`, `lemma`, `akibat`, `proposisi`,
    `contoh`, `latihan`, `catatan`, `ringkasan`, `lab`, `untukanak`, `untukdosen`,
    `untukpeneliti`, `itemize`, `enumerate`, `description`, `equation`, `align`,
-   `tabular`, `quote`, `verbatim`. Perintah tambahan: `\kertas{...}`, `\peta{...}`,
+   `tabular`, `quote`, `verbatim`. Extra commands: `\kertas{...}`, `\peta{...}`,
    `\kamus{istilah}{padanan Inggris}{analogi}`, `\tingkat{dasar|menengah|lanjut}`.
-   Jangan mendefinisikan lingkungan atau perintah baru, jangan memuat paket apa pun.
-5. **Angka wajib hasil eksekusi nyata.** Setiap angka numerik yang bukan definisi
-   harus berasal dari (a) teori yang kamu turunkan, (b) hitungan tangan yang kamu
-   kerjakan dan verifikasi dengan Python/numpy/scipy, atau (c) hasil yang eksplisit
-   tercetak pada sumber yang kamu baca. Kalau ragu, hitung lagi. Jangan mengarang.
-6. Rujuk kitab sumber dengan **nama bab/bagian**, bukan nomor halaman (penomoran
-   berbeda antar edisi). Rujuk bab lain buku ini dengan "lihat Bab 9", bukan `\ref`.
-7. Bahasa Indonesia baku, sapaan **"kita"** (bukan "aku"/"kamu"). Dilarang membuka
-   dengan kalimat kosong seperti "Pada bab ini kita akan membahas...". Mulai dari
-   satu masalah konkret.
-8. Tidak ada klaim berlebih ("terbukti", "selalu", "pasti") tanpa syarat jelas.
-   Bukti yang dilewati harus dinyatakan dilewati dan di mana mencarinya.
+   Do not define new environments or commands, and do not load any package.
+5. **Numbers must come from real execution.** Every numerical value that is not a definition
+   must come from (a) theory you derive, (b) a hand computation you
+   carry out and verify with Python/numpy/scipy, or (c) a result explicitly
+   printed in a source you have read. If in doubt, compute again. Do not invent.
+6. Cite a source book by **chapter/section name**, not by page number (numbering
+   differs between editions). Refer to another chapter of this book with "see Chapter 9", not `\ref`.
+7. Standard Indonesian, addressing the reader as **"kita"** (not "aku"/"kamu"). Opening
+   with an empty sentence such as "Pada bab ini kita akan membahas..." is forbidden. Start from
+   one concrete problem.
+8. No overclaiming ("terbukti", "selalu", "pasti") without explicit conditions.
+   A skipped proof must be declared skipped, together with where to find it.
 
-## Enam pintu masuk belajar (wajib di setiap bab)
+## Six learning entrances (required in every chapter)
 
-Empat lapisan di bawah melayani beda *kedalaman*; empat kotak berikut melayani beda
-*cara belajar*. Setiap bab memuat **tepat satu** dari masing-masing, plus 2-3 gambar.
-Gerbang menolak bab yang tidak punya keempatnya (`bacakeras=0`, `tangan=0`, `resep=0`,
-`tantangan=0`) dan menolak jumlah gambar selain 2-3 (`gambar=N`).
+The four tiers below serve differences in *depth*; the four boxes that follow serve differences
+in *learning style*. Each chapter contains **exactly one** of each, plus 2-3 figures.
+The gate rejects a chapter lacking any of the four (`bacakeras=0`, `tangan=0`, `resep=0`,
+`tantangan=0`) and rejects any figure count other than 2-3 (`gambar=N`).
 
-| Kotak | Untuk tipe | Isi wajib | Panjang |
+| Box | For type | Required content | Length |
 |---|---|---|---|
-| `bacakeras` | auditori | naskah yang **enak dibaca keras**: ritme, pengulangan, dialog dua suara, atau jembatan keledai; tulis kalimat yang bisa diucapkan, bukan rumus bertumpuk; akhiri dengan satu baris yang harus diulang pembaca | 90-200 kata |
-| `tangan` | kinestetik | aktivitas dengan benda nyata atau gerakan badan: kartu, koin, kertas lipat, lantai berpetak, tali, jari, jalan mundur; sebut bahan, langkah fisik, dan apa yang harus pembaca **lihat** terjadi | 80-180 kata |
-| `resep` | prosedural | kartu langkah bernomor (3-6 langkah) yang cukup dihafal untuk mengerjakan soal apa pun pada topik itu, plus satu peringatan urutan yang tidak boleh ditukar | 60-140 kata |
-| `tantangan` | pemecah masalah | satu soal terbuka/teka-teki yang **tidak** rutin, dengan 2 petunjuk bertingkat (petunjuk 1 samar, petunjuk 2 hampir menjawab) dan satu kalimat "kalau mentok, kembali ke bagian X" | 70-160 kata |
+| `bacakeras` | auditory | a script that **reads well aloud**: rhythm, repetition, two-voice dialogue, or a mnemonic; write sentences that can be spoken, not stacked formulas; end with one line the reader must repeat | 90-200 words |
+| `tangan` | kinesthetic | an activity with real objects or body movement: cards, coins, folded paper, a tiled floor, string, fingers, walking backwards; name the materials, the physical steps, and what the reader must **see** happen | 80-180 words |
+| `resep` | procedural | a numbered step card (3-6 steps) short enough to memorize for solving any problem on that topic, plus one warning about an order that must not be swapped | 60-140 words |
+| `tantangan` | problem solver | one open problem or puzzle that is **not** routine, with 2 graded hints (hint 1 vague, hint 2 close to the answer) and one sentence "if you get stuck, go back to section X" | 70-160 words |
 
-Aturan tambahan:
-- Keempat kotak **tidak boleh** berisi ulangan kalimat dari badan bab; masing-masing
-  harus menambah sudut baru pada gagasan yang sama.
-- `bacakeras` dan `tangan` wajib bebas notasi berat; `resep` justru wajib konkret dan
-  boleh memuat lambang; `tantangan` harus punya jawaban yang benar-benar ada.
-- Gambar dipakai sebagai pintu masuk tipe visual: 2-3 `figure` TikZ/pgfplots per bab,
-  caption menyebut angka yang sama dengan teks, selalu dirujuk dari prosa.
-- Letakkan keempat kotak dekat bagian yang mereka layani, bukan menumpuk di akhir bab.
+Additional rules:
+- The four boxes **must not** repeat sentences from the chapter body; each
+  must add a new angle on the same idea.
+- `bacakeras` and `tangan` must be free of heavy notation; `resep` must on the contrary be concrete and
+  may contain symbols; `tantangan` must have an answer that genuinely exists.
+- Figures serve as the entrance for the visual type: 2-3 TikZ/pgfplots `figure`s per chapter,
+  with captions naming the same numbers as the text, always referenced from the prose.
+- Place the four boxes near the sections they serve, not stacked at the end of the chapter.
 
-## Empat lapisan pembaca (wajib di setiap bab)
+## Four reader tiers (required in every chapter)
 
-Pembaca berbeda butuh pintu masuk berbeda. Empat kotak ini adalah pintu masuknya;
-jangan dicampur ke prosa utama supaya pembaca bisa melompatinya.
+Different readers need different entrances. These four boxes are those entrances;
+do not mix them into the main prose, so that readers can skip them.
 
-| Kotak | Untuk siapa | Isi wajib | Panjang |
+| Box | For whom | Required content | Length |
 |---|---|---|---|
-| `untukanak` | pembaca 10-14 tahun, tanpa latar matematika | satu analogi benda sehari-hari, **tanpa notasi matematis** (angka sederhana boleh), satu pertanyaan yang membuat penasaran, dan satu kalimat "di bab ini kita akan tahu mengapa" | 120-250 kata |
-| `untukdosen` | dosen/pengajar | urutan mengajar yang disarankan, 2 miskonsepsi khas mahasiswa, satu aktivitas papan tulis atau kelas, tanda bahwa mahasiswa siap lanjut | 120-250 kata |
-| `untukpeneliti` | peneliti/pembaca lanjut | apa yang benar-benar terbukti vs yang hanya dipopulerkan, sumber primer (nama karya + bagian), pertanyaan terbuka, dan batas keberlakuan hasil | 120-250 kata |
-| `\kamus{...}{...}{...}` | semua lapis | istilah baru + padanan Inggris + analogi satu kalimat; wajib dipakai pada 3-5 istilah kunci tiap bab | 1-2 kalimat |
+| `untukanak` | readers aged 10-14, with no mathematics background | one everyday-object analogy, **no mathematical notation** (simple numbers are fine), one question that sparks curiosity, and one sentence "in this chapter we will find out why" | 120-250 words |
+| `untukdosen` | lecturers/teachers | a suggested teaching order, 2 typical student misconceptions, one blackboard or classroom activity, and signs that students are ready to move on | 120-250 words |
+| `untukpeneliti` | researchers/advanced readers | what is actually proved vs merely popularized, primary sources (work name + section), open questions, and the limits within which the result holds | 120-250 words |
+| `\kamus{...}{...}{...}` | all tiers | a new term + its English equivalent + a one-sentence analogy; must be used for 3-5 key terms per chapter | 1-2 sentences |
 
-**Setiap istilah `\kamus` wajib punya entri glosarium.** Setelah menambah istilah di bab,
-tambahkan pula pasangan (label, definisi) di `tools/glosarium.py` lalu jalankan
-`python3 tools/glosarium.py tulis` — blok Lampiran Glosarium di `main.tex` ditulis ulang
-dalam urutan abjad, jadi jangan menyunting blok itu dengan tangan. `python3 build_ed2.py
-check` menandai `Istilah \kamus tanpa entri glosarium: N` bila ada yang terlewat, dan
-`test_gerbang.py` memuat kontrol negatifnya.
+**Every `\kamus` term must have a glossary entry.** After adding a term in a chapter,
+also add a (label, definition) pair in `tools/glosarium.py`, then run
+`python3 tools/glosarium.py tulis` — the Glossary Appendix block in `main.tex` is rewritten
+in alphabetical order, so do not edit that block by hand. `python3 build_ed2.py
+check` flags `Istilah \kamus tanpa entri glosarium: N` if any entry is missing, and
+`test_gerbang.py` contains the negative control for it.
 
-Aturan tambahan:
-- `untukanak` **tidak boleh** memakai simbol matematika. Kalau perlu, tulis "akar dua"
-  bukan `$\sqrt{2}$`. Ini kotak untuk rasa penasaran, bukan untuk definisi.
-- Setiap `\section` diawali baris `\tingkat{dasar}`, `\tingkat{menengah}`, atau
-  `\tingkat{lanjut}` supaya pembaca tahu bagian mana yang boleh dilewati pada
-  pembacaan pertama.
-- Setiap teorema/definisi penting didahului satu kalimat biasa yang menjelaskan
-  artinya dalam bahasa sehari-hari sebelum pernyataan formalnya.
-- Kalimat pendek. Satu gagasan per kalimat. Hindari tanda kurung bersarang.
-- Istilah asing ditulis miring dan diberi padanan Indonesia pada kemunculan pertama.
-- Judul bab maksimal 55 karakter. Kalau lebih panjang, beri bentuk pendek untuk
-  kepala halaman: `\chapter[Bentuk Pendek]{Judul Panjang yang Sebenarnya}`.
-  Tanpa bentuk pendek, kepala halaman meluber keluar margin di buku utuh —
-  cacat ini **tidak** muncul saat bab dikompilasi sendirian.
-- Judul bab harus sama persis dengan barisnya di tabel "Peta Ketergantungan Bab"
-  pada `main.tex`. Gerbang memeriksa keduanya; kalau berbeda, perbaiki tabelnya
-  (naskah bab adalah acuan), bukan judul bab.
+Additional rules:
+- `untukanak` **must not** use mathematical symbols. If needed, write "akar dua"
+  instead of `$\sqrt{2}$`. This box is for curiosity, not for definitions.
+- Every `\section` starts with a line `\tingkat{dasar}`, `\tingkat{menengah}`, or
+  `\tingkat{lanjut}` so that readers know which parts may be skipped on
+  a first reading.
+- Every important theorem/definition is preceded by one plain sentence explaining
+  what it means in everyday language, before its formal statement.
+- Short sentences. One idea per sentence. Avoid nested parentheses.
+- Foreign terms are italicized and given an Indonesian equivalent at first occurrence.
+- A chapter title is at most 55 characters. If longer, give a short form for
+  the running head: `\chapter[Bentuk Pendek]{Judul Panjang yang Sebenarnya}`.
+  Without a short form, the running head overflows past the margin in the complete book —
+  this defect does **not** appear when the chapter is compiled on its own.
+- A chapter title must match exactly its row in the "Peta Ketergantungan Bab" table
+  in `main.tex`. The gate checks both; if they differ, fix the table
+  (the chapter manuscript is the reference), not the chapter title.
 
-## Struktur wajib satu bab (target 5.500-6.500 kata badan)
+## Required structure of one chapter (target 5,500-6,500 body words)
 
 ```
 \chapter{Judul Persis Seperti di Tugas}
@@ -153,37 +153,37 @@ kode Python yang benar-benar dijalankan
 \peta{Bab ... pada [kitab] ...}
 ```
 
-Syarat kuantitatif yang diperiksa gerbang mutu:
-- 5.000-7.500 kata badan (target 5.500-6.500). Kurang dari 5.000 ditolak.
-- minimal 5 `\section`, minimal 4 lingkungan teori (`definisi`/`teorema`/`lemma`/
-  `akibat`/`proposisi`), setiap `\section` teori dan contoh diberi `\tingkat{...}`
-  (boleh dilewati hanya untuk `Ringkasan` dan `Latihan`).
-- 2-4 kotak `untukanak`, tepat 1 `untukdosen`, tepat 1 `untukpeneliti`,
-  minimal 3 `\kamus{...}{...}{...}`.
-- minimal 1 `\kertas`, 1 `\peta`, 1 `\begin{lab}`, 1 `\begin{verbatim}`,
+Quantitative requirements checked by the quality gate:
+- 5,000-7,500 body words (target 5,500-6,500). Fewer than 5,000 is rejected.
+- at least 5 `\section`s, at least 4 theory environments (`definisi`/`teorema`/`lemma`/
+  `akibat`/`proposisi`), every theory and example `\section` given a `\tingkat{...}`
+  (may be skipped only for `Ringkasan` and `Latihan`).
+- 2-4 `untukanak` boxes, exactly 1 `untukdosen`, exactly 1 `untukpeneliti`,
+  at least 3 `\kamus{...}{...}{...}`.
+- at least 1 `\kertas`, 1 `\peta`, 1 `\begin{lab}`, 1 `\begin{verbatim}`,
   1 `\begin{ringkasan}`.
-- 8-10 butir latihan; wajib ada (a) satu butir "nilai klaim ini: benar, salah, atau
-  belum cukup bukti", (b) minimal dua butir bukti, (c) minimal dua butir hitung yang
-  bisa diperiksa dengan Python. Sertakan petunjuk singkat untuk 3 butir tersulit.
-- minimal 8 `\index{istilah}` (huruf kecil, ASCII, satu atau dua kata; jangan
-  mengindeks kata umum seperti "bilangan" — indeks harus berguna).
+- 8-10 exercise items; there must be (a) one item "evaluate this claim: true, false, or
+  not enough evidence", (b) at least two proof items, (c) at least two computation items that
+  can be checked with Python. Include brief hints for the 3 hardest items.
+- at least 8 `\index{istilah}` (lowercase, ASCII, one or two words; do not
+  index common words such as "bilangan" — the index must be useful).
 
-## Mutu yang dinilai
+## What is graded for quality
 
-- Setiap definisi dipakai di bab itu. Definisi dari bab sebelumnya dirujuk, bukan diulang.
-- Teorema disertai bukti lengkap, atau pernyataan jujur bahwa bukti dilewati
-  beserta lokasi pembuktiannya. Bukti setengah jadi lebih buruk daripada mengaku.
-- Contoh hitung: angka eksak, langkah antara ditulis, hasil akhir bisa dicek ulang
-  pembaca. Verifikasi dengan Python sebelum menulis hasilnya.
-- Lab komputasi: kode yang benar-benar kamu jalankan, keluaran apa adanya
-  (boleh dipotong dengan "..." bila panjang, tetapi angka yang ditampilkan harus asli).
-- Latihan benar-benar bisa dikerjakan dari isi bab, bukan dari luar bab.
-- Nada: menjelaskan, tidak menggurui; tidak memakai "jelas sekali" atau "mudah".
+- Every definition is used in that chapter. Definitions from earlier chapters are cited, not repeated.
+- Theorems come with a complete proof, or with an honest statement that the proof is skipped
+  together with where it is proved. A half-finished proof is worse than admitting it.
+- Worked examples: exact numbers, intermediate steps written out, a final result the
+  reader can re-check. Verify with Python before writing the result.
+- Computational lab: code you actually ran, output exactly as it came out
+  (it may be cut with "..." if long, but the numbers shown must be genuine).
+- Exercises can really be done from the chapter's content, not from outside it.
+- Tone: explanatory, not preachy; no "jelas sekali" or "mudah".
 
-## Cara uji kompilasi (wajib, sebelum menyatakan selesai)
+## How to test the compilation (required, before declaring done)
 
 ```bash
-cd _buku-ed2/_wrap/chNN   # dari akar repo; direktori milikmu
+cd _buku-ed2/_wrap/chNN   # from the repo root; this is your own directory
 cp ../../chNN.tex .
 cat > w.tex <<'EOF'
 \documentclass[11pt,a4paper]{book}
@@ -229,49 +229,49 @@ makeindex w.idx >/dev/null 2>&1
 pdflatex -interaction=nonstopmode -halt-on-error w.tex
 ```
 
-Ganti `chNN` dengan nomor babmu. **Wajib**: pdflatex selesai tanpa `!` error dan tanpa
-overfull box di atas 10pt. Perbaiki sampai bersih, lalu hapus berkas bantu
+Replace `chNN` with your chapter number. **Required**: pdflatex finishes with no `!` error and no
+overfull box above 10pt. Fix until clean, then delete the auxiliary files
 (`w.aux`, `w.log`, `w.idx`, `w.ilg`, `w.ind`, `w.toc`, `w.out`, `w.pdf`, `w.tex`,
-salinan `chNN.tex`) — direktori `_wrap/chNN/` harus kosong saat kamu selesai.
+and the copy of `chNN.tex`) — the `_wrap/chNN/` directory must be empty when you finish.
 
-## Isi seluruh buku (konteks; jangan menulis bab lain)
+## Contents of the whole book (context; do not write other chapters)
 
-**Bagian I — Fondasi: Bahasa, Himpunan, dan Bilangan**
-1. Bahasa Matematika dan Seni Membuktikan
-2. Himpunan, Relasi, Fungsi, dan Kardinalitas
-3. Aksioma Bilangan Real dan Supremum
-4. Barisan dan Limit
-5. Deret Tak Hingga
+**Part I — Foundations: Language, Sets, and Numbers**
+1. The Language of Mathematics and the Art of Proof
+2. Sets, Relations, Functions, and Cardinality
+3. Axioms of the Real Numbers and Supremum
+4. Sequences and Limits
+5. Infinite Series
 
-**Bagian II — Aljabar Linear**
-6. Ruang Vektor dan Subruang
-7. Basis, Dimensi, dan Transformasi Linear
-8. Sistem Persamaan Linear, Determinan, dan Invers
-9. Nilai Eigen dan Diagonalisasi
-10. Ortogonalitas, SVD, dan Kuadrat Terkecil
+**Part II — Linear Algebra**
+6. Vector Spaces and Subspaces
+7. Basis, Dimension, and Linear Transformations
+8. Linear Systems, Determinants, and Inverses
+9. Eigenvalues and Diagonalization
+10. Orthogonality, SVD, and Least Squares
 
-**Bagian III — Analisis dan Kalkulus**
-11. Kekontinuan dan Kekontinuan Seragam
-12. Turunan: Satu dan Banyak Variabel
-13. Integral Riemann dan Teorema Dasar Kalkulus
-14. Deret Fungsi dan Pertukaran Limit
-15. Integral Lipat, Perubahan Variabel, dan Teorema Lapangan Vektor
+**Part III — Analysis and Calculus**
+11. Continuity and Uniform Continuity
+12. Derivatives: One and Several Variables
+13. Riemann Integrals and the Fundamental Theorem of Calculus
+14. Series of Functions and the Exchange of Limits
+15. Multiple Integrals, Change of Variables, and Vector Field Theorems
 
-**Bagian IV — Peluang, Statistika, dan Aritmetika Komputer**
-16. Peluang dan Peluang Bersyarat
-17. Variabel Acak dan Distribusi
-18. Hukum Bilangan Besar dan Teorema Limit Pusat
-19. Estimasi, Interval Kepercayaan, dan Uji Hipotesis
-20. Aritmetika Floating-Point dan Analisis Galat
+**Part IV — Probability, Statistics, and Computer Arithmetic**
+16. Probability and Conditional Probability
+17. Random Variables and Distributions
+18. The Law of Large Numbers and the Central Limit Theorem
+19. Estimation, Confidence Intervals, and Hypothesis Testing
+20. Floating-Point Arithmetic and Error Analysis
 
-**Bagian V — Optimasi**
-21. Optimasi Konveks dan Dualitas
-22. Pemrograman Linear dan Integer
+**Part V — Optimization**
+21. Convex Optimization and Duality
+22. Linear and Integer Programming
 
-**Bagian VI — Pembelajaran Mesin dan Keamanan**
-23. Jaringan Saraf dan Turunan Balik
-24. Generalisasi, Regularisasi, dan Pelatihan
-25. Evaluasi Model yang Jujur
-26. Metode Formal dengan Lean 4
-27. Adversarial Machine Learning: Serangan dan Pertahanan
-28. Batas Serangan: Gradien Dikaburkan dan Evasi NIDS
+**Part VI — Machine Learning and Security**
+23. Neural Networks and Backpropagation
+24. Generalization, Regularization, and Training
+25. Honest Model Evaluation
+26. Formal Methods with Lean 4
+27. Adversarial Machine Learning: Attacks and Defenses
+28. The Limits of Attack: Obfuscated Gradients and NIDS Evasion
