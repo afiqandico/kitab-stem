@@ -15,7 +15,7 @@ setiap `\section` diberi `\tingkat{dasar|menengah|lanjut}`. Kotak lapisan tidak
 menggantikan prosa utama: isi teorinya tetap lengkap dan formal, sedangkan kotak
 adalah pintu masuk dan catatan untuk pembaca lain.
 
-Sumber PDF ada di `/home/afiq/Downloads/kitab STEM/<folder>/`. Baca sepotong dengan
+Sumber PDF ada di `~/Documents/05_Archive/kitab-stem-sumber-2026-11-07/<folder>/`. Baca sepotong dengan
 `pdftotext -f N -l M "<berkas>" -` (jangan dump seluruh berkas; batasi 2-4 halaman
 per bacaan dan cari dengan `grep -n` pada hasilnya). Python: `source ~/venv/bin/activate`.
 

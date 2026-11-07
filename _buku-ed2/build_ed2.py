@@ -4,13 +4,13 @@
 Pemakaian:  python3 build_ed2.py [check|status|pdf]
   check  -> gerbang mutu per bab (kata, section, lapisan pembaca, latihan, indeks, larangan)
   status -> ringkas berkas bab yang ada
-  pdf    -> pdflatex + makeindex + pdflatex x2, lalu salin ke Downloads
+  pdf    -> pdflatex + makeindex + pdflatex x2, lalu salin ke akar repo
 """
 from __future__ import annotations
 import os, re, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT_PDF = "/home/afiq/Downloads/Kitab-STEM-Kenapa-Mesin-Bisa-Salah.pdf"
+OUT_PDF = os.path.join(os.path.dirname(HERE), "Kitab-STEM-Kenapa-Mesin-Bisa-Salah.pdf")
 CH = [f"ch{i:02d}" for i in range(1, 33)]
 
 BANNED = re.compile(r"\\documentclass|\\usepackage|\\begin\{document\}|"

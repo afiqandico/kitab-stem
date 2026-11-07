@@ -11,7 +11,7 @@ check:           ## gerbang mutu per bab pada naskah asli
 status:          ## bab mana yang sudah ada
 	$(PY) build_ed2.py status
 
-pdf:             ## rakit PDF ke ~/Downloads/Kitab-STEM-Buku-Ed2.pdf
+pdf:             ## rakit PDF ke akar repo (Kitab-STEM-Kenapa-Mesin-Bisa-Salah.pdf)
 	$(PY) build_ed2.py pdf
 
 clean:           ## buang berkas antara LaTeX, sisakan main.pdf

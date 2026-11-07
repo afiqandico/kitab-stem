@@ -5,7 +5,7 @@ Kitab ajar berbahasa Indonesia, **6 bagian, 32 bab**, disusun ulang dari versi 1
 pada Daftar Rujukan. Dua bab yang membedakannya dari rakitan sebelumnya: Bab 16
 (Persamaan Diferensial dan Sistem Dinamik) dan Bab 21 (Regresi dan Statistika Terapan).
 
-Hasil rakitan: `/home/afiq/Downloads/Kitab-STEM-Kenapa-Mesin-Bisa-Salah.pdf` —
+Hasil rakitan: `Kitab-STEM-Kenapa-Mesin-Bisa-Salah.pdf` di akar repo —
 **643 halaman, 3716202 byte (3,54 MB), 206.944 kata badan, 95 gambar, 128 kotak kanal belajar
 (32 × 4), 361 entri indeks (402 kunci `\index`, sebagian tergabung), **217 entri glosarium**
 (seluruh 162 istilah `\kamus` di bab + 55 istilah pendukung), 34 rujukan**,
@@ -101,7 +101,7 @@ source ~/venv/bin/activate
 python3 test_gerbang.py       # uji kerangka: harus "N/N PASS", exit 0
 python3 build_ed2.py status   # bab mana yang sudah ada
 python3 build_ed2.py check    # gerbang per bab; exit 0 = siap, 2 = ada bab kosong, 1 = ada bab cacat
-python3 build_ed2.py pdf      # pdflatex, makeindex, pdflatex x2 -> Downloads
+python3 build_ed2.py pdf      # pdflatex, makeindex, pdflatex x2 -> akar repo
 ```
 
 ## Gerbang mutu yang dipakai `check`

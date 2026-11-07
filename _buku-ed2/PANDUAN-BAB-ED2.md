@@ -183,7 +183,7 @@ Syarat kuantitatif yang diperiksa gerbang mutu:
 ## Cara uji kompilasi (wajib, sebelum menyatakan selesai)
 
 ```bash
-cd "/home/afiq/Downloads/kitab STEM/_buku-ed2/_wrap/chNN"   # direktori milikmu
+cd _buku-ed2/_wrap/chNN   # dari akar repo; direktori milikmu
 cp ../../chNN.tex .
 cat > w.tex <<'EOF'
 \documentclass[11pt,a4paper]{book}
