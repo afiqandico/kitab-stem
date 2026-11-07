@@ -1,0 +1,947 @@
+\chapter[Cryptography: Modular to Quantum]{Cryptography: Modular Integers to the Quantum Threat}
+
+A student submits an assignment containing a cipher of his own making. Each letter is replaced by
+its number, that number is multiplied by three, and the remainder after division by twenty-six is
+used as the new letter. To open the message, he multiplies again by nine. When asked where the
+number nine came from, his answer is nearly right: ``because there is no division here, I multiply
+by the inverse.'' The examiner then replaces the multiplier three with the multiplier four. The
+assignment is never finished. With the multiplier four, the first letter and the fourteenth letter
+produce the same symbol, so two different messages produce an identical cipher.
+
+The question that arises from that failure is the question of this whole chapter: when may a number
+be divided inside remainder arithmetic? The answer is short: exactly when that number shares no
+factor with its modulus. That short answer, pressed hard, yields the three things every browser
+uses: key exchange, public keys, and digital signatures.
+
+The previous three chapters are used explicitly. Chapter 2 gives the language for bijections and
+partitions; here a bijection proves that multiplication by a unit only shuffles the order, and
+partitions count the order. Chapter 3 gives the completeness property of the real numbers, and that
+property does not cross over, because $\mathbb{Z}_n$ has no order compatible with multiplication;
+what replaces it is finiteness, since on a finite set an injective map is automatically surjective.
+Chapter 28 explains why ``secure'' cannot be a theorem without conditions.
+
+One warning applies to every page here. All the moduli are small, chosen so that they can be checked
+by hand and by Python in a matter of seconds. The largest modulus, $1\,050\,589$, is factored by a
+six-line script. Not one cipher here is safe to use.
+
+\begin{untukanak}
+Imagine the wall clock in a classroom. Its hand moves from the number one to twelve, then back to
+one. That clock never shows the number thirteen or twenty. If we turn the hand five steps, then
+five steps again, then five steps again, we do not need to know how much five plus five plus five
+is; we only look at where the hand stops.
+
+Now imagine a combination lock with thirteen positions. We may turn it as far as we like, and only
+the final position is recorded. If we turn three steps, how many times must we turn three steps
+again to get back to where we started? The answer is nine, and that is not a coincidence, but
+because three and thirteen share no factor. Try the same thing with four steps on a twelve-position
+lock: however many times we turn, we will never land on all positions, because four and twelve
+share a factor.
+
+In this chapter we will understand why that small difference decides whether a message can be opened
+again or is lost forever, and why two people who have never met can agree on one secret number in
+front of a third person who hears everything.
+\end{untukanak}
+
+\section{Residue classes: arithmetic that goes around}
+\tingkat{basic}
+
+We begin by fixing the notion of ``remainder'' already used in the first paragraph.
+\index{modular arithmetic}
+Two integers are called congruent modulo $n$ if their difference is divisible by $n$.
+
+\begin{definisi}
+Let $n\ge1$ be an integer. For $a,b\in\mathbb{Z}$ we write $a\equiv b\pmod{n}$ if $n$ divides
+$a-b$. The set of equivalence classes under this relation is called $\mathbb{Z}_n$, and the class
+containing $a$ is written $[a]_n$.
+\end{definisi}
+
+We owe two things: that this really is an equivalence relation, and that the remainder is unique.
+
+\begin{lemma}
+Congruence modulo $n$ is an equivalence relation on $\mathbb{Z}$, and every class $[a]_n$ contains
+exactly one representative in $\{0,1,\dots,n-1\}$, so that $|\mathbb{Z}_n|=n$.
+\end{lemma}
+
+\begin{proof}
+Reflexive: $n$ divides $0$. Symmetric: if $n\mid(a-b)$ then $n\mid(b-a)$. Transitive: if
+$n\mid(a-b)$ and $n\mid(b-c)$ then $n\mid(a-c)$ because $(a-c)=(a-b)+(b-c)$. For uniqueness, take
+$a$ and consider $S=\{a-qn\ge0: q\in\mathbb{Z}\}$. That set is nonempty by the Archimedean property
+(Chapter 3), so it has a least element $r$. If $r\ge n$ then $r-n\in S$ is smaller than $r$, a
+contradiction; so $0\le r<n$. If $r'$ also satisfies $0\le r'<n$, then $r-r'$ is a multiple of $n$
+whose value lies between $-(n-1)$ and $n-1$, hence must be zero.
+\end{proof}
+
+Operations on $\mathbb{Z}_n$ are defined through their representatives, and a definition of this
+kind is dangerous: if the result depends on the representative, the operation is not a function. The
+next lemma closes that hole with one line of algebra.
+
+\begin{lemma}
+If $a\equiv a'$ and $b\equiv b'$ modulo $n$, then $a+b\equiv a'+b'$ and $ab\equiv a'b'$ modulo $n$.
+\end{lemma}
+
+\begin{proof}
+Write $a'=a+kn$ and $b'=b+ln$. Then $a'+b'=(a+b)+(k+l)n$ and $a'b'=ab+(al+bk+kln)n$.
+\end{proof}
+
+Addition and multiplication are therefore well defined, and both inherit associativity and
+distributivity from $\mathbb{Z}$. What is lost is order: there is no way to put a sign ``$<$'' on
+$\mathbb{Z}_n$ such that $a<b$ implies $a+c<b+c$ and $ac<bc$ for positive $c$. The supremum tool of
+Chapter 3 stops at the entrance, and what works inside is counting.
+
+Division need not exist. The class $[3]_{26}$ has an inverse, namely $[9]_{26}$, since
+$3\cdot9=27\equiv1$. The class $[2]_{26}$ has none: every multiple of two is even, whereas $27$ is
+odd, so $2b\equiv1$ has no solution. Consequently multiplication by two modulo twenty-six is not a
+bijection, because $[0]$ and $[13]$ both go to $[0]$.
+
+\kamus{residue class}{kelas sisa}{all the numbers that stop at the same clock position, like three
+in the morning and three in the afternoon}
+
+\begin{definisi}
+A class $[a]_n$ is called a unit if there is $[b]_n$ with $[a]_n[b]_n=[1]_n$. The set of all units
+modulo $n$ is written $U(n)$, and its number of members is written $\varphi(n)$.
+\end{definisi}
+
+For $n=26$ there are twelve units, namely the classes of $1,3,5,7,9,11,15,17,19,21,23,25$. The
+program in the lab counts them again; that number reappears in part three under a different name.
+
+\section{Common factors, Euclid, and when division exists}
+\tingkat{basic}
+
+\index{greatest common divisor}
+The question ``when does $[a]_n$ have an inverse'' turns out to be a question about the greatest
+common factor, which has an algorithm more than two thousand years old.
+
+\begin{definisi}
+For $a,b\in\mathbb{Z}$ not both zero, $\gcd(a,b)$ is the largest natural number that divides $a$ and
+$b$.
+\end{definisi}
+
+The key to Euclid's algorithm is one equality of sets: the common divisors of $a$ and $b$ are exactly
+the common divisors of $b$ and $a-qb$.
+
+\begin{lemma}
+For every $q\in\mathbb{Z}$, $\gcd(a,b)=\gcd(b,a-qb)$.
+\end{lemma}
+
+\begin{proof}
+If $d$ divides $a$ and $b$, then $d$ divides $a-qb$. Conversely, if $d$ divides $b$ and $a-qb$, then
+$d$ divides $(a-qb)+qb=a$. So the two pairs have the same set of common divisors, hence the same
+greatest one.
+\end{proof}
+
+Replacing $(a,b)$ by $(b,a\bmod b)$ therefore does not change the answer but shrinks $b$, and the
+process stops because natural numbers do not shrink without bound.
+
+\begin{teorema}[Bezout]
+For $a,b$ not both zero, there are $x,y\in\mathbb{Z}$ with $ax+by=\gcd(a,b)$.
+\end{teorema}
+
+\begin{proof}
+Consider $S=\{ax+by>0: x,y\in\mathbb{Z}\}$. This set is nonempty because it contains $|a|$ or $|b|$,
+and every nonempty subset of the natural numbers has a least element; this is the discrete form of
+the infimum property in Chapter 3. Let $d=ax_0+by_0$ be that least element. Divide $a$ by $d$:
+$a=qd+r$ with $0\le r<d$. Then $r=a(1-qx_0)+b(-qy_0)$, so $r\in S$ if $r>0$. Since $d$ is least,
+$r>0$ is impossible; so $r=0$ and $d\mid a$, and in the same way $d\mid b$. Hence $d\le\gcd(a,b)$.
+Conversely $\gcd(a,b)$ divides every expression $ax+by$, in particular $d$, so that
+$\gcd(a,b)\le d$.
+\end{proof}
+
+\begin{teorema}
+The class $[a]_n$ is a unit if and only if $\gcd(a,n)=1$.
+\end{teorema}
+
+\begin{proof}
+If $[a]_n$ is a unit, there is $b$ with $ab\equiv1$, that is $ab-1=kn$. Every common divisor of $a$
+and $n$ divides $ab$ and $kn$, hence divides $1$; so $\gcd(a,n)=1$. Conversely, if $\gcd(a,n)=1$,
+Bezout's theorem gives $ax+ny=1$. Read modulo $n$, that equality says $ax\equiv1$, so $[x]_n$ is the
+inverse of $[a]_n$.
+\end{proof}
+
+That proof also gives a recipe: run Euclid, then build the combination backward. For $a=1071$ and
+$b=462$ the steps are three divisions,
+\[
+1071=2\cdot462+147,\qquad 462=3\cdot147+21,\qquad 147=7\cdot21+0,
+\]
+so that $\gcd=21$. Building backward gives $21=1071\cdot(-3)+462\cdot7$, and since the common factor
+is $21$ rather than $1$, the class $[462]_{1071}$ is not a unit.
+
+How long does this algorithm run? Every two steps the remainder at least halves, so the number of
+divisions is proportional to the number of digits. The sharp bound was given by Lam\'e in 1844: no
+more than $\log_\phi(b)+1$ divisions with $\phi=(1+\sqrt5)/2$, and the pairs that attain it are
+consecutive Fibonacci pairs. The pair $(F_{47},F_{46})=(2\,971\,215\,073,\ 1\,836\,311\,903)$ needs
+$45$ divisions, whereas $\log_\phi(F_{46})=44.33$. For two thousand random thirty-two-bit pairs, the
+average is $18.75$ with maximum $32$.
+
+\kamus{modular inverse}{invers modular}{the number that, multiplied by the original number, gives
+remainder one, like the ``undo'' button on a cash register}
+
+\section{Fermat's little theorem and Euler}
+\tingkat{intermediate}
+
+This chapter needs one fact about powers, and that fact is born from counting: multiply every unit by
+one fixed unit; the result is the same list in a different order.
+
+\begin{lemma}
+If $\gcd(a,n)=1$, the map $[x]_n\mapsto[ax]_n$ is a bijection from $U(n)$ to $U(n)$.
+\end{lemma}
+
+\begin{proof}
+The result lies in $U(n)$ because the product of two units is a unit: if $xx'\equiv1$ and
+$yy'\equiv1$ then $(xy)(x'y')\equiv1$. The map is injective: if $ax\equiv ay$, multiply both sides by
+the inverse of $a$, which exists by the unit theorem in part two. The set is finite, and on a finite
+set an injective map from the set to itself is automatically surjective (Chapter 2). So it is a
+bijection.
+\end{proof}
+
+\begin{teorema}[Euler]
+If $\gcd(a,n)=1$, then $a^{\varphi(n)}\equiv1\pmod n$.
+\end{teorema}
+
+\begin{proof}
+Let $u_1,\dots,u_k$ be all the units modulo $n$, with $k=\varphi(n)$, and $P=u_1\cdots u_k$. By the
+lemma above, the list $au_1,\dots,au_k$ contains every unit exactly once, so
+\[
+a^kP\equiv(au_1)(au_2)\cdots(au_k)\equiv u_1u_2\cdots u_k=P\pmod n .
+\]
+Since $P$ is itself a unit, it has an inverse, and both sides may be multiplied by it. The result is
+$a^k\equiv1$.
+\end{proof}
+
+\begin{akibat}[Fermat's little]
+If $p$ is prime and $p\nmid a$, then $a^{p-1}\equiv1\pmod p$. For all $a$ we have
+$a^p\equiv a\pmod p$.
+\end{akibat}
+
+The second form follows from the first: if $p\mid a$ both sides are zero, if not, multiply
+$a^{p-1}\equiv1$ by $a$. The name ``little'' distinguishes it from Fermat's last theorem, which is
+far harder.
+
+The number twelve from part one now has two names: $\varphi(26)=12$, and $3^{12}\equiv1\pmod{26}$;
+the program checks that $5^{12}$ and $7^{12}$ are also $\equiv1$. Large powers can therefore be
+trimmed: for $7^{222}\bmod13$ write $222=12\cdot18+6$, so that $7^{222}\equiv7^6\equiv9\cdot10\equiv12$
+because $7^2\equiv10$ and $7^4\equiv9$.
+
+The converse does not hold, and that matters for the honesty of this chapter. The number
+$561=3\cdot11\cdot17$ is not prime, yet $a^{560}\equiv1\pmod{561}$ for every $a$ that shares no
+factor with it; the program checks all $a$ without finding a counterexample. Numbers of this kind are
+called Carmichael, and for that reason practical primality tests use Miller--Rabin.
+
+\kamus{Euler totient function}{fungsi phi}{the number of positions on a combination lock that can
+reach every other position, that is the positions that share no factor with the number of positions}
+
+\section{Cyclic groups, order, and primitive roots}
+\tingkat{intermediate}
+
+If we multiply one unit repeatedly, the result goes around and finally returns to one. The useful
+question is how long that circuit is.
+
+\begin{definisi}
+For $\gcd(a,n)=1$, the order of $a$ modulo $n$ is the least natural number $k$ with
+$a^k\equiv1\pmod n$, written $\operatorname{ord}_n(a)$.
+\end{definisi}
+
+An order always exists: the sequence $a^0,a^1,\dots$ has only $\varphi(n)$ distinct values, so two of
+them are equal and $a^{i-j}\equiv1$ for some $i>j$. That bound can be sharpened: the order divides
+$\varphi(n)$.
+
+\begin{lemma}
+If $\gcd(a,n)=1$, then $\operatorname{ord}_n(a)$ divides $\varphi(n)$.
+\end{lemma}
+
+\begin{proof}
+Let $k=\operatorname{ord}_n(a)$ and $H=\{a^0,\dots,a^{k-1}\}$, whose members are all distinct, so
+$|H|=k$. For every unit $x$, the set $xH=\{xa^0,\dots,xa^{k-1}\}$ also has $k$ members, because
+multiplication by a unit is a bijection. The sets $xH$ form a partition of $U(n)$: two of them are
+equal or disjoint, since $xH$ and $yH$ intersect if and only if $y^{-1}x\in H$ (Chapter 2). So
+$\varphi(n)$ is $k$ times the number of parts.
+\end{proof}
+
+\begin{definisi}
+If $\operatorname{ord}_n(g)=\varphi(n)$, then $g$ is called a primitive root modulo $n$. For a unit
+$h$, the number $k$ with $g^k\equiv h$ is called the discrete logarithm of $h$ to the base $g$.
+\end{definisi}
+
+Modulo $13$, $2,6,7,11$ have full order $12$ and are therefore primitive roots, whereas $3$ and $9$
+have order $3$, $5$ and $8$ have order $4$, $4$ and $10$ have order $6$, and $12$ has order $2$. All
+those numbers divide $12$.
+
+For $2$, the circuit visits all twelve nonzero classes before returning: $2,4,8,3,6,12$, then
+$11,9,5,10,7,1$. Figure~\ref{fig:jam} shows it as a clock with thirteen positions. For $3$, the
+circuit is only $3,9,1$ and then repeats.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\foreach \k in {0,...,12}
+  \node[circle,draw,inner sep=1pt,minimum size=6mm,font=\scriptsize] (n\k)
+    at ({90-360*\k/13}:2.1cm) {\k};
+\node[font=\footnotesize,align=center] at (0,0) {multiply\\ by 2};
+\foreach \a/\b in {1/2,2/4,4/8,8/3,3/6,6/12,12/11,11/9,9/5,5/10,10/7,7/1}
+  \draw[-{Latex[length=1.5mm]},semithick] (n\a) to[bend left=18] (n\b);
+\end{tikzpicture}
+\caption{Multiplication by $2$ modulo $13$ goes around through all twelve nonzero classes before
+returning to $1$. The length of that circuit is the order, and full order means $2$ is a primitive
+root modulo $13$.}
+\label{fig:jam}
+\end{figure}
+
+The existence of a primitive root for every prime $p$ is Gauss's theorem, and we skip its proof. What
+must be carried away: for a prime $p$, the units are a single circuit of $p-1$ positions, and every
+unit is a power of one primitive root. If $h=g^k$, knowing $k$ means knowing $h$, but not
+conversely; that asymmetry is the raw material of public-key cryptography.
+
+\kamus{primitive root}{akar primitif}{one starting position that, if turned continuously, passes
+through every other position before returning}
+
+\section{Diffie-Hellman key exchange}
+\tingkat{intermediate}
+
+\index{diffie-hellman}
+Two people want to agree on one secret number, and the only channel they have is overheard by a third
+party. In 1976 Diffie and Hellman showed that this is possible, and the mechanism uses only two
+formulas.
+
+They first agree on a prime $p$ and a primitive root $g$ modulo $p$; both may be announced. Alice
+chooses $a$ secretly and sends $A=g^a\bmod p$. Bob chooses $b$ secretly and sends $B=g^b\bmod p$.
+Alice computes $K=B^a\bmod p$, Bob computes $K=A^b\bmod p$. Both obtain the same number, because
+\[
+B^a\equiv(g^b)^a\equiv g^{ab}\equiv(g^a)^b\equiv A^b\pmod p .
+\]
+What the eavesdropper sees is only $p,g,A,B$. To obtain $K$ he needs $g^{ab}$, and the easiest known
+way is to find $a$ or $b$, that is to solve the discrete logarithm.
+
+\begin{bacakeras}
+Read it as a dialogue for two voices, alternating, one line per breath.
+
+First voice: ``Agree first, announce two.''
+Second voice: ``Keep your own, never say it.''
+First voice: ``Raise, take the remainder, send the result.''
+Second voice: ``Receive the delivery, raise it again.''
+First voice: ``The last remainder, that is the key.''
+Together: ``Two directions, one number, never crossed.''
+
+Repeat three times, faster and faster. The line that makes the tongue stumble is the step not yet
+understood, not the line that needs to be memorized harder. Once it flows, close the book and name
+four things in order: what is announced, what is kept, what is sent, what is computed. Naming the
+secret number first cancels the whole game.
+
+The line repeated three times aloud: ``what is sent is the power, what is kept is the exponent.''
+\end{bacakeras}
+
+The concrete numbers, all checked by the program in the lab part: $p=10\,007$, $g=5$ has order
+$10\,006$ and is therefore a primitive root, $a=1234$, $b=5678$. Then $A=5^{1234}\bmod p=4873$ and
+$B=5^{5678}\bmod p=3189$. Alice computes $3189^{1234}\bmod p=5674$; Bob computes
+$4873^{5678}\bmod p=5674$. Their shared key is $5674$, and that number never crosses the channel.
+Figure~\ref{fig:dh} shows the flow together with what the eavesdropper hears.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize,
+  kotak/.style={draw,rounded corners=2pt,align=left,inner sep=4pt,text width=4.4cm}]
+\node[kotak] (a) {\textbf{Alice}\\ $a=1234$ secret\\ $A=5^{1234}\bmod p=4873$};
+\node[kotak,right=3.4cm of a] (b) {\textbf{Bob}\\ $b=5678$ secret\\
+  $B=5^{5678}\bmod p=3189$};
+\node[kotak,below=1.3cm of $(a)!0.5!(b)$, text width=9.2cm, fill=black!4]
+  (e) {\textbf{Eavesdropper} hears $p=10\,007$, $g=5$, $A=4873$, $B=3189$, then intends
+  to compute $K=A^{b}$ or $K=B^{a}$; for that it must find $a$ or $b$.};
+\draw[-{Latex}] ([yshift=3mm]a.east) -- node[above,font=\scriptsize]{$A$}
+  ([yshift=3mm]b.west);
+\draw[-{Latex}] ([yshift=-3mm]b.west) -- node[below,font=\scriptsize]{$B$}
+  ([yshift=-3mm]a.east);
+\draw[-{Latex},dashed] (e.north -| a.south) -- (a.south);
+\draw[-{Latex},dashed] (e.north -| b.south) -- (b.south);
+\end{tikzpicture}
+\caption{The flow of Diffie-Hellman key exchange on the numerical example in the text. The values $A$
+and $B$ cross the open channel; what does not cross are the exponents $a$ and $b$, and it is exactly
+those two that the eavesdropper needs.}
+\label{fig:dh}
+\end{figure}
+
+That equality only states that the protocol is consistent, not that it is secure. All that can be
+proved is a conditional statement: if the discrete logarithm modulo $p$ is hard, then computing
+$g^{ab}$ from $A$ and $B$ is also hard. That condition is not a theorem; there are groups in which
+the discrete logarithm is easy, so security is a property of particular groups.
+
+\begin{tangan}
+Materials: yellow watercolor, one secret color per person (red and blue), four plastic cups, one
+spoon, two sheets of white paper.
+
+First step, in front of the table: pour one spoonful of yellow paint into each cup. The yellow plays
+the role of the prime and the base, and both are announced. Second step, behind your back: each
+person adds two spoonfuls of their secret color, stirs, then hands over the mixed cup. Third step:
+each adds two spoonfuls of their own secret color to the cup just received, stirs, then puts one drop
+on the paper.
+
+What must be visible: the two drops are the same color, even though neither of the two people ever
+handed over their secret color. The first mixed cup held by the third person cannot be separated
+again; he sees only two different dull colors.
+\end{tangan}
+
+Two parameter traps deserve mention. First, $g$ must generate a large subgroup of prime order: the
+modulus $10\,007$ is a safe prime with $p-1=2\cdot5003$, and the program records that
+$5^{5003}\bmod p=10\,006$ has order only $2$. If Alice uses that base, their shared key is only $1$
+or $10\,006$, and the eavesdropper need not compute any logarithm at all. Second, this protocol
+names no one's identity, so an eavesdropper can stand in the middle and read everything.
+Figure~\ref{fig:dh} depicts only a passive eavesdropper.
+
+About size: the modulus $10\,007$ can be broken in less than one second by the index calculus
+algorithm, and we use it because the powers fit on one page. Real practice uses $2048$ bits or more,
+and even that is a time limit, not a guarantee.
+
+\begin{untukanak}
+Imagine two people who want to agree on one secret color, even though all their conversation is
+overheard. They first agree on a base color, say yellow. Alice chooses her secret color, mixes it with
+yellow, then sends the mixture. Bob does the same with his own secret color. Now each mixes the color
+received with their own secret color. Both get the same color, and the eavesdropper sees only two
+mixtures that cannot be separated again.
+
+That separation is what is considered hard: mixing colors is easy, separating a mixture without one
+of its ingredients is considered not. Cryptography replaces colors with numbers and ``considered not
+easy'' with a mathematical sentence.
+
+In this chapter we will find out how numbers replace colors, and why the security depends on one
+``considered'' sentence that nobody has ever proved.
+\end{untukanak}
+
+\section{RSA: from key to message and back}
+\tingkat{intermediate}
+
+\index{rsa}
+Diffie-Hellman agrees on a key, but does not send a message. A year later Rivest, Shamir, and
+Adleman showed that the same property can be used for two different keys: one to lock, one to open.
+
+Choose two large primes $p$ and $q$, compute $n=pq$ and $\varphi(n)=(p-1)(q-1)$. Choose $e$ with
+$\gcd(e,\varphi(n))=1$; the unit theorem gives its inverse $d$ modulo $\varphi(n)$. The public key is
+$(n,e)$, the secret key $d$. For a message $0\le m<n$, the cipher is $c=m^e\bmod n$ and its opening is
+$m=c^d\bmod n$.
+
+Why does opening return $m$? Because $ed=1+k\varphi(n)$, so that
+$c^d=m^{ed}=m\,(m^{\varphi(n)})^k$. If $\gcd(m,n)=1$, Euler's theorem makes that bracket one. The
+remaining case explains why $n$ must be the product of two distinct primes.
+
+\begin{teorema}
+Let $n=pq$ with $p,q$ distinct primes, $ed\equiv1\pmod{(p-1)(q-1)}$, and $0\le m<n$. Then
+$m^{ed}\equiv m\pmod n$.
+\end{teorema}
+
+\begin{proof}
+If $p\nmid m$, Fermat's little theorem gives $m^{p-1}\equiv1\pmod p$, so that
+$m^{ed}=m\,(m^{p-1})^{k(q-1)}\equiv m\pmod p$. If $p\mid m$, both sides are congruent to zero modulo
+$p$. So the congruence holds modulo $p$ for every $m$, and for the same reason modulo $q$. Since $p$
+and $q$ both divide $m^{ed}-m$ and $\gcd(p,q)=1$, their product also divides that number: if
+$m^{ed}-m=pt$ and $q\mid pt$ with $q$ prime and $q\nmid p$, then $q\mid t$, so that $pq\mid m^{ed}-m$.
+\end{proof}
+
+The numerical example is small and entirely checked by the program. Take $p=1019$, $q=1031$, then
+$n=1\,050\,589$ and $\varphi(n)=1018\cdot1030=1\,048\,540$. Choose $e=65\,537$; Euclid gives
+$d=60\,493$, and indeed $65\,537\cdot60\,493=3\,964\,529\,741=1+3781\cdot1\,048\,540$. The message
+$m=424\,242$ produces the cipher $c=552\,241$, and $c^d\bmod n$ returns $424\,242$. That modulus is
+only twenty-one bits and is factored by a six-line script.
+
+Plain RSA, the formula above with no addition of any kind, is not secure; its three reasons can be
+shown with the same modulus. First, it is deterministic: the same message always produces the same
+cipher, so that repeated messages can be recognized. Second, it is multiplicative:
+$E(m_1)E(m_2)\equiv E(m_1m_2)$, and the program shows
+$E(1234)\cdot E(567)\bmod n=551\,173$ opened to $699\,678$, exactly $1234\cdot567$. Third, small
+messages are not protected: with $e=3$ and $m=42$, the cipher is $74\,088$, coincidentally equal to
+$42^3$ because the result has not yet passed $n$, so that an ordinary cube root recovers the message.
+
+All three are closed by padding: the message receives a random addition before exponentiation, so
+that the result is full length, always different, and no longer multiplicative. RSA-OAEP, the
+standard used today, has a security proof against chosen-ciphertext attacks in the random oracle
+model under the assumption that RSA holds. In practice RSA wraps a $256$-bit symmetric key and then
+the data is encrypted with AES; this pattern is called hybrid encryption, because RSA is slow: its
+time is proportional to the cube of the modulus length.
+
+\kamus{padding}{bantalan}{extra contents put into a package before shipping, like bubble wrap that
+makes every package a different shape and size}
+
+\section{Hash functions, MACs, and signatures}
+\tingkat{intermediate}
+
+\index{hash function}
+Encryption hides the contents. Sometimes what is needed is not hiding but summarizing: one short
+fingerprint that changes when the contents change.
+
+\begin{definisi}
+A cryptographic hash function maps a message of any length to an output of fixed size. It must be
+preimage resistant (from $h$, it is hard to find $m$ with $H(m)=h$), second-preimage resistant (from
+$m$, it is hard to find $m'\neq m$ with $H(m')=H(m)$), and collision resistant (it is hard to find a
+distinct pair $m,m'$ with the same hash).
+\end{definisi}
+
+Those three properties are not equivalent; the weakest is the one most often misunderstood. Collision
+resistance is limited by birthdays: if the output has $N$ values, a collision appears after about
+$1.177\sqrt N$ trials, not after $N$; for $128$ bits that number is $2.17\cdot10^{19}$ and for $64$
+bits $5.06\cdot10^{9}$. The program in the lab tests that prediction on SHA-256 truncated to $16$
+bits: an average of $362.7$ samples against a prediction of $320.8$, with a spread from $100$ to
+$743$. So a hash with an $n$-bit output gives only $n/2$ bits of collision resistance.
+
+A MAC adds a key to the hash: two parties who share a key can check that a message came from the
+other party and did not change, because without the key there is no way to compute the correct tag.
+The limit: a MAC is useful only between two parties who both hold the key, so that a third party
+cannot be a witness.
+
+A signature uses a key pair in the opposite direction: the signer uses the secret key, the verifier
+uses the public key. In RSA, the signature on $m$ is $s=H(m)^d\bmod n$, and verification compares
+$s^e\bmod n$ with $H(m)$. The need for $H$ is not a matter of convenience: without a hash, RSA
+signatures are multiplicative like its encryption, so that from the signatures of two documents
+someone can assemble a valid signature for their product without holding the secret key. The hash
+breaks that property, because $H(m_1m_2)$ is unrelated to $H(m_1)H(m_2)$. The security requirement is
+resistance to existential forgery under chosen-message attack, and once again that is an assumption.
+
+\kamus{digital signature}{tanda tangan digital}{a wax seal on a document that anyone can check but
+only the holder of the stamp can make}
+
+\section{What the security model actually assumes}
+\tingkat{advanced}
+
+Every sentence with the word ``hard'' in this chapter is a promise about what the known algorithms
+cannot do, not a statement about what is impossible.
+
+\begin{definisi}
+A function $f$ is called one-way if there is a polynomial algorithm to compute $f(x)$ from $x$, but
+for random $y$ in the range, every polynomial algorithm fails to find $x$ with $f(x)=y$ except with
+negligible probability.
+\end{definisi}
+
+The direction is depicted in Figure~\ref{fig:tangga-satu-arah}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small,
+  kotak/.style={draw,rounded corners=2pt,align=center,inner sep=5pt,
+    minimum height=0.95cm}]
+  \node[kotak,draw=layerbrown] (pq) at (0,0) {$p$, $q$ random primes};
+  \node[kotak,draw=ink] (n) at (4.0,0) {$n=p\,q$};
+  \node[kotak,draw=layergrey,dashed] (s) at (8.2,0) {attacker};
+  \draw[-{Latex},very thick,layerjade] (pq) -- (n);
+  \node[font=\scriptsize,layerjade,above] at (2.0,0.06)
+    {multiply: easy, polynomial};
+  \draw[-{Latex},thick,layergrey] (n) -- (s);
+  \node[font=\scriptsize,layergrey,above] at (6.1,0.06) {sees $n$};
+  \draw[layerplum,thick,dashed] (n.south) -- (4.0,-1.35);
+  \draw[layerplum,thick,dashed] (0,-1.35) -- (pq.south);
+  \draw[-{Latex},layerplum,thick,dashed] (4.0,-1.35) -- (0,-1.35);
+  \draw[layerplum,very thick] (1.86,-1.12)--(1.86,-1.58);
+  \draw[layerplum,very thick] (2.04,-1.12)--(2.04,-1.58);
+  \node[font=\scriptsize,layerplum,below] at (2.0,-1.62)
+    {factor: hard, no known polynomial algorithm};
+\end{tikzpicture}
+\caption{Two directions that are not equally expensive. From $p$ and $q$ to $n$ one multiplication
+suffices, whereas from $n$ back to $p$ and $q$ is a problem that to this day has no known polynomial
+algorithm; that gap is what RSA and Diffie-Hellman use. The bar on the return arrow marks a direction
+assumed closed, not a direction already proved impossible.}
+\label{fig:tangga-satu-arah}
+\end{figure}
+
+That definition does not name a single function, and that is not an oversight. To this day there is
+no proof that one-way functions exist; their existence would imply $P\neq NP$, which is also still
+open. Public-key cryptography therefore stands on a conjecture, and the chain ends in an assumption
+that does not turn into a theorem by being used for a long time.
+
+\index{factoring assumption}
+The factoring assumption says: for $n$ the product of two random primes of size $k$ bits, there is no
+polynomial algorithm in $k$ that factors it. The best known algorithm, the number field sieve, runs
+in time $L_n[1/3,1.923]$, which grows subexponentially. The number RSA-250, $250$ digits long or
+about $829$ bits, was factored in 2020 at a cost of about $2\,700$ core-years.
+
+The strength equivalences recorded by NIST in SP 800-57 are useful as a rough map.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Strength (bits) & RSA or DH modulus (bits) & Symmetric cipher \\
+\midrule
+112 & 2048 & 3DES three keys \\
+128 & 3072 & AES-128 \\
+192 & 7680 & AES-192 \\
+256 & 15360 & AES-256 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The numbers in the middle column are cost estimates for the best algorithm at the time the table was
+compiled, so a table of this kind has an expiry date.
+
+Formal security models close the gap in the rhetoric with a game: the challenger generates keys,
+answers encryption queries, then chooses two messages and sends the encryption of one of them; the
+scheme is secure if the attacker cannot guess which one far above the chance of one half. Security is
+proved as a reduction: an attacker who wins is turned into an algorithm that factors $n$, so that all
+the doubt moves to one place that is narrow but does not disappear.
+
+\section{Shor, and what collapses with it}
+\tingkat{advanced}
+
+\index{Shor's algorithm}
+The whole building above depends on one difficulty, and in 1994 Peter Shor showed that a quantum
+computer solves it in polynomial time.
+
+The idea splits in two, and the first part is entirely classical. To factor $n$, choose $a$ with
+$\gcd(a,n)=1$ and compute $r=\operatorname{ord}_n(a)$. If $r$ is odd, repeat with another $a$. If $r$
+is even and $a^{r/2}\not\equiv-1\pmod n$, then $\gcd(a^{r/2}-1,n)$ is a proper factor of $n$: because
+$a^r\equiv1$, the number $a^{r/2}$ is a square root of one that is not $\pm1$, and a root of that kind
+appears only when the modulus splits. The rest of the work is finding the order, and this is the
+quantum part.
+
+The classical part alone is not enough. For $n=1019\cdot1031$ we tried $2\,996$ random units and only
+$319$, about $10.6$ percent, satisfied the condition and so gave a factor; success therefore comes
+from repeating with different $a$. What is missing without a quantum computer is a fast way to find
+$r$: no known classical algorithm runs in polynomial time in $\log n$.
+
+A quantum computer finds $r$ with the quantum Fourier transform, and that is where the speedup comes
+from. The consequence is not only that RSA collapses: Shor's algorithm also solves the discrete
+logarithm, both over $\mathbb{Z}_p$ and over elliptic curves, so that Diffie-Hellman, DSA, ECDH, and
+ECDSA collapse too, including the elliptic curves with the shortest moduli because they are immune to
+index calculus.
+
+What does not collapse is symmetric ciphers and hash functions. Grover gives a quadratic speedup in
+key search, so that AES-128 drops from $2^{128}$ to about $2^{64}$ quantum operations, whereas
+AES-256 stays at about $2^{128}$; the collision resistance of hashes is practically unchanged. The
+answer for symmetric data is therefore simple: use keys twice as long.
+
+Two things that are often mixed together in the news must be distinguished. Shor proves that the
+factorization can be computed in polynomial time on a quantum computer without error; building the
+machine is another technical matter. The estimate of Gidney and Ekera (2021) mentions about twenty
+million physical qubits and eight hours for a $2048$-bit modulus, almost all of it for error
+correction. That number has dropped by several orders of magnitude in one decade, but no machine has
+come close. What applies now is the pattern ``harvest now, open later'': today's messages can be
+stored and opened when the machine exists.
+
+\section{Post-quantum cryptography: lattices and Kyber}
+\tingkat{advanced}
+
+\index{post-quantum cryptography}
+If factorization falls, what is needed is another problem that does not fall with it. The strongest
+candidates come from lattices, that is sets of points generated by integer combinations of a few
+vectors.
+
+\index{lattice}
+\emph{Learning with errors} sets up the problem like this. Given a random $m\times n$ matrix $A$ over
+$\mathbb{Z}_q$ and a vector $b=As+e\bmod q$, with $s$ secret and $e$ a small error, find $s$. Without
+$e$ this is only a system of linear equations solved by Gaussian elimination (Chapter 8); with $e$
+small but not zero, the system is almost consistent and finding $s$ is considered hard. Regev's
+reduction (2005) adds to its appeal: attacking the random scheme is as hard as solving the worst case
+of the lattice problem, not an average case chosen by the attacker.
+
+Kyber, which NIST standardized in August 2024 as ML-KEM in FIPS 203, is a module variant of that idea
+with $n=256$, $k=3$, and $q=3329$. Its public key is $1\,184$ bytes and its ciphertext $1\,088$
+bytes, about $37$ and $34$ times the $32$-byte symmetric key it wraps, and that space cost is real.
+Post-quantum signatures have a similar story: ML-DSA (Dilithium) is also lattice-based, whereas
+SLH-DSA (SPHINCS+) takes the conservative hash-based road.
+
+An honesty that is obligatory here: the lattice assumptions are much younger than the factoring
+assumption. Factorization has been attacked since Gauss; LWE is only twenty years old, and the
+history of cryptography is full of schemes that looked strong and then broke after ten years of
+analysis. The recommended transition is therefore not replacement but hybrid: the session key is
+formed from Kyber and from Diffie-Hellman exchange at once.
+
+\section{When output becomes an oracle: padding and models}
+\tingkat{advanced}
+
+\index{padding oracle}
+There is one family of attacks that does not attack the mathematics, but the way the program answers.
+Bleichenbacher in 1998 showed that RSA with PKCS\#1 v1.5 padding can be opened completely if the
+server answers differently for ``bad padding'' and ``good padding but wrong contents''. Every answer
+leaks one bit about the message, and with a few thousand queries the message is read. The mathematics
+of RSA is not violated; what is violated is the assumption that the attacker only sees the
+ciphertext.
+
+The threat pattern is the same as the one discussed in Chapter 29 and Chapter 30. A machine learning
+model that returns probabilities, or error messages that differ, is an oracle; an attacker who may
+ask many times uses those small differences to infer what he should not know, including whether an
+example is in the training data. Chapter 30 adds a warning that applies in both worlds: a measurement
+that seems to improve is not necessarily improving because the defense works.
+
+The defensive lesson is therefore the same. Output must be made uniform: one error message for all
+failures, response times that do not depend on secrets, refusals that do not distinguish the cause.
+For models, this means limiting the number of queries and disguising scores. All of that reduces
+leakage; it does not remove it.
+
+\begin{tantangan}
+A library uses AES-GCM with the same key $K$ for two messages, but its nonce counter is reset so that
+the same $96$-bit nonce is used twice. The attacker holds both ciphers, both tags, and the contents of
+the first message, namely a login page that is fixed. Show how he obtains the authentication key $H$,
+then why $H$ is enough to forge a tag for a message of his own making without knowing $K$.
+
+Hint 1: the same nonce gives the same stream key, so that the difference of the two ciphers removes
+that key.
+
+Hint 2: the tag is a polynomial in $H$ with known coefficients; two tags with the same nonce give two
+equations for one $H$, and their difference becomes a polynomial whose roots can be computed.
+
+If you get stuck, go back to the section ``Hash functions, MACs, and signatures'' and reread the
+paragraph about MACs.
+\end{tantangan}
+
+\section{Worked example}
+\tingkat{intermediate}
+
+We compute one inverse by hand, because the backward steps are where mistakes happen most often. Take
+$\varphi(n)=1\,048\,540$ from the toy modulus in part six and $e=65\,537$. Forward Euclid gives
+\[
+1\,048\,540=15\cdot65\,537+65\,485,\qquad 65\,537=1\cdot65\,485+52,
+\]
+\[
+65\,485=1259\cdot52+17,\qquad 52=3\cdot17+1,\qquad 17=17\cdot1+0 .
+\]
+The last nonzero remainder is $1$, so that $\gcd=1$ and the inverse exists. Build backward starting
+from the remainder one:
+\[
+1=52-3\cdot17=52-3(65\,485-1259\cdot52)=3778\cdot52-3\cdot65\,485 .
+\]
+Continue with $52=65\,537-65\,485$ and $65\,485=1\,048\,540-15\cdot65\,537$:
+\[
+1=3778\cdot65\,537-3781\cdot65\,485
+=3778\cdot65\,537-3781(1\,048\,540-15\cdot65\,537).
+\]
+Group: $1=(3778+15\cdot3781)\cdot65\,537-3781\cdot1\,048\,540
+=60\,493\cdot65\,537-3781\cdot1\,048\,540$. So $d=60\,493$, and the negative sign disappears
+because it is read modulo $\varphi(n)$. The check is one line: $65\,537\cdot60\,493
+=3\,964\,529\,741$, whereas $3781\cdot1\,048\,540=3\,964\,529\,740$; the difference is one.
+
+Two other computations in this chapter can be checked in the same way: the trimming of
+$7^{222}\bmod13$ in part three, which uses $222=12\cdot18+6$ and gives $12$, and the small key
+exchange $p=23$, $g=5$, $a=4$, $b=3$ which gives $A=4$, $B=10$, and key $18$ from both directions.
+
+\begin{resep}
+Four steps to find the inverse of $a$ modulo $n$.
+\begin{enumerate}
+  \item Write $(a,n)$. Run Euclid: replace $(a,n)$ by $(n,a\bmod n)$ until the remainder is zero;
+        record each line $n_0=q\,n_1+r$.
+  \item The last nonzero remainder is $\gcd$. If it is not $1$, stop; the inverse does not exist.
+  \item From the last line with remainder $1$, write $1=r-q\,s$, then replace $s$ and $r$ by their
+        forms from the line above, one line up for each step.
+  \item Collect the coefficient of $a$; that is the inverse. If it is negative, add $n$ until it lies
+        in $0,\dots,n-1$, then check $a\cdot x\bmod n=1$.
+\end{enumerate}
+Warning about order: build backward from the smallest remainder upward, not from the first line.
+Swapping the roles of $a$ and $n$ also changes the answer: the inverse of $a$ modulo $n$ is not the
+inverse of $n$ modulo $a$.
+\end{resep}
+
+\kertas{Repeat the first computation without looking at the text. Write five lines of forward Euclid
+for $65\,537$ and $1\,048\,540$, then build backward until you obtain $d$. Check by multiplying $e$
+and $d$ and dividing by $\varphi(n)$: the remainder must be one. After that, answer: why can the same
+steps not be used to open RSA without the secret key, even though this whole computation needs only
+five divisions?}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+The following program uses only the standard library and runs in under one second. It checks four
+claims in the body of the chapter: the units modulo $26$, the statistics of Euclid's steps, the
+equality of the Diffie-Hellman keys, and the looseness of plain RSA. The last part tests the birthday
+prediction on SHA-256 truncated to two bytes.
+
+\begin{lab}
+\begin{verbatim}
+import hashlib, math, random
+
+def egcd(a, b):
+    if b == 0:
+        return a, 1, 0
+    g, x, y = egcd(b, a % b)
+    return g, y, x - (a // b) * y
+
+def invers(a, n):
+    g, x, _ = egcd(a, n)
+    return None if g != 1 else x % n
+
+def langkah(a, b):
+    k = 0
+    while b:
+        a, b = b, a % b
+        k += 1
+    return k
+
+def orde(a, n):
+    k, y = 1, a % n
+    while y != 1:
+        y = y * a % n
+        k += 1
+    return k
+
+unit = [a for a in range(26) if invers(a, 26) is not None]
+print("units mod 26:", len(unit), unit)
+print("inverse 3 mod 26 =", invers(3, 26), " inverse 2 mod 26 =", invers(2, 26))
+
+g0, x0, y0 = egcd(1071, 462)
+print("gcd(1071,462) =", g0, " x,y =", x0, y0, " steps =", langkah(1071, 462))
+
+p, g, a, b = 10007, 5, 1234, 5678
+A, B = pow(g, a, p), pow(g, b, p)
+print("DH: A =", A, " B =", B, " K =", pow(B, a, p), pow(A, b, p))
+print("order(5) =", orde(5, p), " order(5^5003) =", orde(pow(5, 5003, p), p))
+
+random.seed(29)
+L = [langkah(random.getrandbits(32), random.getrandbits(32))
+     for _ in range(20000)]
+print("euclid 32-bit: mean %.3f, max %d, min %d" % (sum(L) / len(L), max(L), min(L)))
+
+p, q, e = 1019, 1031, 3
+n, phi = p * q, (p - 1) * (q - 1)
+d = invers(e, phi)
+print("RSA: n =", n, " bits =", n.bit_length(), " phi =", phi, " d =", d)
+for m in (424242, 42):
+    c = pow(m, e, n)
+    print("  m =", m, " c =", c, " D(c) =", pow(c, d, n), " m^3 =", m ** 3)
+kali = pow(1234, e, n) * pow(567, e, n) % n
+print("E(1234)E(567) mod n =", kali, " D(kali) =", pow(kali, d, n),
+      " 1234*567 mod n =", 1234 * 567 % n)
+
+def tabrakan():
+    terlihat, k = {}, 0
+    while True:
+        m = random.getrandbits(32)
+        h = hashlib.sha256(m.to_bytes(4, "big")).digest()[:2]
+        k += 1
+        if h in terlihat:
+            return k
+        terlihat[h] = m
+
+T = [tabrakan() for _ in range(20)]
+print("16-bit collisions: mean %.1f, min %d, max %d" % (sum(T) / 20, min(T), max(T)))
+print("prediction sqrt(pi/2 * 2^16) =", round(math.sqrt(math.pi / 2 * 2**16), 1))
+\end{verbatim}
+
+The output, as it stands:
+
+\begin{verbatim}
+units mod 26: 12 [1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25]
+inverse 3 mod 26 = 9  inverse 2 mod 26 = None
+gcd(1071,462) = 21  x,y = -3 7  steps = 3
+DH: A = 4873  B = 3189  K = 5674 5674
+order(5) = 10006  order(5^5003) = 2
+euclid 32-bit: mean 18.750, max 32, min 6
+RSA: n = 1050589  bits = 21  phi = 1048540  d = 699027
+  m = 424242  c = 618000  D(c) = 424242  m^3 = 76355615883580488
+  m = 42  c = 74088  D(c) = 42  m^3 = 74088
+E(1234)E(567) mod n = 551173  D(kali) = 699678  1234*567 mod n = 699678
+16-bit collisions: mean 362.7, min 100, max 743
+prediction sqrt(pi/2 * 2^16) = 320.8
+\end{verbatim}
+\end{lab}
+
+The first line confirms part one: twelve units modulo $26$, with $1$ and $25$ their own inverses and
+the remaining ten paired; that number $12$ is the same as $\varphi(26)$.
+
+The second and third lines show two faces of Euclid: three divisions for $1071$ and $462$ with Bezout
+coefficients $(-3,7)$, and an average of $18.75$ divisions with maximum $32$ for two thousand random
+$32$-bit pairs. The fourth and fifth lines are the promised key exchange: $4873$ and $3189$ on the
+channel, $5674$ at both ends, whereas $5^{5003}$ has order $2$ and is therefore the trap of part five.
+
+The three RSA lines show two opposite things. For $m=424\,242$ everything works: the cipher
+$618\,000$ returns to $424\,242$. For $m=42$ with $e=3$, the cipher is $74\,088$, exactly $42^3$, so
+that no key needs to be found, only a cube root; the next line shows the multiplicative property: the
+product of two ciphers opens the product message.
+
+The last four lines test the birthday prediction: an average of $362.7$ samples against a prediction
+of $320.8$, with the wide spread expected from an exponential distribution.
+
+\begin{untukdosen}
+The teaching order I suggest: start from the student's cipher in the opening, then the
+well-definedness lemma and the unit theorem in the first meeting; leave Diffie-Hellman and RSA for the
+second meeting, and put Shor and post-quantum as reading for the third. Do not teach Euclid before
+asking ``when does division exist''.
+
+Two misconceptions almost always appear. First, students think $\varphi(n)=n-1$ for all $n$, then are
+startled when $\varphi(26)=12$; cure it by asking them to list the units modulo $26$ on the board
+before any formula is mentioned. Second, they think RSA is secure because $n$ is hard to factor,
+without mentioning the size of $n$ and without mentioning that this difficulty is an assumption; ask
+them to write the security claim in the form ``if ... then ...''.
+
+A blackboard activity: two groups compute $3^{12}\bmod26$, one by repeated multiplication and one by
+Fermat's little theorem, then compare time and results. A sign of readiness: they can explain without
+notes why $[2]_{26}$ has no inverse.
+\end{untukdosen}
+
+\section{Summary}
+\begin{ringkasan}
+\begin{itemize}
+    \item Arithmetic modulo $n$ works on residue classes, and division exists only for classes that
+        share no factor with $n$; Euclid gives the inverse in time proportional to the number of
+        digits.
+    \item The shuffling lemma, namely that multiplication by a unit is only a shuffling of the order,
+        gives Euler's theorem in five lines and Fermat's little theorem as a corollary. The order
+        divides $\varphi(n)$, and a primitive root is an element of full order.
+    \item Diffie-Hellman agrees on a key through the equality $g^{ab}$ from two directions, with
+        security conditional on the difficulty of the discrete logarithm; without authentication it
+        falls to the man-in-the-middle attack.
+    \item RSA reverses the direction: the public key locks, the secret key opens, and the proof uses
+        Fermat's little theorem on both prime factors. Plain RSA is deterministic, multiplicative, and
+        does not protect small messages; padding closes all three.
+    \item A hash function gives a fingerprint, a MAC gives authenticity between two parties who share
+        a key, a signature gives evidence that anyone can check; collision resistance is only half the
+        output length, and the numbers $362.7$ against $320.8$ in the lab show that the prediction
+        works.
+    \item Every guarantee in this chapter is conditional. Shor brings down RSA and the whole of
+        discrete logarithms if a large-scale quantum computer exists; symmetric ciphers and hashes
+        only need to double the key length, and lattice schemes such as ML-KEM are the possible
+        replacements.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\begin{latihan}
+\begin{enumerate}
+  \item Assess this claim: ``Because $2^{100}\equiv1\pmod{101}$, the number $101$ is proved prime.''
+        Decide true, false, or not enough evidence, and name what that congruence does prove.
+  \item Prove that the product of two units modulo $n$ is also a unit, then conclude that $U(n)$ is
+        closed under multiplication; show also that if $a$ is not a unit, there is $b\neq0$ with
+        $ab\equiv0\pmod n$.
+  \item Prove that for prime $p$, $a^2\equiv1\pmod p$ is satisfied only by $a\equiv1$ or
+        $a\equiv-1$; explain why the same fails for modulus $8$, and name all square roots of one
+        modulo $8$.
+  \item Prove $\varphi(pq)=\varphi(p)\varphi(q)$ for distinct primes $p,q$ by counting the classes
+        $0\le a<pq$ that share a factor with $pq$, then check it on $p=1019$ and $q=1031$.
+  \item Compute $17^{-1}\bmod3120$ with backward Euclid, then check it with Python. Repeat for
+        $65\,537^{-1}\bmod1\,048\,540$ and compare the number of divisions of the two.
+  \item Compute $5^{100}\bmod101$, $3^{200}\bmod101$, and $2^{1000}\bmod101$ using Fermat's little
+        theorem, without computing the full power. Check all three with \texttt{pow(a,k,m)}.
+  \item On modulus $23$ with base $5$, Alice uses $a=7$ and Bob $b=15$. Compute $A$, $B$, and the
+        shared key, then compute the key obtained by an active eavesdropper who replaces $A$ with
+        $11$ in front of Bob, and explain why two different keys appear.
+  \item Explain why RSA with $e=3$ and a message $m<n^{1/3}$ can be opened without the secret key,
+        how long the longest message affected on the modulus $1\,050\,589$ is, and what padding does
+        to prevent it.
+  \item Assess this claim: ``ML-KEM is already proved secure, so we can stop using RSA now.'' Name
+        two things that must be true for the first sentence to make sense, and one reason why the
+        second sentence remains wrong even if the first is true.
+  \item A system uses a hash with a $48$-bit output. How many samples are needed for a collision
+        probability of one in two, and how many if the output is truncated to $32$ bits?
+\end{enumerate}
+
+Hints for the three hardest items. Item 3: write $a^2-1=(a-1)(a+1)$ and use Euclid's lemma; for
+modulus $8$, find the roots by trying $a=0,\dots,7$. Item 7: compute $11^7\bmod23$ as the key that
+Bob sees, then compare it with $11^{15}\bmod23$ computed by Alice. Item 9: distinguish ``proved
+secure'' from ``secure against known attacks''.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is really proved in this chapter is its mathematical part: Bezout's theorem, the unit theorem,
+Euler's theorem, the order lemma, and the RSA theorem all have complete proofs and do not depend on
+any conjecture. What is only popularized is the word ``secure''. No theorem states that RSA-2048 is
+hard; what exists are cost estimates for the best known algorithms, and those estimates change
+whenever cryptanalysis makes progress.
+
+The primary sources: Diffie and Hellman (1976), sections 3--4; Rivest, Shamir, and Adleman (1978),
+sections 2--4; Shor (1997), section 5 for the reduction of factorization to order finding; Regev
+(2005), section 3 for the LWE reduction; Bleichenbacher (1998); Gidney and Ekera (2021); FIPS 203 and
+204.
+
+Limits of validity that must be mentioned: security reductions usually produce loose bounds, the
+attack models do not contain side channels, and padding attacks show that the difference of one error
+message is enough to bring down a scheme that is proved secure in the model. Open questions: how tight
+the reduction for ML-KEM is, whether there is a faster quantum algorithm for lattice problems, and how
+to prove the security of schemes used together with secret data without leaking access patterns.
+\end{untukpeneliti}
+
+\peta{Chapter 31 follows Diffie and Hellman (1976), section 3 for key exchange; Rivest, Shamir, and
+Adleman (1978), sections 2--4 for RSA and signatures; Shor (1997), sections 5--6 for the reduction of
+factorization to order finding; Regev (2005), section 3 for the LWE reduction; Bleichenbacher (1998);
+Gidney and Ekera (2021); FIPS 203 and 204. On Chapter 2 for bijections and partitions, Chapter 3 for
+the Archimedean property and the discrete form of the infimum property, Chapter 8 for Gaussian
+elimination, Chapter 26 for the reason a security claim cannot be a theorem without conditions, and
+Chapters 29--30 for the oracle threat pattern.}

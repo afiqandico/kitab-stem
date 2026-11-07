@@ -1,0 +1,1126 @@
+\chapter{Himpunan, Relasi, Fungsi, dan Kardinalitas}
+
+Sebuah penguji keamanan menerima spesifikasi model: pengklasifikasi dengan tiga puluh
+fitur biner, masing-masing hanya bernilai nol atau satu. Untuk menguji menyeluruh, ia
+harus mencoba setiap masukan yang mungkin. Setiap fitur menggandakan jumlah
+kemungkinan, sehingga jawabannya $2^{30} = 1.073.741.824$. Pada kecepatan satu juta
+masukan per detik, pengujian itu memakan $1073{,}74$ detik, sekitar $17{,}9$ menit.
+Tambahkan sepuluh fitur lagi: jumlahnya menjadi $2^{40} = 1.099.511.627.776$, dan
+mesin yang seribu kali lebih cepat memerlukan $1099{,}51$ detik, sekitar $18{,}3$
+menit. Kita menggandakan masalah seribu kali dan mempercepat mesin seribu kali, lalu
+kembali ke titik awal.
+
+Kesulitan yang sama muncul lebih tajam begitu fitur boleh bernilai sebarang bilangan
+real. Jumlah masukan berhenti bersifat "banyak" dan mulai bersifat "tak terhingga",
+dan pertanyaannya berubah: apakah dua himpunan tak terhingga masih dapat dibandingkan
+ukurannya? Naluri mengatakan bahwa bilangan rasional lebih banyak daripada bilangan
+asli, sebab di antara dua bilangan asli selalu ada tak berhingga bilangan rasional.
+Naluri itu keliru, dan bab ini menunjukkan mengapa.
+
+Bab sebelumnya memberi kita bahasa: kuantor, implikasi, pola bukti. Yang belum ada
+adalah objek yang dibicarakan. Bab ini memasang perbendaharaan dasarnya, yaitu
+himpunan dan operasinya, relasi, fungsi, dan satu cara membandingkan ukuran himpunan
+yang tidak bergantung pada kemampuan menghitung. Perbendaharaan itu dipakai di
+seluruh buku, dari subruang di Bab 6 sampai pembuktian formal di Bab 28.
+
+\begin{untukanak}
+Bayangkan dua keranjang kelereng, satu merah dan satu biru. Kita ingin tahu keranjang
+mana yang lebih banyak, tetapi tidak boleh menghitung. Ambil satu kelereng merah,
+pasangkan dengan satu kelereng biru, sisihkan keduanya, dan ulangi sampai salah satu
+keranjang kosong: bila keduanya kosong bersamaan isinya sama banyak, bila biru bersisa
+biru lebih banyak. Cara ini tidak pernah menyebut angka; ia hanya memasangkan.
+
+Sekarang misalkan keranjangnya tak berujung, sehingga kita tidak akan pernah selesai
+memindahkan kelereng. Apakah memasangkan masih bisa dipakai? Bisa, dan itulah kejutan
+bab ini: dengan aturan pemasangan yang tepat, seluruh bilangan cacah dapat dipasangkan
+habis dengan seluruh bilangan genap, tanpa sisa di kedua pihak, dan pasangan bilangan
+dapat dipasangkan dengan satu bilangan tunggal. Kita akan tahu mengapa memasangkan
+lebih kuat daripada menghitung, dan mengapa ada himpunan tak berujung yang tetap tidak
+dapat dipasangkan dengan bilangan cacah, sekeras apa pun kita mencoba.
+\end{untukanak}
+
+\section{Operasi pada himpunan dan hukum De Morgan}
+\tingkat{dasar}
+
+Satu himpunan belum berguna sampai kita dapat menyusun himpunan baru darinya. Empat
+cara penyusunan didefinisikan dengan pola sama: sebut syarat keanggotaan, lalu himpunan
+baru adalah kumpulan semua objek yang memenuhinya. Misalkan $X$ himpunan semesta dan
+$A, B \subseteq X$; dari Bab 1 kita ingat bahwa $A \subseteq B$ berarti setiap anggota
+$A$ juga anggota $B$, dan kesamaan himpunan dibuktikan dengan dua inklusi.
+
+\begin{definisi}[Gabungan, irisan, selisih, komplemen]
+Gabungan $A \cup B$ adalah himpunan semua $x \in X$ yang menjadi anggota $A$ atau
+anggota $B$. Irisan $A \cap B$ adalah himpunan semua $x \in X$ yang menjadi anggota
+$A$ dan sekaligus anggota $B$. Selisih $A \setminus B$ adalah himpunan semua
+$x \in X$ yang menjadi anggota $A$ tetapi bukan anggota $B$. Komplemen
+$A^{c} = X \setminus A$ adalah himpunan semua $x \in X$ yang bukan anggota $A$.
+\end{definisi}
+
+Kata "atau" pada gabungan bersifat inklusif: $x$ boleh berada di kedua himpunan, dan
+itulah syarat agar $A \cap B \subseteq A \cup B$ selalu benar, seperti dicatat Hoffman
+dan Kunze di Apendiks. Himpunan kosong $\varnothing$ diperlukan supaya irisan dua
+himpunan tak bersekutu tetap berupa himpunan.
+
+\begin{proposisi}[Hukum De Morgan]\index{hukum De Morgan}
+Untuk sebarang $A, B \subseteq X$ berlaku
+\[
+  X \setminus (A \cup B) = (X \setminus A) \cap (X \setminus B),
+  \qquad
+  X \setminus (A \cap B) = (X \setminus A) \cup (X \setminus B).
+\]
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Ambil $x \in X$ sebarang. Menurut definisi
+komplemen dan gabungan,
+\[
+  x \in X \setminus (A \cup B)
+  \iff x \in X \ \text{dan}\ \text{tidak}\ (x \in A \ \text{atau}\ x \in B).
+\]
+Menurut hukum De Morgan untuk pernyataan dari Bab 1, ingkaran "salah satu" adalah
+"keduanya salah", sehingga
+\[
+  x \in X \setminus (A \cup B)
+  \iff x \in X \ \text{dan}\ x \notin A \ \text{dan}\ x \notin B
+  \iff x \in (X \setminus A) \cap (X \setminus B).
+\]
+Karena $x$ sebarang, kedua himpunan sama. Kesamaan kedua diperoleh dengan mengganti
+setiap "dan" menjadi "atau" pada rantai yang sama.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Hukum itu berlaku untuk dua himpunan; yang kita perlukan nanti adalah versi untuk
+sebanyak apa pun himpunan.
+
+\begin{definisi}[Keluarga terindeks]
+Misalkan $I$ himpunan indeks dan untuk setiap $i \in I$ diberikan $A_i \subseteq X$.
+\begin{align*}
+  \bigcup_{i \in I} A_i &= \{\, x \in X : x \in A_i \ \text{untuk suatu}\ i \in I \,\}, \\
+  \bigcap_{i \in I} A_i &= \{\, x \in X : x \in A_i \ \text{untuk setiap}\ i \in I \,\}.
+\end{align*}
+\end{definisi}
+
+Versi umumnya berbunyi $X \setminus \bigcup_{i} A_i = \bigcap_{i} (X \setminus A_i)$
+dan $X \setminus \bigcap_{i} A_i = \bigcup_{i} (X \setminus A_i)$. Buktinya tidak
+menambah gagasan baru: hanya "untuk suatu" berubah menjadi "untuk setiap" ketika
+ingkaran ditarik ke dalam, persis seperti pada Bab 1.
+
+Angka membuat definisi itu dapat diperiksa. Untuk $X = \{1,\dots,10\}$,
+$A = \{1,\dots,5\}$, dan $B = \{4,\dots,8\}$, Gambar~\ref{fig:venn} menampilkan
+ketiga operasi atas himpunan yang sama: gabungan beranggota $3 + 2 + 3 = 8$, irisan
+beranggota $2$, dan komplemen $B$ beranggota $3 + 2 = 5$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.82,every node/.style={font=\footnotesize}]
+  \begin{scope}
+    \begin{scope}
+      \clip (-0.5,0) circle (0.85);
+      \fill[layerteal!30] (-1.55,-1.25) rectangle (1.55,1.25);
+    \end{scope}
+    \begin{scope}
+      \clip (0.5,0) circle (0.85);
+      \fill[layerteal!30] (-1.55,-1.25) rectangle (1.55,1.25);
+    \end{scope}
+    \draw[ink,thick] (-0.5,0) circle (0.85);
+    \draw[ink,thick] (0.5,0) circle (0.85);
+    \draw[ink,thick] (-1.55,-1.25) rectangle (1.55,1.25);
+    \node at (-1.0,0) {3};
+    \node at (0,0) {2};
+    \node at (1.0,0) {3};
+    \node at (0,-1.0) {2};
+    \node[above] at (-0.5,0.86) {$A$};
+    \node[above] at (0.5,0.86) {$B$};
+    \node[below] at (0,-1.25) {$A \cup B$: 8};
+  \end{scope}
+  \begin{scope}[xshift=3.9cm]
+    \begin{scope}
+      \clip (-0.5,0) circle (0.85);
+      \clip (0.5,0) circle (0.85);
+      \fill[accent!35] (-1.55,-1.25) rectangle (1.55,1.25);
+    \end{scope}
+    \draw[ink,thick] (-0.5,0) circle (0.85);
+    \draw[ink,thick] (0.5,0) circle (0.85);
+    \draw[ink,thick] (-1.55,-1.25) rectangle (1.55,1.25);
+    \node at (-1.0,0) {3};
+    \node at (0,0) {2};
+    \node at (1.0,0) {3};
+    \node at (0,-1.0) {2};
+    \node[above] at (-0.5,0.86) {$A$};
+    \node[above] at (0.5,0.86) {$B$};
+    \node[below] at (0,-1.25) {$A \cap B$: 2};
+  \end{scope}
+  \begin{scope}[xshift=7.8cm]
+    \fill[layergrey!22] (-1.55,-1.25) rectangle (1.55,1.25);
+    \fill[white] (0.5,0) circle (0.85);
+    \draw[ink,thick] (-0.5,0) circle (0.85);
+    \draw[ink,thick] (0.5,0) circle (0.85);
+    \draw[ink,thick] (-1.55,-1.25) rectangle (1.55,1.25);
+    \node at (-1.0,0) {3};
+    \node[ink!40] at (0,0) {2};
+    \node[ink!40] at (1.0,0) {3};
+    \node at (0,-1.0) {2};
+    \node[above] at (-0.5,0.86) {$A$};
+    \node[above] at (0.5,0.86) {$B$};
+    \node[below] at (0,-1.25) {$B^{c}$: 5};
+  \end{scope}
+\end{tikzpicture}
+\caption{Tiga diagram Venn atas himpunan yang sama, dengan banyaknya anggota pada
+tiap daerah. Kiri: $A \cup B$ beranggota $3 + 2 + 3 = 8$; tengah: $A \cap B$
+beranggota $2$; kanan: $B^{c}$ beranggota $3 + 2 = 5$, yaitu daerah berarsir,
+sedangkan anggota di dalam $B$ ditulis pudar.}
+\label{fig:venn}
+\end{figure}
+
+\begin{tangan}
+Bahan: dua puluh kartu nama bekas, dua potong tali sepanjang dua meter, lantai lapang.
+
+Bentuk dua lingkaran tali yang bertumpang tindih kira-kira seperempat lebarnya. Tulis
+nama lima teman penyuka kopi dan lima teman penyuka teh. Letakkan kartu kopi di
+lingkaran pertama, kartu teh di lingkaran kedua, lalu pindahkan kartu nama teman yang
+suka keduanya ke daerah tumpang tindih: itulah irisannya. Sebut satu nama yang tidak
+suka keduanya dan letakkan kartunya di luar kedua lingkaran.
+
+Hitung tiga angka: kartu di dalam kedua lingkaran, kartu di tumpang tindih, dan kartu
+di luar lingkaran kedua. Yang harus terlihat: jumlah kartu di gabungan bukan jumlah
+kartu kopi ditambah jumlah kartu teh, sebab kartu di tumpang tindih terhitung dua
+kali, dan kelebihan itu tepat sebesar irisannya.
+\end{tangan}
+
+Himpunan yang paling sering kita bentuk dari $A$ adalah himpunan semua himpunan
+bagiannya, dan ukurannya tumbuh jauh lebih cepat daripada $A$ sendiri.
+
+\begin{definisi}[Himpunan kuasa]\index{himpunan kuasa}
+Himpunan kuasa $\mathcal{P}(A)$ adalah himpunan semua himpunan bagian $A$, yaitu
+$\mathcal{P}(A) = \{\, B : B \subseteq A \,\}$.
+\end{definisi}
+
+\kamus{himpunan kuasa}{power set}{Daftar semua cara memilih sebagian anggota sebuah kantong, termasuk memilih kosong dan memilih semuanya.}
+
+Sebagai contoh, $\mathcal{P}(\varnothing) = \{\varnothing\}$ beranggota satu, dan
+$\mathcal{P}(\{1,2\}) = \{\varnothing, \{1\}, \{2\}, \{1,2\}\}$ beranggota empat.
+
+\begin{proposisi}
+Jika $A$ berhingga dengan $|A| = n$, maka $|\mathcal{P}(A)| = 2^{n}$.
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Untuk $B \subseteq A$ definisikan fungsi
+karakteristik $\chi_B : A \to \{0,1\}$ oleh $\chi_B(a) = 1$ bila $a \in B$ dan
+$\chi_B(a) = 0$ bila $a \notin B$. Pemetaan $B \mapsto \chi_B$ adalah bijeksi antara
+$\mathcal{P}(A)$ dan himpunan semua fungsi $A \to \{0,1\}$: dari $\chi$ kita pulihkan
+$B = \{a : \chi(a) = 1\}$, dan dua himpunan bagian berbeda memberi fungsi berbeda.
+Jadi $|\mathcal{P}(A)|$ sama dengan banyaknya fungsi $A \to \{0,1\}$.
+
+Fungsi itu kita hitung dengan induksi pada $n$. Untuk $n = 0$ hanya ada fungsi
+kosong, dan $2^{0} = 1$. Misalkan $|A| = n+1$, pilih $a_0 \in A$, dan tulis
+$A' = A \setminus \{a_0\}$. Setiap $f : A \to \{0,1\}$ ditentukan tunggal oleh batasan
+$f|_{A'}$ dan nilai $f(a_0)$; hipotesis induksi memberi $2^{n}$ pilihan batasan dan $2$
+pilihan nilai, seluruhnya $2^{n+1}$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Bukti itu tidak menyebut kombinasi: bijeksi memindahkan hitungan, induksi memecahnya
+menjadi dua pilihan bebas.
+
+\begin{bacakeras}
+Bacakan berpasangan, satu orang suara anggota dan satu orang suara himpunan bagian.
+Mulai lambat, lalu percepat.
+
+Anggota: Satu jeruk masuk keranjang. Saya di dalam.
+Himpunan bagian: Satu keranjang masuk gudang. Saya di dalam.
+Anggota: Saya barang.
+Himpunan bagian: Saya wadah.
+Anggota: Saya ditunjuk satu per satu.
+Himpunan bagian: Saya dibuktikan sekaligus.
+Anggota: Kalau saya masuk, saya satu tanda.
+Himpunan bagian: Kalau saya masuk, saya satu bukti.
+Anggota: Saya kecil dan banyak.
+Himpunan bagian: Saya besar dan kadang hanya satu.
+
+Ulangi sampai kalimat terakhir keluar tanpa berpikir. Baris yang diulang tiga kali
+bersama: barang masuk kantong, kantong masuk kantong, dan keduanya memakai tanda
+berbeda.
+\end{bacakeras}
+
+\section{Hasilkali kartesius dan relasi}
+\tingkat{dasar}
+
+Urutan penting. Himpunan $\{1,2\}$ sama dengan $\{2,1\}$, tetapi koordinat titik pada
+bidang tidak boleh ditukar tanpa memindahkan titiknya. Karena itu kita memerlukan
+objek yang mengingat urutan, dan definisinya harus dibuat dari himpunan saja.
+
+\begin{definisi}[Pasangan terurut dan hasilkali kartesius]\index{hasilkali kartesius}
+Pasangan terurut $(a,b)$ didefinisikan sebagai $\{\{a\}, \{a,b\}\}$. Hasilkali
+kartesius $A \times B$ adalah himpunan semua pasangan terurut $(a,b)$ dengan $a \in A$
+dan $b \in B$.
+\end{definisi}
+
+Definisi itu terlihat aneh, tetapi yang dibutuhkan hanya satu sifat, yaitu
+$(a,b) = (c,d)$ jika dan hanya jika $a = c$ dan $b = d$. Pemeriksaan sifat itu
+memerlukan empat kasus dan kita tinggalkan sebagai Latihan 4.
+
+Ukuran hasilkali mudah ditebak, dan buktinya memakai pemotongan menurut koordinat
+pertama.
+
+\begin{proposisi}
+Jika $A$ dan $B$ berhingga, maka $|A \times B| = |A| \cdot |B|$.
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Untuk setiap $a \in A$, himpunan
+$\{a\} \times B$ beranggota $|B|$, sebab $b \mapsto (a,b)$ bijeksi antara $B$ dan
+$\{a\} \times B$. Keluarga $\{\{a\} \times B\}_{a \in A}$ terdiri atas himpunan
+saling lepas, karena $(a,b) = (a',b')$ memaksa $a = a'$. Gabungannya $A \times B$,
+jadi $|A \times B|$ adalah jumlah $|A|$ suku bernilai $|B|$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Sekarang objek yang menjadi judul bab ini. Sebuah relasi hanyalah pernyataan yang
+mungkin benar atau salah untuk setiap pasangan objek, sehingga dapat disimpan sebagai
+himpunan pasangan yang pernyataannya benar.
+
+\begin{definisi}[Relasi]\index{relasi}
+Relasi dari $A$ ke $B$ adalah sebarang $R \subseteq A \times B$; bila $A = B$ kita
+menyebutnya relasi pada $A$. Kita menulis $a \mathrel{R} b$ untuk $(a,b) \in R$.
+Daerah asal $R$ adalah $\{\, a \in A : (a,b) \in R\ \text{untuk suatu}\ b \in B \,\}$
+dan daerah hasilnya $\{\, b \in B : (a,b) \in R\ \text{untuk suatu}\ a \in A \,\}$.
+\end{definisi}
+
+Karena relasi pada $A$ adalah himpunan bagian $A \times A$, banyaknya relasi pada
+himpunan $n$ anggota adalah $2^{n^{2}}$. Untuk $n = 3$ angkanya $2^{9} = 512$ dan
+untuk $n = 4$ menjadi $2^{16} = 65.536$; keduanya diperiksa dengan skrip di bagian
+lab.
+
+Empat sifat menyaringnya menjadi objek berguna. Relasi $R$ pada $A$ disebut refleksif
+bila $a \mathrel{R} a$ untuk setiap $a \in A$; simetris bila $a \mathrel{R} b$
+berakibat $b \mathrel{R} a$; transitif bila $a \mathrel{R} b$ dan $b \mathrel{R} c$
+berakibat $a \mathrel{R} c$; dan antisimetris bila $a \mathrel{R} b$ bersama
+$b \mathrel{R} a$ hanya mungkin ketika $a = b$.
+
+\begin{definisi}[Urutan parsial dan relasi ekuivalensi]\index{relasi ekuivalensi}
+Relasi pada $A$ yang refleksif, antisimetris, dan transitif disebut urutan parsial.
+Relasi pada $A$ yang refleksif, simetris, dan transitif disebut relasi ekuivalensi.
+\end{definisi}
+
+Relasi $\le$ pada $\mathbb{R}$ adalah urutan parsial, begitu pula relasi "membagi"
+pada bilangan asli positif, dan $\subseteq$ pada $\mathcal{P}(A)$ memberi contoh yang
+kelak menjadi kerangka subruang pada Bab 6. Kata "parsial" dipakai karena dua anggota
+tidak harus dapat dibandingkan: pada $\mathcal{P}(\{1,2,3\})$ himpunan $\{1\}$ dan
+$\{2\}$ tidak termuat satu sama lain. Urutan yang setiap dua anggotanya dapat
+dibandingkan disebut urutan total.
+
+\section{Relasi ekuivalensi dan partisi}
+\tingkat{menengah}
+
+Relasi ekuivalensi memotong himpunan menjadi kelompok yang tidak tumpang tindih.
+Sebelum sampai ke teoremanya, kita perlu nama untuk kelompoknya.
+
+\begin{definisi}[Kelas ekuivalensi]\index{kelas ekuivalensi}
+Misalkan $\sim$ relasi ekuivalensi pada $A$ dan $x \in A$. Kelas ekuivalensi $x$
+adalah $[x] = \{\, y \in A : y \sim x \,\}$.
+\end{definisi}
+
+Karena $x \sim x$, tidak ada kelas yang kosong. Sifat yang lebih menarik: dua kelas
+tidak dapat bertumpang sedikit pun.
+
+\begin{lemma}
+Misalkan $\sim$ relasi ekuivalensi pada $A$ dan $x, y \in A$. Maka (i) $x \in [x]$;
+(ii) $[x] = [y]$ jika dan hanya jika $x \sim y$; dan (iii) bila
+$[x] \cap [y] \neq \varnothing$, maka $[x] = [y]$.
+\end{lemma}
+\par\smallskip\noindent\textit{Bukti.} Bagian (i) adalah pernyataan $x \sim x$, benar
+karena refleksif. Untuk (ii), misalkan $[x] = [y]$. Menurut (i),
+$y \in [y] = [x]$, jadi $y \sim x$ dan karena simetris $x \sim y$. Sebaliknya,
+misalkan $x \sim y$ dan ambil $z \in [x]$, artinya $z \sim x$. Dari $z \sim x$ dan
+$x \sim y$ kita peroleh $z \sim y$, jadi $z \in [y]$; ini memberi
+$[x] \subseteq [y]$, dan argumen dengan peran bertukar memberi $[y] \subseteq [x]$.
+Untuk (iii), misalkan $z \in [x] \cap [y]$. Maka $z \sim x$ dan $z \sim y$; dari
+$z \sim x$ dan simetri diperoleh $x \sim z$, dan bersama $z \sim y$ serta
+transitivitas diperoleh $x \sim y$, sehingga $[x] = [y]$ menurut (ii).
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Akibatnya himpunan semua kelas membagi $A$ menjadi potongan yang saling lepas dan
+menutupi seluruh $A$.
+
+\begin{definisi}[Partisi]\index{partisi}
+Partisi himpunan $A$ adalah keluarga $\mathcal{B}$ himpunan bagian tak kosong dari
+$A$ sedemikian sehingga setiap $x \in A$ berada tepat di satu anggota $\mathcal{B}$.
+\end{definisi}
+
+\begin{teorema}
+Setiap relasi ekuivalensi pada $A$ menentukan partisi $A$, setiap partisi $A$
+menentukan relasi ekuivalensi pada $A$, dan kedua proses itu saling membalik.
+\end{teorema}
+\par\smallskip\noindent\textit{Bukti.} Misalkan $\sim$ relasi ekuivalensi dan
+$\mathcal{B} = \{\, [x] : x \in A \,\}$. Menurut Lemma, setiap $[x]$ tidak kosong dan
+dua anggotanya saling lepas atau identik; setiap $x$ berada di $[x]$. Jadi
+$\mathcal{B}$ partisi.
+
+Sebaliknya, misalkan $\mathcal{B}$ partisi $A$ dan tetapkan $x \sim y$ bila $x$ dan
+$y$ berada di anggota $\mathcal{B}$ yang sama. Refleksif dan simetris jelas. Untuk
+transitivitas, misalkan $x \sim y$ dan $y \sim z$, dan misalkan $B$ anggota
+$\mathcal{B}$ yang memuat $y$; maka $x \in B$ dan $z \in B$, jadi $x \sim z$.
+
+Kedua proses saling membalik: dari $\sim$ kita memperoleh partisi kelas, dan partisi
+itu mengembalikan $\sim$ semula karena $x \sim y$ tepat ketika $x \in [y]$; dari
+partisi kita memperoleh $\sim$, dan kelas $[x]$ adalah anggota $\mathcal{B}$ yang
+memuat $x$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Banyaknya kelas disebut indeks. Himpunan semua kelas ditulis $A/{\sim}$ dan disebut
+himpunan kuosien, sedangkan $q : A \to A/{\sim}$ dengan $q(x) = [x]$ disebut pemetaan
+kuosien. Hoffman dan Kunze mencatat bahwa setiap relasi ekuivalensi dapat dipandang
+berasal dari sebuah fungsi: dua anggota setara tepat ketika fungsi itu memberi nilai
+sama.
+
+\begin{contoh}
+Pada bilangan bulat, tetapkan $x \equiv y \pmod{n}$ bila $n$ membagi $x-y$. Relasi
+ini refleksif karena $n \mid 0$, simetris karena $n \mid (x-y)$ berakibat
+$n \mid (y-x)$, dan transitif karena $n \mid (x-y)$ bersama $n \mid (y-z)$ berakibat
+$n \mid (x-z)$. Kelasnya himpunan bilangan bersisa sama, dan ada tepat $n$ kelas,
+yaitu $[0], \dots, [n-1]$, sebab setiap bilangan bulat dapat ditulis $x = qn + r$
+dengan $0 \le r \le n-1$ secara tunggal.
+\end{contoh}
+
+Contoh yang lebih dekat dengan pekerjaan kita: untuk $f : A \to B$, tetapkan
+$x \sim y$ bila $f(x) = f(y)$. Kelas $[x]$ adalah himpunan masukan dengan keluaran sama;
+dalam pembelajaran mesin itulah "satu berkas prediksi", dan banyaknya kelas sama dengan
+banyaknya label berbeda.
+
+\begin{untukanak}
+Lemari pakaian di rumah biasanya tidak diurutkan menurut aturan resmi. Kaus putih
+menumpuk di satu rak, kaus bergambar di rak lain, kaus olahraga di keranjang ketiga.
+Tidak ada yang menulis aturannya, tetapi setiap kaus berada di tepat satu tempat.
+
+Itulah yang dilakukan sebuah relasi ekuivalensi: ia menetapkan kapan dua barang
+dianggap sekamar, lalu mengelompokkan seluruh barang. Hasilnya pembagian rapi, setiap
+barang masuk tepat satu kelompok, dan kelompok berbeda tidak berbagi anggota.
+
+Sekarang pertanyaan yang membuat penasaran. Bagaimana kalau satu kaus menurut satu
+aturan masuk kelompok putih, tetapi menurut aturan lain masuk kelompok olahraga? Apakah
+pengelompokan masih rapi? Kerapian itu tidak bergantung pada aturan yang dipilih,
+melainkan pada tiga sifat: setiap barang sekamar dengan dirinya sendiri, sekamar
+berlaku dua arah, dan sekamar dapat dipindahkan lewat barang ketiga.
+\end{untukanak}
+
+\section{Fungsi: injektif, surjektif, bijektif}
+\tingkat{menengah}
+
+Kita tetapkan sekarang arti kata "fungsi", karena bab ini bergantung pada perbedaan
+halus antara kodomain dan daerah hasil.
+
+\begin{definisi}[Fungsi]\index{fungsi injektif}
+Fungsi dari $A$ ke $B$ adalah aturan $f$ yang memasangkan setiap $x \in A$ dengan
+tepat satu $f(x) \in B$. Himpunan $A$ disebut daerah asal, $B$ disebut kodomain, dan
+$f(A) = \{\, f(x) : x \in A \,\}$ disebut daerah hasil.
+\end{definisi}
+
+Kodomain dan daerah hasil berbeda, dan perbedaan itu penting. Fungsi
+$f : \mathbb{R} \to \mathbb{R}$ dengan $f(x) = x^{2}$ berkodomain $\mathbb{R}$ tetapi
+berdaerah hasil $[0,\infty)$. Hoffman dan Kunze memakai tiga nama bergantian untuk
+objek yang sama: fungsi, pemetaan, transformasi.
+
+Untuk $S \subseteq B$ kita definisikan prapeta
+$f^{-1}(S) = \{\, x \in A : f(x) \in S \,\}$. Notasi $f^{-1}$ di sini tidak
+mengandaikan $f$ punya invers: prapeta selalu terdefinisi, invers belum tentu ada.
+
+\begin{definisi}[Injektif, surjektif, bijektif]\index{fungsi surjektif}\index{bijeksi}
+Fungsi $f : A \to B$ disebut injektif bila $f(x) = f(y)$ hanya mungkin ketika
+$x = y$; surjektif bila $f(A) = B$; dan bijektif bila kedua-duanya.
+\end{definisi}
+
+\kamus{bijeksi}{bijection}{Pemasangan sempurna: setiap barang di kotak pertama punya satu pasangan di kotak kedua, tanpa sisa di kedua pihak.}
+
+Gambar~\ref{fig:bijeksi} membandingkan ketiganya pada dua kolom simpul: panel kiri
+tidak menyisakan simpul di pihak mana pun, panel tengah menyisakan $d$ di kanan,
+panel kanan mengirim dua simpul kiri ke satu simpul kanan.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.95,every node/.style={font=\footnotesize},>=Stealth,
+  kotak/.style={draw=ink,thick,circle,inner sep=1.2pt,minimum size=4.4mm}]
+  \begin{scope}
+    \foreach \i/\y in {1/1.0,2/0,3/-1.0} {
+      \node[kotak] (a\i) at (0,\y) {\i};
+    }
+    \node[kotak] (ba) at (1.9,1.0) {$a$};
+    \node[kotak] (bb) at (1.9,0) {$b$};
+    \node[kotak] (bc) at (1.9,-1.0) {$c$};
+    \draw[->,thick,layerjade] (a1) -- (ba);
+    \draw[->,thick,layerjade] (a2) -- (bb);
+    \draw[->,thick,layerjade] (a3) -- (bc);
+    \node[below] at (0.95,-1.75) {bijektif};
+  \end{scope}
+  \begin{scope}[xshift=3.4cm]
+    \foreach \i/\y in {1/1.2,2/0.4,3/-0.4} {
+      \node[kotak] (c\i) at (0,\y) {\i};
+    }
+    \node[kotak] (da) at (1.9,1.2) {$a$};
+    \node[kotak] (db) at (1.9,0.4) {$b$};
+    \node[kotak] (dc) at (1.9,-0.4) {$c$};
+    \node[kotak] (dd) at (1.9,-1.2) {$d$};
+    \draw[->,thick,layerindigo] (c1) -- (da);
+    \draw[->,thick,layerindigo] (c2) -- (db);
+    \draw[->,thick,layerindigo] (c3) -- (dc);
+    \node[below] at (0.95,-1.75) {injektif saja};
+  \end{scope}
+  \begin{scope}[xshift=6.9cm]
+    \foreach \i/\y in {1/1.2,2/0,3/-1.2} {
+      \node[kotak] (e\i) at (0,\y) {\i};
+    }
+    \node[kotak] (fa) at (1.9,0.8) {$a$};
+    \node[kotak] (fb) at (1.9,-0.8) {$b$};
+    \draw[->,thick,layerbrown] (e1) -- (fa);
+    \draw[->,thick,layerbrown] (e2) -- (fa);
+    \draw[->,thick,layerbrown] (e3) -- (fb);
+    \node[below] at (0.95,-1.75) {surjektif saja};
+  \end{scope}
+\end{tikzpicture}
+\caption{Tiga pemetaan antara dua kolom simpul. Kiri: setiap simpul terpakai tepat
+sekali, jadi bijektif. Tengah: kolom kanan beranggota empat dan simpul $d$ tidak
+mendapat panah masuk, jadi injektif tetapi tidak surjektif. Kanan: dua simpul kiri
+menuju $a$, jadi surjektif tetapi tidak injektif.}
+\label{fig:bijeksi}
+\end{figure}
+
+Kata "bijektif" hanya nama pendek untuk gabungan dua sifat sebelumnya. Kekuatannya
+muncul dalam proposisi berikut: bijeksi adalah syarat tepat agar fungsi dapat dibalik.
+
+\begin{proposisi}
+$f : A \to B$ bijektif jika dan hanya jika terdapat $g : B \to A$ dengan
+$g \circ f = \mathrm{id}_A$ dan $f \circ g = \mathrm{id}_B$. Bila $g$ ada, ia tunggal.
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Misalkan $g$ memenuhi kedua kesamaan. Bila
+$f(x) = f(y)$ maka $x = g(f(x)) = g(f(y)) = y$, jadi $f$ injektif. Untuk sebarang
+$b \in B$ berlaku $b = f(g(b))$, jadi $f$ surjektif.
+
+Sebaliknya, misalkan $f$ bijektif. Untuk setiap $b \in B$ ada tepat satu $x \in A$
+dengan $f(x) = b$: keberadaannya dari surjektif, ketunggalannya dari injektif.
+Definisikan $g(b) = x$ untuk $x$ itu, maka $g(f(x)) = x$ dan $f(g(b)) = b$.
+
+Untuk ketunggalan, misalkan $g$ dan $h$ memenuhi kedua kesamaan. Maka
+\[
+  g = g \circ \mathrm{id}_B = g \circ (f \circ h) = (g \circ f) \circ h
+  = \mathrm{id}_A \circ h = h,
+\]
+yang hanya memakai assosiativitas komposisi dan kedua kesamaan itu.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Komposisi berkelakuan baik terhadap ketiga sifat: bila $f$ dan $g$ injektif maka
+$g \circ f$ injektif, dan serupa untuk surjektif serta bijektif. Kebalikannya tidak
+berlaku: dengan $f : \{1\} \to \{1,2\}$, $f(1) = 1$, dan $g : \{1,2\} \to \{1\}$,
+$g(1) = g(2) = 1$, komposisi $g \circ f$ bijektif, padahal $g$ tidak injektif dan $f$
+tidak surjektif.
+
+Pada himpunan berhingga ketiga sifat saling mengunci, dan itulah sebabnya "satu-satu"
+dan "pada" baru dapat dibedakan pada himpunan tak berhingga.
+
+\begin{lemma}
+Misalkan $A$ dan $B$ berhingga, $f : A \to B$, dan $C \subseteq B$. Maka
+$|f(A)| \le |A|$ dengan kesamaan jika dan hanya jika $f$ injektif, dan
+$|C| \le |B|$ dengan kesamaan jika dan hanya jika $C = B$.
+\end{lemma}
+\par\smallskip\noindent\textit{Bukti.} Kita buktikan bagian kedua dengan induksi pada
+$n = |B|$. Untuk $n = 0$ berlaku $B = \varnothing$, sehingga $C = B$. Andaikan benar
+untuk himpunan $n$ anggota dan misalkan $|B| = n+1$; pilih $b \in B$ dan tulis
+$B' = B \setminus \{b\}$.
+
+Bila $b \notin C$, maka $C \subseteq B'$ dan hipotesis induksi memberi
+$|C| \le |B'| = n < n+1$, dengan kesamaan mustahil. Bila $b \in C$, tulis
+$C' = C \setminus \{b\} \subseteq B'$. Maka $|C| = |C'| + 1 \le |B'| + 1 = |B|$;
+kesamaan berlaku tepat ketika $|C'| = |B'|$, yang menurut hipotesis induksi berarti
+$C' = B'$, yaitu $C = B$.
+
+Bagian pertama diperoleh dengan induksi yang sama pada $|A|$: tulis
+$A = A' \cup \{a\}$ dengan $a \notin A'$ dan perhatikan
+$f(A) = f(A') \cup \{f(a)\}$, sehingga $|f(A)| \le |A'| + 1 = |A|$. Kesamaan menuntut
+$f(a) \notin f(A')$ dan $|f(A')| = |A'|$; yang terakhir berarti $f|_{A'}$ injektif
+menurut hipotesis induksi, dan yang pertama berarti $f$ tidak mengulang nilai pada
+$a$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+\begin{proposisi}
+Misalkan $A$ dan $B$ berhingga dengan $|A| = |B|$, dan $f : A \to B$. Maka $f$
+injektif, $f$ surjektif, dan $f$ bijektif adalah tiga pernyataan yang setara.
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Bila $f$ injektif, Lemma memberi
+$|f(A)| = |A| = |B|$; karena $f(A) \subseteq B$ dan keduanya berukuran sama, Lemma
+memberi $f(A) = B$, jadi $f$ surjektif. Bila $f$ surjektif, maka $f(A) = B$ sehingga
+$|f(A)| = |B| = |A|$, dan Lemma memaksa $f$ injektif. Karena bijektif berarti kedua
+sifat sekaligus, kesetaraan ketiganya selesai.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Peringatan yang harus dibawa ke bab berikutnya: proposisi itu memakai kata
+"berhingga" secara esensial. Pada $\mathbb{N}$, fungsi $f(x) = 2x$ injektif tetapi
+tidak surjektif, dan fungsi yang memetakan $1$ ke $1$ serta $n \ge 2$ ke $n-1$
+surjektif tetapi tidak injektif.
+
+\section{Himpunan berhingga, terhitung, dan tak terhitung}
+\tingkat{lanjut}
+
+Sekarang kita kembali ke pertanyaan pembuka. Untuk membandingkan dua himpunan tanpa
+menghitung kita memasangkan anggotanya, dan yang perlu ditetapkan hanyalah bahwa
+pemasangan itu memakai fungsi yang dapat dibalik.
+
+\begin{definisi}[Berkekuatan sama]
+Himpunan $A$ dan $B$ berkekuatan sama, ditulis $A \sim B$, bila terdapat bijeksi
+$A \to B$.
+\end{definisi}
+
+Relasi $\sim$ refleksif (identitas bijeksi), simetris (invers bijeksi adalah
+bijeksi), dan transitif (komposisi dua bijeksi bijeksi). Jadi ia berperilaku sebagai
+relasi ekuivalensi, tetapi tidak pada "himpunan semua himpunan", sebab kumpulan itu
+bukan himpunan; ini dibahas pada kotak untuk peneliti.
+
+\begin{definisi}[Berhingga, terhitung, tak terhitung]\index{himpunan terhitung}
+Himpunan $A$ berhingga bila $A = \varnothing$ atau terdapat $n \in \mathbb{N}$ dan
+bijeksi $A \to \{1,2,\dots,n\}$; dalam hal kedua kita tulis $|A| = n$. Himpunan $A$
+terhitung bila $A \sim \mathbb{N}$. Himpunan tak berhingga yang tidak terhitung
+disebut tak terhitung.
+\end{definisi}
+
+\kamus{terhitung}{countable}{Semua anggotanya bisa diberi nomor urut tanpa ada yang terlewat, seperti setiap penumpang mendapat nomor tiket yang berbeda.}
+
+Nama "terhitung" tepat: bila $A \sim \mathbb{N}$, bijeksinya adalah daftar. Kita
+dapat menyebut anggota pertama, kedua, dan seterusnya, dan setiap anggota muncul tepat
+sekali. Yang mengejutkan adalah betapa banyak himpunan yang dapat didaftar begitu.
+Pasangan bilangan, misalnya.
+
+\begin{proposisi}[Pasangan Cantor]\index{pasangan Cantor}
+$\mathbb{N} \times \mathbb{N}$ terhitung.
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Definisikan
+$\pi(m,n) = \frac{(m+n)(m+n+1)}{2} + n$ untuk $m, n \in \mathbb{N} =
+\{0,1,2,\dots\}$. Tulis $T_s = \frac{s(s+1)}{2}$, yaitu banyaknya pasangan dengan
+$m + n < s$. Untuk pasangan dengan $m + n = s$ berlaku $0 \le n \le s$, sehingga
+$\pi(m,n) = T_s + n$ mengambil nilai $T_s, \dots, T_s + s$ tepat satu kali
+masing-masing. Karena $T_s + s = T_{s+1} - 1$, blok nilai untuk diagonal $s$ adalah
+$\{T_s, \dots, T_{s+1}-1\}$. Blok-blok itu bersambung tanpa celah dan tanpa tumpang
+tindih mulai dari $T_0 = 0$. Jadi setiap bilangan cacah berada di tepat satu blok,
+dan di dalam bloknya berasal dari tepat satu pasangan; karena itu $\pi$ bijektif.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Inversnya eksplisit: $s = \lfloor (\sqrt{8q+1}-1)/2 \rfloor$, $n = q - T_s$, dan
+$m = s - n$. Akar kuadrat itulah satu-satunya tempat aritmetika mesin dapat menipu
+kita, dan contohnya ada di bagian lab.
+
+Gambar~\ref{fig:kisi} menggambar kisi itu: sel pada baris $m$ dan kolom $n$ berlabel
+$\pi(m,n)$, dan warna menandai diagonal $m + n = s$, sehingga membaca menurut warna
+memberi $0$ sampai $14$ tanpa celah dan tanpa pengulangan. Panel kanan memakai arah
+baca yang sama pada daftar empat bilangan real, dengan baris $d$ yang membalik digit
+diagonal sehingga $d$ tidak ada di daftar.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.95,every node/.style={font=\footnotesize}]
+  \foreach \s/\warna in {0/layerteal,1/layerorange,2/layerindigo,3/layerjade,4/layerplum} {
+    \foreach \n in {0,...,\s} {
+      \pgfmathtruncatemacro{\m}{\s-\n}
+      \pgfmathtruncatemacro{\v}{int(\s*(\s+1)/2+\n)}
+      \draw[fill=\warna!30,draw=ink!45] (\n*0.86,-\m*0.72) rectangle ++(0.8,0.66);
+      \node at (\n*0.86+0.4,-\m*0.72+0.33) {\v};
+    }
+  }
+  \draw[->,thick] (4.35,0.33) -- (4.95,0.33);
+  \node[right] at (4.95,0.33) {$n$};
+  \draw[->,thick] (-0.45,-0.05) -- (-0.45,-3.0) node[below] {$m$};
+  \begin{scope}[xshift=6.6cm,yshift=0.45cm]
+    \foreach \i/\j/\b in {1/1/0,1/2/1,1/3/1,1/4/0, 2/1/1,2/2/0,2/3/0,2/4/1,
+                          3/1/0,3/2/0,3/3/1,3/4/0, 4/1/1,4/2/1,4/3/0,4/4/0} {
+      \ifnum\i=\j
+        \fill[accent!28] (\j*0.52-0.52,-\i*0.42) rectangle ++(0.5,0.38);
+      \fi
+      \draw[ink!45] (\j*0.52-0.52,-\i*0.42) rectangle ++(0.5,0.38);
+    }
+    \draw[accent,thick] (0.25,-0.23) -- (1.79,-1.49);
+    \foreach \i/\j/\b in {1/1/0,1/2/1,1/3/1,1/4/0, 2/1/1,2/2/0,2/3/0,2/4/1,
+                          3/1/0,3/2/0,3/3/1,3/4/0, 4/1/1,4/2/1,4/3/0,4/4/0} {
+      \node at (\j*0.52-0.27,-\i*0.42+0.19) {\b};
+    }
+    \foreach \i in {1,...,4} {
+      \node[left] at (-0.62,-\i*0.42+0.19) {$x_{\i}$};
+    }
+    \foreach \j/\b in {1/1,2/1,3/0,4/1} {
+      \fill[layergrey!25] (\j*0.52-0.52,-2.34) rectangle ++(0.5,0.38);
+      \draw[ink!45] (\j*0.52-0.52,-2.34) rectangle ++(0.5,0.38);
+      \node at (\j*0.52-0.27,-2.34+0.19) {\b};
+    }
+    \node[left] at (-0.10,-2.15) {$d$};
+    \node[below] at (0.52,-2.42) {digit dibalik};
+  \end{scope}
+\end{tikzpicture}
+\caption{Kiri: kisi pasangan $(m,n)$ dengan $m + n \le 4$, setiap sel berlabel
+$\pi(m,n)$ dan warna menandai diagonal $m + n = s$; lima diagonal pertama memuat
+nilai $0$ sampai $14$. Kanan: tabel digit empat bilangan real, dengan sel diagonal
+diwarnai dan baris $d$ membalik digit diagonal $0,0,1,0$ menjadi $1,1,0,1$.}
+\label{fig:kisi}
+\end{figure}
+
+Karena setiap rasional positif adalah pasangan bilangan asli yang sudah
+disederhanakan, himpunan rasional juga terhitung. Yang perlu dijaga hanyalah agar
+tidak ada bilangan yang didaftar dua kali.
+
+\begin{proposisi}
+Himpunan $\mathbb{Q}_{>0}$ bilangan rasional positif terhitung.
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Setiap $q \in \mathbb{Q}_{>0}$ dapat ditulis
+tunggal sebagai $q = p/r$ dengan $p, r$ bilangan asli dan $\gcd(p,r) = 1$. Definisikan
+tinggi $q$ sebagai $p + r$. Untuk setiap $k \ge 2$ hanya ada berhingga rasional
+bertinggi $k$, sebab $p$ dan $r$ berada di antara $1$ dan $k-1$. Maka daftar berikut
+mencacah $\mathbb{Q}_{>0}$ tanpa pengulangan: untuk $k = 2, 3, 4, \dots$ tuliskan
+semua $p/r$ bertinggi $k$ dengan $\gcd(p,r) = 1$, urut menaik menurut $p$. Setiap
+rasional positif muncul tepat sekali, yaitu pada tingkat $k = p + r$ dengan bentuk
+sederhana yang tunggal, sehingga daftar itu bijeksi $\mathbb{N} \to \mathbb{Q}_{>0}$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+\begin{akibat}
+$\mathbb{Q}$ dan $\mathbb{Z}$ terhitung.
+\end{akibat}
+\par\smallskip\noindent\textit{Bukti.} Daftar $0, 1, -1, 2, -2, \dots$ adalah
+bijeksi $\mathbb{N} \to \mathbb{Z}$. Untuk $\mathbb{Q}$, cacah setiap rasional tak
+nol sebagai $\pm p/r$ dalam bentuk sederhana menurut $(p+r)$ dengan tanda bergantian,
+lalu letakkan $0$ di awal; satu anggota tambahan tidak merusak sifat terhitung.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Jadi $\mathbb{N}$, $\mathbb{Z}$, dan $\mathbb{Q}$ berkekuatan sama, meskipun
+$\mathbb{Q}$ terasa jauh lebih rapat. Rapat bukan ukuran besar; ukurannya adalah ada
+atau tidaknya daftar.
+
+\begin{tantangan}
+Hotel di tepi pantai punya kamar bernomor $1, 2, 3, \dots$ tanpa ujung, dan malam
+itu setiap kamar terisi tepat satu tamu. Seorang pelancong datang tanpa pesanan.
+Resepsionis berkata hotel penuh; manajer berkata masih ada kamar untuknya tanpa
+memulangkan seorang tamu pun.
+
+Tunjukkan aturan pemindahan tamu yang memenuhi janji manajer, lalu jelaskan mengapa
+aturan itu bijeksi antara tamu lama ditambah satu tamu baru dan seluruh kamar.
+Mengapa hotel yang sama tidak dapat menampung tamu baru sebanyak bilangan real?
+
+Petunjuk 1: jangan mencari kamar kosong, sebab tidak ada. Ciptakan kamar kosong dengan
+memindahkan penghuninya.
+
+Petunjuk 2: geser penghuni kamar $n$ ke kamar $n+1$ untuk setiap $n$, lalu taruh
+pelancong di kamar $1$; periksa bahwa setiap kamar terisi tepat satu orang dan tidak
+ada tamu yang hilang.
+
+Kalau mentok, kembali ke bagian Himpunan berhingga, terhitung, tak terhitung,
+khususnya Definisi berkekuatan sama.
+\end{tantangan}
+
+Cantor menunjukkan bahwa $\mathcal{P}(A)$ selalu lebih besar daripada $A$, dengan trik
+yang tidak bergantung pada ukuran $A$.
+
+\begin{teorema}[Cantor]\index{diagonal Cantor}
+Untuk setiap himpunan $A$ tidak ada fungsi surjektif $A \to \mathcal{P}(A)$.
+\end{teorema}
+\par\smallskip\noindent\textit{Bukti.} Misalkan $f : A \to \mathcal{P}(A)$ sebarang
+dan definisikan $D = \{\, a \in A : a \notin f(a) \,\}$. Maka $D \subseteq A$, jadi
+$D \in \mathcal{P}(A)$. Andaikan $D = f(a_0)$ untuk suatu $a_0 \in A$. Bila
+$a_0 \in D$, maka menurut definisi $D$ berlaku $a_0 \notin f(a_0) = D$, kontradiksi.
+Bila $a_0 \notin D$, maka $a_0 \notin f(a_0)$, yang justru syarat keanggotaan $D$,
+sehingga $a_0 \in D$, kontradiksi lagi. Jadi $D$ tidak berada di daerah hasil $f$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Himpunan $D$ dibentuk dengan menanyakan, untuk setiap $a$, apakah $a$ menjadi anggota
+himpunan yang dipasangkan kepadanya, lalu membalik jawabannya; pembalikan itulah yang
+membuat $D$ berbeda dari setiap nilai $f$. Pada $A = \mathbb{N}$ trik ini muncul sebagai
+pembacaan diagonal tabel dengan setiap entrinya diubah, karena itu disebut argumen
+diagonal.
+
+\begin{akibat}
+$\mathcal{P}(\mathbb{N})$ tak terhitung, dan $\mathbb{R}$ tak terhitung.
+\end{akibat}
+\par\smallskip\noindent\textit{Bukti.} Menurut Teorema Cantor dengan $A = \mathbb{N}$,
+tidak ada surjeksi $\mathbb{N} \to \mathcal{P}(\mathbb{N})$, jadi
+$\mathcal{P}(\mathbb{N})$ tak terhitung.
+
+Untuk $\mathbb{R}$ cukup ditunjukkan bahwa $[0,1]$ tak terhitung. Setiap $x \in [0,1]$
+memiliki ekspansi biner $x = \sum_{k \ge 1} b_k 2^{-k}$ dengan $b_k \in \{0,1\}$;
+keberadaannya dibuktikan pada Bab 3 dan Bab 5. Pemetaan dari himpunan barisan biner ke
+$[0,1]$ karena itu surjektif, dan himpunan barisan biner berkekuatan sama dengan
+$\mathcal{P}(\mathbb{N})$ sebab barisan biner adalah fungsi $\mathbb{N} \to \{0,1\}$.
+Bila $[0,1]$ terhitung, bayangan prapetanya di himpunan barisan biner akan terhitung
+pula, bertentangan dengan paragraf sebelumnya.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Satu catatan kejujuran: ekspansi biner tidak tunggal, sebab
+$0{,}0111\dots = 0{,}1000\dots$ dalam basis dua. Argumen di atas tidak terganggu karena
+hanya memakai sifat surjektif, tetapi $|\mathbb{R}| = |\mathcal{P}(\mathbb{N})|$
+menuntut alat berikut.
+
+\begin{proposisi}[Cantor--Bernstein--Schroeder]
+Bila terdapat fungsi injektif $A \to B$ dan injektif $B \to A$, maka $A \sim B$.
+\end{proposisi}
+\par\smallskip\noindent\textit{Sketsa bukti.} Misalkan $f : A \to B$ dan
+$g : B \to A$ injektif. Tetapkan $A_0$ sebagai himpunan titik $A$ yang tidak punya
+pendahulu di $B$, lalu $A_{k+1} = g(f(A_k))$, dan tulis $A^{+}$ untuk gabungan semua
+$A_k$ dengan $k$ genap. Definisikan $h(x) = f(x)$ bila $x \in A^{+}$ dan
+$h(x) = g^{-1}(x)$ bila $x \notin A^{+}$. Pada bagian pertama $h$ injektif karena $f$
+injektif, pada bagian kedua karena $g^{-1}$ injektif, dan bayangan kedua bagian
+terpisah menurut cara $A^{+}$ dibentuk, sehingga $h$ injektif. Untuk kelinearan
+bayangan, ambil $y \in B$. Bila $g(y) \in A^{+}$, maka $g(y)$ berada di suatu $A_k$
+dengan $k$ genap sehingga $g(y) = g(f(x))$ untuk $x \in A_{k-1}$ dan $h(x) = y$; bila
+$g(y) \notin A^{+}$, maka $h(g(y)) = y$. Jadi $h$ surjektif.
+
+Pembukuan kedalaman rantai itulah bagian yang halus, dan rinciannya dilewati di sini;
+versi formal lengkapnya ada pada \emph{Mathematics in Lean} bagian 4.3.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Dengan alat itu kita boleh menyimpulkan $|\mathbb{R}| = |\mathcal{P}(\mathbb{N})|$:
+injeksi dari $\mathcal{P}(\mathbb{N})$ ke $\mathbb{R}$ diberikan ekspansi biner, dan
+injeksi sebaliknya oleh fungsi tangen. Kekuatan $\mathbb{R}$ biasa ditulis
+$2^{\aleph_0}$, dengan $\aleph_0$ kekuatan $\mathbb{N}$.
+
+\begin{untukanak}
+Bayangkan mesin tiket di pintu masuk pameran. Setiap pengunjung mendapat satu tiket
+bernomor: 1, 2, 3, dan seterusnya, tidak ada nomor terpakai dua kali, dan setiap nomor
+yang mungkin akan suatu saat diberikan. Kumpulan benda yang bisa diberi tiket seperti
+itu disebut terhitung.
+
+Kelihatannya semua kumpulan tak berujung bisa diberi tiket. Tetapi tidak. Ada
+kumpulan yang anggotanya begitu banyak sehingga sebanyak apa pun tiket yang kita
+cetak, selalu ada anggota yang tidak kebagian. Mesin tiketnya tidak rusak; kumpulan
+itu memang lebih besar daripada persediaan nomor.
+
+Pertanyaan yang membuat penasaran: bagaimana kita bisa tahu sebuah kumpulan tidak
+bisa diberi tiket, padahal belum semua cara dicoba? Jawabannya trik pembalikan Cantor.
+Setiap kali seseorang mengaku sudah memberi tiket kepada semua anggota, kita susun satu
+anggota baru yang sengaja berbeda dari setiap anggota bertiket; anggota itu pasti
+terlewat.
+\end{untukanak}
+
+\section{Ketaksamaan, nilai mutlak, dan batas atas}
+\tingkat{menengah}
+
+Bagian terakhir memasang dua alat untuk Bab 3. Yang pertama mengukur jarak antara dua
+bilangan tanpa memandang arah, yaitu nilai mutlak.
+
+\begin{definisi}[Nilai mutlak]\index{nilai mutlak}
+Untuk $x \in \mathbb{R}$, $|x| = x$ bila $x \ge 0$ dan $|x| = -x$ bila $x < 0$.
+\end{definisi}
+
+Jarak melalui titik ketiga tidak pernah lebih pendek daripada jarak langsung.
+
+\begin{proposisi}[Ketaksamaan segitiga]
+Untuk setiap $x, y \in \mathbb{R}$ berlaku $|x + y| \le |x| + |y|$ dan
+$\bigl| |x| - |y| \bigr| \le |x - y|$.
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Perhatikan $-|x| \le x \le |x|$ dan
+$-|y| \le y \le |y|$. Menjumlahkan keduanya memberi
+$-(|x|+|y|) \le x + y \le |x|+|y|$, yang menurut definisi nilai mutlak berarti
+$|x+y| \le |x|+|y|$. Untuk yang kedua, tulis $x = (x-y) + y$ dan terapkan hasil
+pertama: $|x| \le |x-y| + |y|$, jadi $|x| - |y| \le |x-y|$. Menukar peran $x$ dan $y$
+memberi $|y| - |x| \le |x-y|$, sehingga $\bigl| |x| - |y| \bigr| \le |x-y|$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Sekarang batas. Himpunan bilangan dapat terbatas di atas tanpa memiliki anggota
+terbesar, dan justru kasus itulah yang paling penting.
+
+\begin{definisi}[Batas atas dan supremum]\index{supremum}
+Misalkan $S \subseteq \mathbb{R}$ tak kosong. Bilangan $u$ disebut batas atas $S$
+bila $s \le u$ untuk setiap $s \in S$; bila ada, $S$ disebut terbatas di atas.
+Bilangan $u$ disebut supremum $S$, ditulis $u = \sup S$, bila $u$ batas atas $S$ dan
+$u \le v$ untuk setiap batas atas $v$ dari $S$.
+\end{definisi}
+
+\kamus{supremum}{supremum (least upper bound)}{Pagar paling rapat: batas tertinggi yang tidak dapat diturunkan lagi tanpa menyisakan anggota di atasnya.}
+
+Supremum, bila ada, tunggal, sebab dua batas atas terkecil saling mendominasi. Yang
+tidak dijamin definisi adalah keberadaannya: $\{x \in \mathbb{Q} : x^{2} < 2\}$
+terbatas di atas dalam $\mathbb{Q}$ tetapi tidak punya supremum di sana.
+
+\begin{catatan}[Aksioma kelengkapan]
+Setiap himpunan tak kosong $S \subseteq \mathbb{R}$ yang terbatas di atas memiliki
+supremum di $\mathbb{R}$. Aksioma ini tidak dibuktikan di sini; pembangunannya
+beserta akibat-akibatnya adalah isi Bab 3, termasuk ciri epsilon yang mengubah
+pernyataan tentang batas terkecil menjadi pernyataan tentang $\varepsilon$, dan
+contoh himpunan yang memiliki supremum tanpa maksimum.
+\end{catatan}
+
+Pada himpunan berhingga supremum dan maksimum berimpit, dan menukar keduanya sering
+lolos pada contoh kecil.
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Empat hitungan berikut dikerjakan tangan sampai angka, lalu diperiksa ulang dengan
+skrip. Semuanya kecil, sehingga kesalahan aritmetika langsung terlihat.
+
+\begin{resep}
+Untuk dua himpunan hingga $A$ dan $B$:
+\begin{enumerate}
+  \item Hitung $|A|$, banyaknya anggota $A$.
+  \item Hitung $|B|$ dengan cara yang sama.
+  \item Hitung $|A \cap B|$, anggota yang muncul di kedua daftar.
+  \item Jumlahkan lalu kurangi: $|A \cup B| = |A| + |B| - |A \cap B|$.
+\end{enumerate}
+Peringatan urutan: langkah 3 tidak boleh ditunda sampai sesudah langkah 4. Kalau
+penjumlahan dikerjakan lebih dulu, anggota irisan terhitung dua kali dan hasilnya
+kelebihan tepat $|A \cap B|$. Untuk $A = \{1,\dots,5\}$ dan $B = \{4,\dots,8\}$:
+$5 + 5 - 2 = 8$, sama dengan angka pada diagram Venn sebelumnya.
+\end{resep}
+
+Pertama, himpunan kuasa. Untuk $A = \{1,2,3\}$ himpunan bagiannya berukuran
+$0,1,2,3$ dengan cacah $1, 3, 3, 1$, seluruhnya $1 + 3 + 3 + 1 = 8 = 2^{3}$. Baris
+$n = 4$ memberi $1+4+6+4+1 = 16$, $n = 2$ memberi $1+2+1 = 4$, dan $n = 1$ memberi
+$1+1 = 2$: segitiga Pascal yang sama dengan Proposisi tentang $2^{n}$.
+
+Kedua, pasangan Cantor. Dengan $\pi(m,n) = T_{m+n} + n$ dan $T_0 = 0$, $T_1 = 1$,
+$T_2 = 3$, $T_3 = 6$: diagonal $s = 0$ memuat $(0,0) \mapsto 0$; $s = 1$ memuat
+$(1,0) \mapsto 1$ dan $(0,1) \mapsto 2$; $s = 2$ memuat $(2,0) \mapsto 3$,
+$(1,1) \mapsto 4$, $(0,2) \mapsto 5$; $s = 3$ memuat $(3,0) \mapsto 6$,
+$(2,1) \mapsto 7$, $(1,2) \mapsto 8$, $(0,3) \mapsto 9$. Sepuluh nilai itu tepat
+$0, \dots, 9$ tanpa pengulangan dan tanpa celah.
+
+Arah sebaliknya lebih mudah salah. Ambil $q = 1000$. Kita cari $s$ dengan
+$T_s \le 1000 < T_{s+1}$. Karena $T_{44} = 44 \cdot 45/2 = 990$ dan $T_{45} = 1035$,
+maka $s = 44$, lalu $n = 1000 - 990 = 10$ dan $m = 44 - 10 = 34$. Pemeriksaan:
+$\pi(34,10) = 44 \cdot 45/2 + 10 = 990 + 10 = 1000$, benar.
+
+Ketiga, bilangan rasional. Menurut aturan tinggi, tingkat $k = 2$ memuat $1/1$;
+$k = 3$ memuat $1/2, 2/1$; $k = 5$ memuat $1/4, 2/3, 3/2, 4/1$. Banyaknya suku tiap
+tingkat adalah nilai fungsi totien Euler, $1, 2, 2, 4, 2, 6$ untuk $k = 2, \dots, 7$.
+Kumulatifnya sampai $k = 7$ adalah $1+2+2+4+2+6 = 17$, jadi $6/1$ menempati posisi
+ke-17. Karena kumulatif sampai $k = 9$ adalah $27$ dan tingkat $k = 10$ memuat
+$1/9, 3/7, 7/3, 9/1$, bilangan $7/3$ menempati posisi ke-30.
+
+Keempat, banyaknya relasi. Pada himpunan $3$ anggota ada $2^{9} = 512$ relasi, dan
+hanya $5$ yang ekuivalensi: $1$ dengan satu kelas, $3$ dengan dua kelas, $1$ dengan tiga
+kelas. Pada himpunan $4$ anggota ada $2^{16} = 65.536$ relasi dan $15$ yang ekuivalen.
+Keempat angka itu muncul lagi sebagai empat baris terakhir keluaran skrip; barisan
+$1, 2, 5, 15, 52$ dikenal sebagai bilangan Bell.
+
+\kertas{Empat angka yang sudah diperiksa ulang. (i) $|\mathcal{P}(A)| = 2^{n}$ untuk
+$n = 0,1,2,3,4$ memberi $1, 2, 4, 8, 16$.
+(ii) $\pi(34,10) = 990 + 10 = 1000$, dan $\pi$ pada diagonal $s = 0,1,2,3$ memberi
+$0,1,2,3,4,5,6,7,8,9$. (iii) Banyak rasional positif bertinggi $k$ adalah
+nilai fungsi totien di $k$; kumulatif sampai $k = 9$ adalah $27$, jadi $7/3$ di
+posisi ke-30. (iv) Relasi pada himpunan $3$ anggota: $512$ seluruhnya, $5$ ekuivalen.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Skrip berikut menjalankan keempat hitungan itu dan menambahkan satu pemeriksaan yang
+tidak dapat dikerjakan tangan: ia membandingkan invers pasangan Cantor yang dihitung
+dengan pecahan mesin dan yang dihitung dengan akar bilangan bulat. Keduanya
+seharusnya memberi jawaban sama; pada satu titik jawabannya berbeda.
+
+\begin{lab}
+\begin{verbatim}
+from itertools import combinations
+from math import gcd, isqrt, sqrt, floor
+
+# (1) banyak himpunan bagian untuk n kecil
+for n in range(5):
+    A = range(n)
+    subs = [S for k in range(n + 1) for S in combinations(A, k)]
+    print("n =", n, "|P(A)| =", len(subs), "2^n =", 2 ** n)
+
+# (2) pasangan Cantor pi(m, n) = (m+n)(m+n+1)/2 + n
+def pi(m, n):
+    s = m + n
+    return s * (s + 1) // 2 + n
+
+pasangan = [(0, 0), (1, 0), (0, 1), (2, 0), (1, 1),
+            (0, 2), (3, 0), (2, 1), (1, 2), (0, 3)]
+print("pi:", [pi(m, n) for m, n in pasangan])
+keys = {pi(m, n) for m in range(61) for n in range(61)}
+print("kunci unik pada 61x61 pasangan:", len(keys) == 61 * 61)
+
+# (3) invers: float vs isqrt
+s, n = 2 * 10**8, 2 * 10**8 - 1
+q = s * (s + 1) // 2 + n
+print("q =", q, "s benar =", s)
+print("s dari float:", int(floor((sqrt(8 * q + 1) - 1) / 2)))
+print("s dari isqrt:", (isqrt(8 * q + 1) - 1) // 2)
+
+# (4) enumerasi Q positif menurut tinggi k = p + q
+seq = []
+for k in range(2, 10):
+    row = [(p, k - p) for p in range(1, k) if gcd(p, k - p) == 1]
+    print("k =", k, "banyak =", len(row), row)
+    seq += row
+print("suku ke-1..8:", seq[:8])
+print("total sampai k = 9:", len(seq))
+
+# (5) relasi pada himpunan n anggota: 2^(n*n) seluruhnya, Bell yang ekuivalen
+def ekuivalen(R, n):
+    refl = all((a, a) in R for a in range(n))
+    sim = all((b, a) in R for a, b in R)
+    trans = all((a, c) in R for a, b in R for c in range(n)
+                if (b, c) in R)
+    return refl and sim and trans
+
+for n in range(1, 5):
+    semua = 2 ** (n * n)
+    hitung = 0
+    for bit in range(semua):
+        R = {(a, b) for a in range(n) for b in range(n)
+             if bit >> (a * n + b) & 1}
+        if ekuivalen(R, n):
+            hitung += 1
+    print("n =", n, "relasi =", semua, "ekuivalen =", hitung)
+\end{verbatim}
+\end{lab}
+
+Keluaran yang tercetak, apa adanya:
+
+\begin{verbatim}
+n = 0 |P(A)| = 1 2^n = 1
+n = 1 |P(A)| = 2 2^n = 2
+n = 2 |P(A)| = 4 2^n = 4
+n = 3 |P(A)| = 8 2^n = 8
+n = 4 |P(A)| = 16 2^n = 16
+pi: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+kunci unik pada 61x61 pasangan: True
+q = 20000000299999999 s benar = 200000000
+s dari float: 200000001
+s dari isqrt: 200000000
+k = 2 banyak = 1 [(1, 1)]
+k = 3 banyak = 2 [(1, 2), (2, 1)]
+k = 4 banyak = 2 [(1, 3), (3, 1)]
+k = 5 banyak = 4 [(1, 4), (2, 3), (3, 2), (4, 1)]
+k = 6 banyak = 2 [(1, 5), (5, 1)]
+k = 7 banyak = 6 [(1, 6), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1)]
+k = 8 banyak = 4 [(1, 7), (3, 5), (5, 3), (7, 1)]
+k = 9 banyak = 6 [(1, 8), (2, 7), (4, 5), (5, 4), (7, 2), (8, 1)]
+suku ke-1..8: [(1, 1), (1, 2), (2, 1), (1, 3), (3, 1), (1, 4), (2, 3), (3, 2)]
+total sampai k = 9: 27
+n = 1 relasi = 2 ekuivalen = 1
+n = 2 relasi = 16 ekuivalen = 2
+n = 3 relasi = 512 ekuivalen = 5
+n = 4 relasi = 65536 ekuivalen = 15
+\end{verbatim}
+
+Yang perlu dibaca dari keluaran itu: lima baris pertama mengonfirmasi $2^{n}$ untuk
+$n = 0$ sampai $4$; sepuluh nilai $\pi$ berurutan tanpa celah, dan $61 \times 61 =
+3721$ pasangan memberi kunci unik sebanyak $3721$, yang merupakan bukti numerik, bukan
+bukti matematis, sebab bukti matematisnya argumen blok $T_s$. Empat baris terakhir
+menyapu seluruh $2^{n^{2}}$ relasi untuk $n = 1$ sampai $4$ dan mencacah yang
+refleksif, simetris, dan transitif: hasilnya $1, 2, 5, 15$. Baris $n = 5$ tidak ada
+karena menyapu $2^{25}$ relasi terlalu lama; nilainya $52$.
+
+Ketiga, invers dengan pecahan salah. Pada $q = 20.000.000.299.999.999$ rumus
+$\lfloor (\sqrt{8q+1}-1)/2 \rfloor$ dengan pecahan mesin 64-bit memberi
+$s = 200.000.001$, sedangkan nilai benarnya $200.000.000$. Kesalahannya satu, dan itu
+cukup untuk mengembalikan pasangan yang sama sekali berbeda: dengan $s = 200.000.001$
+nilai $n = q - T_s$ menjadi negatif. Angka $8q+1$ berorde $10^{17}$, sedangkan pecahan
+64-bit hanya menyimpan sekitar $16$ angka desimal dengan tepat; \texttt{isqrt} bekerja
+pada bilangan bulat dan memberi $200.000.000$. Pelajarannya umum: membalik rumus
+penomoran yang eksak menuntut aritmetika bilangan bulat, seperti dibahas pada Bab 22.
+
+\begin{untukdosen}
+Empat pertemuan. Pertama: operasi himpunan dan De Morgan, tiap bukti ditulis sebagai
+rantai ekuivalensi, bukan dua inklusi terpisah. Kedua: hasilkali kartesius, relasi, lalu
+penyaringan menjadi urutan parsial dan relasi ekuivalensi. Ketiga: kelas, partisi, dan
+fungsi, dengan Lemma kelas dibuktikan di papan. Keempat: kardinalitas sampai Teorema
+Cantor, ditambah sketsa Cantor--Bernstein bila waktu memungkinkan.
+
+Dua miskonsepsi yang paling sering muncul. Pertama, mahasiswa mengira relasi yang
+simetris dan transitif otomatis refleksif; penyangkal $R = \{(1,1),(2,2),(1,2),(2,1)\}$
+pada $\{1,2,3\}$ biasanya cukup, dan Latihan 2 meminta penilaian klaim itu. Kedua,
+mahasiswa mengira $\mathbb{Q}$ lebih besar daripada $\mathbb{N}$ karena kerapatannya;
+mintalah sepuluh suku pertama enumerasi tinggi di papan, lalu tanyakan posisi $7/3$.
+
+Aktivitas yang berhasil: bagi papan menjadi "bilangan asli" dan "rasional positif", lalu
+minta dua relawan memasangkan anggota selama dua menit. Pemasangan naif akan gagal,
+lalu bersama-sama susun pemasangan menurut tinggi. Mahasiswa siap lanjut bila dapat
+menjelaskan mengapa daftar itu tidak melewatkan satu pun rasional, dan mengapa daftar
+serupa gagal untuk $[0,1]$.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Gabungan, irisan, selisih, dan komplemen didefinisikan lewat syarat
+        keanggotaan; hukum De Morgan adalah hukum logika yang dipindahkan ke
+        himpunan, dan versinya berlaku untuk keluarga terindeks apa pun.
+  \item $|\mathcal{P}(A)| = 2^{|A|}$ untuk $A$ berhingga, lewat bijeksi ke fungsi
+        karakteristik $A \to \{0,1\}$.
+  \item Relasi adalah himpunan bagian $A \times B$; pada himpunan $n$ anggota ada
+        $2^{n^{2}}$ relasi, dan empat sifat menyaringnya menjadi relasi ekuivalensi
+        dan urutan parsial.
+  \item Relasi ekuivalensi dan partisi adalah dua wajah objek yang sama; kelasnya
+        selalu tidak kosong, saling lepas, dan menutupi seluruh himpunan.
+  \item Fungsi bijektif tepat ketika ia punya invers dua sisi yang tunggal, dan pada
+        himpunan berhingga berukuran sama ketiga sifat saling mengunci.
+  \item $\mathbb{N} \times \mathbb{N}$ dan $\mathbb{Q}$ terhitung lewat penomoran
+        eksplisit, sedangkan $\mathcal{P}(\mathbb{N})$ dan $\mathbb{R}$ tak terhitung
+        lewat argumen diagonal Cantor.
+  \item Supremum adalah batas atas terkecil; keberadaannya dijamin aksioma
+        kelengkapan, sedangkan ciri epsilon dan pembangunannya dilanjutkan di Bab 3.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Buktikan $A \cap (B \cup C) = (A \cap B) \cup (A \cap C)$ dan
+        $A \setminus (B \setminus C) = (A \setminus B) \cup (A \cap C)$ dengan rantai
+        ekuivalensi keanggotaan.
+  \item Nilai klaim ini: benar, salah, atau belum cukup bukti. "Setiap relasi pada
+        himpunan tak kosong yang simetris dan transitif pasti refleksif." Bila salah,
+        berikan contoh penyangkal sekecil mungkin; bila belum cukup bukti, sebutkan
+        bukti tambahan apa yang diperlukan.
+  \item Buktikan bahwa bila $f : A \to B$ injektif, maka $S \mapsto f(S)$ adalah
+        fungsi injektif dari $\mathcal{P}(A)$ ke $\mathcal{P}(B)$. Jelaskan di mana
+        sifat injektif dipakai dan mengapa kesimpulannya gagal tanpanya.
+  \item Buktikan lemma pasangan terurut Kuratowski:
+        $\{\{a\},\{a,b\}\} = \{\{c\},\{c,d\}\}$ jika dan hanya jika $a = c$ dan
+        $b = d$. Tangani kasus $a = b$ secara terpisah.
+  \item Lengkapi bagian pertama Lemma hitungan: untuk $f : A \to B$ dengan $A$
+        berhingga, $|f(A)| \le |A|$ dan kesamaan berlaku hanya bila $f$ injektif.
+  \item Hitung banyaknya relasi ekuivalensi pada himpunan $5$ anggota yang memiliki
+        tepat dua kelas, lalu periksa jawabannya dengan Python.
+  \item Hitung $\pi(7,5)$ dengan rumus pasangan Cantor, lalu tentukan $(m,n)$ dengan
+        $\pi(m,n) = 1000$. Periksa kedua jawaban dengan Python.
+  \item Tentukan posisi $7/3$ dalam enumerasi rasional positif menurut tinggi, lalu
+        tentukan bilangan pada posisi ke-30 dan ke-41. Periksa dengan Python.
+  \item Buktikan bahwa bila $A_1, A_2, A_3, \dots$ masing-masing terhitung dan
+        penomoran setiap $A_n$ diberikan eksplisit, maka $\bigcup_{n \ge 1} A_n$
+        terhitung.
+  \item Tunjukkan $(0,1)$ berkekuatan sama dengan $\mathbb{R}$ melalui satu bijeksi
+        eksplisit, dan jelaskan mengapa fungsi yang kita pilih harus dibatasi daerah
+        asalnya.
+\end{enumerate}
+\end{latihan}
+
+Petunjuk untuk tiga butir tersulit. Latihan 5: pada langkah induksi tulis
+$A = A' \cup \{a\}$ dengan $a \notin A'$, lalu bandingkan $f(A)$ dengan
+$f(A') \cup \{f(a)\}$; kesamaan ukuran menuntut $f(a) \notin f(A')$ dan
+$|f(A')| = |A'|$ sekaligus. Latihan 6: banyaknya cara memisahkan $n$ anggota menjadi
+dua bagian tak kosong adalah $(2^{n}-2)/2$, sebab memilih bagian pertama atau kedua
+memberi pemisahan yang sama. Latihan 9: susun penomoran seluruh $A_n$ sebagai tabel dua
+kolom, baca diagonal demi diagonal seperti pada bukti bahwa
+$\mathbb{N} \times \mathbb{N}$ terhitung, lalu buang suku berulang.
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di sini ada empat. Teorema Cantor tidak memakai aksioma
+pilihan dan bersifat konstruktif: dari sebarang $f$ kita membangun $D$ yang tidak
+berada di daerah hasilnya. Ketakterhitungan $\mathbb{R}$ bergantung pada ekspansi biner
+setiap titik $[0,1]$; fakta itu memerlukan kelengkapan dan di sini hanya dirujuk ke
+Bab 3 dan Bab 5.
+
+Teorema Cantor--Bernstein--Schroeder di bab ini hanya sketsa. Pembuktian penuh
+memerlukan pembukuan kedalaman rantai yang hati-hati; versi formal lengkapnya ada
+pada Avigad--Massot, \emph{Mathematics in Lean}, bagian 4.3, sedangkan perlakuan
+klasik untuk himpunan, fungsi, dan relasi ekuivalensi ada pada Hoffman--Kunze,
+\emph{Linear Algebra}, Apendiks A.1--A.3. Rujukan primer untuk diagonal dan
+ketakterhitungan adalah Cantor, "Ueber eine Eigenschaft des Inbegriffes aller
+reellen algebraischen Zahlen" (1874) dan "Ueber eine elementare Frage der
+Mannigfaltigkeitslehre" (1891).
+
+Pertanyaan terbuka yang paling terkenal: adakah kardinal di antara $|\mathbb{N}|$ dan
+$|\mathbb{R}|$? Hipotesis kontinum menyatakan tidak ada. Godel (1940) menunjukkan
+hipotesis itu konsisten dengan ZFC, Cohen (1963) menunjukkan ingkarannya juga konsisten.
+Jadi pertanyaan itu tidak dapat dijawab di dalam ZFC.
+
+Dua batas teknis. Pertama, $\sim$ tidak boleh disebut relasi ekuivalensi pada
+"himpunan semua himpunan", sebab kumpulan itu bukan himpunan; perlakuan yang benar
+memakai kelas sebagai objek metateori. Kedua, akibat "gabungan terhitung dari himpunan
+terhitung adalah terhitung" memerlukan pemilihan terhitung bila penomorannya tidak
+diberikan, dan Latihan 9 sengaja mensyaratkan penomoran eksplisit.
+\end{untukpeneliti}
+
+\peta{Bab 2 pada Abbott, \emph{Understanding Analysis}, bagian "Some Preliminaries"
+(himpunan, fungsi, kardinalitas) dan "Cantor's Theorem"; Hoffman--Kunze,
+\emph{Linear Algebra}, Apendiks A.1 (himpunan), A.2 (fungsi dan invers), A.3 (relasi
+ekuivalensi, kelas, kuosien); Avigad--Massot, \emph{Mathematics in Lean}, Bab 4
+("Sets and Functions") untuk ekstensionalitas, prapeta, dan
+Cantor--Bernstein--Schroeder, serta Bab 6.1 untuk himpunan berhingga.}

@@ -1,0 +1,1083 @@
+\chapter{Eigenvalues and Diagonalization}
+
+Every minute, a network monitor splits all incoming requests into three buckets: host A, host B,
+and host C. From old logs it builds a transition rule. Of the requests heading to A, 80 percent
+stay at A, 10 percent move to B, and 10 percent move to C. From B, 30 percent move to A, 60
+percent stay, and 10 percent move to C. From C, 20 percent move to A, 30 percent to B, and 50
+percent stay. If the share of requests in the three buckets at minute $k$ is written as the
+column $\mathbf{x}_{k}$, that rule takes the form
+$\mathbf{x}_{k+1}=M\mathbf{x}_{k}$ with
+\[
+  M=\begin{pmatrix}0.8&0.3&0.2\\ 0.1&0.6&0.3\\ 0.1&0.1&0.5\end{pmatrix}.
+\]
+
+Starting from $\mathbf{x}_{0}=(1,0,0)$, that is, all requests initially go to A, the monitor
+computes ten steps and obtains
+$\mathbf{x}_{10}=(0.5672,\;0.2661,\;0.1666)$. Thirty steps later the numbers are
+$(0.5667,\;0.2667,\;0.1667)$. The three entries still sum to one, and on the second reading the
+numbers stop moving at four decimal places.
+
+The question worth asking is not what the result is after forty minutes; repeated multiplication
+has already answered that for one starting point. The more useful question is: is there a vector
+that $M$ only enlarges without changing its direction? Here that direction is
+$(17/30,\;4/15,\;1/6)=(0.5667,\;0.2667,\;0.1667)$, exactly the numbers that appear after forty
+steps, and the multiplier is $1$.
+
+Chapter 8 supplied the determinant: $\det M=1/5$, so $M$ is invertible and every system
+$M\mathbf{y}=\mathbf{b}$ has a unique solution. That answers whether the process can be reversed,
+not which way it is heading, and not how fast. The number that governs the rate here is $1/2$: the
+largest eigenvalue after $1$. Since $(1/2)^{40}\approx9.1\times10^{-13}$, the initial error stays
+behind the first six digits, and that is why the second reading looks still.
+
+This chapter prepares the tools for reading those two numbers straight from the matrix: how to
+compute them, the condition under which the preserved directions are numerous enough to form a
+basis, what changes when the basis is changed, and then three uses: matrix powers, linear
+differential systems, and Markov chains.
+
+\begin{untukanak}
+Take a sheet of rubber marked with a square grid, then pull it from two sides. The squares turn
+into diamonds, and almost every line becomes slanted. But one line stays straight and stays
+parallel to itself: the line along the pull. Its length changes, its direction does not. Sometimes
+there is also another line that does not slant but reverses its direction, like an arrow turned
+half a circle.
+
+If we are told only how many times each of those special lines stretches, we already know the
+whole pull, without having to draw the grid again. That is a very economical method: three or four
+numbers replace thousands of points on the sheet.
+
+The trouble is that not every pull is that tidy. Try twisting the sheet slightly while pulling.
+Now no line is really straight any longer, and the economical method fails completely. Some pulls
+can be described entirely by a few stretch numbers, others cannot.
+
+The question: from the picture of the pull alone, can we guess whether there are special lines
+that do not slant, and how many? In this chapter we will learn why some pulls have such lines and
+some do not, why some pulls can be replaced entirely by just a few numbers, and why a computing
+engine sometimes guesses wrong on pulls that are almost a twist.
+\end{untukanak}
+
+\section{Directions that do not rotate}
+\tingkat{basic}
+
+A square matrix acts on vectors: it rotates, stretches, or flattens. Almost every vector comes out
+with a direction different from the one it went in with. A small minority do not. A vector that
+comes out in the same direction it went in, only with a different length, marks a direction that
+the matrix preserves. It is that kind of direction that we name first, before any computing tool
+exists.
+
+\kamus{eigenvalue}{nilai eigen}{The multiplier along a direction that is not rotated: the direction
+stays the same, its length is multiplied by that number.}
+
+\begin{definisi}[Eigenvalues and eigenvectors]
+Let $A$ be an $n\times n$ matrix with real entries. A scalar $\lambda$ is called an
+\emph{eigenvalue} of $A$ if there is a nonzero vector $\mathbf{v}\in\mathbb{R}^{n}$ with
+$A\mathbf{v}=\lambda\mathbf{v}$. The vector $\mathbf{v}$ is called an \emph{eigenvector} for
+$\lambda$.\index{eigenvalue}\index{eigenvector}
+\end{definisi}
+
+The condition $\mathbf{v}\neq\mathbf{0}$ is not decoration. Without it, $\mathbf{0}$ satisfies
+$A\mathbf{0}=\lambda\mathbf{0}$ for every $\lambda$, so the term loses its meaning. What we are
+looking for is precisely a direction, and the zero point has no direction.
+
+The equation $A\mathbf{v}=\lambda\mathbf{v}$ can be rewritten as
+$(A-\lambda I)\mathbf{v}=\mathbf{0}$. So $\lambda$ is an eigenvalue exactly when the matrix
+$A-\lambda I$ has a nontrivial kernel, that is, exactly when $A-\lambda I$ is singular. A question
+about eigenvalues can therefore always be translated into a question about rank deficiency, and
+Chapter 8 already supplied the tool for that.
+
+Before computing, one important warning. Not every real matrix has real eigenvalues. The rotation
+matrix
+\[
+  R=\begin{pmatrix}0&-1\\ 1&0\end{pmatrix}
+\]
+sends $(1,0)$ to $(0,1)$. Every real vector rotates ninety degrees, so no line is preserved;
+$R^{2}=-I$ turns half a circle after two steps. The absence of real eigenvalues here is not a
+failure of computation but a geometric statement.
+
+To find eigenvalues without guessing, we use the determinant: the eigenvalues are the numbers that
+make the matrix lose its inverse once that number is subtracted from the diagonal.
+
+\kamus{characteristic polynomial}{polinomial karakteristik}{The list of numbers that make the
+matrix singular, written as a polynomial in one variable.}
+
+\begin{definisi}[Characteristic polynomial]
+For an $n\times n$ matrix, the \emph{characteristic polynomial} is defined as
+$p_{A}(\lambda)=\det(\lambda I-A)$.\index{characteristic polynomial}
+\end{definisi}
+
+We use $\lambda I-A$, not $A-\lambda I$. The two differ by a factor $(-1)^{n}$, so their roots are
+the same, but the first choice makes the polynomial monic, and that makes the other coefficients
+easier to read, as the next corollary shows.
+
+\begin{teorema}
+A scalar $\lambda$ is an eigenvalue of $A$ if and only if $p_{A}(\lambda)=0$.
+\end{teorema}
+
+\begin{proof}
+Suppose $A\mathbf{v}=\lambda\mathbf{v}$ with $\mathbf{v}\neq\mathbf{0}$. Then
+$(A-\lambda I)\mathbf{v}=\mathbf{0}$, so $A-\lambda I$ has a nontrivial kernel and is therefore
+singular. By Chapter 8, singularity is equivalent to a zero determinant, so
+$\det(A-\lambda I)=0$, which differs by a factor $(-1)^{n}$ from $\det(\lambda I-A)=0$.
+
+Conversely, if $\det(\lambda I-A)=0$ then $\lambda I-A$ is singular. Its kernel is nontrivial, so
+there is $\mathbf{v}\neq\mathbf{0}$ with $(\lambda I-A)\mathbf{v}=\mathbf{0}$, that is,
+$A\mathbf{v}=\lambda\mathbf{v}$.
+\end{proof}
+
+The polynomial $p_{A}$ has degree $n$ and is monic, so it has at most $n$ distinct roots. Over
+$\mathbb{C}$ it always factors into $n$ linear factors, so every complex square matrix has exactly
+$n$ eigenvalues when counted with multiplicity. Over $\mathbb{R}$ that can fail:
+$p_{R}(\lambda)=\lambda^{2}+1$ has no real root, but has a pair of complex roots $\pm i$.
+
+The top two coefficients of the characteristic polynomial carry two quantities we already know.
+
+\begin{akibat}
+With eigenvalues counted together with their multiplicities,
+$\operatorname{tr}(A)=\sum_{i}\lambda_{i}$ and $\det(A)=\prod_{i}\lambda_{i}$.
+\index{trace}
+\end{akibat}
+
+\begin{proof}
+The coefficient of $\lambda^{n-1}$ in $\det(\lambda I-A)$ is $-\operatorname{tr}(A)$. That term is
+produced only by the identity permutation in the Leibniz formula, because every other permutation
+loses at least two diagonal entries. The constant term is
+$p_{A}(0)=\det(-A)=(-1)^{n}\det(A)$. Comparing those two coefficients with the form
+$\prod_{i}(\lambda-\lambda_{i})=\lambda^{n}-(\sum_{i}\lambda_{i})\lambda^{n-1}+\dots+(-1)^{n}
+\prod_{i}\lambda_{i}$ gives both identities.
+\end{proof}
+
+That corollary gives a cheap check: after computing eigenvalues with great effort, their sum and
+their product must match the trace and the determinant. If they do not, there is an arithmetic
+mistake.
+
+\begin{bacakeras}
+Two voices, taking turns.
+
+First voice: what does a matrix do?\\
+Second voice: it rotates, stretches, flattens.\\
+First voice: to whom?\\
+Second voice: to almost every vector.\\
+First voice: and then some do not rotate?\\
+Second voice: some do not. One direction. Sometimes two. Never more than the number of columns.\\
+First voice: does the length change?\\
+Second voice: it changes. The direction stays.\\
+First voice: by how much?\\
+Second voice: that is the number. That number is the eigenvalue.\\
+First voice: and the direction?\\
+Second voice: that is the eigenvector. One direction, one number.\\
+First voice: what if the direction flips?\\
+Second voice: the number is negative. The line stays the same, it only faces backwards.\\
+First voice: what if the number is zero?\\
+Second voice: that direction disappears, and the matrix loses its inverse.
+
+Together: a direction that does not change stores a number that changes its length.
+
+Repeat once in a normal voice: a direction that does not change stores a number that changes its
+length.
+\end{bacakeras}
+
+\begin{resep}
+For $A=\begin{pmatrix}a&b\\c&d\end{pmatrix}$ whose entries are already known:
+\begin{enumerate}
+  \item Subtract $\lambda$ from both diagonal entries, leaving $A-\lambda I$.
+  \item Compute $\det(A-\lambda I)$, or use $\lambda^{2}-(a+d)\lambda+(ad-bc)$ directly.
+  \item Solve that quadratic equation; check that the sum of the roots is $a+d$ and the product is
+        $ad-bc$.
+  \item For each root $\lambda$, solve $(A-\lambda I)\mathbf{v}=\mathbf{0}$ and take one nonzero
+        solution.
+\end{enumerate}
+Steps 3 and 4 must not be swapped: an eigenvector only has meaning after $\lambda$ is known, and
+the column order of $P$ must follow the diagonal order of $D$.
+\end{resep}
+
+Now one example by hand. Take
+\[
+  A=\begin{pmatrix}4&2\\ 1&3\end{pmatrix},\qquad
+  p_{A}(\lambda)=\lambda^{2}-7\lambda+10=(\lambda-5)(\lambda-2).
+\]
+The trace is $7=5+2$ and the determinant is $10=5\cdot2$, which matches. For $\lambda=5$ we solve
+$(A-5I)\mathbf{v}=\mathbf{0}$, that is $-v_{1}+2v_{2}=0$ and $v_{1}-2v_{2}=0$; both rows say the
+same thing, so $\mathbf{v}=(2,1)$. For $\lambda=2$ we obtain $2v_{1}+2v_{2}=0$, so
+$\mathbf{v}=(1,-1)$. Direct check:
+\[
+  A\begin{pmatrix}2\\ 1\end{pmatrix}=\begin{pmatrix}10\\ 5\end{pmatrix}=5
+  \begin{pmatrix}2\\ 1\end{pmatrix},\qquad
+  A\begin{pmatrix}1\\ -1\end{pmatrix}=\begin{pmatrix}2\\ -2\end{pmatrix}=2
+  \begin{pmatrix}1\\ -1\end{pmatrix}.
+\]
+Both of those checks can be seen in the plane. Figure~\ref{fig:panah-eigen} draws both eigen
+directions together with their images, and one vector that is not an eigenvector as a comparison.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm,>=latex]
+  \draw[->,layergrey!60] (-0.8,0) -- (11.4,0) node[right,font=\scriptsize] {$x$};
+  \draw[->,layergrey!60] (0,-2.9) -- (0,6.4) node[above,font=\scriptsize] {$y$};
+  \draw[->,thick,layergrey] (0,0) -- (1,0);
+  \draw[->,thick,dashed,layergrey] (0,0) -- (4,1)
+        node[right,font=\scriptsize] {$(4,1)$};
+  \draw[->,very thick,layerteal] (0,0) -- (2,1)
+        node[above left,font=\scriptsize] {$(2,1)$};
+  \fill[layerteal] (2,1) circle (2pt);
+  \draw[->,very thick,accent] (0,0) -- (10,5)
+        node[above,font=\scriptsize] {$(10,5)=5\,(2,1)$};
+  \draw[->,very thick,layerindigo] (0,0) -- (1,-1)
+        node[below left,font=\scriptsize] {$(1,-1)$};
+  \fill[layerindigo] (1,-1) circle (2pt);
+  \draw[->,very thick,layerindigo] (0,0) -- (2,-2)
+        node[below right,font=\scriptsize] {$(2,-2)=2\,(1,-1)$};
+\end{tikzpicture}
+\caption{Eigen directions of the matrix $A=\begin{pmatrix}4&2\\1&3\end{pmatrix}$. The vector
+$(2,1)$ comes out as $(10,5)$, that is, $5$ times as long without rotating; the vector $(1,-1)$
+comes out as $(2,-2)$, that is, $2$ times as long. The vector $(1,0)$ comes out as $(4,1)$ and
+rotates, so it is not an eigenvector.}
+\label{fig:panah-eigen}
+\end{figure}
+
+An eigenvector is determined only up to a multiplier: $(4,2)$ is also an eigenvector for $5$. What
+is unique is the direction, not the length. We will use that freedom later to tidy up the matrix.
+
+For a $2\times2$ matrix the roots can be written down directly. Since
+$p_{A}(\lambda)=\lambda^{2}-\operatorname{tr}(A)\lambda+\det(A)$, the quadratic formula gives
+\[
+  \lambda_{1,2}=\frac{\operatorname{tr}(A)\pm\sqrt{\operatorname{tr}(A)^{2}-4\det(A)}}{2},
+\]
+so the sign of $\Delta=\operatorname{tr}(A)^{2}-4\det(A)$ determines the whole spectrum. For $A$
+above, $\Delta=49-40=9$, and the roots are $5$ and $2$. If $\Delta=0$ the two roots coincide, and
+if $\Delta<0$ there is no real root: the rotation matrix above gives $\Delta=0-4=-4$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=0.85cm,y=0.85cm,>=latex,font=\scriptsize]
+  \draw[->,layergrey!60] (-1.2,0.35) -- (6.6,0.35);
+  \foreach \x in {0,1,2,3,4,5,6} \draw[layergrey!50] (\x,0.26) -- (\x,0.44);
+  \fill[layerteal] (2,0.35) circle (2.2pt);
+  \fill[layerteal] (5,0.35) circle (2.2pt);
+  \node[above=2pt] at (2,0.35) {$2$};
+  \node[above=2pt] at (5,0.35) {$5$};
+  \node[left,align=right,text width=3.0cm] at (-1.3,0.35) {$\Delta=9$: two real roots};
+
+  \draw[->,layergrey!60] (-1.2,-1.25) -- (6.6,-1.25);
+  \foreach \x in {0,1,2,3,4,5,6} \draw[layergrey!50] (\x,-1.34) -- (\x,-1.16);
+  \fill[layerorange] (1,-1.25) circle (2.2pt);
+  \node[above=2pt] at (1,-1.2) {$1$};
+  \node[left,align=right,text width=3.0cm] at (-1.3,-1.25) {$\Delta=0$: one double root};
+
+  \draw[->,layergrey!60] (-1.2,-2.85) -- (6.6,-2.85);
+  \foreach \x in {0,1,2,3,4,5,6} \draw[layergrey!50] (\x,-2.94) -- (\x,-2.76);
+  \draw[layergrey!80] (0,-3.55) -- (0,-2.15);
+  \draw[accent,fill=white,thick] (0,-2.3) circle (2.4pt);
+  \draw[accent,fill=white,thick] (0,-3.4) circle (2.4pt);
+  \node[left=2pt,accent] at (0,-2.3) {$i$};
+  \node[left=2pt,accent] at (0,-3.4) {$-i$};
+  \node[left,align=right,text width=3.0cm] at (-1.3,-2.85) {$\Delta=-4$: no real roots};
+\end{tikzpicture}
+\caption{The spectrum of a $2\times2$ matrix on the number line, separated by the sign of
+$\Delta=\operatorname{tr}(A)^{2}-4\det(A)$. Top row: $A$ with $\Delta=49-40=9$ gives the roots
+$2$ and $5$. Middle row: a shear matrix with $\Delta=0$ gives the root $1$ counted twice. Bottom
+row: the rotation matrix with $\Delta=0-4=-4$ does not meet the real line, and both of its roots,
+$\pm i$, lie off that line.}
+\label{fig:spektrum}
+\end{figure}
+
+Figure~\ref{fig:spektrum} arranges those three possibilities on a single number line: two points,
+one point counted twice, or no point at all. The last is not a shortcoming of the picture but a
+statement that the real line contains no preserved direction.
+
+\begin{tangan}
+Materials: one rubber band, two pencils, a sheet of paper, a ruler.
+
+Place the two pencils parallel, then stretch the rubber band around both so that a rectangle
+forms. On the paper, draw three arrows from the lower left corner of that rectangle, each at an
+angle of 30, 45, and 60 degrees to the bottom side. Label all three.
+
+Slide the right pencil twice as far, so that the rubber stretches. Compare each arrow with its
+original length. The arrow parallel to the pull side keeps its direction; the other two slant, and
+the one that slants most is the one farthest from the pull side.
+
+Now rotate the whole frame ninety degrees and repeat. The surviving direction rotates along with
+the rubber, because what is special is the direction relative to the rubber, not relative to the
+table.
+
+What should be visible: one direction survives, two directions rotate, and the stretch factor
+along the surviving direction is the multiplier we call the eigenvalue.
+\end{tangan}
+
+\section{Eigen spaces and two multiplicities}
+\tingkat{intermediate}
+
+One eigenvalue usually comes with more than one eigenvector. The set of all eigenvectors for one
+eigenvalue, plus the zero vector, is not a random collection: it is a subspace. Its dimension will
+later decide whether the matrix can be simplified.
+
+\begin{definisi}[Eigen space]
+For an eigenvalue $\lambda$ of $A$, the \emph{eigen space} is
+$E_{\lambda}=\operatorname{null}(A-\lambda I)=\{\mathbf{v}:A\mathbf{v}=\lambda\mathbf{v}\}$.
+\index{eigen space}
+\end{definisi}
+
+\kamus{eigen space}{ruang eigen}{All directions that the matrix does not rotate, gathered into a
+single subspace.}
+
+An eigen space is always a subspace because it is the kernel of a matrix (Chapter 7). Its
+dimension is at least one exactly when $\lambda$ really is an eigenvalue.
+
+Eigen spaces for different eigenvalues intersect only at the zero point.
+
+\begin{proposisi}
+If $\lambda\neq\mu$, then $E_{\lambda}\cap E_{\mu}=\{\mathbf{0}\}$.
+\end{proposisi}
+
+\begin{proof}
+Take $\mathbf{v}$ in that intersection. Then $A\mathbf{v}=\lambda\mathbf{v}$ and
+$A\mathbf{v}=\mu\mathbf{v}$, so $(\lambda-\mu)\mathbf{v}=\mathbf{0}$. Since
+$\lambda-\mu\neq0$, we must have $\mathbf{v}=\mathbf{0}$.
+\end{proof}
+
+That property extends to any finite number of eigenvectors, by induction. The result is the lemma
+that forms the backbone of this chapter.
+
+\begin{lemma}
+Eigenvectors corresponding to distinct eigenvalues are linearly independent of one another.
+\end{lemma}
+
+\begin{proof}
+We prove this by induction on the number of vectors. For one vector the statement is true because
+an eigenvector is nonzero. Suppose the statement holds for $m-1$ vectors, and let
+\[
+  c_{1}\mathbf{v}_{1}+\dots+c_{m}\mathbf{v}_{m}=\mathbf{0}
+\]
+with $\lambda_{1},\dots,\lambda_{m}$ distinct. Multiply that equation by $A$, and use
+$A\mathbf{v}_{i}=\lambda_{i}\mathbf{v}_{i}$:
+\[
+  c_{1}\lambda_{1}\mathbf{v}_{1}+\dots+c_{m}\lambda_{m}\mathbf{v}_{m}=\mathbf{0}.
+\]
+Subtract $\lambda_{m}$ times the first equation from the second:
+\[
+  c_{1}(\lambda_{1}-\lambda_{m})\mathbf{v}_{1}+\dots
+  +c_{m-1}(\lambda_{m-1}-\lambda_{m})\mathbf{v}_{m-1}=\mathbf{0}.
+\]
+By the induction hypothesis, $\mathbf{v}_{1},\dots,\mathbf{v}_{m-1}$ are independent, so
+$c_{i}(\lambda_{i}-\lambda_{m})=0$ for $i<m$. Since $\lambda_{i}\neq\lambda_{m}$, all $c_{i}=0$
+for $i<m$. The original equation is left with $c_{m}\mathbf{v}_{m}=\mathbf{0}$, so $c_{m}=0$.
+\end{proof}
+
+That lemma gives a tidy upper bound: an $n\times n$ matrix cannot have more than $n$ independent
+eigenvectors. When is that bound attained?
+
+To answer, we need two ways of counting how often one eigenvalue occurs: from the polynomial and
+from the dimension of the eigen space. The two often differ, and it is the difference that decides.
+
+\kamus{multiplicity}{multiplisitas}{How many times an eigenvalue occurs, counted in two ways that
+are not always equal.}
+
+\begin{definisi}[Algebraic and geometric multiplicity]
+Let $\lambda$ be an eigenvalue of $A$. The \emph{algebraic multiplicity} of $\lambda$ is the power
+of the factor $(\lambda'-\lambda)$ in $p_{A}(\lambda')$. The \emph{geometric multiplicity} of
+$\lambda$ is $\dim E_{\lambda}=\operatorname{nullity}(A-\lambda I)$.\index{multiplicity}
+\end{definisi}
+
+Geometric multiplicity is easy to compute: subtract $\lambda$ from the diagonal, then compute the
+nullity of the resulting matrix. Algebraic multiplicity demands factoring a polynomial. The
+relation between the two always runs in one direction.
+
+\begin{lemma}
+For every eigenvalue $\lambda$ we have
+$1\le\dim E_{\lambda}\le$ the algebraic multiplicity of $\lambda$.
+\end{lemma}
+
+\begin{proof}
+The left inequality is true because $\lambda$ is an eigenvalue, so $E_{\lambda}$ contains a
+nonzero vector.
+
+For the right inequality, write $k=\dim E_{\lambda}$ and choose a basis
+$\mathbf{u}_{1},\dots,\mathbf{u}_{k}$ of $E_{\lambda}$. Extend it to a basis
+$\mathbf{u}_{1},\dots,\mathbf{u}_{n}$ of $\mathbb{R}^{n}$, which is possible by Chapter 7. In that
+basis, column $j$ of the matrix $A$ for $j\le k$ is $A\mathbf{u}_{j}=\lambda\mathbf{u}_{j}$, that
+is, $\lambda$ in the diagonal position and zero everywhere else. So the matrix $A$ in that basis
+has the form
+\[
+  \begin{pmatrix}\lambda I_{k}&C\\ 0&D\end{pmatrix}
+\]
+with $C$ of size $k\times(n-k)$ and $D$ of size $(n-k)\times(n-k)$. The determinant of
+$\lambda' I-A$ in that basis, either through cofactor expansion along the first $k$ columns or
+through the determinant formula for a block triangular matrix, equals
+$(\lambda'-\lambda)^{k}\det(\lambda' I-D)$. So $(\lambda'-\lambda)^{k}$ divides $p_{A}$, hence the
+algebraic multiplicity of $\lambda$ is at least $k$.
+\end{proof}
+
+Now look at both possibilities in a single matrix. Take
+\[
+  A=\begin{pmatrix}2&1&1\\ 1&2&1\\ 1&1&2\end{pmatrix},\qquad
+  p_{A}(\lambda)=(\lambda-1)^{2}(\lambda-4).
+\]
+The eigenvalues are $1$ and $4$, with algebraic multiplicities $2$ and $1$. The trace is
+$6=4+1+1$ and the determinant is $4=4\cdot1\cdot1$, which matches. For $\lambda=4$, the equation
+$(A-4I)\mathbf{v}=\mathbf{0}$ gives $v_{1}=v_{2}=v_{3}$, so $E_{4}$ is spanned by $(1,1,1)$. For
+$\lambda=1$, the matrix $A-I$ is the matrix all of whose entries are $1$, so its kernel is the set
+of vectors whose entries sum to zero. That set is two-dimensional, with basis $(1,-1,0)$ and
+$(1,0,-1)$. So the geometric multiplicity of $1$ is $2$, equal to its algebraic multiplicity.
+
+A repeated eigenvalue is not automatically a problem; what becomes a problem is an eigen space
+that is too small, and that happens with the following matrix.
+
+\section{When a matrix can be diagonalized}
+\tingkat{intermediate}
+
+If we may choose the basis, we want the matrix as simple as possible: diagonal, so that every
+basis vector is merely scaled and not mixed with the others. Is there always such a basis?
+
+\begin{definisi}[Diagonalizable]
+An $n\times n$ matrix is called \emph{diagonalizable} if there is an invertible matrix $P$ and a
+diagonal matrix $D$ with $P^{-1}AP=D$, or equivalently $A=PDP^{-1}$.
+\end{definisi}
+
+\kamus{diagonalization}{diagonalisasi}{Changing the measuring instrument until the whole work of
+the matrix is a few multiplications of numbers.}
+
+The columns of $P$ will contain eigenvectors, and $D$ contains the eigenvalues on its diagonal. A
+question about diagonalization is therefore really a question about having enough eigenvectors.
+
+\begin{teorema}
+An $n\times n$ matrix is diagonalizable if and only if it has $n$ linearly independent
+eigenvectors.\index{diagonalization}
+\end{teorema}
+
+\begin{proof}
+Suppose $P^{-1}AP=D$ with $D=\operatorname{diag}(d_{1},\dots,d_{n})$. Multiply from the left by
+$P$: $AP=PD$. Column $j$ of both sides gives
+$A\mathbf{p}_{j}=d_{j}\mathbf{p}_{j}$, with $\mathbf{p}_{j}$ the $j$-th column of $P$. Since $P$ is
+invertible, each of its columns is nonzero, so $\mathbf{p}_{j}$ is an eigenvector. The columns of
+$P$ are also linearly independent because $P$ is invertible. So $A$ has $n$ independent
+eigenvectors.
+
+Conversely, suppose $\mathbf{p}_{1},\dots,\mathbf{p}_{n}$ are independent eigenvectors with
+$A\mathbf{p}_{j}=\lambda_{j}\mathbf{p}_{j}$. Assemble $P$ from those vectors as columns and
+$D=\operatorname{diag}(\lambda_{1},\dots,\lambda_{n})$. Then $AP=PD$, and since $P$ is invertible
+we obtain $P^{-1}AP=D$.
+\end{proof}
+
+The corollary most often used in hand computation: enough distinct eigenvalues is already
+sufficient.
+
+\begin{akibat}
+If an $n\times n$ matrix has $n$ distinct eigenvalues, it is diagonalizable.
+\end{akibat}
+
+\begin{proof}
+Take one eigenvector for each eigenvalue. By the earlier lemma, $n$ eigenvectors with $n$ distinct
+eigenvalues are independent of one another. The theorem above then gives a diagonalization.
+\end{proof}
+
+The converse does not hold: the $3\times3$ example above had only two distinct eigenvalues, yet is
+still diagonalizable because the eigen space for $\lambda=1$ is two-dimensional. The exact
+condition is not the number of eigenvalues but the total dimension of the eigen spaces.
+
+\begin{teorema}[Multiplicity condition]
+An $n\times n$ matrix is diagonalizable if and only if for each of its eigenvalues the algebraic
+multiplicity equals the geometric multiplicity. That condition is equivalent to
+$\sum_{\lambda}\dim E_{\lambda}=n$.
+\end{teorema}
+
+\begin{proof}
+First, suppose the total dimension of all eigen spaces equals $n$. For each $\lambda$ choose a
+basis of $E_{\lambda}$, then combine all those bases into a list $\mathbf{v}_{1},\dots,
+\mathbf{v}_{n}$. That list is linearly independent: if some linear combination equals zero, group
+the terms according to their eigenvalues to get $\mathbf{u}_{1}+\dots+\mathbf{u}_{m}=\mathbf{0}$
+with $\mathbf{u}_{k}\in E_{\lambda_{k}}$. By the lemma on distinct eigenvectors, every
+$\mathbf{u}_{k}=\mathbf{0}$; since each $\mathbf{u}_{k}$ is a combination of the basis of
+$E_{\lambda_{k}}$, all its coefficients are zero. That list also contains $n$ vectors in a space of
+dimension $n$, so it is a basis of eigenvectors, and the previous theorem closes the argument.
+
+Second, suppose $A$ is diagonalizable, so there is a basis of eigenvectors
+$\mathbf{p}_{1},\dots,\mathbf{p}_{n}$. In that basis the matrix $A$ is diagonal, so
+$p_{A}(\lambda')=\prod_{j}(\lambda'-\lambda_{j})$ and the algebraic multiplicity of each
+eigenvalue equals the number of $j$ with $\lambda_{j}=\lambda$. That number of $j$ does not exceed
+$\dim E_{\lambda}$, because those vectors lie inside $E_{\lambda}$ and are independent. So the
+algebraic multiplicity does not exceed the geometric one. The earlier lemma gives the opposite
+direction, so the two are equal. Finally, $\sum_{\lambda}\dim E_{\lambda}=n$ because the basis of
+eigenvectors fills the whole space.
+\end{proof}
+
+Now an example that fails. Take
+\[
+  S=\begin{pmatrix}1&1\\ 0&1\end{pmatrix},\qquad p_{S}(\lambda)=(\lambda-1)^{2}.
+\]
+The only eigenvalue is $1$, with algebraic multiplicity $2$. But
+$S-I=\begin{pmatrix}0&1\\ 0&0\end{pmatrix}$ has rank one, so $\dim E_{1}=2-1=1$. Its geometric
+multiplicity is one short, and by the theorem above $S$ is not diagonalizable.
+
+Geometrically $S$ is a shear: it preserves the direction $(1,0)$ and slides $(0,1)$ to $(1,1)$. No
+basis makes this map a mere scaling, because a scaling never slides something that was previously
+parallel. That failure is a property of the map, not a choice of basis.
+
+\begin{untukanak}
+Have you ever tried to tidy something that turned out not to be tidyable? Take a stack of cards,
+then slide the top part slightly sideways. The picture on each card stays the same, but every
+point shifts by its distance from the base. There is no way to rotate that stack so that the shift
+becomes a mere lengthening or shortening of something. A shift remains a shift.
+
+There are other objects that are more accommodating. A rubber sheet pulled straight can be
+described only by how many times each direction stretches. If we know that number for a few
+important directions, we know the whole pull, including for points we never measured.
+
+The question: how do we tell the two apart from the picture alone, without trying every
+possibility? In this chapter we will learn why a shear always stores one direction that cannot be
+tidied up, why some pulls have enough special directions, and why that difference decides whether
+the tenth power from a computing engine can still be trusted.
+\end{untukanak}
+
+A shear is easy to recognize because of the triangle. The same failure appears in matrices that do
+not look triangular. Take
+\[
+  B=\begin{pmatrix}-1&4&0\\ -1&3&0\\ 1&-2&2\end{pmatrix},\qquad
+  p_{B}(\lambda)=(\lambda-1)^{2}(\lambda-2).
+\]
+For $\lambda=1$, the matrix $B-I$ has rank two, so $\dim E_{1}=3-2=1$, while its algebraic
+multiplicity is $2$. The only eigenvector for $1$ is $(2,1,0)$. For $\lambda=2$ its eigen space is
+spanned by $(0,0,1)$ and is one-dimensional, matching its algebraic multiplicity. The total
+dimension of all eigen spaces is only $2<3$, so $B$ is not diagonalizable. A matrix of this kind is
+called \emph{defective}: it is short of eigenvectors because its eigen spaces are narrow.
+\index{defective}
+
+\kamus{defective}{defective}{A matrix whose eigenvalues repeat but whose eigen spaces are too
+narrow to form a basis.}
+
+One note before we go on. Whether a matrix is diagonalizable depends on the field of scalars: $R$
+is not diagonalizable over $\mathbb{R}$, but over $\mathbb{C}$ it has two distinct eigenvalues,
+$\pm i$, so it is diagonalizable. A statement without a field qualifier is therefore incomplete.
+For the rest of this chapter the field is $\mathbb{R}$ unless stated otherwise.
+
+\section{Similar matrices and invariants}
+\tingkat{advanced}
+
+Diagonalization is a change of basis that produces the simplest possible form. But not every
+matrix can reach that form, and the next question is natural: what stays the same across all
+matrices connected by a change of basis?\index{invariant}
+
+\begin{definisi}[Similar matrices]
+Two $n\times n$ matrices $A$ and $B$ are called \emph{similar} if there is an invertible matrix
+$P$ with $B=P^{-1}AP$.\index{similar}
+\end{definisi}
+
+\kamus{similar}{serupa}{Two reports about the same map from two different measuring spaces.}
+
+Similarity is an equivalence relation: every matrix is similar to itself, the relation is
+symmetric because $(P^{-1})^{-1}BP^{-1}=A$, and transitive because
+$(PQ)^{-1}A(PQ)=Q^{-1}(P^{-1}AP)Q$. The classes divide up neatly, and diagonalization means asking
+whether a class contains a diagonal matrix.
+
+\begin{proposisi}
+If $A$ and $B$ are similar, then $p_{A}=p_{B}$. Consequently $A$ and $B$ have the same eigenvalues
+together with their algebraic multiplicities, and also the same trace, determinant, rank, and
+nullity.
+\end{proposisi}
+
+\begin{proof}
+Suppose $B=P^{-1}AP$. Then
+\[
+  \lambda I-B=\lambda I-P^{-1}AP=P^{-1}(\lambda I-A)P,
+\]
+so
+$\det(\lambda I-B)=\det(P^{-1})\det(\lambda I-A)\det(P)=\det(\lambda I-A)$ because
+$\det(P^{-1})\det(P)=1$. So the characteristic polynomials are equal, and all data derived from
+their coefficients are equal as well. Equality of rank and nullity follows from $B-\lambda I=
+P^{-1}(A-\lambda I)P$: multiplication by an invertible matrix does not change the rank, and it is
+that rank which determines the nullity through rank-nullity.
+\end{proof}
+
+The converse does not hold, and the counterexample is simple: $I_{2}$ and the shear $S$ have the
+same characteristic polynomial, $(\lambda-1)^{2}$, but are not similar. If $P^{-1}I_{2}P=S$, the
+left side equals $I_{2}$ for every $P$. So the characteristic polynomial is not a complete
+invariant; it only filters.
+
+What changes and what does not can be separated neatly. The eigenvalues do not change. The
+eigenvectors do change, and they change in a way that is easy to remember.
+
+\begin{proposisi}
+If $B=P^{-1}AP$ and $A\mathbf{v}=\lambda\mathbf{v}$, then
+$B(P^{-1}\mathbf{v})=\lambda(P^{-1}\mathbf{v})$.
+\end{proposisi}
+
+\begin{proof}
+Compute $B(P^{-1}\mathbf{v})=P^{-1}APP^{-1}\mathbf{v}=P^{-1}A\mathbf{v}
+=P^{-1}(\lambda\mathbf{v})=\lambda(P^{-1}\mathbf{v})$.
+\end{proof}
+
+So eigenvectors move along with their coordinates, while the multipliers stay put. That makes
+sense: a preserved direction is a property of the map, while its list of coordinates depends on
+the basis. That is why eigenvalues are used as the fingerprint of a matrix, and eigenvectors are
+not.
+
+On the other hand, the freedom to choose $P$ explains why two diagonalizations can look different
+although both are correct: the columns of $P$ may be multiplied by a nonzero scalar or permuted as
+long as $D$ is permuted accordingly. What must be the same is the set of eigenvalues together with
+their multiplicities.
+
+\section{A worked example}
+\tingkat{intermediate}
+
+Every number in this section is computed by hand first, then checked with Python in the lab
+section. We start from the $3\times3$ matrix that already appeared in the discussion of eigen
+spaces,
+\[
+  A=\begin{pmatrix}2&1&1\\ 1&2&1\\ 1&1&2\end{pmatrix}.
+\]
+Its characteristic polynomial is computed from $\lambda I-A$, whose diagonal entries are all
+$\lambda-2$ and whose other entries are all $-1$. Writing $t=\lambda-2$ and expanding along the
+first row,
+\[
+  p_{A}(\lambda)=t\,(t^{2}-1)-(-1)\,(-t-1)+(-1)\,(1+t)=t^{3}-3t-2 .
+\]
+That form factors because $t=-1$ is a root: $t^{3}-3t-2=(t+1)^{2}(t-2)$. Back to $\lambda$,
+\[
+  p_{A}(\lambda)=(\lambda-1)^{2}(\lambda-4)=\lambda^{3}-6\lambda^{2}+9\lambda-4 .
+\]
+The trace is $6$ and the determinant is $4$, matching $4+1+1$ and $4\cdot1\cdot1$.
+
+Eigenvectors for $\lambda=4$: the matrix $A-4I$ has diagonal entries $-2$ and other entries $1$.
+Its rows say $-2v_{1}+v_{2}+v_{3}=0$ and so on; all three equations hold exactly when
+$v_{1}=v_{2}=v_{3}$. So $E_{4}$ is spanned by $(1,1,1)$.
+
+Eigenvectors for $\lambda=1$: the matrix $A-I$ contains only $1$s, so its kernel is the set of
+vectors with $v_{1}+v_{2}+v_{3}=0$. A basis is two vectors, for instance $(1,-1,0)$ and
+$(1,0,-1)$. Hence
+\[
+  P=\begin{pmatrix}1&1&1\\ 1&-1&0\\ 1&0&-1\end{pmatrix},\qquad
+  P^{-1}=\frac{1}{3}\begin{pmatrix}1&1&1\\ 1&-2&1\\ 1&1&-2\end{pmatrix},\qquad
+  D=\operatorname{diag}(4,1,1).
+\]
+The determinant of $P$ is $3$, and that is the denominator in $P^{-1}$. We check one entry by
+hand: the entry in the first row and first column of $PDP^{-1}$ is
+$\tfrac{1}{3}(4\cdot1\cdot1+1\cdot1\cdot1+1\cdot1\cdot1)=2$, matching the entry of $A$. A full
+check with SymPy gives $PDP^{-1}-A=0$ exactly.
+
+Now the tenth power.\index{matrix power} Multiplying nine times gives no insight at all;
+diagonalization provides it. Since $A=I+J$ with $J$ the matrix all of whose entries are $1$, and
+$J^{2}=3J$, every power of $J$ returns as a multiple of $J$:
+\[
+  J^{2}=3J,\quad J^{3}=9J,\quad\dots,\quad J^{k}=3^{k-1}J .
+\]
+Then
+\[
+  A^{k}=(I+J)^{k}=I+\Bigl(\sum_{j=1}^{k}\binom{k}{j}3^{j-1}\Bigr)J
+  =I+\frac{4^{k}-1}{3}\,J,
+\]
+with the last step using the geometric series formula
+$\sum_{j=1}^{k}\binom{k}{j}3^{j-1}=\bigl((1+3)^{k}-1\bigr)/3$. For $k=10$ we have
+$4^{10}=1048576$ and $(1048576-1)/3=349525$, so that
+\[
+  A^{10}=I+349525\,J=
+  \begin{pmatrix}349526&349525&349525\\ 349525&349526&349525\\ 349525&349525&349526\end{pmatrix}.
+\]
+Every entry can be checked: $1+349525$ on the diagonal, $349525$ off it. Direct multiplication
+with Python gives the same matrix, with largest difference $1.05\times10^{-9}$ because of
+floating-point arithmetic.
+
+The form of that formula explains what is not visible in the final result. The term $4^{k}$
+dominates the direction $(1,1,1)$; the constant term $1$ survives in the direction whose entries
+sum to zero. The eigenvalues $4$ and $1$ are two growth rates, and a matrix power is merely a
+mixture of the two. If the matrix is not diagonalizable, that mixture changes shape: a term
+$k\lambda^{k}$ appears or, for $\lambda=1$, a pure factor $k$.
+
+The defective example above shows that. For the $B$ that failed to be diagonalizable,
+\[
+  B^{k}=
+  \begin{pmatrix}1-2k&4k&0\\ -k&1+2k&0\\ 2^{k}-1&-2(2^{k}-1)&2^{k}\end{pmatrix},
+\]
+which can be proved by induction and holds for $k=1$. At $k=10$ that formula gives
+\[
+  B^{10}=\begin{pmatrix}-19&40&0\\ -10&21&0\\ 1023&-2046&1024\end{pmatrix},
+\]
+the same as repeated multiplication. The top-left entry, $-19=1-2\cdot10$, grows linearly, not
+exponentially: the eigenvalue $1$ controls that direction, and the shortage of eigenvectors adds
+one factor of $k$.
+
+Now the first application: a process that settles. For the Markov chain matrix $M$ from the
+opening,
+\index{Markov chain}
+\[
+  p_{M}(\lambda)=\lambda^{3}-\tfrac{19}{10}\lambda^{2}+\tfrac{11}{10}\lambda-\tfrac15
+  =(\lambda-1)\bigl(\lambda-\tfrac12\bigr)\bigl(\lambda-\tfrac25\bigr).
+\]
+The trace is $19/10$ and the determinant is $1/5$, matching $1+\tfrac12+\tfrac25$ and
+$1\cdot\tfrac12\cdot\tfrac25$. The eigenvector for $\lambda=1$ is found from $M\mathbf{v}=
+\mathbf{v}$, that is $(M-I)\mathbf{v}=\mathbf{0}$, together with the condition that the entries sum
+to one. The solution gives $\boldsymbol{\pi}=(17/30,\;4/15,\;1/6)$. One coordinate checked by hand:
+\[
+  \tfrac{8}{10}\cdot\tfrac{17}{30}+\tfrac{3}{10}\cdot\tfrac{8}{30}
+  +\tfrac{2}{10}\cdot\tfrac{5}{30}
+  =\tfrac{13.6+2.4+1.0}{30}=\tfrac{17}{30}.
+\]
+So $\boldsymbol{\pi}$ really is a fixed point.
+
+Since $M$ has three distinct eigenvalues, it is diagonalizable. Every starting point therefore
+decomposes as
+\[
+  \mathbf{x}_{k}=\boldsymbol{\pi}+c_{2}\bigl(\tfrac12\bigr)^{k}\mathbf{v}_{2}
+  +c_{3}\bigl(\tfrac25\bigr)^{k}\mathbf{v}_{3},
+\]
+with $c_{2},c_{3}$ depending on $\mathbf{x}_{0}$. The second and third terms shrink, and the rate
+is governed by $1/2$. For $\mathbf{x}_{0}=(1,0,0)$ we obtain $c_{2}\mathbf{v}_{2}$ of order
+$10^{-1}$, so the error after ten steps is of order
+$10^{-1}\cdot(1/2)^{10}\approx10^{-4}$, and after forty steps of order
+$(1/2)^{40}\approx9.1\times10^{-13}$. The computed result agrees: $\mathbf{x}_{10}$ differs from
+$\boldsymbol{\pi}$ in the fourth digit, while $\mathbf{x}_{40}$ already agrees to six digits.
+
+Second application: differential systems. If $\mathbf{x}(t)$ satisfies
+$\mathbf{x}'=A\mathbf{x}$ with $A$ above, the solution is $\mathbf{x}(t)=e^{At}\mathbf{x}(0)$.
+Since $A=I+J$ and $J^{2}=3J$,
+\[
+  e^{At}=e^{t}e^{Jt}=e^{t}\Bigl(I+\frac{e^{3t}-1}{3}J\Bigr)
+  =e^{t}I+\frac{e^{4t}-e^{t}}{3}J .
+\]
+At $t=0$ that formula gives $I$. For $t=0.5$ its off-diagonal entries are
+$(e^{2}-e^{0.5})/3=1.9134$, and Python gives the same number to four digits. The component along
+$(1,1,1)$ grows like $e^{4t}$; the component in the plane where the entries sum to zero grows like
+$e^{t}$, so the solution quickly becomes parallel to $(1,1,1)$. A positive real eigenvalue means
+growth; a purely imaginary eigenvalue such as $\pm i$ means oscillation without growth.
+
+Third application: power iteration. Multiplying repeatedly and then normalizing the result,
+$\mathbf{x}_{k+1}=A\mathbf{x}_{k}/\lVert A\mathbf{x}_{k}\rVert$, makes the direction turn toward
+the dominant eigenvector, because $\lambda_{1}^{k}$ defeats $\lambda_{2}^{k}$ when
+$|\lambda_{1}|>|\lambda_{2}|$. For $A$ above starting from $(1,0)$, the angle runs $0^\circ$,
+$14.04^\circ$, $21.25^\circ$, $24.39^\circ$, $25.69^\circ$, $26.21^\circ$, and heads toward
+$\arctan(1/2)=26.57^\circ$; the Rayleigh quotient $\mathbf{x}^{\top}A\mathbf{x}/\mathbf{x}^{\top}
+\mathbf{x}$ runs $4.00$, $4.65$, $4.88$, $4.96$, $4.98$, $4.99$, heading toward $5$.
+Figure~\ref{fig:iterasi-pangkat} shows that turning.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=3.2,>=latex]
+  \draw[layergrey!35] (0,0) circle (1);
+  \draw[->,layergrey!60] (-1.25,0) -- (1.55,0) node[right,font=\scriptsize] {$x$};
+  \draw[->,layergrey!60] (0,-0.35) -- (0,1.2) node[above,font=\scriptsize] {$y$};
+  \draw[->,semithick,layergrey] (0,0) -- (0:1);
+  \draw[->,thick,layerindigo!45] (0,0) -- (14.04:1);
+  \draw[->,thick,layerindigo!70] (0,0) -- (21.25:1);
+  \draw[->,very thick,layerindigo] (0,0) -- (24.39:1);
+  \foreach \a in {0,14.04,21.25,24.39} \fill[layerindigo!70] (\a:1) circle (1.3pt);
+  \draw[->,very thick,dashed,accent] (0,0) -- (26.565:1.42);
+  \node[right,font=\scriptsize,accent,align=left] at (26.565:1.42)
+        {$(2,1)$\\[1pt]$26.57^\circ$};
+\end{tikzpicture}
+\caption{Power iteration on $A=\begin{pmatrix}4&2\\1&3\end{pmatrix}$ starting from $(1,0)$. The
+solid arrows are the direction after $k=0,1,2,3$ steps, with angles $0^\circ$, $14.04^\circ$,
+$21.25^\circ$, and $24.39^\circ$. The dashed arrow is the dominant eigen direction $(2,1)$ at
+$26.57^\circ$, which is approached but never passed; the last two arrows coincide because the
+angles are getting tighter, and that is precisely the point of the picture.}
+\label{fig:iterasi-pangkat}
+\end{figure}
+
+\kertas{For $J$ the matrix all of whose entries are $1$, take $B=J-I$. Determine the eigenvalues of
+$B$ first, then predict $B^{10}$ using the pattern $I+\frac{\mu^{10}-(-1)^{10}}{3}J$ with $\mu$ the
+nonzero eigenvalue of $B$. Check that prediction with Python, then explain why $B$ is
+diagonalizable although it has a repeated eigenvalue. As an additional exercise, compute $e^{Bt}$
+and determine the limit $t\to\infty$ of $e^{-2t}e^{Bt}$.}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from scipy.linalg import expm
+
+np.set_printoptions(precision=4, suppress=True)
+
+A = np.array([[2., 1., 1.],
+              [1., 2., 1.],
+              [1., 1., 2.]])
+lam, V = np.linalg.eig(A)
+print("eigenvalues A :", np.round(np.sort(lam.real), 10))
+for i in range(3):
+    sisa = A @ V[:, i] - lam[i] * V[:, i]
+    print("  residual Av-lv :", round(float(np.linalg.norm(sisa)), 16))
+print("A^10 via diagonalization :")
+print(np.round((V @ np.diag(lam ** 10) @ np.linalg.inv(V)).real).astype(int))
+print("A^10 via ordinary power :")
+print(np.linalg.matrix_power(A, 10).astype(int))
+print("max difference :", np.abs((V @ np.diag(lam ** 10)
+                              @ np.linalg.inv(V)).real
+                             - np.linalg.matrix_power(A, 10)).max())
+print("cond V       :", round(float(np.linalg.cond(V)), 4))
+
+A2 = np.array([[4., 2.],
+               [1., 3.]])
+x = np.array([1., 0.])
+print("power iteration on A2:")
+for k in range(6):
+    sudut = np.degrees(np.arctan2(x[1], x[0]))
+    rq = float(x @ A2 @ x / (x @ x))
+    print("  k=%d angle=%7.2f rayleigh=%.4f" % (k, sudut, rq))
+    x = A2 @ x / np.linalg.norm(A2 @ x)
+print("limit angle  :", round(float(np.degrees(np.arctan2(1., 2.))), 2))
+
+B = np.array([[-1., 4., 0.],
+              [-1., 3., 0.],
+              [1., -2., 2.]])
+print("eigen B      :", np.round(np.sort(np.linalg.eigvals(B).real), 10))
+print("rank(B - I)  :", np.linalg.matrix_rank(B - np.eye(3)))
+print("B^10         :")
+print(np.linalg.matrix_power(B, 10).astype(int))
+
+M = np.array([[0.8, 0.3, 0.2],
+              [0.1, 0.6, 0.3],
+              [0.1, 0.1, 0.5]])
+print("column sums  :", M.sum(axis=0))
+print("eigen M      :", np.round(np.sort(np.linalg.eigvals(M).real), 10))
+x = np.array([1., 0., 0.])
+for _ in range(10):
+    x = M @ x
+print("x after 10   :", np.round(x, 6))
+for _ in range(30):
+    x = M @ x
+print("x after 40   :", np.round(x, 6))
+
+C = np.array([[1., 1000.], [0., 2.]])
+Cp = C.copy()
+Cp[1, 0] = 1e-6
+print("eigen C      :", np.round(np.sort(np.linalg.eigvals(C).real), 6))
+print("eigen C+1e-6 :", np.round(np.sort(np.linalg.eigvals(Cp).real), 6))
+print("cond V(C)    :", round(float(np.linalg.cond(np.linalg.eig(C)[1])), 1))
+print("expm(0.5A)   :", round(float(expm(0.5 * A)[0, 1]), 4))
+print("formula      :", round(float((np.exp(2) - np.exp(0.5)) / 3), 4))
+\end{verbatim}
+Actual output:
+\begin{verbatim}
+eigenvalues A : [1. 1. 4.]
+  residual Av-lv : 8e-16
+  residual Av-lv : 1.1e-15
+  residual Av-lv : 3e-16
+A^10 via diagonalization :
+[[349526 349525 349525]
+ [349525 349526 349525]
+ [349525 349525 349526]]
+A^10 via ordinary power :
+[[349526 349525 349525]
+ [349525 349526 349525]
+ [349525 349525 349526]]
+max difference : 1.0477378964424133e-09
+cond V       : 1.5227
+power iteration on A2:
+  k=0 angle=   0.00 rayleigh=4.0000
+  k=1 angle=  14.04 rayleigh=4.6471
+  k=2 angle=  21.25 rayleigh=4.8820
+  k=3 angle=  24.39 rayleigh=4.9578
+  k=4 angle=  25.69 rayleigh=4.9840
+  k=5 angle=  26.21 rayleigh=4.9938
+limit angle  : 26.57
+eigen B      : [1. 1. 2.]
+rank(B - I)  : 2
+B^10         :
+[[  -19    40     0]
+ [  -10    21     0]
+ [ 1023 -2046  1024]]
+column sums  : [1. 1. 1.]
+eigen M      : [0.4 0.5 1. ]
+x after 10   : [0.5672 0.2661 0.1666]
+x after 40   : [0.5667 0.2667 0.1667]
+eigen C      : [1. 2.]
+eigen C+1e-6 : [0.999 2.001]
+cond V(C)    : 2000.0
+expm(0.5A)   : 1.9134
+formula      : 1.9134
+\end{verbatim}
+\end{lab}
+
+The first line of that output lists the eigenvalues in increasing order, $1,1,4$. The next three
+lines are the residuals $A\mathbf{v}-\lambda\mathbf{v}$ for the three eigenvectors that the library
+returned. A residual of order $10^{-16}$ means that the equation is satisfied to the limit of
+machine precision; no residual is exactly zero because eigenvectors are normalized and computed
+iteratively. The library eigenvectors are also not $(1,1,1)$ and $(1,-1,0)$ but normalized
+multiples: the direction is the same, the length differs, and diagonalization cares only about
+direction.
+
+The two $A^{10}$ blocks give identical integer entries, with largest difference
+$1.05\times10^{-9}$. That difference is not an algebraic error: entries of size
+$3.5\times10^{5}$ are computed through $V$, $V^{-1}$, and powers of real numbers, so rounding
+errors of order $10^{-16}$ grow along with them.
+
+The value \texttt{cond V} of $1.5227$ is close to one, and that is good news: $A$ is symmetric, so
+its eigenvectors can be chosen mutually perpendicular and $P$ is nearly orthogonal.
+Diagonalization for such matrices is far more stable.
+
+The power iteration block repeats the computation in Figure~\ref{fig:iterasi-pangkat}: the angle
+rises from $0$ to $26.21$ degrees, staying below the limit $26.57$, while the Rayleigh quotient
+rises from $4.0000$ to $4.9938$ toward $5$.
+
+The $B$ block shows the other side: its eigenvalues are $1,1,2$ and \texttt{rank(B - I)} equals
+$2$, so the nullity is $1$. The geometric multiplicity for $\lambda=1$ is only one, while the
+algebraic one is two; the matrix is defective. The $B^{10}$ block shows the consequence: the
+entries $-19$ and $1024$ sit side by side, the first growing linearly and the second
+exponentially.
+
+The $M$ block verifies that every column sums to one, so that $\mathbf{x}_{k}$ stays stochastic.
+Its eigenvalues are $0.4$, $0.5$, and $1$; after forty steps the numbers stop moving at six
+digits, matching the rate $(1/2)^{k}$ derived by hand.
+
+The last block gives one warning: the matrix $C$ has eigenvalues $1$ and $2$, and if one zero
+entry below the diagonal is replaced by $10^{-6}$, its eigenvalues shift to $0.999$ and $2.001$; a
+shift of $10^{-3}$, a thousand times larger than the perturbation. That number can be computed
+exactly: the roots of $\lambda^{2}-3\lambda+1.999$ are $1.5\mp\sqrt{2510}/100$, that is
+$0.999000998$ and $2.000999002$. The shift is proportional to $10^{-6}\cdot1000/(2-1)$: the
+perturbation times the large entry divided by the gap between the two eigenvalues. The condition
+number $2000$ captures the same amplification. Eigenvalues are still continuous in the entries,
+but they need not be Lipschitz continuous with constant one.
+
+\begin{tantangan}
+Find a $2\times2$ matrix whose two eigenvalues are real and distinct, but whose two eigenvectors
+are not perpendicular. Show that your choice is correct by computing the dot product, then explain
+why a symmetric matrix cannot be used (the answer waits in Chapter 10).
+
+Hint 1: two vectors are perpendicular exactly when their dot product is zero. Start from a simple
+upper triangular matrix, then compute both eigenvectors without rounding.
+
+Hint 2: the matrix $\begin{pmatrix}2&1\\0&3\end{pmatrix}$ is enough. The eigenvector for $3$ is
+$(1,1)$ and the one for $2$ is $(1,0)$; their dot product is $1$, not zero. Compare with the
+symmetric matrix $A$ in the lab, which gives $\texttt{cond V}\approx1.5$.
+
+If you get stuck, go back to the section Similar matrices and invariants, then to the paragraph on
+the condition number in Computational lab.
+\end{tantangan}
+
+\begin{untukdosen}
+A teaching order that has worked: eigenvalues first, as preserved directions, then the
+characteristic polynomial as a computational tool. If the polynomial comes first, students see
+roots of a polynomial and forget that what is being sought is a direction. After eigen spaces,
+introduce geometric multiplicity through nullity, then the condition for diagonalization. The
+shear example should come before the condition theorem, so that the theorem answers a question
+that is already felt.
+
+Two typical misconceptions. First, students assume that a repeated eigenvalue always means not
+diagonalizable. The matrix $(2,1,1;1,2,1;1,1,2)$ in the example section refutes that with
+geometric multiplicity two. Second, they write eigenvectors as rows of $P$, then obtain a
+$P^{-1}AP$ that is not diagonal and blame the formula. The rule to repeat: eigenvectors are
+columns, and the column order of $P$ must be the same as the diagonal order of $D$.
+
+Class activity: split the class into two groups for the matrix $(2,1,1;1,2,1;1,1,2)$. The first
+group computes $A^{10}$ through diagonalization, the second through repeated powers or fast
+repeated multiplication. Compare the results on the board, then ask the class to explain why the
+two roads must meet. The noise usually arises over the denominator $3$ in $P^{-1}$.
+
+Sign of readiness for what follows: students can say, without computing, why the shear matrix is
+not diagonalizable, and can guess the form of $S^{k}$ for a $2\times2$ shear. If they mention the
+appearance of a factor $k$, they are ready for Chapter 10.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item $\lambda$ is an eigenvalue of $A$ if there is $\mathbf{v}\neq\mathbf{0}$ with
+        $A\mathbf{v}=\lambda\mathbf{v}$. Eigenvalues are the roots of
+        $p_{A}(\lambda)=\det(\lambda I-A)$, and $E_{\lambda}=\operatorname{null}(A-\lambda I)$ is
+        the corresponding subspace.
+  \item The degree of $p_{A}$ is $n$, so there are at most $n$ distinct eigenvalues. Over
+        $\mathbb{C}$ there are always $n$ when counted with multiplicity; over $\mathbb{R}$ there
+        need not be, as with the rotation matrix.
+  \item $\operatorname{tr}(A)=\sum_{i}\lambda_{i}$ and $\det(A)=\prod_{i}\lambda_{i}$, both
+        counted with multiplicity. This is a cheap check for every hand computation.
+  \item For every eigenvalue, $1\le\dim E_{\lambda}\le$ the algebraic multiplicity. Eigenvectors
+        with distinct eigenvalues are always linearly independent.
+  \item $A$ is diagonalizable exactly when there are $n$ independent eigenvectors, and exactly
+        when the algebraic multiplicity equals the geometric one for every eigenvalue. Otherwise
+        $A$ is called defective, and $A^{k}$ in general contains a factor $k$, not only
+        $\lambda^{k}$.
+  \item Similar matrices have the same characteristic polynomial, eigenvalues, trace, and
+        determinant; the converse does not hold. Eigenvectors change along with the basis.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Determine the eigenvalues and eigenvectors of
+        $A_{1}=\begin{pmatrix}3&1\\ 2&2\end{pmatrix}$, then assemble $P$ and $D$ and check
+        $P^{-1}A_{1}P=D$ by multiplying back.
+
+  \item Compute $G^{10}$ for $G=\begin{pmatrix}4&2\\ 1&3\end{pmatrix}$ through diagonalization,
+        then check the result with the NumPy function \texttt{matrix\_power}. Write down the
+        general form of $G^{k}$ as well.
+
+  \item Prove that if $\lambda$ is an eigenvalue of $A$ then $\lambda^{2}$ is an eigenvalue of
+        $A^{2}$, and in general $\lambda^{k}$ is an eigenvalue of $A^{k}$ for every integer
+        $k\ge1$. Explain why the converse fails: give an $A$ with $A^{2}=-I$, then compare the
+        eigenvalues of $A^{2}$ with the real eigenvalues of $A$.
+        (Hint: use the rotation matrix from the start of the chapter; it has no real eigenvalue.)
+
+  \item Prove that $A$ is invertible if and only if $0$ is not an eigenvalue of $A$, and that in
+        that case the eigenvalues of $A^{-1}$ are $1/\lambda$ for every eigenvalue $\lambda$ of
+        $A$.
+        (Hint: start from $A\mathbf{v}=\lambda\mathbf{v}$, multiply on the left by $A^{-1}$, and
+        make sure that $\lambda\neq0$ so that the division is legitimate.)
+
+  \item Assess this claim: \emph{two square matrices of the same size that have the same
+        characteristic polynomial are necessarily similar.} Decide whether it is true, false, or
+        not supported by enough evidence, and include a reason or a counterexample.
+
+  \item Prove that $A$ and $A^{\top}$ have the same characteristic polynomial, using
+        $\det(\lambda I-A)=\det((\lambda I-A)^{\top})$ and the properties of the determinant from
+        Chapter 8. Explain why this means that the transpose does not change the eigenvalues but
+        usually changes the eigenvectors.
+
+  \item The matrix $K=\begin{pmatrix}2&1&0\\ 0&2&0\\ 0&0&1\end{pmatrix}$ has eigenvalues $2,2,1$.
+        Determine the rank of $K-2I$, then decide whether $K$ is diagonalizable. Justify your
+        answer with the multiplicity condition.
+
+  \item A two-state Markov chain has matrix
+        $T=\begin{pmatrix}0.9&0.4\\ 0.1&0.6\end{pmatrix}$. Determine the eigenvalues of $T$, its
+        fixed point, and the number of steps needed for the initial error to shrink below
+        $10^{-6}$. Check your answer with Python.
+        (Hint: once the eigenvalues are known, the error shrinks like $|\lambda_{2}|^{k}$; solve
+        $|\lambda_{2}|^{k}<10^{-6}$ with logarithms.)
+
+  \item Prove: if $A$ is diagonalizable with $A=PDP^{-1}$, then
+        $\operatorname{tr}(A^{k})=\sum_{i}\lambda_{i}^{k}$ for every $k\ge1$, using
+        $\operatorname{tr}(XY)=\operatorname{tr}(YX)$. For the defective $B$ above, compute
+        $\operatorname{tr}(B^{10})$ from the printed matrix, then compare it with
+        $1^{10}+1^{10}+2^{10}$. Explain why that equality still holds although $B$ is defective,
+        and at which point the proof above used diagonalization.
+        (Hint: the trace does not change under a change of basis; use the form of $B^{k}$ already
+        derived.)
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+What is really proved in this chapter are algebraic statements over any field and in finite
+dimension: the equivalence of eigenvalues with roots of the characteristic polynomial, the
+independence of eigenvectors for distinct eigenvalues, the inequality
+$1\le\dim E_{\lambda}\le$ the algebraic multiplicity, and the equivalence of diagonalization with
+the two conditions used here. The standard references are Axler, \emph{Linear Algebra Done Right}
+4th edition, sections 5A and 5D (5.55, the four equivalent conditions, and 5.54); a matrix version
+is in Anton, \emph{Elementary Linear Algebra} 11th edition, sections 5.1 and 5.2.
+
+Two things are more often popularized than proved. First, the claim that eigenvalues ``measure
+importance'', the basis of the PageRank explanation: the principal eigenvector of a stochastic
+matrix gives steady weights only if the chain is irreducible and aperiodic, and that is the content
+of the Perron-Frobenius theorem, which is not proved here; a full proof is in Strang,
+\emph{Introduction to Linear Algebra} 6th edition, Appendix 8. Second, the claim that the
+characteristic polynomial is a practical way to compute eigenvalues: for $n\ge5$ there is no
+general root formula, and libraries use the QR algorithm on matrices, not polynomial factoring.
+This chapter also stops at the diagonalizable case; Jordan form and the minimal polynomial are not
+discussed, and are in Hoffman and Kunze, \emph{Linear Algebra} 2nd edition, sections 6.3 and 7.3.
+
+Open questions: how far eigenvalues shift when the entries are perturbed, whose quantitative answer
+requires the Bauer-Fike theorem or pseudospectra; and whether defectiveness itself is numerically
+stable. Limits of validity: finite dimension, real or complex field, with no claim about the
+stability of algorithms.
+\end{untukpeneliti}
+
+\peta{This chapter follows Anton, \emph{Elementary Linear Algebra} 11th edition, Chapter 5:
+section 5.1 (Eigenvalues and Eigenvectors), 5.2 (Diagonalization), 5.3 (Complex Vector Spaces),
+5.4 (Application: Differential Equations), and 5.5 (Application: Dynamical Systems and Markov
+Chains). A more abstract counterpart is in Axler, \emph{Linear Algebra Done Right} 4th edition,
+Chapter 5: 5A (eigenvalues and eigen spaces), 5B (existence of eigenvalues over complex vector
+spaces), and 5D (diagonalizable operators, including 5.55). For Markov chains and the
+Perron-Frobenius theorem, see Strang, \emph{Introduction to Linear Algebra} 6th edition, sections
+6.1, 6.2, 6.5, and Appendix 8. Canonical forms for defective matrices are in Hoffman and Kunze,
+\emph{Linear Algebra} 2nd edition, Chapter 6 (Elementary Canonical Forms), section 6.3 for the
+minimal polynomial, and Chapter 7 (The Rational and Jordan Forms), section 7.3 for the Jordan
+form.}

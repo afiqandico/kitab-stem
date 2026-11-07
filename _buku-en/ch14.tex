@@ -1,0 +1,1047 @@
+\chapter{Series of Functions and the Exchange of Limits}
+
+A small numerical library computes $\ln(1+x)$ with the series
+$\sum_{k\ge 1}(-1)^{k+1}x^{k}/k$. Its author tested the function at $x=0.5$
+with twelve terms and compared it against a standard library: the error was
+$6.4\times 10^{-6}$. The test passed, the documentation states that the series is
+accurate to six digits, and the code went into production. The first user called it with
+$x=0.99$. Twelve terms give $0.6529204447$, whereas
+$\ln 1.99=0.6881346387$. The error is $3.5\times10^{-2}$, about five thousand times
+larger, for the same function with the same number of terms.
+
+That damage is not a typo. For every $x$ in $(-1,1)$ the series converges
+to $\ln(1+x)$; what changes is only how many terms are needed: $16$
+terms at $x=0.5$, $89$ at $x=0.9$, $721$ at $x=0.99$, $5248$ at $x=0.999$,
+all of them for an error below $10^{-6}$. No single number of terms suffices
+for all $x$, because $x$ may lie as close as we please to $1$.
+
+Compare with a closed subinterval $[-r,r]$, $0<r<1$. There one estimate
+holds simultaneously for all $x$: the remainder of an alternating series is bounded by
+$r^{N+1}/(N+1)$, and that bound does not mention $x$. For $r=0.5$ and $N=12$
+the bound is $9.4\times10^{-6}$, the actual error $6.4\times10^{-6}$. This is the
+difference that this entire chapter is about.
+
+Chapter 5 dealt with series of numbers, and each $x$ gives a different series of
+numbers. Chapters 11 and 13 define continuity and the integral point by point,
+so neither of them has a way to move a limit past an integral sign without
+extra conditions. The tool still missing is a distance between two functions; once that
+distance exists, the whole family of series becomes a single sequence in a metric space.
+
+\begin{untukanak}
+Imagine a class with thirty students, and the teacher writes a single number
+on the board: one hundred. Each student's task is to guess that number, and after every
+guess the teacher announces whether the guess is getting closer. The first student is very
+fast: within five guesses he is off by less than one. The second student is
+slow: he needs twenty guesses. The third is very slow: he needs a hundred.
+But all three, given enough time, end up off by less than one.
+
+Now the teacher changes the question. Not ``does every student eventually get
+close'', but ``is there a moment when all students are already close at the same
+time''. For that class the answer is no: the slowest student is always
+lagging, and one can always add a student who is slower still.
+
+The same question arises for the formulas a computer uses. A formula
+may be correct for every value put into it, yet the number of terms
+needed can blow up without bound as the value approaches the edge. If a
+program takes ``correct for every value'' to mean ``one formula suffices
+for all values'', that program will be far off at the most troublesome values, and the
+error will not show up in the test its author chose.
+
+In this chapter we shall see why those two questions are not a matter of words,
+but a matter of whether two operations may be exchanged in order: limit with
+integral, limit with derivative, and summation with both.
+\end{untukanak}
+
+\section{Pointwise and uniform convergence}
+\tingkat{basic}
+
+Take a family of functions $f_1,f_2,\ldots$ all defined on a single
+set $E\subseteq\mathbb{R}$. For one point $x$ that we hold fixed,
+the values $f_1(x),f_2(x),\ldots$ are nothing but a sequence of numbers, and Chapter 4
+already said what it means for that sequence to converge. Hence the first definition
+almost writes itself.
+
+\begin{definisi}
+Suppose $f_n$ and $f$ are defined on $E\subseteq\mathbb{R}$.
+\begin{enumerate}
+\item We say $f_n\to f$ \emph{pointwise}\index{pointwise convergence} on $E$
+      if for every $x\in E$ and every
+      $\varepsilon>0$ there is $N$ such that $n\ge N$ implies
+      $|f_n(x)-f(x)|<\varepsilon$. Here $N$ may depend on $x$ and
+      on $\varepsilon$.
+\item We say $f_n\to f$ \emph{uniformly}\index{uniform convergence} on
+      $E$ if for every $\varepsilon>0$ there is $N$ such that $n\ge N$
+      implies $|f_n(x)-f(x)|<\varepsilon$ for \emph{all} $x\in E$
+      at once. Here $N$ depends only on $\varepsilon$.
+\item If $h$ is bounded on $E$, the supremum norm\index{supremum norm} of $h$
+      is $\|h\|_\infty=\sup_{x\in E}|h(x)|$.
+\end{enumerate}
+\end{definisi}
+
+\kamus{uniform convergence}{konvergensi seragam}{all points must already be close
+at the same time, not one by one on their own schedules.}
+
+One quantifier changes place, and the whole content of this chapter hangs on
+that move. In the first definition the order is ``for every point there is a
+threshold''. In the second the order is ``there is one threshold for all points''.
+The first sentence is true for the series in the chapter opening, the second is false, and
+the difference between them is the difference between $16$ terms and $5248$ terms.
+
+\begin{bacakeras}
+Two voices take turns.
+
+First voice: ``Does this series get there?''
+Second voice: ``It gets there. Slowly, but it gets there.''
+First voice: ``Does it get there for this point?''
+Second voice: ``For this point. For the point next door, another time, at its own pace.''
+
+That is the first promise. Every point may be slow, as long as it has one tempo
+of its own. A point far from the edge arrives within a dozen steps;
+a point pressed against the edge needs thousands.
+
+Now the first voice asks in other words: ``Is there one tempo for
+all points at once?''
+
+The second voice stays silent longer. ``On a closed interval that stops before the edge,
+yes. On the whole open interval, no. And what is missing there is not a failure of
+counting; it merely demands a tempo that moves together with the point.''
+
+Repeat this line until it sits on the tongue: all points may be slow, as long as one
+tempo. If the tempo must differ for each point, its name is not uniform.
+\end{bacakeras}
+
+\begin{contoh}
+Suppose $f_n(x)=x^n$ on $E=[0,1]$. For $0\le x<1$ we have $x^n\to0$,
+whereas $x^n=1$ for all $n$ if $x=1$. So $f_n$ converges pointwise
+to
+\[
+  f(x)=\begin{cases}0, & 0\le x<1,\\ 1, & x=1.\end{cases}
+\]
+That convergence is not uniform, since $\sup_{x\in[0,1]}|x^n-f(x)|=1$ for
+every $n$: at $x=1$ the difference is exactly $1$, and for $x$ close enough to $1$
+from the left $x^n$ approaches $1$ while $f(x)=0$.
+\end{contoh}
+
+That example shows two things. First, the pointwise limit of continuous functions
+need not be continuous: every $x^n$ is continuous, its limit jumps at $x=1$. Second,
+uniformity depends on the set, not only on the formula of the function.
+
+That dependence can be measured. On $[0,r]$ with $r<1$ the convergence is
+uniform, since $\sup_{[0,r]}|x^n|=r^n\to0$. What is interesting is when the right
+endpoint also moves with $n$. On $[0,1-1/n]$ the supremum is
+$(1-1/n)^n\to1/e=0.3678794412$; so shrinking by $1/n$ does not yet
+rescue uniformity. On $[0,1-1/\sqrt{n}]$ the supremum is
+$(1-1/\sqrt n)^n$, which collapses like $e^{-\sqrt n}$: $2.2\times10^{-2}$ at
+$n=10$, $2.7\times10^{-5}$ at $n=100$, $2.2\times10^{-44}$ at $n=10^4$. The rate
+of shrinking, not the formula of the function, is what decides.
+
+The diagonal test yields sharper additional information. Take the points
+$x_n=1-1/n$ chasing the break point. Then $f_n(x_n)=(1-1/n)^n\to1/e$,
+while $f(x_n)=0$ for all $n$. So not only does the supremum fail to
+shrink: the values at well-chosen points also refuse to approach the
+pointwise limit. This pattern is used repeatedly in this chapter. To
+refute uniformity, find one sequence of points that keeps the difference
+large.
+
+Two simple families separate the two symptoms. In the first, $g_n$ is a
+triangle of height $1$ with base $1/n$ and apex at $1-1/n$: the apex
+moves right, the height never drops, and the area is $1/(2n)$. A point
+$x<1$ is touched by the apex only while $1/(2(1-x))<n<3/(2(1-x))$, so at $x=0.9$
+only nine values of $n$ give a positive value, at $x=0.99$ ninety-nine,
+and once the last apex has passed the value is zero forever. The limit is zero
+at every point, whereas $\|g_n\|_\infty=1$. In the second, $h_n$ has height $1/n$
+with base $1$ in the same place: the apex shrinks instead of moving, and
+$\|h_n\|_\infty=1/n\to0$ (Figure~\ref{fig:puncak}).
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=5.6cm,y=3.1cm,font=\small]
+  \draw[->,layergrey] (0,0)--(1.15,0) node[right,font=\scriptsize]{$x$};
+  \draw[->,layergrey] (0,0)--(0,1.32) node[above,font=\scriptsize]{$y$};
+  \node[below,font=\scriptsize,layergrey] at (1,0) {$1$};
+  \foreach \n/\c in {16/layerindigo!15,8/layerindigo!30,4/layerindigo!50,2/layerindigo!75}{
+    \fill[\c] ({1-1/\n-1/(2*\n)},0) -- ({1-1/\n},1) -- ({1-1/\n+1/(2*\n)},0) -- cycle;
+  }
+  \draw[dashed,layergrey] (0,1)--(1.06,1);
+  \node[above,font=\scriptsize,layergrey] at (0.72,1) {height $1$};
+  \begin{scope}[xshift=7.0cm]
+    \draw[->,layergrey] (0,0)--(1.15,0) node[right,font=\scriptsize]{$x$};
+    \draw[->,layergrey] (0,0)--(0,1.32) node[above,font=\scriptsize]{$y$};
+    \node[below,font=\scriptsize,layergrey] at (1,0) {$1$};
+    \foreach \n/\c in {8/layerteal!18,4/layerteal!32,2/layerteal!52,1/layerteal!72}{
+      \fill[\c] (0,0) -- (0.5,{1/\n}) -- (1,0) -- cycle;
+    }
+    \node[right,font=\scriptsize,layergrey] at (0.52,0.5) {$n=2$};
+    \node[right,font=\scriptsize,layergrey] at (0.52,0.25) {$n=4$};
+    \node[right,font=\scriptsize,layergrey] at (0.52,0.125) {$n=8$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Apexes that move and apexes that shrink. Left: $g_n$ has constant height
+$1$, base $1/n$, and apex at $1-1/n$; the height does not drop,
+so $\|g_n\|_\infty=1$ even though $g_n(x)\to0$ at every point. Right: $h_n$ has
+height $1/n$ with base $1$ in the same place; its whole graph fits inside the
+band of height $1/n$, so it converges uniformly.}
+\label{fig:puncak}
+\end{figure}
+
+\begin{lemma}
+$f_n\to f$ uniformly on $E$ if and only if $\|f_n-f\|_\infty\to0$.
+\end{lemma}
+
+\begin{proof}
+Uniform convergence means: for every $\varepsilon>0$ there is $N$ such that
+for $n\ge N$ we have $|f_n(x)-f(x)|\le\varepsilon$ for all $x\in E$,
+that is, $\sup_x|f_n(x)-f(x)|\le\varepsilon$. That is precisely the statement that the
+sequence of real numbers $\|f_n-f\|_\infty$ tends to zero. The only technical
+difference is that the definition uses $<\varepsilon$ whereas the norm uses
+$\le\varepsilon$; the two are equivalent because $\varepsilon$ is arbitrary.
+\end{proof}
+
+That lemma turns a question about functions into a question about a single
+sequence of numbers: to check uniformity one supremum suffices, to reject it
+it suffices to show that this supremum does not tend to zero, as with $x^n$.
+
+Uniformity has an exact picture, namely a band. Take $\varepsilon=0.1$. If
+the whole graph of $f_n$ for $n\ge N$ lies between $f-\varepsilon$ and
+$f+\varepsilon$, then that single $N$ works for all points. What is checked is
+not one point, but whether any part of the graph escapes the band
+of width $0.2$. For $g_n$ that band is always pierced by the apex; the
+hoped-for situation is visible in Figure~\ref{fig:pita}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=2.55cm,y=4.0cm,font=\small]
+  \draw[->,layergrey] (0,0)--(4.5,0) node[right,font=\scriptsize]{$x$};
+  \draw[->,layergrey] (0,0)--(0,1.18) node[above,font=\scriptsize]{$y$};
+  \fill[layergrey!12] plot[domain=0:4,samples=90] (\x,{0.55+0.22*sin(2*\x r)+0.1})
+    -- plot[domain=4:0,samples=90] (\x,{0.55+0.22*sin(2*\x r)-0.1}) -- cycle;
+  \draw[dashed,layergrey] plot[domain=0:4,samples=90] (\x,{0.55+0.22*sin(2*\x r)+0.1});
+  \draw[dashed,layergrey] plot[domain=0:4,samples=90] (\x,{0.55+0.22*sin(2*\x r)-0.1});
+  \draw[thick,accent] plot[domain=0:4,samples=90] (\x,{0.55+0.22*sin(2*\x r)});
+  \draw[thick,layerindigo] plot[domain=0:4,samples=180]
+    (\x,{0.55+0.22*sin(2*\x r)+0.06*cos(9*\x r)});
+  \draw[<->,layergrey] (3.78,{0.55+0.22*sin(2*3.78 r)-0.1})
+    -- (3.78,{0.55+0.22*sin(2*3.78 r)+0.1});
+  \node[right,font=\scriptsize,layergrey] at (3.8,{0.55+0.22*sin(2*3.78 r)}) {$0.2$};
+  \node[accent,font=\scriptsize,above left] at (0.42,{0.55+0.22*sin(2*0.42 r)}) {$f$};
+  \node[layerindigo,font=\scriptsize,below right] at (0.95,{0.55+0.22*sin(2*0.95 r)+0.06*cos(9*0.95 r)}) {$f_n$};
+\end{tikzpicture}
+\caption{The uniform band of width $0.2$ around $f$, that is between $f-0.1$
+and $f+0.1$. The wavy graph of $f_n$ still lies entirely inside the
+band, so $\|f_n-f\|_\infty\le0.1$ and one and the same $N$ works for all
+points at once.}
+\label{fig:pita}
+\end{figure}
+
+\begin{tangan}
+Take a two-meter rope, tape, and two people. Stretch the rope straight on the
+floor, then tape five marks at equal spacing. The first person holds the left end
+and lifts it by just $5$ cm. Watch: only that end rises, the other four marks
+still touch the floor. That is pointwise convergence.
+
+Now both people lift both ends together on the same count: $5$ cm, then $3$ cm,
+then $1$ cm, then half a centimeter. Watch the whole length of the rope. No point is
+left on the floor, and the greatest distance from rope to floor is the same at all
+points, because both ends rise together. That is uniform convergence.
+
+Finally, the first person lifts his end while walking toward the middle, while
+the second lowers hers. The rope stays tilted, and there is always some part
+$5$ cm above the floor: every point eventually comes down, but the greatest distance
+never shrinks. That is $g_n$ in Figure~\ref{fig:puncak}.
+\end{tangan}
+
+\begin{lemma}[Uniform Cauchy criterion]
+The sequence $f_n$ converges uniformly on $E$ if and only if for every
+$\varepsilon>0$ there is $N$ such that $n,m\ge N$ implies
+$|f_n(x)-f_m(x)|<\varepsilon$ for all $x\in E$. This last condition is called the
+uniform Cauchy criterion\index{uniform Cauchy criterion}.
+\end{lemma}
+
+\begin{proof}
+$(\Rightarrow)$ If $f_n\to f$ uniformly, take $N$ from the definition of convergence
+for $\varepsilon/2$. For $n,m\ge N$ and every $x$,
+\[
+  |f_n(x)-f_m(x)|\le|f_n(x)-f(x)|+|f(x)-f_m(x)|<\varepsilon .
+\]
+$(\Leftarrow)$ For every fixed $x$, the sequence $f_n(x)$ is a Cauchy sequence
+in $\mathbb{R}$, so it converges to a number that we call $f(x)$. This
+defines a function $f$ point by point. To obtain
+uniformity, fix $n\ge N$ in the Cauchy condition and let
+$m\to\infty$. Since $f_m(x)\to f(x)$, we get $|f_n(x)-f(x)|\le\varepsilon$
+for all $x\in E$ at once, and the $N$ used does not depend on $x$.
+\end{proof}
+
+The proof of the second direction uses only the completeness of $\mathbb{R}$: the space of
+functions is complete with respect to the supremum norm, and that completeness is what lets a
+series of functions be summed without fear that the limit leaves the class of functions we
+use.
+
+\begin{catatan}
+Uniform convergence is a property of a pair: a sequence and a set. The sentence
+``$x^n$ converges uniformly'' is incomplete without naming the set. On
+$[0,1]$ the answer is no, on $[0,0.99]$ yes: the supremum norm of the error is
+$0.99^n$, namely $0.37$ at $n=100$ and $4.3\times10^{-5}$ at $n=1000$.
+Therefore every claim of uniformity in this chapter names its set.
+\end{catatan}
+
+\section{The Weierstrass test: uniformity from a single series of numbers}
+\tingkat{intermediate}
+
+A series of functions is a series whose terms are functions. Its partial sums
+$S_N=\sum_{n=1}^{N}f_n$ are functions, so a series of functions is nothing but a
+particular sequence of functions, and all the definitions of the previous section apply
+as soon as we replace $f_n$ by $S_N$.
+
+\begin{definisi}
+The series $\sum_{n\ge1}f_n$ \emph{converges pointwise} on $E$ if for
+every $x\in E$ the series of numbers $\sum_n f_n(x)$ converges. That series
+\emph{converges uniformly}\index{series of functions} on $E$ if its sequence of partial
+sums converges uniformly on $E$.
+\end{definisi}
+
+The following test is the cheapest way to obtain uniformity, and almost every
+example in this book uses it. The idea: if each term is bounded by a number
+whose series converges, then the tail of the series of functions is bounded by the tail of
+that series of numbers, and the numerical tail knows nothing about $x$.
+
+\begin{teorema}[Weierstrass $M$-test]\index{Weierstrass test}
+Suppose $f_n$ is defined on $E$ and there are numbers $M_n\ge0$ with
+$|f_n(x)|\le M_n$ for all $x\in E$ and all $n$. If $\sum M_n$
+converges, then $\sum f_n$ converges uniformly on $E$. If $E$ is a closed
+bounded interval and every $f_n$ is continuous, then the sum is continuous on $E$.
+\end{teorema}
+
+\begin{proof}
+Write $S_N=\sum_{i=1}^{N}f_i$. For $n>m$ and every $x\in E$,
+\[
+  |S_n(x)-S_m(x)|\le\sum_{i=m+1}^{n}|f_i(x)|\le\sum_{i=m+1}^{n}M_i .
+\]
+Since $\sum M_n$ converges, the tail $\sum_{i=m+1}^{n}M_i$ can be made smaller
+than $\varepsilon$ provided $m,n$ are large enough, and that choice does not
+mention $x$. The uniform Cauchy criterion closes the proof of uniformity. For
+continuity, each $S_N$ is continuous as a finite sum of continuous functions, and the
+uniform limit of continuous functions is continuous; that last statement is proved in
+the next section.
+\end{proof}
+
+\begin{contoh}
+On $E=[-1,1]$ the series $\sum_{n\ge1}x^n/n^2$ converges uniformly, since
+$|x^n/n^2|\le1/n^2$ and $\sum1/n^2=\pi^2/6$ converges. Its sum is continuous on
+$[-1,1]$, and its value at $x=1$ is $1.6449340668$. The sum of two million terms
+gives $1.6449335668$; the difference is $5.0\times10^{-7}$, proportional to the tail
+bound $1/N=5\times10^{-7}$. At $x=-1$ the series converges to $-\pi^2/6$, since
+the terms alternate in sign with decreasing absolute value tending to zero.
+\end{contoh}
+
+\begin{contoh}
+On $E=\mathbb{R}$ the series $\sum_{n\ge0}2^{-n}\sin(2^n x)$ converges uniformly,
+since $|2^{-n}\sin(2^n x)|\le2^{-n}$ and $\sum2^{-n}=1$. Every term is continuous,
+so the sum is continuous at every point. What is surprising is that the sum is not
+differentiable at any point: the classical result of Weierstrass (1872), extended
+by Hardy up to ratio $1$, which we quote without proof. Uniformity guarantees
+continuity, but it guarantees nothing about derivatives.
+\end{contoh}
+
+\begin{catatan}
+The $M$-test gives a sufficient condition, not a necessary one, and its failure is not a proof
+of anything. The series $\sum_{n\ge1}(-1)^n(1-x)x^n$ on $[0,1]$ converges uniformly:
+the remainder after the $N$-th term is bounded by $(1-x)x^{N+1}$, whose maximum on $[0,1]$
+is $\tfrac{1}{N+2}\left(\tfrac{N+1}{N+2}\right)^{N+1}\to0$, namely
+$3.20\times10^{-2}$ at $N=10$ and $3.67\times10^{-4}$ at $N=1000$. But
+$\sup_{[0,1]}|f_n|=n^n/(n+1)^{n+1}$, proportional to $1/(en)$, so that
+$\sum_n\sup|f_n|$ diverges: $0.88$ up to $N=10$ and $2.53$ up to $N=1000$.
+There is no convergent comparison series, so the $M$-test does not apply even though
+the uniformity is genuine.
+\end{catatan}
+
+\begin{untukanak}
+There are two ways to work through a list of chores. The first: finish all the chores
+one by one, then add up the total. The second: keep a running total while
+working, then finish the rest. For ordinary addition both ways give the
+same result, and we are used to swapping them without thinking.
+
+But some tasks do not like being swapped. Imagine you measure the length of a
+pole's shadow every hour for a day, compute the average, then
+look for the hour when that average is longest. Reverse the order: first find the
+longest hour on each day, then average that hour over the month. The two
+results can differ widely, not because the arithmetic is wrong, but because
+``longest'' and ``average'' genuinely do not commute.
+
+The same thing happens with the formulas used to add up infinitely
+many terms, and then integrate or differentiate them. Sometimes the order may be
+swapped and the result is exactly the same; sometimes not, and the difference is large. In this chapter
+we shall know the warning signs before the result goes wrong.
+\end{untukanak}
+
+\section{When limits may be exchanged}
+\tingkat{intermediate}
+
+The three operations we habitually use on functions are taking a limit at
+a point, integrating, and differentiating. Each of the three is itself a limit:
+continuity at $x_0$ means $\lim_{x\to x_0}f(x)=f(x_0)$, the integral is the
+limit of Riemann sums, the derivative is the limit of a difference quotient. So moving the
+limit of a sequence past one of those operations means exchanging two limits, and
+that exchange is not free: its price is one hypothesis, namely
+uniformity\index{exchange of limits}.
+
+\begin{teorema}
+If $f_n$ is continuous on $E$ and $f_n\to f$ uniformly on $E$, then $f$ is continuous
+on $E$.
+\end{teorema}
+
+\begin{proof}
+Take $x_0\in E$ and $\varepsilon>0$. Since the convergence is uniform, there is $n$
+with $\|f_n-f\|_\infty<\varepsilon/3$. Since $f_n$ is continuous at $x_0$, there is
+$\delta>0$ such that $|x-x_0|<\delta$ implies $|f_n(x)-f_n(x_0)|<\varepsilon/3$.
+Then for $x\in E$ with $|x-x_0|<\delta$,
+\[
+  |f(x)-f(x_0)|\le|f(x)-f_n(x)|+|f_n(x)-f_n(x_0)|+|f_n(x_0)-f(x_0)|
+  <\varepsilon .
+\]
+\end{proof}
+
+Note the logical order: $n$ is chosen first, then $\delta$, and
+$\delta$ may depend on $n$. What is not allowed is choosing a $\delta$
+that must work for all $n$ at once.
+
+\begin{tantangan}
+The series $\sum_{n\ge0}\bigl(x^{2n}-x^{2n+1}\bigr)$ has continuous terms on $[0,1]$
+and converges at every one of its points. Determine its sum, then show that this sum
+is not continuous at $x=1$. Why does this result not contradict the theorem above?
+A correct answer must name one number that may depend on $\varepsilon$ but must not
+depend on $x$.
+
+Hint 1: the partial sums have a closed form, and that form contains
+$x^{2N+2}$.
+
+Hint 2: for $x<1$ the sum is $1/(1+x)$, whereas at $x=1$ every term
+equals zero; so the value jumps from $1/2$ to $0$.
+
+If you get stuck, go back to the section on the diagonal test and ask what happens at
+$x_N=1-1/N$.
+\end{tantangan}
+
+\begin{teorema}[Term-by-term integration]
+If $f_n$ is Riemann integrable on $[a,b]$ and $f_n\to f$ uniformly on
+$[a,b]$, then $f$ is integrable on $[a,b]$ and
+\[
+  \int_a^b f=\lim_{n\to\infty}\int_a^b f_n .
+\]
+\end{teorema}
+
+\begin{proof}
+For integrability, take $\varepsilon>0$ and choose $n$ with
+$\|f_n-f\|_\infty<\varepsilon$. Since $f_n$ is integrable, there is a partition
+$\mathcal{P}$ with $U(\mathcal{P},f_n)-L(\mathcal{P},f_n)<\varepsilon(b-a)$.
+On each subinterval, $M_i(f)\le M_i(f_n)+\varepsilon$ and
+$m_i(f)\ge m_i(f_n)-\varepsilon$, so that
+$U(\mathcal{P},f)\le U(\mathcal{P},f_n)+\varepsilon(b-a)$ and
+$L(\mathcal{P},f)\ge L(\mathcal{P},f_n)-\varepsilon(b-a)$. Those three inequalities
+give $U(\mathcal{P},f)-L(\mathcal{P},f)<3\varepsilon(b-a)$, and the integrability
+criterion of Chapter 13 closes the argument. For the value of the integral, it suffices
+to note that
+\[
+  \left|\int_a^b f_n-\int_a^b f\right|
+  =\left|\int_a^b (f_n-f)\right|
+  \le\int_a^b|f_n-f|\le(b-a)\,\|f_n-f\|_\infty ,
+\]
+and the right-hand side tends to zero.
+\end{proof}
+
+\begin{akibat}[Integration of series]
+If $\sum_{n\ge1}f_n$ converges uniformly on $[a,b]$ and every $f_n$ is
+integrable there, then
+\[
+  \int_a^b\sum_{n=1}^{\infty}f_n=\sum_{n=1}^{\infty}\int_a^b f_n .
+\]
+\end{akibat}
+
+This corollary is applied to the partial sums, with uniformity usually
+checked through the $M$-test. For example, the series $\sum_{n\ge1}x^n/n^2$ converges uniformly
+on $[0,1]$, so that
+\[
+  \int_0^1\sum_{n=1}^{\infty}\frac{x^n}{n^2}\,dx
+  =\sum_{n=1}^{\infty}\frac{1}{n^2(n+1)}=\frac{\pi^2}{6}-1=0.6449340668 .
+\]
+That last number is also obtained by summing the first two million terms of the series on
+the right-hand side, which gives $0.6449340668$ at machine precision.
+
+\begin{contoh}[Failure without uniformity]
+Suppose $f_n(x)=nx(1-x^2)^n$ on $[0,1]$. For every $x\in(0,1]$ the factor
+$(1-x^2)^n$ decreases geometrically, so $n(1-x^2)^n\to0$ and $f_n(x)\to0$;
+at $x=0$ every $f_n$ equals $0$. So the pointwise limit is the zero function.
+Its integral can be computed exactly by the substitution $u=1-x^2$:
+\[
+  \int_0^1 nx(1-x^2)^n\,dx=\frac{n}{2}\int_0^1 u^n\,du=\frac{n}{2(n+1)} .
+\]
+That sequence tends to $1/2$, not to $0$. Numerical quadrature gives
+$0.4545454545$ for $n=10$ and $0.4950495050$ for $n=100$, matching
+$n/(2(n+1))$ to the last digit. So $\lim_n\int_0^1f_n=1/2$ whereas
+$\int_0^1\lim_nf_n=0$.
+\end{contoh}
+
+That failure has a geometric shape. The function $f_n$ is zero at both ends
+and peaks at $x=1/\sqrt{2n+1}$, with height $1.3396685$ at $n=10$ and
+$4.2834707$ at $n=100$: the peak grows taller and narrower, so that its
+area stays near $1/2$ while its height at every point tends to zero.
+
+\begin{teorema}[Term-by-term differentiation]
+Suppose $f_n$ is differentiable on $[a,b]$, the sequence $f_n'$ converges uniformly
+on $[a,b]$, and there is one point $x_0\in[a,b]$ where $f_n(x_0)$ converges.
+Then $f_n$ converges uniformly to some $f$ that is differentiable on $[a,b]$,
+and
+\[
+  f'(x)=\lim_{n\to\infty}f_n'(x)
+\]
+for every $x\in[a,b]$.
+\end{teorema}
+
+\begin{proof}[Sketch of proof]
+The heart of it is the mean value theorem applied to the difference of two terms: for $m,n$ and every
+$x,y\in[a,b]$,
+\[
+  \bigl|(f_n-f_m)(x)-(f_n-f_m)(y)\bigr|\le\|f_n'-f_m'\|_\infty\,|x-y| .
+\]
+Since $f_n'$ is uniformly Cauchy, the right-hand side can be made small simultaneously for all
+pairs $x,y$ once $m,n$ are large. Together with convergence at one point $x_0$,
+that inequality makes $f_n$ uniformly Cauchy, so $f_n\to f$ uniformly. For the
+derivative, divide by $|x-y|$, let $y\to x$, then exchange the two limits that
+appear; the same inequality guarantees that the exchange is legitimate. The technical details are in
+Rudin, Theorem 7.17.
+\end{proof}
+
+The condition ``there is one point where $f_n(x_0)$ converges'' cannot be dropped: $f_n$
+and $f_n+1$ have the same sequence of derivatives, but only one of them
+converges at $x_0$. Conversely, uniformity of $f_n$ alone is also not enough to
+conclude anything about the derivative.
+
+\begin{contoh}[Derivatives that do not converge]
+Suppose $f_n(x)=\sin(nx)/n$ on $[0,\pi]$. Since $\|f_n\|_\infty=1/n$,
+the sequence converges uniformly to the zero function; its value is $0.1$ at $n=10$ and
+$0.01$ at $n=100$. But $f_n'(x)=\cos(nx)$: at $x=0$ that sequence equals
+$1$ for all $n$, whereas at $x=\pi/2$ its values are $0,-1,0,1,0,-1,\ldots$
+according to the parity of $n$, which does not converge. So $f_n'$ fails to converge pointwise
+anywhere except at special points, let alone uniformly. Differentiation
+does not forgive small high-frequency oscillations: $f_n$ shrinks to zero,
+but its slope does not.
+\end{contoh}
+
+Figure~\ref{fig:turunan} shows three of those derivative curves on $[0,\pi]$. At
+$x=\pi/2$ they take the values $1$, $0$, and $-1$: three different values of one
+sequence at one point, and that is already enough to say the limit does not exist.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=3.4cm,y=1.5cm,font=\small]
+  \draw[->,layergrey] (0,0)--(3.55,0) node[right,font=\scriptsize]{$x$};
+  \draw[->,layergrey] (0,-1.28)--(0,1.28) node[above,font=\scriptsize]{$y$};
+  \draw[dashed,layergrey] (1.571,-1.25)--(1.571,1.25);
+  \node[below,font=\scriptsize,layergrey] at (1.571,-1.25) {$\pi/2$};
+  \draw[thick,layerindigo] plot[domain=0:3.1416,samples=160] (\x,{cos(4*\x r)});
+  \draw[thick,layerteal] plot[domain=0:3.1416,samples=160] (\x,{cos(5*\x r)});
+  \draw[thick,layerorange] plot[domain=0:3.1416,samples=160] (\x,{cos(6*\x r)});
+  \fill[ink] (1.571,1) circle (1.5pt);
+  \fill[ink] (1.571,0) circle (1.5pt) node[right,font=\scriptsize] {$0$};
+  \fill[ink] (1.571,-1) circle (1.5pt) node[right,font=\scriptsize] {$-1$};
+  \node[right,font=\scriptsize] at (1.585,1.06) {$1$};
+\end{tikzpicture}
+\caption{The derivatives $f_n'=\cos(nx)$ on $[0,\pi]$ for $n=4$ (indigo), $n=5$
+(teal), and $n=6$ (orange). At $x=\pi/2$ they take the values $1$, $0$, and $-1$: three
+different values of one sequence at one point, so the limit of the derivatives does not exist,
+even though $f_n=\sin(nx)/n$ converges uniformly to zero with amplitude $1/4$,
+$1/5$, and $1/6$.}
+\label{fig:turunan}
+\end{figure}
+
+\begin{catatan}
+In machine learning, the risk function is often written as an expectation over the
+data distribution, $\mathbb{E}_{(x,y)\sim D}[\ell(f(x),y)]$, and then differentiated
+with respect to the model parameters. If the distribution is finite discrete, as on
+the training set, that expectation is a finite sum and exchanging the derivative with
+the sum is always legitimate, with no conditions. If it is continuous, the expectation is an integral, and
+moving the derivative inside it demands a domination condition more delicate
+than uniformity; the tool is the dominated convergence theorem of measure
+theory, which is not discussed here. ``Differentiate inside the integral'' is an operation
+with a license, not an operation that is always correct.
+\end{catatan}
+
+\section{Power series and the radius of convergence}
+\tingkat{advanced}
+
+A power series is a series of functions of the most rigid shape: the $n$-th term is
+a fixed coefficient times $x^n$. That rigidity bears fruit. The set on which the series
+converges is always an interval symmetric about its center, so that all the
+information about where the series is useful is contained in one number.
+
+\begin{definisi}
+A series of the form $\sum_{n\ge0}a_nx^n$ with $a_n\in\mathbb{R}$ is called a power
+series\index{power series} centered at $0$. The number
+\[
+  R=\sup\Bigl\{r\ge0:\ \sum_{n\ge0}a_nr^n\ \text{converges}\Bigr\}
+\]
+is called the radius of convergence\index{radius of convergence} of that series.
+\end{definisi}
+
+\kamus{power series}{deret pangkat}{a series whose terms are fixed coefficients times
+rising powers of one variable, like the same recipe for every value.}
+
+\kamus{radius of convergence}{jari-jari konvergensi}{the furthest distance from the center
+at which that recipe still produces a finite number.}
+
+\begin{teorema}
+Suppose $\sum a_nx^n$ is a power series with radius $R$. Then the series
+converges absolutely for every $|x|<R$ and diverges for every $|x|>R$.
+Moreover
+\[
+  \frac{1}{R}=\limsup_{n\to\infty}|a_n|^{1/n},
+\]
+with the conventions $1/0=\infty$ and $1/\infty=0$.
+\end{teorema}
+
+\begin{proof}
+Fix $x\ne0$ and write $|a_nx^n|^{1/n}=|x|\cdot|a_n|^{1/n}$. By the root test
+of Chapter 5, the series $\sum a_nx^n$ converges absolutely if
+$\limsup_n|a_nx^n|^{1/n}<1$, that is if $|x|<1/\limsup_n|a_n|^{1/n}$, and
+diverges if that limit superior is greater than $1$, since its terms do not
+tend to zero. Since $x$ is arbitrary, the boundary between the two regimes is exactly
+$R=1/\limsup_n|a_n|^{1/n}$, and the set of convergence lies inside $[-R,R]$.
+\end{proof}
+
+At $|x|=R$ the root test gives no verdict, and indeed there is no general
+verdict: $\sum x^n/n^2$ converges at both ends, $\sum x^n/n$ only at $x=-1$, and
+$\sum x^n$ diverges at both.
+
+\begin{akibat}
+If $a_n\ne0$ for $n$ large enough and $|a_{n+1}/a_n|\to L$, then $R=1/L$
+with the same conventions as above.
+\end{akibat}
+
+The reason is the chain of inequalities
+\[
+  \liminf|a_{n+1}/a_n|\le\liminf|a_n|^{1/n}\le\limsup|a_n|^{1/n}
+  \le\limsup|a_{n+1}/a_n|,
+\]
+which is proved as an exercise in Chapter 5. If the ratio has a limit, all four of those
+numbers are equal, so the ratio formula and the root formula give the same $R$. In
+hand computation, the ratio formula is almost always faster.
+
+Now the part that makes power series useful: they may be differentiated and
+integrated term by term, and the result holds on the whole interval of
+convergence, not only on a small piece of it.
+
+\begin{teorema}[Term-by-term differentiation and integration]
+Suppose $\sum a_nx^n$ has radius $R>0$. Then for every $x$ with
+$|x|<R$,
+\[
+  \frac{d}{dx}\sum_{n\ge0}a_nx^n=\sum_{n\ge1}n\,a_nx^{n-1},
+  \qquad
+  \int_0^x\sum_{n\ge0}a_nt^n\,dt=\sum_{n\ge0}\frac{a_n}{n+1}x^{n+1},
+\]
+and both new series also have radius $R$.
+\end{teorema}
+
+\begin{proof}
+Take $r$ with $0<r<R$ and choose $\rho$ with $r<\rho<R$. The series
+$\sum|a_n|\rho^n$ converges, so there is $C$ with $|a_n|\rho^n\le C$ for all
+$n$. For $|x|\le r$,
+\[
+  |n\,a_nx^{n-1}|\le n\,\frac{C}{\rho}\left(\frac{r}{\rho}\right)^{n-1},
+\]
+and the series $\sum_n n(r/\rho)^{n-1}$ converges since $r/\rho<1$. The $M$-test
+therefore gives uniformity of the differentiated series on $[-r,r]$, and the term-by-term
+differentiation theorem gives equality there. Every point $|x|<R$ lies in some
+$[-r,r]$ with $r<R$, so the equality holds on all of $(-R,R)$. For the
+integral, the same route is used on $\sum|a_n|r^{n-1}$, which also converges.
+The radius does not change because the coefficients of the differentiated series are $na_n$, and
+\[
+  \limsup_n(n|a_n|)^{1/n}
+  =\limsup_n|a_n|^{1/n}\cdot\lim_n n^{1/n}
+  =\limsup_n|a_n|^{1/n},
+\]
+since $n^{1/n}\to1$. The same argument applies to the coefficients $a_n/(n+1)$,
+because $(n+1)^{-1/n}\to1$.
+\end{proof}
+
+That proof uses the whole content of the chapter: the $M$-test for uniformity, the differentiation
+theorem to move the limit, and the radius formula to make sure the new series does not
+shrink. Uniformity is claimed only on $[-r,r]$, $r<R$; in the opening example,
+$\ln(1+x)$ is uniform on every $[-r,r]$ with $r<1$ but not on $(-1,1)$.
+
+\begin{contoh}
+For $|x|<1$, the geometric series gives $\sum_{n\ge0}x^n=1/(1-x)$. Differentiating
+term by term,
+\[
+  \sum_{n\ge1}n\,x^{n-1}=\frac{1}{(1-x)^2},
+\]
+and at $x=1/2$ the right-hand side is $4$. The sum of the first two hundred terms of the series on the
+left gives $4.000000$ at machine precision. Integrating term by term from
+$0$ to $x$ gives
+\[
+  \sum_{n\ge1}\frac{(-1)^{n+1}x^n}{n}=\ln(1+x),\qquad |x|<1,
+\]
+which is the series from the chapter opening. Both results are not numerical coincidences: both are
+consequences of the theorem above, because $1/2$ and the $x$ used lie inside
+the radius.
+\end{contoh}
+
+With that theorem, the opening question of the chapter is answered. The series for $\ln(1+x)$ converges
+uniformly on every $[-r,r]$ with $r<1$, since $|(-1)^{n+1}x^n/n|\le r^n/n$
+and $\sum r^n/n$ converges. On $(-1,1)$ uniformity fails, and the price shows
+in the number of terms: $16$ at $x=0.5$, $5248$ at $x=0.999$. At the endpoint
+$x=1$ the series still converges, since it becomes an alternating harmonic series. That is
+not a consequence of the radius but of Abel's theorem: if $\sum a_nR^n$ converges,
+then $\sum a_nx^n$ converges uniformly on $[0,R]$. We quote it; the proof is in
+Rudin, chapter ``Some Special Functions'', Theorem 8.2.
+
+One practical warning: uniform bounds are designed for the worst case. For the
+series $\ln(1+x)$ with $N=12$ and $r=0.5$, the bound $r^{13}/13=9.4\times10^{-6}$
+is only three times the actual error at $x=0.5$, but at $x=0.1$ it is loose by about
+ten thousand times.
+
+\begin{resep}
+\begin{enumerate}
+\item Write down the difference, $M_N=\sup_{x\in E}|f_N(x)-f(x)|$, or estimate it with
+      the value at the worst point.
+\item Find the point $x_N$ that maximizes that difference; usually a peak, or
+      a point chasing the edge of the interval.
+\item Compute $M_N$ as an expression containing only $N$, then check
+      $M_N\to0$.
+\end{enumerate}
+A warning about order: find $x_N$ first for each $N$, then compute its
+supremum. Reversing that order, that is choosing $N$ first and then looking for one $x$ that
+represents all points, yields a wrong verdict of uniformity for $g_n$ in
+Figure~\ref{fig:puncak}, whose apex actually shifts together with $N$.
+\end{resep}
+
+\section{Worked numerical examples}
+\tingkat{intermediate}
+
+The three groups of numbers below are recomputed in the computational lab. The first
+measures the failure of uniformity of $x^n$ on $[0,1]$.
+
+\begin{center}
+\small
+\begin{tabular}{rrrrr}
+\hline
+$n$ & $\sup_{[0,1]}x^n$ & $(1-\tfrac1n)^n$ & $(1-\tfrac1{\sqrt n})^n$ & $0.9^{\,n}$\\
+\hline
+$10$    & $1$ & $0.3486784401$ & $2.234\times10^{-2}$ & $0.3486784401$\\
+$100$   & $1$ & $0.3660323413$ & $2.656\times10^{-5}$ & $2.656\times10^{-5}$\\
+$1000$  & $1$ & $0.3676954248$ & $1.108\times10^{-14}$ & $1.748\times10^{-46}$\\
+$10000$ & $1$ & $0.3678610464$ & $2.249\times10^{-44}$ & $<10^{-450}$\\
+\hline
+\end{tabular}
+\end{center}
+
+The second and fifth columns are two different rates. At the fixed point $x=0.9$
+the error is $0.9^n$, falling by a factor of $0.9$ per term: $132$ terms are needed to
+reach $10^{-6}$, whereas at $x=0.5$ $20$ terms suffice and at $x=0.99$ it takes
+$1375$. Every point has its own exponential rate, with base $x$. The second
+column does not move: the uniform error on $[0,1]$ stays $1$ for all $n$, so
+its rate of decrease is zero. What is being compared is therefore not two numbers,
+but something that tends to zero and something that does not.
+
+The second group of numbers is the error of approximating $e^{x}$ by a Taylor series at
+$x=1$. The remainder of the series is bounded by $\frac{e}{(N+1)!}$ for $x\in[0,1]$, since
+the $(N+1)$-st derivative of $e^x$ is $e^x\le e$.
+
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\hline
+$N$ & $S_N(1)=\sum_{k=0}^{N}\frac{1}{k!}$ & $e-S_N(1)$ & bound $\frac{e}{(N+1)!}$\\
+\hline
+$5$  & $2.716666666667$ & $1.615\times10^{-3}$ & $3.775\times10^{-3}$\\
+$10$ & $2.718281801146$ & $2.731\times10^{-8}$ & $6.810\times10^{-8}$\\
+$15$ & $2.718281828459$ & $5.063\times10^{-14}$ & $1.299\times10^{-13}$\\
+$20$ & $2.718281828459$ & $0$ (below precision) & $5.320\times10^{-20}$\\
+\hline
+\end{tabular}
+\end{center}
+
+The bound is always correct and larger than the actual error, by a factor of
+about $2.3$ to $2.6$: the remainder is roughly
+$\frac{1}{(N+1)!}\left(1+\frac{1}{N+2}+\cdots\right)$, and $e$ appears because
+its terms are summed at $x=1$. At $N=20$ the actual error is no longer measurable,
+since $5.3\times10^{-20}$ is far below one unit in the last place of a quantity of
+size $2.718$, namely about $4.4\times10^{-16}$.
+
+The third group of numbers is three radii of convergence, computed in two
+different ways at term $1000$.
+
+\begin{center}
+\small
+\begin{tabular}{llrr}
+\hline
+series & $R$ from the formula & $|a_{1000}/a_{1001}|$ & $|a_{1000}|^{1/1000}$\\
+\hline
+$\sum x^n/n^2$          & $1$              & $1.0020010000$ & $0.9862794856$\\
+$\sum \frac{n!}{n^n}x^n$ & $e=2.7182818285$ & $2.7169239322$ & $0.3694916635$\\
+$\sum \frac{2^n}{n}x^n$  & $0.5$            & $0.5005000000$ & $1.9862320968$\\
+\hline
+\end{tabular}
+\end{center}
+
+The third column estimates $R$ from the ratio of two consecutive terms, the fourth from
+the reciprocal of the root estimate. For the second series, $|a_n/a_{n+1}|=(1+1/n)^n$ rises to
+$e$; at $n=1000$ its value is $2.7169239$, off by $0.0014$. For the first series,
+$(1+1/n)^2$ decreases to $1$ from above, so the estimate is $1.0020$, and that error
+$0.0020$ is a sign that we are only at term $1000$. The fourth column approaches
+its limit more slowly, since $|a_n|^{1/n}$ approaches $1$ at rate $|\ln a_n|/n$; at
+$n=1000$ the difference is $0.0016$, proportional to $\ln(2\pi n)/(2n)$ times $1/e$.
+
+\kertas{Summary of numbers. The uniform error of $x^n$ on $[0,1]$ is $1$ for every
+$n$, while the error at a fixed point $x$ is $x^n$: $132$ terms for $10^{-6}$
+at $x=0.9$, $1375$ terms at $x=0.99$. The series for $e^x$ at $x=1$ reaches an error of
+$2.7\times10^{-8}$ with $10$ terms, below the bound $6.8\times10^{-8}$.
+The radii of the three series are $1$, $e$, and $0.5$; the integral
+$\int_0^1 nx(1-x^2)^n dx=n/(2(n+1))$ equals $0.4545$ at $n=10$, while
+the limit of the functions is zero.}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+The following code runs as it stands on Python 3.14.4 with NumPy 2.5.2 and
+SciPy 1.18.0. It recomputes the three groups of numbers above, plus
+quadrature for the counterexample on integration.
+
+\begin{lab}
+\begin{verbatim}
+import math
+import numpy as np
+from scipy.integrate import quad
+
+print("n      sup[0,1]   (1-1/n)^n   (1-1/sqrt n)^n     0.9^n")
+for n in (10, 100, 1000, 10000):
+    a = (1 - 1/n)**n
+    b = (1 - 1/math.sqrt(n))**n
+    print(f"{n:6d} {1.0:9.6f} {a:11.6f} {b:17.3e} {0.9**n:10.3e}")
+
+print()
+print("terms of ln(1+x) for error < 1e-6")
+for x in (0.5, 0.9, 0.99, 0.999):
+    N = 1
+    while x**N / N > 1e-6:
+        N += 1
+    s = sum(((-1)**(k+1)) * x**k / k for k in range(1, N + 1))
+    print(f"x={x:6.3f}  N={N:5d}  err={abs(math.log(1+x) - s):.3e}")
+
+print()
+print("N      S_N              e - S_N        e/(N+1)!")
+for N in (5, 10, 15, 20):
+    s = math.fsum(1/math.factorial(k) for k in range(N + 1))
+    b = math.e / math.factorial(N + 1)
+    print(f"{N:3d} {s:.12f} {math.e - s:14.3e} {b:13.3e}")
+
+print()
+print("radius from the ratio of terms 1000 and 1001 (log-space)")
+la = lambda n: -2 * math.log(n)
+lb = lambda n: math.lgamma(n + 1) - n * math.log(n)
+lc = lambda n: n * math.log(2) - math.log(n)
+for name, g in (("a", la), ("b", lb), ("c", lc)):
+    R = math.exp(g(1000) - g(1001))
+    H = math.exp(g(1000) / 1000)
+    print(f"series {name}: R = {R!r}   |a_n|^(1/n) = {H!r}")
+print("e =", repr(math.e))
+
+print()
+print("f_n(x) = n x (1-x^2)^n on [0,1]")
+for n in (10, 100):
+    val, _ = quad(lambda x, n=n: n * x * (1 - x*x)**n, 0, 1)
+    print(f"n={n:4d}  integral={val!r}  n/(2(n+1))={n/(2*(n+1))!r}")
+\end{verbatim}
+\end{lab}
+
+The output obtained:
+
+\begin{verbatim}
+n      sup[0,1]   (1-1/n)^n   (1-1/sqrt n)^n     0.9^n
+    10  1.000000    0.348678         2.234e-02  3.487e-01
+   100  1.000000    0.366032         2.656e-05  2.656e-05
+  1000  1.000000    0.367695         1.108e-14  1.748e-46
+ 10000  1.000000    0.367861         2.249e-44  0.000e+00
+
+terms of ln(1+x) for error < 1e-6
+x= 0.500  N=   16  err=3.049e-07
+x= 0.900  N=   89  err=4.478e-07
+x= 0.990  N=  721  err=4.915e-07
+x= 0.999  N= 5248  err=4.993e-07
+
+N      S_N              e - S_N        e/(N+1)!
+  5 2.716666666667      1.615e-03     3.775e-03
+ 10 2.718281801146      2.731e-08     6.810e-08
+ 15 2.718281828459      5.063e-14     1.299e-13
+ 20 2.718281828459      0.000e+00     5.320e-20
+
+radius from the ratio of terms 1000 and 1001 (log-space)
+series a: R = 1.0020010000000001   |a_n|^(1/n) = 0.9862794856312105
+series b: R = 2.7169239322350776   |a_n|^(1/n) = 0.36949166347196
+series c: R = 0.5004999999999973   |a_n|^(1/n) = 1.9862320968418674
+e = 2.718281828459045
+
+f_n(x) = n x (1-x^2)^n on [0,1]
+n=  10  integral=0.4545454545454544  n/(2(n+1))=0.45454545454545453
+n= 100  integral=0.4950495049504951  n/(2(n+1))=0.49504950495049505
+\end{verbatim}
+
+Four things must be read from this output. First, the second column stays at $1.000000$
+for all four values of $n$, while the fifth column is already $3.5\times10^{-1}$ at
+$n=10$: the failure of uniformity shows up as a number. Second, the last entry of the fifth
+column prints $0.000e+00$ not because the error is zero, but because
+$0.9^{10000}=10^{-457.6}$ lies below the smallest normal \texttt{float64} bound: underflow.
+
+Third, the fourth column gives numerical evidence for two limits already
+proved: $(1-1/n)^n\to1/e=0.3678794$ and $(1-1/\sqrt n)^n\to0$, which collapses
+far faster.
+
+Fourth, SciPy's quadrature gives $0.4545454545454544$ for $n=10$, whereas the
+formula $n/(2(n+1))$ gives $0.45454545454545453$; a difference of one unit in the last place
+of rounding. Without a closed form, we would have no way to make sure the quadrature is not
+measuring something else.
+
+One thing that does not show in the output: every bound in this chapter is an upper bound.
+The row $N$ that the code reports is chosen by checking $x^N/N$, so that $N$ is
+guaranteed to suffice, not to be minimal; the actual errors are $3.0\times10^{-7}$ to
+$5.0\times10^{-7}$, below $10^{-6}$.
+
+\begin{untukdosen}
+The teaching order I suggest: start from the failure of the $\ln(1+x)$ library in
+the opening, then the pointwise and uniform definitions with $x^n$ as the single
+example. Do not rush to the $M$-test. Spend one full session making sure
+the students can say precisely why $x^n$ fails to be uniform
+and why $(1-1/\sqrt n)^n$ succeeds. After that the $M$-test, then the three exchange
+theorems, each with its own counterexample.
+
+Two misconceptions appear most often. First, students think ``every
+$f_n$ continuous and $f_n\to f$'' already suffices to conclude that $f$ is continuous; they
+forget that what is needed is uniformity, and $x^n$ is the cure. Second,
+students think uniformity is inherited downward: if $f_n\to f$ uniformly then
+$f_n'\to f'$. The example $\sin(nx)/n$ breaks that in one line; it is best
+written on the board before the differentiation theorem appears.
+
+A board activity that works: write four unnamed sequences of functions,
+namely $x^n$, $x^n/n$, $nx(1-x^2)^n$, and $\sin(nx)/n$, then ask the class
+to decide for each whether it converges pointwise, whether uniformly, and
+whether its integral and derivative may be exchanged. The answers form a $4\times4$ table
+that can be filled in twenty minutes. Students are ready to go on when they can
+explain why a power series is uniform only on $[-r,r]$.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+\item Pointwise convergence gives every point its own threshold;
+      uniform convergence demands one threshold for all points at once,
+      and that difference is equivalent to $\|f_n-f\|_\infty\to0$.
+\item The Weierstrass $M$-test concludes uniformity from a single comparison
+      series of numbers. It is a sufficient condition, not a necessary one; its failure proves
+      nothing.
+\item The uniform limit of continuous functions is continuous, and its integral may be exchanged with
+      the limit. Differentiation demands uniformity of the sequence of derivatives plus convergence
+      at one point.
+\item Those three hypotheses cannot be removed: $x^n$, $nx(1-x^2)^n$, and
+      $\sin(nx)/n$ each break one of them.
+\item A power series converges absolutely inside its radius and diverges outside;
+      inside the radius it may be differentiated and integrated term by term
+      without changing its radius.
+\item Uniformity is always local: $\ln(1+x)$ is uniform on every $[-r,r]$, $r<1$,
+      but not on $(-1,1)$, and the price shows in the number of terms, from
+      $16$ at $x=0.5$ to $5248$ at $x=0.999$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+\item Compute in Python, for $n=10,100,1000$, the value
+      $\sup_{x\in[0,1]}|x^n|$ and the value of $x^n$ at $x=0.9$. Explain why
+      the first column is flat and the second is not.
+
+\item Prove: if $f_n\to f$ uniformly on $E$ and every $f_n$ is bounded on
+      $E$, then $f$ is bounded on $E$ and the sequence $\|f_n\|_\infty$ is bounded.
+      Show by example that pointwise convergence is not enough.
+
+\item Suppose $f_n(x)=x/(1+nx^2)$ on $\mathbb{R}$. Show that
+      $f_n\to0$ pointwise, determine $\|f_n\|_\infty$, and prove that
+      the convergence is uniform. What is the smallest $n$ such that
+      $\|f_n\|_\infty<0.01$?
+
+\item Judge this claim: true, false, or not enough evidence. ``Since $x^n\to0$
+      for every $x\in[0,1)$, the sequence $f_n(x)=x^n$ converges uniformly on
+      $[0,1)$.'' State exactly where that reasoning breaks, and give one
+      sequence of points that proves it.
+
+\item Compute the error $|e-S_N(1)|$ for $N=5,10,15,20$ and compare it with
+      the bound $e/(N+1)!$. What is the smallest $N$ for which that bound is below
+      $10^{-16}$? Can the actual error still be measured at that $N$?
+
+\item Prove that the series $\sum_{n\ge0}x^n(1-x)$ converges pointwise
+      on $[0,1]$ but not uniformly, by computing its sum first
+      and then checking its continuity.
+
+\item Compute the radii of convergence of $\sum x^n/n^2$, $\sum(n!/n^n)x^n$, and
+      $\sum 2^nx^n/n$ from the ratio of terms $1000$ and $1001$, then compare
+      with the exact values. Which series has the slowest estimate, and
+      why?
+
+\item Prove that if $f_n\to f$ uniformly on $E$ and $g$ is bounded on $E$,
+      then $f_ng\to fg$ uniformly on $E$. Show by example that the
+      boundedness of $g$ cannot be removed.
+
+\item For $f_n(x)=nx(1-x^2)^n$ on $[0,1]$, compute the peak point, the peak
+      height, and $\int_0^1f_n$ for $n=10,100$. Compare the peak height
+      with $\sqrt{n/(2e)}$ and explain why the area does not tend to zero.
+
+\item Differentiate $\sum_{n\ge0}x^n=1/(1-x)$ term by term and use the result
+      to compute $\sum_{n\ge1}n/2^n$. How many terms are needed for the
+      partial sum to lie within $10^{-10}$ of the exact value?
+\end{enumerate}
+
+\noindent\emph{Hints for the three hardest items.} Item 4: the uniform property
+demands one $N$ for all $x$, so it suffices to show that for every $n$
+there is an $x$ with $x^n\ge\tfrac12$; take $x=2^{-1/n}$. Item 6: sum the geometric
+series first; the result is a function that differs from its limit at one point,
+and the uniform limit of continuous functions must be continuous. Item 8: write
+$|f_ng-fg|=|f_n-f|\,|g|$ and use $\|g\|_\infty$; for the counterexample
+take $g(x)=1/x$ on $(0,1)$ and an $f_n$ that decreases uniformly but not
+fast enough.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is proved with complete proof in this chapter: the equivalence of uniformity with the
+supremum norm, the uniform Cauchy criterion, the Weierstrass $M$-test, the three exchange
+theorems together with their counterexamples, the radius formula through the limit superior, and
+the invariance of the radius under term-by-term differentiation and integration. Two results are
+quoted without proof: the non-differentiability of the Weierstrass function (1872, extended
+by Hardy 1916) and Abel's theorem. The primary sources are Rudin, \emph{Principles of
+Mathematical Analysis}, chapters ``Sequences and Series of Functions'' (7.1--7.17) and
+``Some Special Functions'' (8.1--8.2); Abbott, \emph{Understanding Analysis}, chapter
+``Sequences and Series of Functions''; Stewart, \emph{Calculus}, the section ``Power
+Series''.
+
+What is often popularized beyond its due is the idea that uniformity removes all
+problems. It removes three particular problems, on the interval where it holds, and
+no more. For Fourier series uniformity is in fact rare, and the exchange of
+integral remains legitimate for other reasons. In neural-network approximation, what is used is
+convergence on a finite set.
+
+Open question: if $f_n$ is known only through its values on a finite grid, how large
+is the error of estimating $\|f_n\|_\infty$ by the maximum on the grid? Without
+regularity assumptions there is no general answer, and for narrow peaks a grid that looks
+dense can miss them entirely. Limits of validity: all functions here are
+real-valued on subsets of $\mathbb{R}$, with 64-bit arithmetic in
+Python 3.14.4, NumPy 2.5.2, and SciPy 1.18.0.
+\end{untukpeneliti}
+
+\peta{Chapter 14 in Rudin, \emph{Principles of Mathematical Analysis}, chapters
+``Sequences and Series of Functions'' (7.1--7.17) and ``Some Special Functions''
+(8.1--8.2); in Abbott, \emph{Understanding Analysis}, chapter ``Sequences and
+Series of Functions''; in Stewart, \emph{Calculus}, the sections ``Power Series'' and
+``Taylor and Maclaurin Series''. Its basis is the second half of the chapter \emph{Integral, Series
+of Functions, and Exchange of Limits} of the first edition of this book. This chapter uses the definitions of
+limit and the Cauchy criterion from Chapter 4, the root test of Chapter 5, uniform continuity of Chapter 11,
+and the integrability criterion of Chapter 13, all of them referred to, not repeated.}

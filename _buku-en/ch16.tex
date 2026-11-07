@@ -1,0 +1,1119 @@
+\chapter{Differential Equations and Dynamical Systems}
+
+The pendulum clock in the living room swings with an amplitude of sixty degrees, and the
+length of its arm is one meter. The textbook gives the period
+\[
+T=2\pi\sqrt{L/g}=2.006409\ \text{seconds},
+\]
+and that formula is indeed correct for a very small swing. Measured at an amplitude of
+sixty degrees, the same pendulum needs $2.153242$ seconds for one full swing: $7.32$
+percent longer. A clock set with the small-angle formula falls behind by $5892$ seconds,
+about ninety-eight minutes, every day.
+
+The formula is not a miscalculation. It is the exact answer for a different equation.
+The actual swing satisfies
+\[
+\frac{d^{2}\theta}{dt^{2}}=-\frac{g}{L}\sin\theta ,
+\]
+whereas the small-period formula comes from replacing $\sin\theta$ with $\theta$. At
+$\theta=60^{\circ}$ that replacement turns $0.866025$ into $1.047198$, a difference of
+seventeen percent at the farthest point, and the period error left behind is $7.32$
+percent.
+
+Chapter 12 taught us to differentiate, Chapter 14 series of functions, Chapter 15 vector
+fields. Not one of them answers the question here: if the rate of change is known, how do we
+find the function, is it unique, and what happens in the long run. This chapter fills those
+four gaps: how to solve, conditions for existence and uniqueness, the phase plane, and the
+stability test.
+
+\begin{untukanak}
+Imagine the water tank in a bathroom. The tap above runs at a steady rate, the drain below
+runs out, and the higher the water, the faster it leaves. If we open the tap and then walk
+away, tomorrow's water level cannot be computed from the size of the tap alone: what
+determines it is the water level now. High water pushes out faster, the rise slows down,
+and finally it stops when the water coming in equals the water going out.
+
+Other things work the same way. Hot coffee cools faster while it is still very hot. Germs
+multiply faster when there are many of them, then slow down when the food runs out. What we
+know is the rule of change, not the final result.
+
+Now the question that makes this work hard. Two tanks the same, taps the same, drains the
+same, but one starts empty and one starts half full: do they end at the same level?
+Sometimes yes, sometimes no. And there is a wicked drain, partly clogged and then suddenly
+open: two different stories can come out of the same initial state.
+
+In this chapter we shall learn why the rule of change sometimes suffices to determine the
+whole future, and sometimes does not.
+\end{untukanak}
+
+\section{A rate that depends on itself}
+\tingkat{basic}
+
+A differential equation sets the rate of change of a function equal to something that
+contains the function itself. To solve it means to find a function that satisfies that
+sentence on an entire interval. The derivatives of Chapter 12 were computed at a single
+point; the solution here is a function on an interval, and that difference is the one most
+often missed.
+
+\begin{definisi}[Ordinary differential equation]\index{differential equation}
+The equation
+\[
+F\bigl(t,y,y',y'',\dots,y^{(n)}\bigr)=0
+\]
+is called an \emph{ordinary differential equation} (ODE) of order $n$ for a function $y$ of
+the variable $t$ if $F$ contains the $n$-th derivative and contains no higher derivative.
+The ODE is called \emph{linear} if $F$ has the form
+\[
+a_{n}(t)\,y^{(n)}+\cdots+a_{1}(t)\,y'+a_{0}(t)\,y=b(t),
+\]
+and is called \emph{autonomous} if $F$ does not contain $t$ explicitly.
+\end{definisi}
+
+ All the examples in
+this chapter are of first or second order, because those two already contain every important
+idea.
+
+\begin{definisi}[Solution and initial value problem]\index{initial value problem}
+A function $y$ is called a \emph{solution} of the ODE on an interval $I$ if $y$ has
+derivatives up to order $n$ on $I$ and satisfies the equation at every point of $I$. If the
+condition $y(t_{0})=y_{0}$ is added, the combination of the two is called an \emph{initial
+value problem}, and $y_{0}$ is called the initial value.
+\end{definisi}
+
+One example to make sure the definition works. Take the population model
+\[
+y'=y(1-y),\qquad y(0)=\tfrac12 ,
+\]
+with $y$ denoting the fraction of the population relative to the carrying capacity. The
+candidate solution is
+\[
+y(t)=\frac{1}{1+e^{-t}} .
+\]
+Its derivative is $y'(t)=e^{-t}/(1+e^{-t})^{2}$, and the right-hand side
+$y(1-y)=e^{-t}/(1+e^{-t})^{2}$ is exactly the same. The initial value $y(0)=1/2$ matches as
+well. So the function is a solution, and that check uses only the quotient rule of
+Chapter 12.
+
+What deserves attention: $y(t)=1$ and $y(t)=0$ are also solutions, both of them constant,
+and both appear when we ask when the right-hand side is zero. So one equation can have many
+solutions; the initial value selects one of them. The collection of all solutions is called
+the \emph{general solution}, and it contains one constant for each order.
+
+The interval on which a solution lives is part of the answer. Take
+\[
+y'=y^{2},\qquad y(0)=1 .
+\]
+Separation of variables gives $y(t)=1/(1-t)$, and that formula makes sense only on $t<1$.
+At $t=0.9$ its value is $10$; at $t=0.99$ its value is $100$; at $t=0.999$ its value is
+$1000$. There is no finite number at $t=1$, and no solution continues that function past it.
+The solution \emph{blows up} in finite time, and a program that reports a value at $t=2$ does
+not find a solution; it finds rounding.
+
+\kamus{differential equation}{persamaan diferensial}{A sentence that ties the rate of change of a quantity to the size of that quantity itself.}
+
+\kamus{general solution}{solusi umum}{The family of all functions satisfying the equation, usually containing one free constant per order.}
+
+\begin{bacakeras}
+--- If I let this ball go on the slope, it will move downhill. How fast?
+--- It depends on where the ball is now. Near the top, slowly. In the middle of the slope,
+quickly.
+--- So its speed is not a single fixed number?
+--- No. It is a rule: at each point, the speed is determined by that point.
+--- If the rule already knows everything, is the path already determined?
+--- Not yet. The rule gives a direction at every point; the path is born from the starting
+point you choose.
+--- Two balls, two starting points, one rule?
+--- One rule, two paths.
+--- If two paths meet at the same point, how do we know which one came from where?
+--- We cannot. That is why this chapter demands one starting point for one path.
+
+Repeat it once, in a normal voice: same rule, different starting point, different path.
+\end{bacakeras}
+
+\section{Two families that can be solved by hand}
+\tingkat{basic}
+
+Not every differential equation has a solution formula, but two large families do, and both
+appear in almost every first-level application. The first family separates variables; the
+second is the first-order linear equation.
+
+\subsection{Separation of variables}
+
+If the equation can be written $y'=f(t)g(y)$, we move all $y$ to one side and all $t$ to the
+other side:
+\[
+\frac{dy}{g(y)}=f(t)\,dt,\qquad \int\frac{dy}{g(y)}=\int f(t)\,dt .
+\]
+That step is not a notational trick but the chain rule run backwards: if $H$ is an
+antiderivative of $1/g$, then $\frac{d}{dt}H(y(t))=H'(y)y'=y'/g(y)$, so the original
+equation becomes $\frac{d}{dt}H(y(t))=f(t)$ and Chapter 13 gives $H(y)=\int f\,dt+C$. The
+result is usually implicit, and that is a legitimate answer.
+
+The logistic model above is used throughout the chapter. With $g(y)=y(1-y)$ and partial
+fractions,
+\[
+\int\frac{dy}{y(1-y)}=\int\Bigl(\frac{1}{y}+\frac{1}{1-y}\Bigr)dy
+=\ln\Bigl|\frac{y}{1-y}\Bigr| ,
+\]
+so $\ln|y/(1-y)|=t+C$ and
+\[
+y(t)=\frac{1}{1+Ae^{-t}},\qquad A=\frac{1-y_{0}}{y_{0}} .
+\]
+For $y_{0}=1/2$ we obtain $A=1$, which is the formula we checked a moment ago. Note that $A$
+is determined by the initial value, and that $A=0$ gives the constant solution $y=1$ which
+the division above does not cover: when separating variables we divide by $g(y_{0})$, and
+that division is valid only if $g(y_{0})\ne0$.
+
+\subsection{Linear equations and the integrating factor}
+
+The standard form of a first-order linear equation is
+\[
+y'+p(t)\,y=q(t).
+\]
+The left-hand side is almost the derivative of a product, only one factor short. The missing
+factor is exactly what the following theorem looks for.
+
+\begin{teorema}[Integrating factor]\index{integrating factor}
+Suppose $p$ and $q$ are continuous on an open interval $I$ containing $t_{0}$, and suppose
+\[
+\mu(t)=\exp\Bigl(\int_{t_{0}}^{t}p(s)\,ds\Bigr).
+\]
+Then the initial value problem $y'+p(t)y=q(t)$, $y(t_{0})=y_{0}$ has exactly one solution on
+$I$, namely
+\[
+y(t)=\frac{1}{\mu(t)}\Bigl(y_{0}+\int_{t_{0}}^{t}\mu(s)\,q(s)\,ds\Bigr).
+\]
+\end{teorema}
+
+\begin{proof}
+Since $p$ is continuous, $\mu$ is defined, positive, and differentiable on $I$, with
+$\mu'=p\mu$ by the fundamental theorem of calculus (Chapter 13). Multiply the equation by
+$\mu$:
+\[
+\mu y'+\mu p\,y=\mu q
+\quad\Longleftrightarrow\quad
+(\mu y)'=\mu q ,
+\]
+because the product rule gives $(\mu y)'=\mu'y+\mu y'=\mu(py+y')$. Integrate both sides from
+$t_{0}$ to $t$ and use the fundamental theorem of calculus:
+\[
+\mu(t)y(t)-\mu(t_{0})y(t_{0})=\int_{t_{0}}^{t}\mu(s)q(s)\,ds .
+\]
+Since $\mu(t_{0})=1$, division by $\mu(t)>0$ gives the formula requested. Uniqueness: if
+$y_{1},y_{2}$ are two solutions, their difference $w=y_{1}-y_{2}$ satisfies $w'+pw=0$ with
+$w(t_{0})=0$; multiplying by $\mu$ gives $(\mu w)'=0$, so $\mu w$ is constant, and since its
+value is zero at $t_{0}$ it is zero everywhere.
+\end{proof}
+
+That proof guesses nothing: $\mu$ is found by demanding $\mu'=p\mu$, an equation easier than
+the original. This pattern repeats: one problem is solved by turning it into a simpler
+problem.
+
+\begin{contoh}[One linear equation, two checks]
+Solve $y'+2y=4t$ with $y(0)=1$. Here $p=2$ and $q=4t$, so $\mu=e^{2t}$ and
+\[
+(e^{2t}y)'=4t\,e^{2t}.
+\]
+Integration by parts gives
+\[
+\int 4t\,e^{2t}\,dt=\Bigl(2t-1\Bigr)e^{2t}+C ,
+\]
+because the derivative of $(2t-1)e^{2t}$ is $2e^{2t}+2(2t-1)e^{2t}=(4t)e^{2t}$. Thus
+\[
+y(t)=2t-1+Ce^{-2t},
+\]
+and the condition $y(0)=1$ gives $C=2$, that is $y(t)=2t-1+2e^{-2t}$.
+
+Check: substitution gives $y'+2y=4t$, and $y(1)=1+2e^{-2}=1.2706705665$; an adaptive
+integrator with tolerance $10^{-12}$ gives $1.270670566473$.
+\end{contoh}
+
+\subsection{The RC circuit: the simplest real example}
+
+A voltage source $V_{s}$ is connected in series with a resistor $R$ and a capacitor $C$.
+Kirchhoff's law of voltages gives $V_{s}=Ri+V_{C}$, and the law of the capacitor gives
+$i=C\,dV_{C}/dt$. The two together give
+\[
+RC\,\frac{dV_{C}}{dt}+V_{C}=V_{s},
+\qquad\text{or}\qquad
+\frac{dV_{C}}{dt}+\frac{1}{RC}V_{C}=\frac{V_{s}}{RC}.
+\]
+This is a linear equation with $p=1/(RC)$ constant. By the theorem above, with
+$V_{C}(0)=0$,
+\[
+V_{C}(t)=V_{s}\bigl(1-e^{-t/\tau}\bigr),\qquad \tau=RC .
+\]
+The number $\tau$ is called the time constant. For $R=1\,\mathrm{k}\Omega$ and
+$C=1\,\mu\mathrm{F}$, $\tau=10^{-3}$ seconds. With $V_{s}=5$ volts, the voltage at
+$t=\tau$ is $3.160603$ volts and at $t=5\tau$ it is $4.966310$ volts, that is $99.33$
+percent of $5$ volts. To reach $90$ percent requires $t=\tau\ln10=2.302585$ milliseconds.
+
+\begin{resep}
+\begin{enumerate}
+\item Write the equation in standard form $y'+p(t)y=q(t)$: divide by the coefficient of
+  $y'$ so that the coefficient is exactly one.
+\item Compute $\mu(t)=\exp\bigl(\int p(t)\,dt\bigr)$, with no constant of integration.
+\item Multiply the whole equation by $\mu$, then write the left-hand side as $(\mu y)'$. If
+  the left-hand side refuses to become a single derivative, step 1 is wrong.
+\item Integrate both sides with respect to $t$, then divide by $\mu$.
+\item Use the initial value to determine the constant, and write down the interval of
+  validity.
+\end{enumerate}
+Warning: step 1 must not be skipped, and step 3 must not be done before step 2. Computing
+$\mu$ from coefficients that have not yet been normalized gives a wrong integrating factor,
+and the error only becomes visible when the solution is tested.
+\end{resep}
+
+\kamus{integrating factor}{faktor integrasi}{A multiplier that turns the left-hand side of a linear equation into a single derivative of a product.}
+
+\section{Existence, uniqueness, and Picard iteration}
+\tingkat{intermediate}
+
+The example $y'=y^{2}$ shows that a solution can stop existing. Given $f$ and one initial
+point, does the solution exist and is it only one? The answer depends on one property of $f$
+with respect to $y$.
+
+\begin{definisi}[Lipschitz condition]\index{Lipschitz condition}
+A function $f(t,y)$ satisfies the Lipschitz condition with respect to $y$ on a region
+$D\subseteq\mathbb{R}^{2}$ if there is a constant $L$ such that
+\[
+|f(t,y_{1})-f(t,y_{2})|\le L\,|y_{1}-y_{2}|
+\]
+for every $(t,y_{1}),(t,y_{2})\in D$. The smallest possible constant is called the Lipschitz
+constant.
+\end{definisi}
+
+Its everyday sentence: $f$ must not change too abruptly when $y$ shifts a little. If $f$ has
+a partial derivative with respect to $y$ that is continuous and bounded by $L$ on $D$, that
+condition holds automatically, because the mean value theorem (Chapter 12) gives
+$f(t,y_{1})-f(t,y_{2})=\partial_{y}f(t,\xi)(y_{1}-y_{2})$.
+
+\begin{teorema}[Picard--Lindel\"of]\index{Picard-Lindelof theorem}
+Suppose $f$ is continuous on the closed rectangle
+$D=[t_{0}-a,t_{0}+a]\times[y_{0}-b,y_{0}+b]$ and satisfies the Lipschitz condition with
+respect to $y$ on $D$ with constant $L$. Suppose $M=\max_{D}|f|$ and
+$h=\min(a,\,b/M)$. Then the initial value problem $y'=f(t,y)$, $y(t_{0})=y_{0}$ has exactly
+one solution on the interval $|t-t_{0}|\le h$.
+\end{teorema}
+
+The full proof uses the Banach fixed point theorem on the space of continuous functions with
+the maximum norm, which is complete because uniform continuity is discussed in Chapter 11
+and Chapter 14. I give the sketch, because the sketch contains the whole idea and can be
+turned into an algorithm.
+
+Write the equation as an integral equation, which is equivalent because both sides are
+continuous:
+\[
+y(t)=y_{0}+\int_{t_{0}}^{t}f\bigl(s,y(s)\bigr)\,ds .
+\]
+Define the map $T$ by that formula, starting from the constant $y_{0}(t)=y_{0}$, then
+iterate:
+\[
+y_{n+1}(t)=y_{0}+\int_{t_{0}}^{t}f\bigl(s,y_{n}(s)\bigr)\,ds .
+\]
+Every $y_{n}$ lies inside $D$ as long as $|t-t_{0}|\le h$, because
+$|y_{n+1}-y_{0}|\le M|t-t_{0}|\le Mh\le b$. The difference of two successive iterations
+satisfies
+\[
+|y_{n+1}(t)-y_{n}(t)|\le L\Bigl|\int_{t_{0}}^{t}|y_{n}(s)-y_{n-1}(s)|\,ds\Bigr|
+\le \frac{(L|t-t_{0}|)^{n}}{n!}\,\|y_{1}-y_{0}\| ,
+\]
+and induction on $n$ gives that bound. Since $\sum_{n}(Lh)^{n}/n!$ converges
+(ratio test, Chapter 5), the series $y_{0}+\sum(y_{n+1}-y_{n})$ converges uniformly, and
+its limit is the solution. Uniqueness comes from the same inequality: two different solutions
+would satisfy $|y_{1}-y_{2}|\le L|t-t_{0}|\,\|y_{1}-y_{2}\|$, which for $Lh<1$ is possible
+only if the difference is zero; the case $Lh\ge1$ is handled by shrinking $h$, and that is
+why the theorem promises only a short interval.
+
+Run that iteration on $y'=y$, $y(0)=1$. Starting from $y_{0}=1$:
+\[
+y_{1}=1+t,\quad y_{2}=1+t+\frac{t^{2}}{2},\quad
+y_{3}=1+t+\frac{t^{2}}{2}+\frac{t^{3}}{6},
+\]
+so $y_{n}$ is the partial sum of the exponential series from Chapter 5. At $t=1$, the eighth
+iteration gives $2.718278769841$, whereas $e=2.718281828459$; the error is
+$3.06\times10^{-6}$.
+
+The Lipschitz condition must not be thrown away. Take
+\[
+y'=\sqrt{|y|},\qquad y(0)=0 .
+\]
+The right-hand side is continuous, so a solution exists; but it does not satisfy the
+Lipschitz condition near $y=0$, because its slope is unbounded there. And indeed there are
+two solutions: the zero function, $y(t)\equiv0$, and
+\[
+y(t)=\frac{t^{2}}{4}\quad (t\ge0).
+\]
+The check is one line: $y'=t/2$ and $\sqrt{|y|}=\sqrt{t^{2}/4}=t/2$ for
+$t\ge0$, whereas $y(0)=0$. Two different histories from one and the same initial state,
+exactly like the drain that opens suddenly in the opening box of the chapter.
+
+Lipschitz is a \emph{sufficient} condition, not a necessary one. Existence without
+uniqueness is guaranteed by Peano's theorem, which uses compactness (Chapter 11) and
+Arzel\`a--Ascoli; see Coddington and Levinson, chapters 1--2.
+
+\kamus{uniqueness}{ketunggalan}{The guarantee that one initial state gives birth to only one history, with no branch.}
+\section{Systems, the phase plane, and oscillators}
+\tingkat{intermediate}
+
+One second-order equation is not a new animal; it is two first-order equations running
+together. By naming $v=\theta'$, the pendulum equation becomes
+\[
+\theta'=v,\qquad v'=-\frac{g}{L}\sin\theta .
+\]
+This pair is autonomous: its right-hand side does not contain $t$, so the initial state
+determines the whole history (provided the Lipschitz condition holds) and we may forget time
+for a moment in order to ask what happens on the plane $(\theta,v)$.
+
+\begin{definisi}[Autonomous systems and the phase plane]\index{phase plane}
+The system
+\[
+\mathbf{x}'=\mathbf{f}(\mathbf{x}),\qquad \mathbf{x}\in\mathbb{R}^{n},
+\]
+is called \emph{autonomous}. For $n=2$, the plane on which the point $\mathbf{x}$ lives is
+called the \emph{phase plane}; the curve $\{\mathbf{x}(t)\}$ is called a
+\emph{trajectory}, and the picture of all the arrows $\mathbf{f}(\mathbf{x})$ is called the
+\emph{direction field}. A point $\mathbf{x}^{*}$ with $\mathbf{f}(\mathbf{x}^{*})=0$ is
+called an \emph{equilibrium point} or a fixed point.
+\end{definisi}
+
+The horizontal axis of the phase plane represents position, the vertical axis represents
+velocity, and one point means ``here, with this speed''. Time is not drawn; it is only the
+parameter that walks along the curve. That is its advantage: the whole history, for all
+initial points at once, appears as a single picture.
+
+The equilibrium points of the pendulum are easy to find. $\theta'=0$ demands $v=0$, and
+$v'=0$ demands $\sin\theta=0$, so $\theta=k\pi$. At $\theta=0$ the pendulum hangs straight
+down; at $\theta=\pi$ it stands straight up. The first is stable in the everyday sense, the
+second is not: the slightest touch brings it down.
+
+\begin{untukanak}
+Go to the park, find a swing, and sit down. Ask a friend to push you gently, only a little.
+Count ten swings by counting inside your head: one, two, three, up to ten. Now ask for a push
+that is much higher, until the swing rises almost as high as the upper bar, then count ten
+swings again.
+
+What you will see: the high swing takes longer for one full round, even though you feel as
+though the high swing is faster. That feeling cheats because the distance traveled is much
+longer, while the time for one round is almost the same.
+
+Now look at the top of the swing. When you are at the highest point, there is a short moment
+when you almost stop and hang. At the lowest point, you move fastest. A swing never stops in
+the middle, and is never fastest at the ends. Those two things always change places.
+
+In this chapter we shall learn why a high swing is slower, and why a pendulum standing
+straight up is almost impossible to keep there.
+\end{untukanak}
+
+Now the exact period formula. Multiply $v'=-(g/L)\sin\theta$ by $v=\theta'$
+and integrate:
+\[
+\frac{d}{dt}\Bigl(\frac{v^{2}}{2}+\frac{g}{L}(1-\cos\theta)\Bigr)=0 .
+\]
+That bracket is the energy per unit mass, and it is constant along the trajectory.
+With $E$ denoting its value,
+\[
+\frac{v^{2}}{2}+\frac{g}{L}\bigl(1-\cos\theta\bigr)=E ,
+\]
+so $v=\pm\sqrt{2E-2(g/L)(1-\cos\theta)}$. The trajectories in the phase plane are those
+energy curves; in Figure~\ref{fig:bidang-fase-pendulum} they are drawn for the unit
+$g/L=1$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=1.05cm,y=1.0cm,font=\footnotesize]
+  \draw[->,layergrey] (-4.15,0) -- (4.15,0) node[right] {$\theta$};
+  \draw[->,layergrey] (0,-2.95) -- (0,2.95) node[above] {$v$};
+  \foreach \tick/\lab in {-3.1416/{$-\pi$},-1.5708/{$-\pi/2$},
+                          1.5708/{$\pi/2$},3.1416/{$\pi$}}{
+    \draw[layergrey!55] (\tick,0.07) -- (\tick,-0.07);
+    \node[layergrey,font=\scriptsize,below] at (\tick,-0.07) {\lab};}
+  \node[layergrey,font=\scriptsize,below left] at (-0.06,0.02) {$0$};
+  \foreach \th in {-3.5,-2.6,-1.7,-0.85,0.85,1.7,2.6,3.5}{
+    \foreach \w in {-2.4,-1.6,-0.8,0,0.8,1.6,2.4}{
+      \pgfmathsetmacro{\nn}{sqrt(\w*\w+sin(\th r)*sin(\th r))}
+      \pgfmathsetmacro{\dx}{0.32*\w/\nn}
+      \pgfmathsetmacro{\dy}{-0.32*sin(\th r)/\nn}
+      \draw[-{Latex[length=0.9mm]},layerteal!60]
+        (\th,\w) -- ({\th+\dx},{\w+\dy});}}
+  \foreach \En/\tm in {0.4/0.9273,1.0/1.5708,1.6/2.2143}{
+    \draw[layerindigo,thick]
+      plot[domain=-\tm:\tm,samples=121,variable=\t]
+        ({\t},{sqrt(max(0,2*(\En-1+cos(\t r))))});
+    \draw[layerindigo,thick]
+      plot[domain=-\tm:\tm,samples=121,variable=\t]
+        ({\t},{-sqrt(max(0,2*(\En-1+cos(\t r))))});}
+  \draw[accent,very thick]
+    plot[domain=-3.1416:3.1416,samples=161,variable=\t]
+      ({\t},{2*cos(\t r/2)});
+  \draw[accent,very thick]
+    plot[domain=-3.1416:3.1416,samples=161,variable=\t]
+      ({\t},{-2*cos(\t r/2)});
+  \draw[layerplum,thick,densely dashed]
+    plot[domain=-3.6:3.6,samples=161,variable=\t]
+      ({\t},{sqrt(2*(1.6+cos(\t r)))});
+  \fill[ink] (0,0) circle (1.6pt);
+  \node[ink,anchor=north east,font=\scriptsize] at (-0.12,-0.52) {center};
+  \fill[accent] (3.1416,0) circle (1.6pt);
+  \fill[accent] (-3.1416,0) circle (1.6pt);
+  \node[accent,anchor=north west,font=\scriptsize,align=left]
+    at (2.35,-0.18) {saddle};
+  \node[accent,anchor=west,font=\scriptsize,align=left]
+    at (2.30,1.30) {separatrix $E=2$};
+  \node[layerplum,anchor=west,font=\scriptsize,align=left]
+    at (0.55,2.72) {open trajectory $E=2.6$};
+\end{tikzpicture}
+\caption{The phase plane of the pendulum in units $g/L=1$, with the horizontal axis the angle
+$\theta$ and the vertical axis the velocity $v$. The small arrows show the direction field
+$(\theta',v')=(v,-\sin\theta)$. The dark blue curves are three closed trajectories with
+energy $E=0.4$, $1.0$, and $1.6$; the larger $E$, the wider the turn. The red curve is
+the separatrix $E=2$, the trajectory that reaches exactly $\theta=\pm\pi$ with zero velocity;
+it separates closed swings from open rotations. The dashed curve is the open trajectory
+$E=2.6$, where the pendulum rotates fully without ever stopping. The point at $\theta=0$ is
+a center, the points at $\theta=\pm\pi$ are saddles.}
+\label{fig:bidang-fase-pendulum}
+\end{figure}
+
+That figure contains the entire qualitative behavior of the pendulum without a single
+equation being solved; all that is needed is the sign of $\sin\theta$ and the symmetry of the
+energy.
+
+For small amplitude, $\sin\theta\approx\theta$ and the system becomes the harmonic
+oscillator
+\[
+\theta'=v,\qquad v'=-\omega_{0}^{2}\theta,\qquad \omega_{0}=\sqrt{g/L},
+\]
+with solution $\theta(t)=\theta_{0}\cos(\omega_{0}t)$ and period
+$2\pi/\omega_{0}=2.006409$ seconds for $L=1$ meter. Its trajectories are the ellipses
+$v^{2}+\omega_{0}^{2}\theta^{2}=\text{constant}$, and those are the three small rings near
+the center in the figure above.
+
+The exact period comes from energy conservation, not from linearization.
+With $E=(g/L)(1-\cos\theta_{0})$ for a pendulum released from rest at
+$\theta_{0}$, the time to fall from $\theta_{0}$ to zero is
+\[
+\frac{T}{4}=\sqrt{\frac{L}{2g}}\int_{0}^{\theta_{0}}
+\frac{d\theta}{\sqrt{\cos\theta-\cos\theta_{0}}}
+=\sqrt{\frac{L}{g}}\,K(k),\qquad k=\sin\frac{\theta_{0}}{2},
+\]
+with $K$ the complete elliptic integral of the first kind. For $\theta_{0}=60^{\circ}$
+we obtain $k=0.5$ and $K$ at the parameter $m=k^{2}=0.25$ has the value
+$1.6857503548$, so $T=2.153242$ seconds. Quadrature on that integral gives the same
+number to within $9\times10^{-13}$; two different roads, one result. For $\theta_{0}=5^{\circ}$
+the ratio is $1.00047617$, that is an error of less than one part in two thousand: that is
+where the small formula deserves to be used, and where its limit of validity lies.
+
+\begin{tangan}
+Take a string one meter long, a metal nut as the weight, and a stopwatch on the phone. Tie
+the nut to the end of the string, stick the other end to the door frame with tape, and
+measure the length of the string from the suspension point to the center of the nut: try to
+make it exactly one meter. Pull the nut aside only about five centimeters, release it, and
+record the time for ten full swings. Divide by ten; the result is about two seconds.
+
+Now pull much higher, roughly half a meter above the lowest point, and repeat. Compare the
+two numbers. What you will see: the second number is larger, but not twice as large. The
+difference is about seven percent, and that agrees with the computation above if the angle is
+about sixty degrees.
+
+Repeat with a string a quarter of a meter long: the period becomes half, because the period
+depends on the square root of the length.
+\end{tangan}
+
+\section{Stability: eigenvalues, linearization, and Lyapunov}
+\tingkat{advanced}
+
+The question most often asked about a system is not ``what is its value at $t=7$'' but ``does it
+come back after being disturbed''. To answer it we do not need the solution; the derivatives
+around the equilibrium point are enough.
+
+\begin{definisi}[Stability]\index{stability}
+Let $\mathbf{x}^{*}$ be an equilibrium point of $\mathbf{x}'=\mathbf{f}(\mathbf{x})$.
+That point is called \emph{stable} if for every $\varepsilon>0$ there is
+$\delta>0$ such that $\|\mathbf{x}(0)-\mathbf{x}^{*}\|<\delta$ guarantees
+$\|\mathbf{x}(t)-\mathbf{x}^{*}\|<\varepsilon$ for every $t\ge0$. The point is
+called \emph{asymptotically stable} if it is stable and there is $\delta>0$ such that
+$\mathbf{x}(t)\to\mathbf{x}^{*}$ as $t\to\infty$. If it is not stable, it is
+called \emph{unstable}.
+\end{definisi}
+
+\begin{teorema}[Linearization]\index{linearization}
+Suppose $\mathbf{f}$ has continuous partial derivatives near the equilibrium point
+$\mathbf{x}^{*}$ and suppose $A=J_{\mathbf{f}}(\mathbf{x}^{*})$ is the Jacobian matrix from
+Chapter 12. If no eigenvalue of $A$ has real part zero (a \emph{hyperbolic} equilibrium
+point), then the qualitative behavior of the nonlinear system near $\mathbf{x}^{*}$ is the
+same as that of the linear system $\mathbf{u}'=A\mathbf{u}$: the type of stability is the
+same, and nearby trajectories can be mapped one-to-one and continuously onto linear
+trajectories.
+\end{teorema}
+
+This is the Hartman--Grobman theorem; its proof is long and uses the fixed point theorem on a
+space of functions, so I cite it: Hartman, chapter 9, Perko, section 2.8. The practical
+consequence: local stability is read off from the eigenvalues.
+
+For a two-dimensional system, every possibility is read from the trace
+$\tau=\operatorname{tr}A$ and the determinant $\Delta=\det A$; the eigenvalues are the roots
+of $\lambda^{2}-\tau\lambda+\Delta=0$. If $\Delta<0$, the roots are real and of
+opposite sign: a \emph{saddle}. If $\Delta>0$ and $\tau^{2}\ge4\Delta$,
+both are real and of the same sign: a \emph{node}, stable if $\tau<0$. If
+$\tau^{2}<4\Delta$, the roots are conjugates with real part $\tau/2$:
+a \emph{spiral}, stable if $\tau<0$, and a center if $\tau=0$.
+
+Example: the matrix $A=\begin{pmatrix}0&1\\-2&-3\end{pmatrix}$ has $\tau=-3$
+and $\Delta=2$, so its roots are $\lambda^{2}+3\lambda+2=0$, namely $-1$ and
+$-2$: a stable node. The matrix $B=\begin{pmatrix}0&1\\-2&0\end{pmatrix}$ has
+$\tau=0$ and $\Delta=2>0$, its roots are $\pm i\sqrt{2}$: a center.
+
+Figure~\ref{fig:potret-linear} shows the two portraits that differ most in character: the
+saddle, where almost every initial point moves away, and the stable spiral, where everything
+spirals inward.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \begin{scope}[x=1.35cm,y=1.35cm]
+    \begin{scope}
+      \clip (-1.62,-1.52) rectangle (1.62,1.52);
+      \foreach \c in {0.05,0.30,0.70,1.20}{
+        \draw[layerteal,thick] plot[domain=-1.55:1.55,samples=90,variable=\s]
+          ({sqrt(\c+\s*\s)},{\s});
+        \draw[layerteal,thick] plot[domain=-1.55:1.55,samples=90,variable=\s]
+          ({-sqrt(\c+\s*\s)},{\s});}
+      \draw[layerindigo,densely dashed] (-1.5,-1.5) -- (1.5,1.5);
+      \draw[layerindigo,densely dashed] (-1.5,1.5) -- (1.5,-1.5);
+    \end{scope}
+    \draw[->,layergrey] (-1.75,0) -- (1.75,0) node[right] {$x$};
+    \draw[->,layergrey] (0,-1.55) -- (0,1.55) node[above] {$y$};
+    \fill[ink] (0,0) circle (1.5pt);
+    \node[layerindigo,font=\scriptsize,anchor=south east] at (-1.52,1.30)
+      {eigen directions};
+    \node[layergrey,anchor=north] at (0,-1.62)
+      {(a) saddle: $\lambda=1,-1$};
+  \end{scope}
+  \begin{scope}[xshift=6.6cm,x=1.35cm,y=1.35cm]
+    \draw[->,layergrey] (-1.75,0) -- (1.75,0) node[right] {$x$};
+    \draw[->,layergrey] (0,-1.55) -- (0,1.55) node[above] {$y$};
+    \foreach \r in {0.35,0.7,1.1,1.5}{
+      \draw[accent,thick]
+        plot[domain=0:12.6,samples=200,variable=\t]
+          ({\r*exp(-0.3*\t)*cos(\t r)},{\r*exp(-0.3*\t)*(-sin(\t r))});}
+    \fill[ink] (0,0) circle (1.5pt);
+    \node[layergrey,anchor=north] at (0,-1.62)
+      {(b) stable spiral: $\lambda=-0.3\pm i$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Two linear phase portraits of different types. (a) The system
+$x'=y$, $y'=x$: trajectories satisfy $x^{2}-y^{2}=\text{constant}$, hyperbolas
+with asymptotes $y=\pm x$, and the dashed lines are the eigen directions, one in
+and one out, so the origin is a saddle and is unstable. (b) The system $x'=-0.3x+y$, $y'=-x-0.3y$:
+the eigenvalues are $-0.3\pm i$, so trajectories spiral while shrinking by the
+factor $e^{-0.3t}$ and the origin is a stable spiral. The four trajectories in (b)
+differ only in their initial radius, because the system is linear.}
+\label{fig:potret-linear}
+\end{figure}
+
+One warning that is expensive to learn. If $\tau=0$ and $\Delta>0$, linearization gives a
+center, but the nonlinear system at that point is not necessarily a center. Take
+\[
+x'=-y+x(x^{2}+y^{2}),\qquad y'=x+y(x^{2}+y^{2}).
+\]
+Its Jacobian at the origin is a rotation matrix, its eigenvalues are $\pm i$:
+linearization says center. But in polar coordinates $r^{2}=x^{2}+y^{2}$,
+the cross multiplication gives
+\[
+\frac{1}{2}\frac{d}{dt}r^{2}=xx'+yy'=r^{2}(x^{2}+y^{2})=r^{4},
+\]
+so $r'=r^{3}>0$ for $r>0$: trajectories spiral outward, and the origin is not
+stable. Linearization is not wrong; it is only insufficient when there is an eigenvalue on
+the imaginary axis. That is where the theorem above demands a hyperbolic equilibrium point.
+
+For the non-hyperbolic case, a second tool is used: a decreasing energy function, which we
+compose ourselves.
+
+\begin{definisi}[Lyapunov function]\index{Lyapunov function}
+A function $V$ that is continuous and has continuous derivatives on a neighborhood $U$ of
+$\mathbf{x}^{*}$ is called a \emph{Lyapunov function} if $V(\mathbf{x}^{*})=0$ and
+$V(\mathbf{x})>0$ for $\mathbf{x}\in U\setminus\{\mathbf{x}^{*}\}$. Its derivative along a
+trajectory is written
+\[
+\dot V(\mathbf{x})=\nabla V(\mathbf{x})\cdot\mathbf{f}(\mathbf{x}).
+\]
+\end{definisi}
+
+That artificial hill is $V$, and $\dot V$ is the steepness of its descent.
+
+\begin{teorema}[Lyapunov test]
+Suppose $V$ is a Lyapunov function near the equilibrium point $\mathbf{x}^{*}$.
+\begin{enumerate}
+\item If $\dot V\le0$ on $U$, then $\mathbf{x}^{*}$ is stable.
+\item If $\dot V<0$ on $U\setminus\{\mathbf{x}^{*}\}$, then
+  $\mathbf{x}^{*}$ is asymptotically stable.
+\end{enumerate}
+\end{teorema}
+
+\begin{proof}
+For the first statement, take $\varepsilon>0$ small enough that the ball
+$\|\mathbf{x}-\mathbf{x}^{*}\|\le\varepsilon$ stays inside $U$. On that ball
+$V$ is positive and the ball is compact, so
+$m=\min_{\|\mathbf{x}-\mathbf{x}^{*}\|=\varepsilon}V>0$. Choose $\delta>0$
+such that $V(\mathbf{x})<m$ for $\|\mathbf{x}-\mathbf{x}^{*}\|<\delta$;
+this is possible because $V$ is continuous and $V(\mathbf{x}^{*})=0$. A trajectory starting
+in the $\delta$ ball satisfies $V(\mathbf{x}(t))\le V(\mathbf{x}(0))<m$, since $\dot V\le0$,
+so it cannot cross the $\varepsilon$ ball; hence it is stable.
+
+For the second statement, $V(\mathbf{x}(t))$ decreases and is bounded below by
+zero, so it has a limit $L\ge0$. Suppose $L>0$; the trajectory then stays in the compact set
+$\{V\ge L\}$, and there $-\dot V$ has a positive minimum, so $V$ would have to fall through
+$L$ in finite time. Contradiction. Hence $L=0$, and because $V$ vanishes only at
+$\mathbf{x}^{*}$, the trajectory heads there.
+\end{proof}
+
+An example is the damped pendulum, $\theta'=v$, $v'=-(g/L)\sin\theta-bv$ with
+$b>0$, and $V=v^{2}/2+(g/L)(1-\cos\theta)$, which is the mechanical energy, positive
+except at the equilibrium point. Its derivative is
+\[
+\dot V=v\Bigl(-\frac{g}{L}\sin\theta-bv\Bigr)+\frac{g}{L}\sin\theta\,v=-bv^{2}\le0 .
+\]
+So the lower equilibrium point is stable and the energy never increases. This test
+does not give asymptotic stability, because $\dot V$ is zero along the whole line $v=0$;
+the LaSalle version adds that the only invariant set inside $\{\dot V=0\}$ is the equilibrium
+point, so all trajectories head there.
+
+Linearization gives the same answer. At $\theta=0$ the Jacobian is
+$\begin{pmatrix}0&1\\-g/L&-b\end{pmatrix}$, with $\tau=-b$ and
+$\Delta=g/L>0$; for $b=0.5$ and $g/L=9.80665$ the roots are $-0.25\pm3.121562\,i$,
+that is a stable spiral. At $\theta=\pi$ a $+g/L$ appears in the lower right corner,
+so $\Delta=-g/L<0$: a saddle with eigenvalues $\pm3.131557$. A pendulum standing
+straight up is indeed a saddle, and not as a figure of speech: there is exactly one direction
+that keeps it up there, and every disturbance carries it away.
+
+\kamus{asymptotically stable}{stabil asimtotik}{Stays close after a disturbance, then actually arrives back at the equilibrium point.}
+
+\kamus{Lyapunov function}{fungsi Lyapunov}{An artificial hill used as a ruler: as long as the system descends it, the system cannot run far away.}
+
+\section{Euler, Runge--Kutta, and stiffness}
+\tingkat{advanced}
+
+Almost no equation can be solved by a formula, so numerical methods are not a supplement but
+the main road. The idea goes back to Chapter 12: if we know the value and the derivative at
+one point, we can estimate the value a little to its right.
+
+Euler's method does the simplest thing. From $y'=f(t,y)$ and the initial value,
+\[
+y_{n+1}=y_{n}+h\,f(t_{n},y_{n}),\qquad t_{n+1}=t_{n}+h .
+\]
+It is exactly the first two terms of the Taylor series around $t_{n}$, so its one-step error
+is the term $h^{2}y''(\xi)/2$, of order $h^{2}$. That local error accumulates into a global
+error of order $h$: doubling the accuracy demands twice as many steps, not four times.
+
+Numbers for $y'=y$, $y(0)=1$, at $t=1$ with $h=0.1$: Euler gives
+$(1.1)^{10}=2.5937424601$, whereas $e=2.7182818285$. The error is $0.1245$, that is
+$4.58$ percent, and the error of the first single step is $5.171\times10^{-3}$.
+
+The fourth-order Runge--Kutta method repairs this by taking four samples of the slope at
+every step:
+\[
+y_{n+1}=y_{n}+\frac{h}{6}\bigl(k_{1}+2k_{2}+2k_{3}+k_{4}\bigr),
+\]
+with $k_{1}=f(t_{n},y_{n})$, $k_{2}=f(t_{n}+h/2,\,y_{n}+hk_{1}/2)$,
+$k_{3}=f(t_{n}+h/2,\,y_{n}+hk_{2}/2)$, and $k_{4}=f(t_{n}+h,\,y_{n}+hk_{3})$.
+Its local error is of order $h^{5}$ and its global error of order $h^{4}$: half the step
+means the error falls by about sixteen times.
+
+The following table comes from the program in the lab section, on the logistic model with
+$y(0)=1/2$ and $t=2$; the exact value is $0.8807970780$.
+
+\begin{center}
+{\small
+\begin{tabular}{lrrr}
+\hline
+$h$ & Euler error & RK4 error & Euler ratio \\
+\hline
+$0.400$ & $1.958\times10^{-2}$ & $1.245\times10^{-5}$ & --- \\
+$0.200$ & $9.423\times10^{-3}$ & $7.237\times10^{-7}$ & $2.08$ \\
+$0.100$ & $4.630\times10^{-3}$ & $4.359\times10^{-8}$ & $2.04$ \\
+$0.050$ & $2.296\times10^{-3}$ & $2.674\times10^{-9}$ & $2.02$ \\
+$0.025$ & $1.143\times10^{-3}$ & $1.656\times10^{-10}$ & $2.01$ \\
+\hline
+\end{tabular}}
+\end{center}
+
+The last column is the proof of first order: every time $h$ is halved, the Euler error falls
+by almost exactly two; for RK4 the ratio is about $16$, in keeping with fourth order.
+Figure~\ref{fig:galat-numerik} displays the same numbers on a logarithmic scale on both
+axes.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.80\linewidth,height=5.6cm,
+  xlabel={step $h$},ylabel={$|y(2)-y_{h}(2)|$},
+  xmode=log,ymode=log,xmin=0.02,xmax=0.5,ymin=1e-11,ymax=1e-1,
+  grid=both,minor tick num=1,
+  legend style={font=\scriptsize,at={(0.5,-0.22)},anchor=north,
+    legend columns=2,draw=none,fill=none},
+  tick label style={font=\scriptsize},label style={font=\small},
+  axis line style={layergrey},tick style={layergrey}]
+  \addplot[layerindigo,thick,mark=*,mark size=1.7pt] coordinates {
+    (0.4,0.01958) (0.2,0.009423) (0.1,0.004630)
+    (0.05,0.002296) (0.025,0.001143)};
+  \addplot[accent,thick,mark=square*,mark size=1.6pt] coordinates {
+    (0.4,0.00001245) (0.2,0.0000007237) (0.1,0.00000004359)
+    (0.05,0.000000002674) (0.025,0.0000000001656)};
+  \legend{Euler (slope $1$), Runge--Kutta 4 (slope $4$)}
+\end{axis}
+\end{tikzpicture}
+\caption{The error at $t=2$ for the logistic model as a function of the step $h$, on a
+logarithmic scale on both axes. The Euler line falls with slope one: the error is
+proportional to $h$. The Runge--Kutta line falls with slope four:
+the error is proportional to $h^{4}$. At $h=0.4$ the two methods are about three
+orders apart, and that distance widens when $h$ is made smaller. The numbers in the figure are
+the same numbers as in the table in the text.}
+\label{fig:galat-numerik}
+\end{figure}
+
+Now the property that deceives many people: stiffness. A system
+is called \emph{stiff} if inside it there is a process that moves
+far faster than the process we are interested in. Its practical signature: explicit methods
+demand a very small step in order to remain \emph{stable}, even when the accuracy we ask for
+demands only a large step.
+
+The example is small and honest: $y'=-50(y-\cos t)-\sin t$, $y(0)=1$, whose exact
+solution is $y=\cos t$. Here $y$ follows $\cos t$ slowly, but every
+deviation is dragged back at the rate $50$ per second. Euler is stable only if
+$|1-50h|<1$, that is $h<0.04$.
+
+Results at $t=3$, with exact value $\cos3=-0.989992$: Euler with $h=0.02$
+gives an error of $1.98\times10^{-4}$, with $h=0.039$ it gives
+$7.97\times10^{-4}$, and with $h=0.05$ it gives $-1.839\times10^{7}$. One
+step up from $0.039$ to $0.05$ changes the answer from almost right to
+meaningless. RK4 holds out longer, because its stability region is wider: at
+$h=0.05$ its error is $1.11\times10^{-3}$, but at $h=0.1$ it gives
+$-1.32\times10^{31}$; its practical limit is $2.785/50=0.0557$.
+
+The lesson to carry away: error and stability are two different things. The local error on
+the first step is small and warns us of nothing; what explodes is
+stability, and that is a matter of eigenvalues.
+
+The antidote is implicit methods, the simplest being backward Euler:
+\[
+y_{n+1}=y_{n}+h\,f(t_{n+1},y_{n+1}),
+\]
+which demands solving an equation at every step, but is stable for large $h$
+on stiff equations; for the example above, backward Euler with $h=0.5$
+gives an answer close to $\cos t$. Reference: Hairer and Wanner, chapter IV.
+
+\begin{tantangan}
+Linearization gives a center, but a nonlinear system need not be a center. Construct a
+two-dimensional system whose origin is \emph{not} a center even though its linearization is a
+center, determine the character of that point (stable, asymptotically stable, or unstable),
+and include an explicit formula, the eigenvalues of the Jacobian at the origin, and a brief
+proof of your claim.
+
+Hint 1: linearization sees only terms of degree one. Add a degree-three term that is
+symmetric under rotation, then write the system in polar coordinates.
+
+Hint 2: in polar coordinates, the rotation matrix becomes $\theta'=1$, and the radial
+disturbance becomes $r'=cr^{3}$ for some constant $c$. The sign of $c$
+decides everything, and $V=r^{2}$ is a Lyapunov function that works for
+one of the two signs.
+
+If you get stuck, look again at the example $r'=r^{3}$ in the Stability section.
+\end{tantangan}
+\section{Worked examples}
+\tingkat{intermediate}
+
+The four computations below are the backbone of this chapter; all of them can be checked
+again with a calculator or with the program in the lab section, and all of them have gone
+wrong in my own hands.
+
+\textbf{Logistic model: one formula, two methods.}
+Take $y'=y(1-y)$ with $y(0)=1/2$ and ask for the value at $t=2$. The formula from
+the separation of variables section gives $y(2)=1/(1+e^{-2})=0.8807970780$. With
+$h=0.1$ there are twenty steps: Euler gives $0.8854273272$, an error of
+$4.630\times10^{-3}$ or $0.53$ percent, whereas Runge--Kutta with the same step
+gives $0.8807970344$, an error of $4.359\times10^{-8}$. The cost is four times
+as much, the accuracy about one hundred thousand times.
+
+Note also the direction of the error. Euler is too high here, because
+$y(1-y)$ is concave down on that interval, so a straight line always lies above the curve.
+Checking the sign of the error is a cheap way to find out whether our program
+works as it should.
+
+\textbf{Variable coefficient: $y'+y/t=t^{2}$, $y(1)=0$.}
+Here $p(t)=1/t$, so
+\[
+\mu(t)=\exp\Bigl(\int\frac{dt}{t}\Bigr)=t
+\]
+on $t>0$. Multiplying the equation by $t$ gives
+\[
+t\,y'+y=t^{3}
+\quad\Longleftrightarrow\quad
+\bigl(t\,y\bigr)'=t^{3},
+\]
+so $t\,y=t^{4}/4+C$ and
+\[
+y(t)=\frac{t^{3}}{4}+\frac{C}{t}.
+\]
+The condition $y(1)=0$ gives $C=-1/4$, so
+\[
+y(t)=\frac{t^{3}}{4}-\frac{1}{4t}=\frac{t^{4}-1}{4t},
+\qquad y(2)=\frac{15}{8}=1.875 .
+\]
+Check: $y'=3t^{2}/4+1/(4t^{2})$ and $y/t=t^{2}/4-1/(4t^{2})$, their sum is
+$t^{2}$, exactly the right-hand side. An adaptive integrator gives $1.875000000000$.
+
+Without $\mu=t$, the left-hand side $y'+y/t$ does not look like the derivative of anything;
+after multiplication by $t$, it becomes the derivative of $ty$.
+
+\textbf{How large a swing can be before the small formula misses by one percent.}
+The ratio of the exact period to the small period is
+\[
+\frac{T(\theta_{0})}{T_{0}}
+=\frac{2}{\pi}K\Bigl(\sin^{2}\frac{\theta_{0}}{2}\Bigr),
+\]
+with $K$ the complete elliptic integral. Some of its values:
+
+\begin{center}
+{\small
+\begin{tabular}{rrrr}
+\hline
+$\theta_{0}$ & $T/T_{0}$ & error & remark \\
+\hline
+$5^{\circ}$ & $1.000476$ & $0.048$ percent & pendulum clock \\
+$10^{\circ}$ & $1.001907$ & $0.191$ percent & still safe \\
+$20^{\circ}$ & $1.007669$ & $0.767$ percent & nearing the limit \\
+$22.81^{\circ}$ & $1.010000$ & $1.000$ percent & the one-percent limit \\
+$30^{\circ}$ & $1.017409$ & $1.741$ percent & correction needed \\
+$60^{\circ}$ & $1.073182$ & $7.318$ percent & clock off by an hour \\
+\hline
+\end{tabular}}
+\end{center}
+
+So the small formula is fit to be used up to about twenty degrees, and
+$22.81^{\circ}$ is the one-percent error threshold; the error grows like the square of the
+amplitude, not like the amplitude.
+Doubling the amplitude from $10^{\circ}$ to $20^{\circ}$ raises the error from
+$0.19$ to $0.77$ percent, that is four times, in keeping with
+$1+(\theta_{0}^{2}/16)$ as the first two terms of that estimate.
+
+\kertas{
+Test yourself in three steps. (1) Work the logistic example again with
+$h=0.2$; you should get an Euler error of $9.423\times10^{-3}$ and an RK4 error of
+$7.237\times10^{-7}$. (2) Derive the elliptic period formula yourself from energy
+conservation, then check that $K$ at the parameter $0.25$ has the value
+$1.6857503548$. (3) Find the threshold $h$ for Euler on $y'=-100y$; the answer is
+$h<0.02$, and at $h=0.02$ exactly, the method oscillates between $+1$ and $-1$
+without either decaying or exploding.}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+The following code computes all the numbers above: the Euler and RK4 errors on the logistic
+model, the pendulum period by two different roads, and the stiffness threshold. It
+uses only NumPy and SciPy.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from scipy import integrate, special
+
+def euler(f, y0, T, h):
+    y, t, n = y0, 0.0, int(round(T / h))
+    for _ in range(n):
+        y += h * f(t, y); t += h
+    return y
+
+def rk4(f, y0, T, h):
+    y, t, n = y0, 0.0, int(round(T / h))
+    for _ in range(n):
+        k1 = f(t, y); k2 = f(t + h/2, y + h*k1/2)
+        k3 = f(t + h/2, y + h*k2/2); k4 = f(t + h, y + h*k3)
+        y += h * (k1 + 2*k2 + 2*k3 + k4) / 6; t += h
+    return y
+
+logi = lambda t, y: y * (1 - y)
+ex = lambda t: 1 / (1 + np.exp(-t))
+print("logistic y(2) exact %.10f" % ex(2.0))
+for h in (0.4, 0.2, 0.1, 0.05, 0.025):
+    ee = abs(euler(logi, 0.5, 2, h) - ex(2))
+    er = abs(rk4(logi, 0.5, 2, h) - ex(2))
+    print("h=%.3f euler %.3e rk4 %.3e" % (h, ee, er))
+
+g, L = 9.80665, 1.0
+T0 = 2 * np.pi * np.sqrt(L / g)
+th0 = np.radians(60.0)
+k = np.sin(th0 / 2)
+Tq = 4 * np.sqrt(L / (2*g)) * integrate.quad(
+        lambda th: 1/np.sqrt(np.cos(th) - np.cos(th0)), 0, th0, limit=200)[0]
+Te = 4 * np.sqrt(L / g) * special.ellipk(k**2)
+print("T0 %.6f T60quad %.6f T60elliptic %.6f" % (T0, Tq, Te))
+print("ratio %.6f percent %.4f" % (Te / T0, 100 * (Te / T0 - 1)))
+
+stiff = lambda t, y: -50 * (y - np.cos(t)) - np.sin(t)
+for h in (0.02, 0.039, 0.05):
+    print("stiff euler h=%.3f y(3)=%.3e" % (h, euler(stiff, 1.0, 3, h)))
+for h in (0.05, 0.1):
+    print("stiff rk4 h=%.3f y(3)=%.3e" % (h, rk4(stiff, 1.0, 3, h)))
+print("exact cos(3) %.10f" % np.cos(3))
+\end{verbatim}
+\end{lab}
+
+The actual output, verbatim:
+
+\begin{verbatim}
+logistic y(2) exact 0.8807970780
+h=0.400 euler 1.958e-02 rk4 1.245e-05
+h=0.200 euler 9.423e-03 rk4 7.237e-07
+h=0.100 euler 4.630e-03 rk4 4.359e-08
+h=0.050 euler 2.296e-03 rk4 2.674e-09
+h=0.025 euler 1.143e-03 rk4 1.656e-10
+T0 2.006409 T60quad 2.153242 T60elliptic 2.153242
+ratio 1.073182 percent 7.3182
+stiff euler h=0.020 y(3)=-9.902e-01
+stiff euler h=0.039 y(3)=-9.908e-01
+stiff euler h=0.050 y(3)=-1.839e+07
+stiff rk4 h=0.050 y(3)=-9.883e-01
+stiff rk4 h=0.100 y(3)=-1.317e+31
+exact cos(3) -0.9899924966
+\end{verbatim}
+
+Three things deserve reading. First, the Euler error ratios $2.08$, $2.04$, $2.02$,
+$2.01$ and RK4 heading to $16=2^{4}$: first and fourth order are visible as numbers. Second,
+the two roads to the pendulum period meet to six digits, even though quadrature and the
+elliptic integral do not use the same formula. Third, the stiff lines: $h=0.039$
+is still reasonable, $h=0.05$ is meaningless, and not one of those lines warns
+us.
+
+The program does not check the hypotheses of the theorems: whether $f$ satisfies the Lipschitz
+condition, whether the equilibrium point is hyperbolic. That remains our job.
+
+\begin{untukdosen}
+The teaching order I use: start from the pendulum clock and the $7.32$
+percent difference, then the definition of a solution along with the blow-up example
+$1/(1-t)$, then separation of variables and the integrating factor. The integrating factor is
+best proved in full at the board, because its proof uses only the product rule and the
+fundamental theorem of calculus, two tools they have had since Chapter 13. Picard--Lindelof is
+enough as a sketch with one iteration carried out; what must remain is the meaning of the
+Lipschitz condition, not the fixed point technique. Phase plane before eigenvalues:
+draw first, compute later.
+
+Two misconceptions almost always appear. First, students take
+``solution'' to mean a closed formula, then conclude that an equation without a formula has no
+solution; the example $y'=\sqrt{|y|}$ helps, because there two solutions exist and
+no single formula does. Second, they treat a small error as proof of correctness, and are
+surprised when Euler with $h=0.05$ gives $-1.8\times10^{7}$.
+Show them that output line; do not merely warn them about it.
+
+One blackboard activity: draw the pendulum phase plane empty, then ask
+the students to mark where the velocity is zero, where the acceleration is zero, and where the
+energy is highest. The class will argue about the region between the two saddles, and that
+argument is exactly the content of the theorem. A sign of readiness to go further: students
+can guess the type of an equilibrium point from the trace and the determinant without
+computing the roots.
+
+\end{untukdosen}
+
+\section{Summary}
+\begin{ringkasan}
+\begin{itemize}
+\item A differential equation sets the rate of change equal to the state; its solution is a
+function on an interval, and that interval is part of the answer.
+\item Two families are solvable by hand: separation of variables and the first-order linear
+equation with integrating factor $\mu=\exp(\int p\,dt)$.
+\item Picard--Lindel\"of guarantees a unique solution on a short interval if $f$ is
+continuous and satisfies the Lipschitz condition with respect to $y$; without that condition,
+one initial state can give birth to two histories.
+\item The phase plane replaces time with a picture: equilibrium points, closed trajectories,
+separatrices, and open trajectories are read without any formula for the solution.
+\item Local stability is read from the eigenvalues of the Jacobian, except when an eigenvalue
+lies on the imaginary axis; there linearization does not decide, and a Lyapunov function is
+used.
+\item Euler is first order globally and RK4 is fourth order; both are explicit and therefore
+fail on stiff systems, where stability, not accuracy, sets the size of the step.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\begin{latihan}
+\begin{enumerate}
+\item Solve $y'=2ty$, $y(0)=1$, then compute $y(1)$ and compare it with
+  $e$. Also compute Euler with $h=0.1$ and state its error. (My result:
+  $2.33463336$, error $3.84\times10^{-1}$.)
+\item Prove that $y'+p(t)y=q(t)$ with $p,q$ continuous has at most
+  one solution, without an explicit formula: the difference of two solutions satisfies
+  $w'=-p(t)w$ and $w(t_{0})=0$.
+\item True, false, or not enough information: ``because linearization at the origin gives
+  eigenvalues $\pm i$, the origin is a stable center''. Give one supporting example
+  or one counterexample.
+\item Prove that $E=v^{2}/2+\omega_{0}^{2}\theta^{2}/2$ is constant for the harmonic
+  oscillator, then explain why its trajectories are ellipses and its period is
+  $2\pi/\omega_{0}$.
+\item An RC circuit with $R=2.2\,\mathrm{k}\Omega$, $C=10\,\mu\mathrm{F}$,
+  $V_{s}=12$ volts starts from zero. Compute $\tau$, the voltage at $t=\tau$, and
+  the time to reach $6$ volts. ($22$ milliseconds; $7.585447$ volts; $15.249$ milliseconds.)
+\item Show that $v=\pm2\cos(\theta/2)$ satisfies $E=2$, then explain
+  why that curve joins $(-\pi,0)$ to $(\pi,0)$ and is called a
+  separatrix.
+\item A pendulum with $L=0.25$ meters is released from $30^{\circ}$. Compute the small
+  period and the exact period, then state the percentage difference. ($1.003205$ seconds;
+  $1.020669$ seconds; $1.74$ percent.)
+\item For $y'=-100y$ with $y(0)=1$, determine the threshold $h$ that keeps explicit Euler
+  stable, then explain what happens exactly at that threshold.
+  Check it with the program.
+\item Prove that the scalar autonomous equation $y'=f(y)$ with $f$ continuous and
+  satisfying the Lipschitz condition cannot have a nonconstant periodic solution.
+\end{enumerate}
+
+\textbf{Hints for the three hardest items.} Item 3: linearization sees only terms
+of degree one; add a symmetric cubic term as in the example $r'=r^{3}$
+and compare it with $r'=-r^{3}$. Item 6: use
+$\cos\theta=2\cos^{2}(\theta/2)-1$ and check the value of $v$ at $\theta=\pm\pi$.
+Item 9: suppose $y$ is periodic and nonconstant; at a maximum $y'=0$, so
+$f(y_{\max})=0$, and uniqueness forces that trajectory to be constant.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is genuinely proved in this chapter, with written proofs: the integrating factor
+formula together with its uniqueness, the complete Picard--Lindelof sketch with the error
+bounds of the iteration, uniqueness of solutions of the linear equation through $w'=-pw$, the
+Lyapunov test for both of its statements, and all the energy identities for the oscillator
+and the pendulum. What I cite without proof: the Hartman--Grobman theorem (Hartman,
+\emph{Ordinary Differential Equations}, chapter 9; Perko, \emph{Differential
+Equations and Dynamical Systems}, section 2.8), Peano's theorem and
+Arzel\`a--Ascoli, and the LaSalle invariance principle.
+
+What is overpopularized is the phrase ``the eigenvalues decide everything''. What is true:
+eigenvalues determine local behavior only when none of them has real part zero; on the
+imaginary axis, degree-three terms can turn a center into a spiral, as in the example
+$r'=r^{3}$ here. For high-dimensional systems, local ``asymptotic stability'' does not even
+mean safe from large disturbances, because the basin of attraction can be very small.
+
+An open question: how far can qualitative properties be certified numerically? A small error
+on a single trajectory says nothing about stability; Euler with $h=0.039$ is right to four
+digits, whereas $h=0.05$ gives $10^{7}$. For a system known only through samples of its
+field, there is no general way to make sure that no stiff region hides between two sample
+points.
+
+Limits of validity: all functions here are real and smooth enough; all numbers are from
+Python 3.14.4, NumPy 2.5.2, and SciPy 1.18.0, with quadrature at tolerance
+$10^{-13}$ unless stated otherwise; $g=9.80665\ \mathrm{m/s^{2}}$ and friction is
+neglected in the period computations.
+\end{untukpeneliti}
+
+\peta{Chapter 16 in Boyce and DiPrima, \emph{Elementary Differential Equations
+and Boundary Value Problems}, chapters 1 (introduction), 2 (first-order equations), 3
+(second-order linear equations), 4 (first-order systems and the phase plane), and 9
+(nonlinear equations and stability); in Strogatz, \emph{Nonlinear Dynamics
+and Chaos}, chapters 2 (flows on the line), 5 (two-dimensional systems), 6 (phase planes),
+7 (oscillators), and 8 (bifurcations); in Arnold, \emph{Ordinary Differential
+Equations}, chapters 1--4 for existence, uniqueness, and the classification of equilibrium
+points; in Coddington and Levinson, chapters 1--2 for Picard--Lindelof and
+Peano; in Hartman, chapter 9, and Perko, section 2.8, for Hartman--Grobman;
+in Hairer and Wanner, \emph{Solving Ordinary Differential Equations II}, chapter
+IV, for stiffness and implicit methods. The basis for the computations is the chapter
+\emph{Derivatives: One and Several Variables} (partial derivatives and the Jacobian), the
+chapter \emph{Series of Functions and Exchange of Limits} (uniform limits, which make Picard
+iteration converge), and the chapter \emph{Multiple Integrals} (vector fields) in the first
+edition of this book; the eigenvalues of Chapter 9 are used directly without being repeated,
+and the floating-point error analysis of Chapter 22 is the continuation of the numerical part
+of this chapter.}

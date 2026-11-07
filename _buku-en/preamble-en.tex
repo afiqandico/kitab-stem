@@ -1,0 +1,143 @@
+\documentclass[11pt,a4paper,oneside]{book}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[a4paper,top=2.6cm,bottom=2.8cm,left=3.0cm,right=2.6cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta,positioning,calc,patterns}
+\usepackage[font=small,labelfont=bf,justification=centering]{caption}
+\usepackage[most]{tcolorbox}
+\usepackage{makeidx}
+\usepackage[hidelinks,bookmarksnumbered,bookmarksopenlevel=1,plainpages=false]{hyperref}
+
+\hypersetup{
+  pdftitle={Why Machines Can Be Wrong: From Linear Algebra to Machine-Learning Security (First Edition)},
+  pdfauthor={Afiq Andico Pangimpian},
+  pdfsubject={A tiered textbook: mathematics, computing, machine learning, and security},
+  pdfkeywords={linear algebra, real analysis, probability, optimisation, neural networks, adversarial ML, Lean 4},
+  pdfcreator={pdfLaTeX},
+}
+
+\definecolor{ink}{HTML}{1A1A1A}
+\definecolor{accent}{HTML}{8C2F39}
+\definecolor{layerorange}{HTML}{B45309}
+\definecolor{layerteal}{HTML}{0F766E}
+\definecolor{layergrey}{HTML}{374151}
+\definecolor{layerindigo}{HTML}{4338CA}
+\definecolor{layerjade}{HTML}{15803D}
+\definecolor{layerbrown}{HTML}{92400E}
+\definecolor{layerplum}{HTML}{86198F}
+\color{ink}
+
+% Environment names stay Indonesian so Indonesian and English chapters share one
+% structural checker; only the printed labels are translated.
+\theoremstyle{definition}
+\newtheorem{definisi}{Definition}[chapter]
+\theoremstyle{plain}
+\newtheorem{teorema}{Theorem}[chapter]
+\newtheorem{lemma}[teorema]{Lemma}
+\newtheorem{akibat}[teorema]{Corollary}
+\newtheorem{proposisi}[teorema]{Proposition}
+\theoremstyle{remark}
+\newtheorem{contoh}{Example}[chapter]
+\newtheorem{latihan}{Exercise}[chapter]
+\newtheorem{catatan}{Note}[chapter]
+\newtheorem*{ringkasan}{Summary}
+
+\renewcommand{\chaptername}{Chapter}
+\renewcommand{\partname}{Part}
+\renewcommand{\contentsname}{Contents}
+\renewcommand{\bibname}{References}
+\renewcommand{\indexname}{Index}
+\renewcommand{\figurename}{Figure}
+\renewcommand{\tablename}{Table}
+\renewcommand{\listfigurename}{List of Figures}
+
+\setlist[itemize]{topsep=0.35em,itemsep=0.15em,parsep=0pt}
+\setlist[enumerate]{topsep=0.35em,itemsep=0.15em,parsep=0pt}
+
+% ---------------- four reader layers ----------------
+\newtcolorbox{untukanak}{colback=orange!6,colframe=layerorange,
+  title={\small\bfseries For younger readers (age 10 and up)},
+  fonttitle=\bfseries,breakable,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{untukdosen}{colback=teal!5,colframe=layerteal,
+  title={\small\bfseries Note for instructors},
+  fonttitle=\bfseries,breakable,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{untukpeneliti}{colback=black!4,colframe=layergrey,
+  title={\small\bfseries For researchers: limits and next steps},
+  fonttitle=\bfseries,breakable,left=6pt,right=6pt,top=4pt,bottom=4pt}
+% ---- learning-style channels: auditory, kinesthetic, procedural, problem solving ----
+\newtcolorbox{bacakeras}{colback=violet!5,colframe=layerindigo,
+  title={\small\bfseries Read it aloud (auditory learner)},
+  fonttitle=\bfseries,breakable,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{tangan}{colback=green!5,colframe=layerjade,
+  title={\small\bfseries Do it by hand (kinesthetic learner)},
+  fonttitle=\bfseries,breakable,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{resep}{colback=orange!4,colframe=layerbrown,
+  title={\small\bfseries Step-by-step recipe (procedural learner)},
+  fonttitle=\bfseries,breakable,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{tantangan}{colback=magenta!4,colframe=layerplum,
+  title={\small\bfseries Challenge (problem solver)},
+  fonttitle=\bfseries,breakable,left=6pt,right=6pt,top=4pt,bottom=4pt}
+
+% In the English edition the first argument is the English term and the second is
+% the Indonesian original, so the printed pair stays the same way round.
+\newcommand{\kamus}[3]{%
+  \par\smallskip\noindent
+  \colorbox{blue!5}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+    \small\textbf{#1} (\emph{#2}) --- #3}}\par\smallskip}
+\newcommand{\tingkat}[1]{%
+  \par\noindent{\footnotesize\scshape Level: #1}\par\smallskip}
+\newcommand{\kertas}[1]{%
+  \par\medskip\noindent
+  \fbox{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{\small #1}}%
+  \par\medskip}
+\newcommand{\peta}[1]{%
+  \par\medskip\noindent{\small\itshape Map to source texts: #1}\par\medskip}
+
+\newenvironment{lab}{\par\medskip\noindent\textbf{Computational lab}\par\nopagebreak}{\par\medskip}
+\makeatletter
+\renewcommand{\verbatim@font}{\footnotesize\ttfamily}
+\makeatother
+
+\makeindex
+\setlength{\emergencystretch}{3em}
+
+% ---------------------------------------------------------------------------
+% Running head untuk judul bab yang panjang.
+%
+% Kepala halaman hanya memuat "CHAPTER n. <judul>". Kalau judul penuh terlalu
+% lebar, kepala halaman meluber (Overfull \hbox) dan itu bukan hal yang boleh
+% dibiarkan. Menyingkat judulnya dilarang: halaman bab dan daftar isi harus
+% memuat terjemahan utuh. Jadi yang dipendekkan hanya mark header, dan
+% pemendekannya berlaku SEKLALI untuk bab berikutnya:
+%
+%   \judulpendek{Riemann Integrals}
+%   \chapter{Riemann Integrals and the Fundamental Theorem of Calculus}
+%
+% Tanpa mekanisme sekali-pakai ini, \renewcommand{\chaptermark} di dalam satu
+% berkas bab akan bocor ke semua bab sesudahnya - pernah terjadi: header bab
+% 14-18 ikut berbunyi "CHAPTER 13. RIEMANN INTEGRALS".
+\makeatletter
+% \@chapapp (bukan \chaptername): setelah \appendix, \@chapapp menjadi "Appendix",
+% sedangkan \chaptername tetap "Chapter", sehingga kepala halaman lampiran dulu
+% berbunyi "CHAPTER A. TABLE OF NOTATION" tanpa satu pun peringatan LaTeX.
+\newcommand*\judulpendek[1]{\gdef\kepala@pendek{#1}}
+\newcommand*\kepala@pendek{}
+\renewcommand*\chaptermark[1]{%
+  \markright{\MakeUppercase{%
+    \ifnum\c@secnumdepth>\m@ne\if@mainmatter\@chapapp\ \thechapter.\ \fi\fi
+    \ifx\kepala@pendek\@empty #1\else\kepala@pendek\fi}}%
+  \global\let\kepala@pendek\@empty}
+\makeatother

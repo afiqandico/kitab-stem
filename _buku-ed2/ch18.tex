@@ -1,0 +1,1145 @@
+\chapter{Variabel Acak dan Distribusi}
+
+Sebuah layanan pesan menerima rata-rata tiga permintaan per detik pada jam sibuk.
+Angka itu tercetak di dasbor, dan ia tidak menjawab pertanyaan yang mendesak: berapa
+sering satu detik berisi delapan permintaan atau lebih, sehingga antrean meluap? Dua sistem bisa punya rata-rata sama persis dan berperilaku
+sangat berbeda: yang satu hampir tidak pernah meluap, yang lain beberapa kali sehari.
+Rata-rata saja tidak cukup, dan bukan karena hitungannya kurang teliti.
+
+Bab 17 memberi kita bahasa untuk kejadian: peluang satu hasil, peluang gabungan,
+peluang bersyarat. Bahasa itu berhenti bekerja begitu yang kita ukur berupa bilangan.
+``Jumlah permintaan dalam satu detik'' bukan satu kejadian, melainkan keluarga
+kejadian yang tak berhingga banyaknya, satu untuk setiap nilai yang mungkin. Untuk
+cacahan, peluang tiap nilai masih bisa dijumlahkan satu per satu. Untuk besaran yang
+berlanjut, cara itu runtuh: waktu tunggu bisa bernilai $0{,}317$ detik atau
+$0{,}3170001$ detik, dan tidak ada cara menyebut ``peluang tepat $0{,}317$ detik''
+tanpa memberi bobot nol pada setiap nilai.
+
+Jadi dibutuhkan dua hal: cara memindahkan peluang ke garis bilangan, dan cara
+mengganti penjumlahan dengan integral ketika nilainya berlanjut.
+Setelah keduanya ada, rata-rata, sebaran, dan bentuk ekor bisa dihitung.
+
+\begin{untukanak}
+Bayangkan sebuah toko roti. Setiap jam, penjual mencatat berapa banyak roti yang
+terjual: kadang 3, kadang 11, kadang tidak ada sama sekali. Catatan itu berupa
+bilangan bulat, dan tidak bisa bernilai setengah. Kalau kita ingin tahu berapa peluang
+terjual tepat 7 roti, kita bisa menghitungnya: hitung berapa jam penjualan 7 roti,
+bagi dengan jumlah jam yang dicatat. Semua peluang bisa dijumlahkan satu per satu,
+karena pilihannya sedikit dan bisa didaftar.
+
+Sekarang timbang satu roti di atas timbangan digital. Hasilnya bukan bilangan bulat:
+250,3 gram, atau 249,8 gram. Mau sampai berapa angka di belakang koma pun, selalu ada
+kemungkinan lain yang lebih dekat lagi. Karena itu pertanyaan ``berapa peluang beratnya
+tepat 250,0000 gram'' tidak berguna, sedangkan ``berapa peluang beratnya antara 249
+dan 251 gram'' sangat berguna. Peluang di sini bukan milik satu titik, melainkan milik
+selang.
+
+Di bab ini kita akan tahu mengapa kedua cara itu berbeda, dan mengapa keduanya tetap
+bisa memberi rata-rata yang masuk akal.
+\end{untukanak}
+
+\section{Dari hasil ke bilangan}
+\tingkat{dasar}
+
+Alat ukur tidak mencatat kejadian; ia mencatat bilangan. Jembatannya adalah fungsi
+yang mengambil setiap hasil percobaan dan menetapkan satu bilangan real. Nama
+``variabel acak'' menyesatkan: ia bukan variabel, dan ia tidak acak. Keacakannya
+berasal dari peluang pada ruang hasil, sedangkan fungsinya biasa saja.
+
+\begin{definisi}[Variabel acak]\index{variabel acak}
+Misalkan $\Omega$ ruang hasil dan $\mathcal{F}$ kumpulan kejadian. Pemetaan
+$X:\Omega\to\mathbb{R}$ disebut \emph{variabel acak} bila untuk setiap $x\in\mathbb{R}$
+himpunan
+\[
+\{X\le x\}=\{\omega\in\Omega : X(\omega)\le x\}
+\]
+merupakan kejadian, yaitu anggota $\mathcal{F}$.
+\end{definisi}
+
+Syarat terakhir itu menjamin $P(X\le x)$ punya arti. Untuk hampir semua fungsi yang
+muncul dalam praktik ia terpenuhi otomatis, dan hanya gagal pada penanda himpunan yang
+tidak terukur.
+
+Sebagai contoh, lempar tiga koin setimbang dan misalkan $X$ jumlah gambar yang muncul.
+Nilainya $0,1,2,3$ dengan peluang $1/8,3/8,3/8,1/8$. Perhatikan bahwa $X$ memetakan
+delapan hasil ke empat bilangan, jadi beberapa hasil berbagi nilai yang sama. Itulah
+sebabnya peluang sebuah nilai adalah peluang gabungan kejadian.
+
+Kita perlu satu alat yang menjawab ``sejauh mana nilainya sudah bergerak'' untuk semua
+ambang sekaligus, karena ambang dipilih pembaca, bukan penulis buku.
+
+\begin{definisi}[Fungsi distribusi kumulatif]\index{fungsi distribusi kumulatif}
+Fungsi distribusi kumulatif dari variabel acak $X$ adalah
+$F_X(x)=P(X\le x)$ untuk $x\in\mathbb{R}$.
+\end{definisi}
+
+\begin{proposisi}[Sifat fungsi distribusi]
+Untuk setiap variabel acak $X$ berlaku:
+\begin{enumerate}
+  \item $F_X$ tidak turun: bila $a\le b$ maka $F_X(a)\le F_X(b)$;
+  \item $\lim_{x\to-\infty}F_X(x)=0$ dan $\lim_{x\to+\infty}F_X(x)=1$;
+  \item $F_X$ kontinu kanan, yaitu $F_X(x)=F_X(x^+)$ untuk setiap $x$;
+  \item $P(a<X\le b)=F_X(b)-F_X(a)$ untuk setiap $a<b$.
+\end{enumerate}
+\end{proposisi}
+
+\begin{proof}
+Untuk (1), kejadian $\{X\le a\}$ termuat dalam $\{X\le b\}$ bila $a\le b$, dan
+peluang bersifat monoton terhadap penyertaan.
+
+Untuk (2), misalkan $A_n=\{X\le -n\}$. Kejadian ini turun, dan
+$\bigcap_n A_n=\varnothing$ karena setiap hasil memberi nilai berhingga. Kekontinuan
+peluang dari atas, yang menyusul dari aditif terbilang, memberi $F_X(-n)\to0$. Arah
+sebaliknya memakai $B_n=\{X\le n\}$ yang naik menuju $\Omega$, sehingga
+$F_X(n)\to1$.
+
+Untuk (3), ambil barisan turun $y_n\downarrow x$ dan $C_n=\{X\le y_n\}$. Maka
+$\bigcap_n C_n=\{X\le x\}$, jadi $F_X(y_n)\to F_X(x)$ menurut kekontinuan dari atas.
+Karena barisan itu sebarang, limit kanan sama dengan nilai di $x$.
+
+Untuk (4), kejadian $\{X\le b\}$ terpecah menjadi $\{X\le a\}$ dan $\{a<X\le b\}$,
+sehingga $F_X(b)=F_X(a)+P(a<X\le b)$.
+\end{proof}
+
+Untuk dua lemparan koin setimbang dengan $X$ jumlah gambar,
+\[
+F_X(x)=\begin{cases}
+0, & x<0,\\
+1/4, & 0\le x<1,\\
+3/4, & 1\le x<2,\\
+1, & x\ge 2.
+\end{cases}
+\]
+Fungsi ini terdefinisi di seluruh garis bilangan, walaupun $X$ hanya bernilai $0,1,2$.
+Karena itu $F_X(1{,}4)=3/4$: yang ditanyakan bukan ``apakah $X$ sama dengan $1{,}4$'',
+melainkan ``apakah $X$ paling besar $1{,}4$''. Setiap lompatan grafiknya adalah massa
+peluang pada satu nilai. Gambar~\ref{fig:tangga-cdf} menggambar tangga itu: tiga anak
+tangga mendatar, tiga lompatan tegak, dan tinggi setiap lompatan sama dengan massa
+peluang di titik lompatnya.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,x=1.75cm,y=4.2cm]
+  \foreach \y/\lab in {0.25/{1/4},0.75/{3/4},1/{1}}{
+    \draw[layergrey!35,dashed] (-1.35,\y) -- (3.55,\y);
+    \node[left,font=\scriptsize] at (0,\y) {$\lab$};
+  }
+  \draw[->,layergrey] (-1.35,0) -- (3.6,0) node[below] {$x$};
+  \draw[->,layergrey] (0,-0.1) -- (0,1.18) node[left] {$F_X(x)$};
+  \draw[very thick,layerindigo] (-1.25,0) -- (0,0);
+  \draw[very thick,layerindigo] (0,0.25) -- (1,0.25);
+  \draw[very thick,layerindigo] (1,0.75) -- (2,0.75);
+  \draw[very thick,layerindigo] (2,1) -- (3.5,1);
+  \draw[very thick,layerplum] (0,0) -- (0,0.25);
+  \draw[very thick,layerplum] (1,0.25) -- (1,0.75);
+  \draw[very thick,layerplum] (2,0.75) -- (2,1);
+  \fill[layerindigo] (0,0.25) circle (1.8pt);
+  \fill[layerindigo] (1,0.75) circle (1.8pt);
+  \fill[layerindigo] (2,1) circle (1.8pt);
+  \draw[layerindigo,fill=white,thick] (1,0.25) circle (1.8pt);
+  \draw[layerindigo,fill=white,thick] (2,0.75) circle (1.8pt);
+  \node[below,font=\scriptsize] at (0,-0.02) {$0$};
+  \node[below,font=\scriptsize] at (1,-0.02) {$1$};
+  \node[below,font=\scriptsize] at (2,-0.02) {$2$};
+  \node[right,font=\scriptsize,text=layerplum] at (1.06,0.5) {lompatan $1/2$};
+  \node[right,font=\scriptsize,text=layerplum] at (0.06,0.12) {lompatan $1/4$};
+\end{tikzpicture}
+\caption{Fungsi distribusi kumulatif jumlah gambar pada dua lemparan koin. Grafiknya
+tangga datar di antara nilai yang mungkin, lalu melompat tepat di nilai itu. Lompatan
+$1/4$ di $x=0$, $1/2$ di $x=1$, dan $1/4$ di $x=2$ adalah massa peluang $p_X(0)$,
+$p_X(1)$, dan $p_X(2)$.
+Titik penuh di ujung kiri setiap anak tangga menandakan $F_X$ kontinu kanan, sehingga
+$F_X(1)=3/4$ dan bukan $1/4$.}
+\label{fig:tangga-cdf}
+\end{figure}
+
+\kamus{variabel acak}{random variable}{fungsi yang menempelkan satu bilangan pada tiap
+hasil percobaan, seperti juru tulis yang mencatat satu angka untuk setiap kejadian}
+
+\kamus{fungsi distribusi kumulatif}{cumulative distribution function}{tangga yang
+menanjak: tingginya di titik $x$ menyatakan berapa banyak peluang yang sudah
+terkumpul sampai ambang itu}
+
+\section{Fungsi massa dan fungsi kerapatan}
+\tingkat{dasar}
+
+Ada dua cara memberi bobot pada nilai variabel acak. Pada variabel yang nilainya bisa
+didaftar, bobot menempel pada titik; pada yang nilainya mengisi selang, bobot menempel
+pada panjang. Kekeliruan paling umum di topik ini adalah memakai cara pertama untuk
+membaca hasil cara kedua.
+
+\begin{definisi}[Variabel diskret dan fungsi massa peluang]\index{fungsi massa peluang}
+$X$ disebut \emph{diskret} bila himpunan nilainya terbilang, katakanlah
+$\{x_1,x_2,\dots\}$. \emph{Fungsi massa peluang} dari $X$ adalah $p_X(x)=P(X=x)$.
+Fungsi ini memenuhi $p_X(x)\ge0$, $p_X(x)\le1$, dan $\sum_i p_X(x_i)=1$, serta
+$F_X(x)=\sum_{x_i\le x}p_X(x_i)$.
+\end{definisi}
+
+Untuk $X$ binomial dengan $n=2$ dan $p=1/2$, massa peluangnya $1/4,1/2,1/4$ pada
+$x=0,1,2$ dan nol di tempat lain. Massa peluang tidak pernah lebih besar dari satu,
+karena ia memang sebuah peluang.
+
+\begin{definisi}[Variabel kontinu dan fungsi kerapatan peluang]\index{fungsi kerapatan}
+$X$ disebut \emph{kontinu} bila terdapat fungsi $f_X\ge0$ sehingga
+\[
+P(a\le X\le b)=\int_a^b f_X(x)\,dx
+\]
+untuk setiap $a\le b$, dengan $\int_{-\infty}^{\infty}f_X(x)\,dx=1$. Fungsi $f_X$
+disebut \emph{fungsi kerapatan peluang}.
+\end{definisi}
+
+Kerapatan bukan peluang, dan perbedaannya bukan soal istilah. Ambil $X$ dengan
+kerapatan $f_X(x)=5$ pada $[0,1/5]$ dan nol di luar itu. Maka $f_X(0{,}1)=5$, angka
+yang mustahil bagi sebuah peluang, sedangkan
+$P(X\le0{,}1)=\int_0^{0{,}1}5\,dx=0{,}5$. Kerapatan juga boleh tak terbatas:
+$f_X(x)=\tfrac23x^{-1/3}$ pada $(0,1)$ berintegral satu walaupun meledak di dekat nol.
+Satuannya berbeda: peluang per satuan panjang, seperti kepadatan penduduk adalah jiwa
+per kilometer persegi. Gambar~\ref{fig:batang-dan-kurva} menaruh
+kedua cara itu berdampingan: batang di kiri dijumlahkan menurut tinggi, segitiga di
+kanan menurut luas, dan keduanya berjumlah satu.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth]
+  \begin{scope}[x=1.05cm,y=5.4cm]
+    \draw[->,layergrey] (0,0) -- (5.4,0) node[right] {$x$};
+    \draw[->,layergrey] (0,0) -- (0,0.62) node[left] {$p_X(x)$};
+    \foreach \x/\p in {1/0.1,2/0.2,3/0.3,4/0.4}{
+      \fill[layerorange!40] (\x-0.3,0) rectangle (\x+0.3,\p);
+      \draw[layerbrown,thick] (\x-0.3,0) rectangle (\x+0.3,\p);
+      \node[below,font=\scriptsize] at (\x,0) {$\x$};
+    }
+    \node[font=\scriptsize,text=layerbrown,align=left,anchor=west] at (0.45,0.44)
+      {empat batang,\\ jumlah tinggi $=1$};
+  \end{scope}
+  \begin{scope}[xshift=7.7cm,x=1.05cm,y=5.4cm]
+    \draw[->,layergrey] (0,0) -- (5.4,0) node[right] {$x$};
+    \draw[->,layergrey] (0,0) -- (0,0.62) node[left] {$f_X(x)$};
+    \fill[layerteal!25] (0.4,0) -- (2.4,0.5) -- (4.4,0) -- cycle;
+    \draw[layerteal,thick] (0.4,0) -- (2.4,0.5) -- (4.4,0) -- cycle;
+    \draw[layergrey,dashed] (2.4,0) -- (2.4,0.5);
+    \node[above,font=\scriptsize] at (2.4,0.5) {$0{,}5$};
+    \node[below,font=\scriptsize] at (0.4,0) {$0$};
+    \node[below,font=\scriptsize] at (4.4,0) {$4$};
+    \node[font=\scriptsize,text=layerteal,align=center] at (2.4,0.14)
+      {luas $=\tfrac12\cdot4\cdot0{,}5=1$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Dua cara memberi bobot yang sama-sama berjumlah satu. Kiri: empat batang
+setinggi $0{,}1$, $0{,}2$, $0{,}3$, $0{,}4$ pada nilai $1,2,3,4$, dijumlahkan menurut
+tinggi. Kanan: kerapatan berbentuk segitiga dengan puncak $0{,}5$ pada $[0,4]$,
+dijumlahkan menurut luas, dan $\tfrac12\cdot4\cdot0{,}5=1$. Tinggi $0{,}5$ di panel
+kanan bukan peluang apa pun; yang berpeluang adalah luas potongan di bawahnya.}
+\label{fig:batang-dan-kurva}
+\end{figure}
+
+\begin{bacakeras}
+Bacakan berpasangan, satu orang memilih suara Tinggi dan satu orang suara Berat. Mulai
+pelan, lalu percepat.
+
+Tinggi: Saya tinggi kurva. Saya menjulang di satu titik, dan semua orang menunjuk saya.
+Berat: Saya berat di bawah kurva. Saya menumpuk sepanjang selang, dan semua orang
+menimbang saya.
+Tinggi: Angka saya boleh lima. Boleh sepuluh. Boleh tak terbatas.
+Berat: Angka saya tidak pernah melebihi satu, karena saya adalah seluruh peluang.
+Tinggi: Tanpa saya, kau tidak tahu di mana nilai paling sering muncul.
+Berat: Tanpa saya, kau tidak tahu apakah puncak itu berisi apa pun.
+Bersama: Tinggi menunjuk tempat. Berat menimbang isi.
+
+Ulangi bersama tiga kali, makin pelan: peluang itu berat, bukan tinggi.
+\end{bacakeras}
+
+\begin{teorema}\index{kerapatan}
+Bila $X$ kontinu dengan kerapatan $f_X$, maka $F_X(x)=\int_{-\infty}^{x}f_X(t)\,dt$,
+dan $f_X(x)=F_X'(x)$ di setiap titik $x$ tempat $F_X$ terturunkan.
+\end{teorema}
+
+\begin{proof}
+Persamaan pertama adalah definisi kerapatan dengan $a=-\infty$ dan $b=x$. Persamaan
+kedua adalah teorema dasar kalkulus bagian pertama: turunan fungsi akumulasi sama
+dengan $f_X$ di setiap titik kekontinuan $f_X$.
+\end{proof}
+
+Pertanyaan yang paling sering menimbulkan kebingungan: bila $X$ kontinu maka
+$P(X=x)=0$ untuk setiap $x$, sebab $\int_x^x f_X=0$. Apakah itu berarti kejadian $X=x$
+mustahil? Tidak. Himpunan $\{\omega:X(\omega)=x\}$ tetap ada dan tetap bisa berisi
+hasil; yang nol adalah peluangnya, bukan keberadaannya.
+
+Kesulitan muncul saat mencoba menjumlahkan semua titik. Selang $[0,1]$ adalah gabungan
+tak terbilang dari titik berpeluang nol, tetapi $P(0\le X\le1)=1$. Tidak ada
+kontradiksi: aksioma ketiga Bab 17 hanya menjamin aditif untuk gabungan
+\emph{terbilang}, dan integral mengukur panjang, bukan menghitung titik.
+
+Ada lapisan praktis. Pembangkit bawaan NumPy membentuk nilai
+sebagai kelipatan $2^{-53}$, jadi hanya ada $2^{53}$ keluaran mungkin pada $[0,1)$, dan
+peluang satu nilai tertentu muncul dalam $10^7$ tarikan kira-kira
+$10^7/2^{53}=1{,}1\times10^{-9}$. Pada komputer ``peluang nol'' sebenarnya
+$2^{-53}\approx1{,}1\times10^{-16}$; nol yang kita tulis adalah pengidealan.
+
+\begin{contoh}
+Misalkan $X$ seragam pada $(0,1)$, dengan $f_X(x)=1$ untuk $0<x<1$. Maka
+\[
+P(0{,}49<X<0{,}51)=\int_{0{,}49}^{0{,}51}1\,dx=0{,}02,
+\qquad P(X=0{,}5)=0 .
+\]
+Kerapatan di sekitar $0{,}5$ sama besar dengan di sekitar $0{,}01$; yang membedakan
+hanya panjang selangnya. Karena itu pertanyaan yang benar untuk variabel kontinu
+selalu berbentuk selang.
+\end{contoh}
+
+\begin{tangan}
+Bahan: meteran badan, gunting, kertas karton, dan sepuluh kartu kosong.
+
+Ukur tinggi sepuluh teman sampai sentimeter terdekat, lalu tulis satu tinggi pada tiap
+kartu. Buat lima kotak di lantai dari potongan karton selebar lima sentimeter:
+$150$--$154$, $155$--$159$, sampai $170$--$174$. Letakkan setiap kartu di kotak yang
+cocok, bertumpuk ke atas. Yang harus kita lihat: tumpukan itu punya bentuk, dan jumlah
+kartu di semua kotak tetap sepuluh.
+
+Potong ulang karton menjadi kotak selebar sepuluh sentimeter, susun kembali kartunya,
+dan lihat apa yang berubah. Tumpukan menjadi hampir separuh tingginya, tetapi tidak ada
+satu kartu pun yang hilang. Lebar kotak mengubah tinggi tumpukan; jumlah kartu tidak
+berubah. Itulah bedanya tinggi dan berat, dan itulah sebabnya kerapatan harus dikalikan
+lebar selang sebelum boleh disebut peluang.
+\end{tangan}
+
+\begin{untukanak}
+Bayangkan lapangan sepak bola yang penuh orang. Kita ingin tahu di mana orangnya
+paling banyak. Kita tidak bisa menjawabnya dengan bertanya ``berapa orang tepat di
+titik ini''. Jawabannya selalu nol, karena satu titik tidak punya luas. Yang bisa
+dijawab adalah ``berapa orang di setiap meter persegi''. Angka itu disebut kepadatan,
+dan nilainya berbeda-beda: di depan pintu masuk padat, di pojok lapangan lengang.
+
+Kepadatan tinggi bukan berarti di situ ada banyak orang di satu titik. Kepadatan
+tinggi berarti di sekitar situ, dalam wilayah kecil, orangnya menumpuk. Kalau kita
+mengalikan kepadatan dengan luas wilayah, barulah keluar jumlah orang. Hal yang sama
+berlaku untuk peluang: kerapatan dikali panjang selang memberi peluang, dan kerapatan
+sendiri bukan peluang.
+
+Inilah sebabnya dua kurva yang bentuknya sangat berbeda bisa memberi total yang sama,
+yaitu satu. Yang penting bukan tinggi kurva di satu titik, melainkan luas di bawahnya.
+Di bab ini kita akan tahu mengapa pertanyaan tentang titik harus diganti pertanyaan
+tentang selang.
+\end{untukanak}
+
+\section{Harapan dan variansi}
+\tingkat{menengah}
+
+Kalau seluruh distribusi harus diringkas menjadi satu bilangan, bilangan yang dipilih
+adalah titik tumpunya: letak pusat massa bila peluang dianggap berat.
+
+\begin{definisi}[Harapan]\index{harapan}
+Harapan dari variabel acak $X$ adalah
+\[
+\mathbb{E}[X]=\sum_i x_i\,p_X(x_i)
+\qquad\text{atau}\qquad
+\mathbb{E}[X]=\int_{-\infty}^{\infty}x\,f_X(x)\,dx,
+\]
+bergantung pada apakah $X$ diskret atau kontinu. Harapan ada hanya bila
+$\mathbb{E}[|X|]<\infty$; bila tidak, dikatakan harapan $X$ tidak ada.
+\end{definisi}
+
+Syarat nilai mutlak itu bukan kehati-hatian berlebihan. Untuk distribusi Cauchy dengan
+kerapatan $f(x)=1/(\pi(1+x^2))$, $\int|x|f(x)dx$ berdivergen, sehingga $\mathbb{E}[X]$
+tidak ada walaupun distribusinya simetris terhadap nol; rata-rata sampelnya tidak
+memusat ke mana pun, seberapa banyak pun data ditambah. Bab 19 memakai contoh ini
+sebagai batas hukum bilangan besar.
+
+Sebagai hitungan pendek, untuk $X$ Bernoulli dengan $P(X=1)=p$,
+$\mathbb{E}[X]=0\cdot(1-p)+1\cdot p=p$. Untuk $X$ seragam pada $(0,1)$,
+$\mathbb{E}[X]=\int_0^1x\,dx=1/2$.
+
+Seringkali yang dibutuhkan bukan harapan $X$, melainkan harapan fungsi $X$, misalnya
+$\mathbb{E}[X^2]$. Jalan lurusnya adalah mencari kerapatan $X^2$ lebih dahulu, lalu
+mengintegralkan. Ada jalan yang jauh lebih pendek.
+
+\begin{teorema}[Harapan fungsi variabel acak]
+Untuk fungsi $r$ dan variabel acak $X$,
+\[
+\mathbb{E}[r(X)]=\sum_i r(x_i)\,p_X(x_i)
+\qquad\text{atau}\qquad
+\mathbb{E}[r(X)]=\int_{-\infty}^{\infty}r(x)\,f_X(x)\,dx .
+\]
+\end{teorema}
+
+\begin{proof}
+Untuk kasus diskret, kelompokkan nilai menurut $y=r(x)$:
+\[
+\sum_i r(x_i)p_X(x_i)=\sum_y y\sum_{i:\,r(x_i)=y}p_X(x_i)=\sum_y y\,P(r(X)=y),
+\]
+dan bentuk terakhir adalah definisi $\mathbb{E}[r(X)]$ karena $r(X)$ diskret dengan
+massa peluang $P(r(X)=y)$. Untuk kasus kontinu, buktinya adalah rumus perubahan
+variabel pada integral di Bab 15; pengelompokan yang sama berlaku dengan integral
+menggantikan jumlah.
+\end{proof}
+
+\begin{proposisi}[Linearitas harapan]
+Untuk variabel acak $X,Y$ dan konstanta $a,b$ berlaku
+$\mathbb{E}[aX+bY]=a\,\mathbb{E}[X]+b\,\mathbb{E}[Y]$.
+\end{proposisi}
+
+\begin{proof}
+Untuk kasus diskret dengan massa bersama $p(x,y)$,
+\[
+\mathbb{E}[aX+bY]=\sum_{x,y}(ax+by)p(x,y)
+=a\sum_x x\sum_y p(x,y)+b\sum_y y\sum_x p(x,y)=a\,\mathbb{E}[X]+b\,\mathbb{E}[Y].
+\]
+Kasus kontinu identik dengan integral menggantikan jumlah.
+\end{proof}
+
+Yang tidak dipakai di sini adalah kebebasan: linearitas berlaku untuk variabel apa pun,
+termasuk yang bergantung kuat. Karena itu ia aman untuk jumlah penanda, tetapi tidak
+boleh dipakai untuk perkalian: $\mathbb{E}[XY]=\mathbb{E}[X]\mathbb{E}[Y]$ menuntut
+kebebasan.
+
+Harapan memberi pusat, tetapi tidak memberi lebar; ukuran lebar yang paling dipakai
+adalah rata-rata kuadrat jarak ke pusat.
+
+\begin{definisi}[Variansi]\index{variansi}
+Variansi dari $X$ dengan $\mu=\mathbb{E}[X]$ adalah
+$\operatorname{Var}(X)=\mathbb{E}\bigl[(X-\mu)^2\bigr]$, dan simpangan bakunya
+$\sigma_X=\sqrt{\operatorname{Var}(X)}$.
+\end{definisi}
+
+\begin{proposisi}
+Bila variansi ada, maka $\operatorname{Var}(X)=\mathbb{E}[X^2]-\mu^2$ dan
+$\operatorname{Var}(aX+b)=a^2\operatorname{Var}(X)$.
+\end{proposisi}
+
+\begin{proof}
+Kembangkan kuadratnya dan pakai linearitas:
+\[
+\mathbb{E}[(X-\mu)^2]=\mathbb{E}[X^2]-2\mu\,\mathbb{E}[X]+\mu^2
+=\mathbb{E}[X^2]-\mu^2 .
+\]
+Untuk sifat kedua, $\mathbb{E}[aX+b]=a\mu+b$, sehingga
+$\operatorname{Var}(aX+b)=\mathbb{E}[(aX+b-a\mu-b)^2]=a^2\mathbb{E}[(X-\mu)^2]$.
+\end{proof}
+
+Untuk $X$ Bernoulli, $\mathbb{E}[X^2]=p$ karena $X^2=X$ untuk nilai $0$ dan $1$,
+sehingga $\operatorname{Var}(X)=p-p^2=p(1-p)$. Untuk $X$ seragam pada $(0,1)$,
+$\mathbb{E}[X^2]=1/3$, sehingga $\operatorname{Var}(X)=1/3-1/4=1/12\approx0{,}083333$.
+Variansi bersatuan kuadrat, sedangkan simpangan baku bersatuan sama dengan $X$. Satu
+peringatan yang mahal: $\mathbb{E}[X^2]\ne\mathbb{E}[X]^2$, dan selisihnya justru
+variansi; untuk seragam di atas, $0{,}25$ berbanding $0{,}333333$.
+
+\begin{resep}
+Bahan: tabel nilai $x_i$ dan peluang $p_X(x_i)$.
+\begin{enumerate}
+  \item Jumlahkan seluruh $p_X(x_i)$. Kalau hasilnya bukan satu, tabelnya belum sah.
+  \item Kalikan setiap $x_i$ dengan $p_X(x_i)$, lalu jumlahkan: itulah $\mathbb{E}[X]$.
+  \item Kuadratkan setiap $x_i$ lebih dahulu, kalikan dengan $p_X(x_i)$, lalu jumlahkan:
+        itulah $\mathbb{E}[X^2]$.
+  \item Kurangkan kuadrat hasil langkah 2 dari hasil langkah 3, yaitu
+        $\operatorname{Var}(X)=\mathbb{E}[X^2]-(\mathbb{E}[X])^2$; akar kuadratnya
+        adalah simpangan baku.
+\end{enumerate}
+Contoh: untuk $x=0,1,2,3$ dengan $p=0{,}1;\,0{,}2;\,0{,}3;\,0{,}4$, langkah 2 memberi
+$2$, langkah 3 memberi $5$, dan langkah 4 memberi $1$.
+
+Peringatan urutan: kuadratkan $x_i$ sebelum mengalikan dengan peluang, dan kurangkan
+$\mu^2$ sesudah $\mathbb{E}[X^2]$ selesai dijumlahkan. Menukar urutan itu menghasilkan
+angka yang tidak mengukur lebar apa pun.
+\end{resep}
+
+\kamus{harapan}{expectation}{titik tumpu penggaris berbeban: satu bilangan yang
+menandai di mana nilai-nilai menumpuk}
+
+\kamus{variansi}{variance}{ukuran seberapa jauh nilai biasa menyimpang dari titik
+tumpunya, dihitung dari kuadrat jarak agar tanda plus dan minus tidak saling menghapus}
+
+\section{Empat distribusi diskret}
+\tingkat{menengah}
+
+Empat keluarga distribusi diskret cukup untuk sebagian besar pekerjaan praktis: satu
+percobaan biner, jumlah percobaan biner, waktu tunggu sampai sukses pertama, dan
+kejadian langka pada selang waktu.
+
+\paragraph{Bernoulli.} $X$ Bernoulli dengan parameter $p\in[0,1]$ bernilai $1$ dengan
+peluang $p$ dan $0$ dengan peluang $1-p$, sehingga $p_X(x)=p^x(1-p)^{1-x}$ untuk
+$x\in\{0,1\}$. Dari dua titik itu, $\mathbb{E}[X]=p$ dan
+$\operatorname{Var}(X)=p(1-p)$; variansi terbesar pada $p=1/2$, yaitu $1/4$, tepat
+ketika kedua kemungkinan seimbang.
+
+\paragraph{Binomial.} Bila $n$ percobaan Bernoulli bebas dengan peluang sukses $p$
+dijalankan, jumlah keberhasilan $X$ binomial dengan
+\[
+p_X(k)=\binom{n}{k}p^k(1-p)^{n-k},\qquad k=0,1,\dots,n .
+\]
+Rata-rata dan variansinya paling mudah diturunkan dengan memecah $X$ menjadi penanda,
+bukan dari rumus itu.
+
+\begin{teorema}\index{distribusi binomial}
+Bila $X$ binomial dengan parameter $n$ dan $p$, maka
+$\mathbb{E}[X]=np$ dan $\operatorname{Var}(X)=np(1-p)$.
+\end{teorema}
+
+\begin{proof}
+Tulis $X=\sum_{i=1}^{n}X_i$ dengan $X_i=1$ bila percobaan ke-$i$ berhasil dan $0$ bila
+gagal. Setiap $X_i$ Bernoulli dengan parameter $p$, jadi $\mathbb{E}[X_i]=p$ dan
+$\operatorname{Var}(X_i)=p(1-p)$. Linearitas memberi
+$\mathbb{E}[X]=\sum_i\mathbb{E}[X_i]=np$ tanpa memakai kebebasan sama sekali.
+
+Untuk variansi, kebebasan baru diperlukan. Karena percobaannya bebas, pasangan
+$X_i,X_j$ dengan $i\ne j$ juga bebas, sehingga
+$\operatorname{Cov}(X_i,X_j)=p^2-p^2=0$. Maka
+\[
+\operatorname{Var}(X)=\sum_{i=1}^{n}\operatorname{Var}(X_i)
++2\sum_{i<j}\operatorname{Cov}(X_i,X_j)=np(1-p).
+\]
+\end{proof}
+
+Rumus variansi lebih rapuh daripada rumus rata-rata: yang pertama menuntut kebebasan,
+yang kedua tidak. Untuk $n=20$ dan $p=0{,}35$, $\mathbb{E}[X]=7$ dan
+$\operatorname{Var}(X)=4{,}55=91/20$, dengan simpangan baku $2{,}133073$; massa di
+sekitar pusatnya $p_X(7)=0{,}184401$, $p_X(10)=0{,}068614$, $p_X(12)=0{,}013564$.
+Ekornya kecil tetapi bukan nol: $P(X\ge12)=0{,}019579$ dan $P(X\le4)=0{,}118197$, jadi
+aturan ``tolak kotak bila ada dua belas cacat atau lebih'' menolak sekitar dua persen
+kotak.
+
+\paragraph{Geometrik.} Bila percobaan Bernoulli bebas diulang sampai sukses pertama,
+banyaknya percobaan yang diperlukan adalah $X$ geometrik dengan
+$p_X(k)=p(1-p)^{k-1}$ untuk $k=1,2,\dots$ Jumlah massanya satu karena deret geometri:
+$\sum_{k\ge1}p(1-p)^{k-1}=p/(1-(1-p))=1$. Dengan $q=1-p$,
+\[
+\sum_{k\ge1}kq^{k-1}=\frac{d}{dq}\frac{1}{1-q}=\frac{1}{(1-q)^2}=\frac{1}{p^2},
+\]
+sehingga $\mathbb{E}[X]=p\cdot p^{-2}=1/p$ dan, dengan cara serupa,
+$\operatorname{Var}(X)=(1-p)/p^2$ dari $\mathbb{E}[X^2]=(2-p)/p^2$. Untuk $p=0{,}2$:
+$\mathbb{E}[X]=5$, $\operatorname{Var}(X)=20$, $P(X=5)=0{,}081920$ dan
+$P(X>10)=0{,}10737418$; simulasi $10^5$ tarikan memberi rata-rata $4{,}99176$ dengan
+galat baku $0{,}01414$.
+
+\paragraph{Poisson.} Untuk $X$ Poisson dengan parameter $\lambda>0$,
+\[
+p_X(k)=e^{-\lambda}\frac{\lambda^k}{k!},\qquad k=0,1,2,\dots
+\]
+Jumlah massanya satu karena deret eksponensial:
+$e^{-\lambda}\sum_k\lambda^k/k!=1$. Rata-rata dan variansinya sama, dan keduanya
+keluar dari satu trik. Karena $k/k!=1/(k-1)!$,
+\[
+\mathbb{E}[X]=\sum_{k\ge1}k\,e^{-\lambda}\frac{\lambda^k}{k!}
+=\lambda e^{-\lambda}\sum_{k\ge1}\frac{\lambda^{k-1}}{(k-1)!}=\lambda .
+\]
+Dengan menulis $k(k-1)/k!=1/(k-2)!$ diperoleh $\mathbb{E}[X(X-1)]=\lambda^2$, sehingga
+$\operatorname{Var}(X)=\lambda$. Satu parameter mengatur pusat sekaligus lebar, dan itu
+membatasi Poisson: data yang variansinya jauh melebihi rata-ratanya (disebut
+\emph{overdispersi}) tidak cocok dimodelkan Poisson.
+
+Untuk $\lambda=3$: $p_X(0)=0{,}049787$, $p_X(3)=0{,}224042$,
+$P(X\ge8)=0{,}011905$. Angka terakhir menjawab pertanyaan antrean di pembuka bab:
+dengan tiga permintaan per detik, sekitar $1{,}2$ persen detik berisi delapan
+permintaan atau lebih.
+
+Poisson adalah limit binomial ketika $n$ besar, $p$ kecil, dan $np\to\lambda$. Untuk
+$n=1000$ dan $p=0{,}003$, binomial memberi $P(0)=0{,}049563083$ sedangkan Poisson
+$e^{-3}=0{,}049787068$, selisih relatif $-4{,}5\times10^{-3}$. Kesalahannya kecil tetapi
+tidak nol dan tandanya berganti menurut $k$; Poisson dipakai sebagai hampiran, bukan
+kesamaan.
+
+\section{Tiga distribusi kontinu}
+\tingkat{menengah}
+
+\paragraph{Seragam.} $X$ seragam pada $(a,b)$ bila kerapatannya $1/(b-a)$ di dalam
+selang itu dan nol di luar. Fungsi distribusinya naik linear dari $0$ ke $1$, dan
+\[
+\mathbb{E}[X]=\frac{a+b}{2},\qquad
+\operatorname{Var}(X)=\frac{(b-a)^2}{12}.
+\]
+Faktor $12$ muncul dari $\int_a^b(x-\tfrac{a+b}{2})^2\frac{dx}{b-a}=(b-a)^2/12$; untuk
+$(0,1)$ hasilnya $1/12\approx0{,}083333$, sama dengan hitungan lewat
+$\mathbb{E}[X^2]$ di bagian sebelumnya.
+
+\paragraph{Eksponensial.} $X$ eksponensial dengan parameter $\beta>0$ memiliki
+kerapatan $f_X(x)=\beta^{-1}e^{-x/\beta}$ untuk $x>0$, dengan
+$F_X(x)=1-e^{-x/\beta}$, $\mathbb{E}[X]=\beta$, dan $\operatorname{Var}(X)=\beta^2$.
+Parameter $\beta$ adalah rata-rata waktu tunggu. Sifat yang membedakannya dari semua
+distribusi kontinu lain adalah ketiadaan memori.
+
+\begin{proposisi}[Tanpa memori]\index{distribusi eksponensial}
+Untuk $s,t\ge0$ berlaku $P(X>s+t\mid X>s)=P(X>t)$.
+\end{proposisi}
+
+\begin{proof}
+$P(X>u)=e^{-u/\beta}$, sehingga
+\[
+P(X>s+t\mid X>s)=\frac{P(X>s+t)}{P(X>s)}
+=\frac{e^{-(s+t)/\beta}}{e^{-s/\beta}}=e^{-t/\beta}=P(X>t).
+\]
+\end{proof}
+
+Komponen yang sudah bertahan lima tahun tidak lebih mungkin bertahan satu tahun lagi
+dibanding komponen baru: masuk akal untuk proses tanpa penuaan, tidak masuk akal untuk
+lampu yang aus. Untuk $\beta=2$, $P(X>3)=0{,}22313016$ dan simulasi $10^5$ tarikan
+memberi $0{,}22237$;
+dengan syarat $X>2$, peluang empiris $X>5$ adalah $0{,}22028$ berbanding teori
+$0{,}22313$. Eksponensial adalah kembaran kontinu geometrik: bila kedatangan mengikuti
+Poisson dengan laju $\lambda$, jarak antar kedatangan eksponensial dengan
+$\beta=1/\lambda$.
+
+\paragraph{Normal.} $X$ normal dengan parameter $\mu$ dan $\sigma^2>0$ memiliki
+kerapatan
+\[
+f_X(x)=\frac{1}{\sigma\sqrt{2\pi}}
+\exp\!\left(-\frac{(x-\mu)^2}{2\sigma^2}\right),\qquad x\in\mathbb{R}.
+\]
+Konstanta di depan bukan pilihan: ia satu-satunya nilai yang membuat luas di bawah
+kurva sama dengan satu. Bahwa luasnya satu dibuktikan dengan koordinat polar di Bab 15:
+tulis $I^2$ sebagai integral ganda $e^{-(x^2+y^2)/2}$, ubah ke polar, dan dapatkan
+$I^2=2\pi$.
+
+\begin{proposisi}
+Bila $X\sim N(\mu,\sigma^2)$, maka $Z=(X-\mu)/\sigma\sim N(0,1)$.
+\end{proposisi}
+
+\begin{proof}
+$F_Z(z)=P(X\le\mu+\sigma z)=F_X(\mu+\sigma z)$. Turunkan terhadap $z$ dengan aturan
+rantai: $f_Z(z)=\sigma f_X(\mu+\sigma z)=\varphi(z)$, yaitu kerapatan normal baku.
+\end{proof}
+
+Fungsi $\Phi(z)=P(Z\le z)$ tidak punya bentuk elementer; ia dihitung numerik atau
+dibaca dari tabel. Tiga angka yang layak dihafal: $P(|Z|\le1)=0{,}682689492137$,
+$P(|Z|\le2)=0{,}954499736104$, $P(|Z|\le3)=0{,}997300203937$. Untuk peluang tak
+simetris, kurangkan dua nilai $\Phi$: $P(1<Z<2)=0{,}135905122$. Kuantilnya,
+$\Phi^{-1}(0{,}975)=1{,}959964$, muncul di setiap interval kepercayaan 95 persen pada
+Bab 20.
+
+Normal bukan distribusi yang lebih benar daripada yang lain. Ia penting karena dua
+alasan berbeda: banyak besaran alam mendekatinya, dan jumlah banyak variabel bebas
+cenderung mendekatinya apa pun bentuk aslinya. Alasan kedua adalah teorema limit
+pusat, dibuktikan pada Bab 19.
+
+\kamus{distribusi normal}{normal distribution}{kurva lonceng yang simetris: hampir
+semua nilai menumpuk dekat pusat, dan ekornya menipis sangat cepat}
+
+\kamus{distribusi eksponensial}{exponential distribution}{waktu tunggu pada proses
+tanpa penuaan: yang sudah lama menunggu tidak lebih dekat ke kejadian berikutnya}
+
+\section{Distribusi bersama, kovarians, dan korelasi}
+\tingkat{lanjut}
+
+Dua distribusi terpisah tidak menyimpan informasi tentang apakah kedua besaran
+cenderung naik bersama. Alat untuk itu adalah distribusi bersama.
+
+\begin{contoh}
+Misalkan $X,Y\in\{0,1\}$ dengan massa bersama $P(0,0)=0{,}1$, $P(0,1)=0{,}2$,
+$P(1,0)=0{,}3$, $P(1,1)=0{,}4$. Menjumlahkan baris dan kolom memberi marginal
+$P(X=1)=0{,}7$ dan $P(Y=1)=0{,}6$. Bila $X$ dan $Y$ bebas, massa pada $(1,1)$
+seharusnya $0{,}42$, sedangkan yang sebenarnya $0{,}4$; jadi keduanya tidak bebas,
+walaupun selisihnya kecil.
+\end{contoh}
+
+Pada kasus kontinu, distribusi bersama digambarkan oleh kerapatan bersama
+$f_{X,Y}\ge0$ dengan $\iint f_{X,Y}=1$, dan marginalnya diperoleh dengan
+mengintegralkan satu peubah keluar: $f_X(x)=\int f_{X,Y}(x,y)\,dy$. Kebebasan berarti
+$f_{X,Y}(x,y)=f_X(x)f_Y(y)$ untuk semua $x,y$.
+
+\begin{definisi}[Kovarians dan korelasi]\index{kovarians}\index{korelasi}
+Dengan $\mu_X=\mathbb{E}[X]$ dan $\mu_Y=\mathbb{E}[Y]$,
+\[
+\operatorname{Cov}(X,Y)=\mathbb{E}\bigl[(X-\mu_X)(Y-\mu_Y)\bigr],
+\qquad
+\rho(X,Y)=\frac{\operatorname{Cov}(X,Y)}{\sigma_X\sigma_Y}.
+\]
+\end{definisi}
+
+Kovarians positif berarti kedua variabel cenderung menyimpang ke arah yang sama;
+negatif berarti berlawanan. Korelasi adalah versi tak bersatuan dari kovarians.
+
+\begin{proposisi}
+$\operatorname{Cov}(X,Y)=\mathbb{E}[XY]-\mathbb{E}[X]\mathbb{E}[Y]$ dan
+$-1\le\rho(X,Y)\le1$.
+\end{proposisi}
+
+\begin{proof}
+Kembangkan perkaliannya dan pakai linearitas. Untuk batas korelasi, pandang hasil kali
+dalam $\langle U,V\rangle=\mathbb{E}[UV]$ pada peubah terpusat; ketaksamaan
+Cauchy-Schwarz Bab 10 memberi
+$|\langle U,V\rangle|^2\le\langle U,U\rangle\langle V,V\rangle$, yaitu
+$\operatorname{Cov}(X,Y)^2\le\sigma_X^2\sigma_Y^2$.
+\end{proof}
+
+\begin{teorema}
+$\operatorname{Var}(X+Y)=\operatorname{Var}(X)+\operatorname{Var}(Y)
++2\operatorname{Cov}(X,Y)$.
+\end{teorema}
+
+\begin{proof}
+Tulis $X+Y-\mu_X-\mu_Y=(X-\mu_X)+(Y-\mu_Y)$, kuadratkan, lalu pakai linearitas pada
+tiga suku yang muncul; suku silangnya tepat dua kali kovarians.
+\end{proof}
+
+Kembali ke tabel di atas: $\mathbb{E}[X]=7/10$, $\mathbb{E}[Y]=3/5$,
+$\mathbb{E}[XY]=2/5$, sehingga $\operatorname{Cov}(X,Y)=-1/50=-0{,}02$. Dengan
+$\operatorname{Var}(X)=21/100$ dan $\operatorname{Var}(Y)=6/25$, korelasinya
+$-0{,}089087$ dan $\operatorname{Var}(X+Y)=0{,}41$.
+
+Kovarians nol sering disalahartikan sebagai kebebasan, padahal arahnya hanya satu:
+bebas berakibat kovarians nol, sebaliknya tidak. Ambil $X$ bernilai $-1,0,1$ dengan
+peluang sama dan $Y=X^2$; maka $\mathbb{E}[X]=0$ dan
+$\mathbb{E}[XY]=\mathbb{E}[X^3]=0$, sehingga korelasinya nol, padahal $Y$ ditentukan
+sepenuhnya oleh $X$. Kovarians hanya menangkap ketergantungan yang berbentuk garis
+lurus.
+
+\kamus{kovarians}{covariance}{ukuran apakah dua besaran cenderung naik dan turun
+bersama, dihitung dari hasil kali simpangan keduanya}
+
+\section{Transformasi variabel acak}
+\tingkat{lanjut}
+
+Pekerjaan ini muncul terus: harga diubah ke logaritma, panjang ke luas, waktu tunggu
+ke laju. Pertanyaannya selalu sama, yaitu bagaimana distribusi berubah ketika
+$Y=r(X)$.
+
+Pada kasus diskret jawabannya sederhana: massa dipindahkan dari nilai lama ke nilai
+baru. Misalkan $P(X=-1)=1/4$, $P(X=0)=1/2$, $P(X=1)=1/4$, dan $Y=X^2$. Maka
+$P(Y=0)=1/2$ dan $P(Y=1)=P(X=-1)+P(X=1)=1/2$; nilai $Y$ hanya dua, lebih sedikit
+daripada $X$, karena $r(x)=x^2$ tidak satu-satu.
+
+Pada kasus kontinu massanya nol di setiap titik, jadi yang dipindahkan adalah panjang,
+dan panjang berubah skala. Tiga langkah baku menjawab semuanya: tentukan
+$A_y=\{x:r(x)\le y\}$, hitung $F_Y(y)=\int_{A_y}f_X(x)\,dx$, lalu turunkan
+$f_Y=F_Y'$.
+
+\begin{teorema}[Transformasi monoton]\index{transformasi variabel acak}
+Bila $r$ monoton tegas dan terturunkan, dengan invers $s=r^{-1}$, maka
+\[
+f_Y(y)=f_X\bigl(s(y)\bigr)\left|\frac{ds(y)}{dy}\right| .
+\]
+\end{teorema}
+
+\begin{proof}
+Misalkan $r$ naik tegas. Maka $r(x)\le y$ setara dengan $x\le s(y)$, sehingga
+$F_Y(y)=F_X(s(y))$, dan aturan rantai memberi $f_Y(y)=f_X(s(y))s'(y)$ dengan
+$s'(y)>0$. Bila $r$ turun tegas, ketaksamaan berbalik: $F_Y(y)=1-F_X(s(y))$, sehingga
+$f_Y(y)=-f_X(s(y))s'(y)=f_X(s(y))|s'(y)|$.
+\end{proof}
+
+Faktor $|ds/dy|$ adalah peregangan lokal: bila $r$ merenggangkan skala, kerapatan
+menurun, karena peluang yang sama tersebar pada selang lebih panjang. Di dimensi lebih
+dari satu faktor itu menjadi determinan Jacobian, bentuk umumnya di Bab 15.
+Gambar~\ref{fig:transformasi-sumbu} memperlihatkan peregangan itu pada $Y=X^2$: empat
+selang sama panjang mendarat pada selang yang makin panjang ketika $y$ mendekati satu,
+sementara kerapatan $Y$ meninggi di dekat nol, tempat selangnya memendek.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth]
+  \draw[->,layergrey] (-0.25,0) -- (7.3,0) node[right] {$x$};
+  \foreach \px/\lab in {0/0,1.75/0{,}25,3.5/0{,}5,5.25/0{,}75,7/1}{
+    \draw[layergrey] (\px,0.07) -- (\px,-0.07);
+    \node[above,font=\scriptsize] at (\px,0.07) {$\lab$};
+  }
+  \node[font=\scriptsize,text=layergrey,anchor=west] at (0.15,0.55)
+    {selang sama panjang};
+  \draw[->,layergrey] (-0.25,-2.6) -- (7.3,-2.6) node[right] {$y=x^2$};
+  \foreach \px/\lab/\anc in {0/0/east,0.44/0{,}0625/east,1.75/0{,}25/north,
+                             3.94/0{,}5625/west,7/1/west}{
+    \draw[layergrey] (\px,-2.53) -- (\px,-2.67);
+    \node[below,font=\scriptsize,anchor=\anc] at (\px,-2.67) {$\lab$};
+  }
+  \foreach \px/\py in {0/0,1.75/0.44,3.5/1.75,5.25/3.94,7/7}{
+    \draw[->,layerindigo] (\px,-0.05) -- (\py,-2.55);
+  }
+  \node[font=\scriptsize,text=layerindigo,align=center,anchor=west] at (1.0,-1.85)
+    {selang memendek,\\ kerapatan meninggi};
+  \node[font=\scriptsize,text=layerindigo,align=center,anchor=east] at (6.6,-1.85)
+    {selang memanjang,\\ kerapatan menurun};
+  \begin{scope}[xshift=8.7cm,yshift=-2.6cm]
+    \draw[->,layergrey] (0,0) -- (5.4,0) node[right] {$y$};
+    \draw[->,layergrey] (0,0) -- (0,3.95) node[left] {$f_Y(y)$};
+    \draw[layerplum,very thick,domain=0.12:1,samples=100,smooth,variable=\t]
+      plot ({5.0*\t},{1.175/sqrt(\t)});
+    \draw[layerplum,dashed] (0,0) -- (0,3.8);
+    \node[below,font=\scriptsize,anchor=east] at (0,0) {$0$};
+    \node[below,font=\scriptsize] at (1.25,0) {$0{,}25$};
+    \node[below,font=\scriptsize,anchor=west] at (5.0,0) {$1$};
+    \draw[layergrey,dotted] (5.0,0) -- (5.0,1.175);
+    \node[font=\scriptsize,text=layerplum,anchor=west] at (0.25,3.45) {meledak di dekat $0$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Transformasi $Y=X^2$ untuk $X$ seragam pada $(0,1)$, digambar pada dua sumbu.
+Titik $x=0{,}25$ mendarat di $y=0{,}0625$, $x=0{,}5$ di $y=0{,}25$, dan $x=0{,}75$ di
+$y=0{,}5625$; selang $0{,}25$ di dekat nol memendek menjadi $0{,}0625$, sedangkan selang
+yang sama di dekat satu memanjang menjadi $0{,}4375$. Panel kanan adalah kerapatan
+$f_Y(y)=1/(2\sqrt{y})$: nilainya $2$ di $y=0{,}0625$, $1$ di $y=0{,}25$, dan $0{,}5$ di
+$y=1$. Kerapatan meninggi tepat di tempat selang memendek, sehingga luas totalnya tetap
+satu.}
+\label{fig:transformasi-sumbu}
+\end{figure}
+
+Bila $r$ tidak monoton, teorema di atas tidak berlaku langsung, tetapi tiga langkah
+baku tetap bekerja dengan $A_y$ berupa gabungan selang.
+
+\begin{contoh}
+Misalkan $X$ seragam pada $(-1,3)$, jadi $f_X(x)=1/4$ di dalamnya, dan $Y=X^2$
+bernilai di $(0,9)$. Untuk $0<y<1$ himpunan $A_y=[-\sqrt y,\sqrt y]$ seluruhnya di
+dalam $(-1,3)$, jadi $F_Y(y)=\tfrac14\cdot2\sqrt y=\sqrt y/2$; untuk $1\le y<9$
+himpunan itu menjadi $[-1,\sqrt y]$, jadi $F_Y(y)=(\sqrt y+1)/4$. Turunannya
+\[
+f_Y(y)=\begin{cases}
+\dfrac{1}{4\sqrt y}, & 0<y<1,\\[4pt]
+\dfrac{1}{8\sqrt y}, & 1<y<9,\\[4pt]
+0, & \text{di luar itu}.
+\end{cases}
+\]
+Kedua cabang berjumlah satu, $\tfrac12$ dan $\tfrac12$. Kerapatan $Y$ meledak di
+dekat nol: $x^2$ memampatkan selang di sana.
+\end{contoh}
+
+Bila $X$ seragam pada $(0,1)$ dan $Y=X^2$, hasilnya lebih rapi: $F_Y(y)=\sqrt y$ dan
+$f_Y(y)=1/(2\sqrt y)$, yang diperiksa numerik di Lab. Bila $Y=-\ln X$, maka
+$F_Y(y)=1-e^{-y}$, eksponensial dengan $\beta=1$: membuang logaritma dari bilangan
+seragam menghasilkan waktu tunggu eksponensial, dan kebalikannya dipakai komputer.
+Bila $U$ seragam dan $F$ fungsi distribusi yang diinginkan, maka $F^{-1}(U)$
+berdistribusi $F$.
+
+\begin{tantangan}
+Sebuah catatan kuliah mengusulkan kerapatan waktu tunggu
+\[
+f(x)=\frac{1}{2\sqrt{x}},\qquad 0<x<4,
+\]
+dengan alasan ``positif, turun, dan bentuknya mirip contoh di depan''. Dari kerapatan
+itu penulisnya menghitung $P(X\le4)=1$ lalu menyimpulkan bahwa distribusinya sudah sah.
+
+Periksa klaim itu. Tentukan luas total di bawah $f$, perbaiki kerapatannya dengan dua
+cara sah yang berbeda, dan jelaskan mengapa perbaikannya tidak tunggal.
+
+Petunjuk 1: yang menentukan bukan nilai $f$ di satu titik, melainkan seluruh daerah di
+bawah kurvanya.
+
+Petunjuk 2: hitung $\int_0^4\tfrac12 x^{-1/2}\,dx$; hasilnya $2$, bukan $1$. Supaya
+totalnya satu, konstanta di depan harus dibagi dua menjadi $1/4$, atau selangnya
+dipersempit menjadi $(0,1)$ dengan konstanta tetap.
+
+Kalau mentok, kembali ke bagian ``Fungsi massa dan fungsi kerapatan''.
+\end{tantangan}
+
+\begin{untukanak}
+Bayangkan sebuah lampu di lantai dan sebuah bola di antara lampu dan dinding.
+Bayangan bola di dinding jauh lebih besar daripada bolanya, dan makin jauh bola dari
+lampu, makin besar bayangannya. Tidak ada yang bertambah banyak: jumlah cat pada bola
+tetap sama, hanya tersebar pada luas yang lebih besar.
+
+Sekarang geser bola sedikit ketika ia sudah jauh dari lampu. Bayangannya bergeser
+jauh. Ketika bola masih dekat lampu, geseran yang sama hanya menggeser bayangan
+sedikit. Artinya, satu sentimeter di dekat lampu menjadi banyak sentimeter di dinding,
+sedangkan satu sentimeter jauh dari lampu menjadi sangat banyak sentimeter.
+
+Mengubah variabel acak bekerja seperti itu. Ada daerah yang dipampatkan dan ada
+daerah yang direnggangkan, dan kerapatan hasil harus menyesuaikan diri agar totalnya
+tetap satu. Kalau tidak disesuaikan, peluang akan muncul dari udara atau hilang entah
+ke mana.
+\end{untukanak}
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Sebuah lini produksi mengisi kotak berisi 20 sekering. Setiap sekering cacat dengan
+peluang $0{,}35$, saling bebas, dan kotak ditolak bila berisi dua belas cacat atau
+lebih.
+
+Dengan $n=20$ dan $p=0{,}35$, aturan penolakan memberi $P(X\ge12)=0{,}019579$ dari
+ekor binomial, bukan dari hampiran normal. Nilai paling mungkin, $X=7$, pun hanya
+berpeluang $18{,}4$ persen, sehingga satu kotak tidak bercerita banyak.
+
+Simulasi $10^5$ kotak dengan \texttt{default\_rng(20261024)} memberi rata-rata
+$7{,}005260$ dan variansi $4{,}552918$. Galat baku rata-ratanya $0{,}006745$, jadi
+simpangannya $+0{,}78$ galat baku; galat baku variansi sekitar $0{,}020348$, jadi
+simpangannya $+0{,}14$. Keduanya dekat, dan itu memang diharapkan: simulasi tidak
+membuktikan rumus, ia hanya gagal menyangkalnya.
+
+Pemeriksaan kedua menyangkut total massa peluang Poisson. Jumlah
+$e^{-\lambda}\lambda^k/k!$ sampai $K$ yang cukup besar harus sama dengan satu. Dihitung
+dalam ruang log agar tidak meluap:
+
+\begin{center}\small
+\begin{tabular}{rrrr}
+\hline
+$\lambda$ & $K$ & jumlah & $1-\text{jumlah}$ \\
+\hline
+$0{,}5$ & 68 & $1{,}00000000000000000$ & $0$ \\
+$1$ & 73 & $1{,}00000000000000000$ & $0$ \\
+$3$ & 83 & $1{,}00000000000000022$ & $-2{,}2\times10^{-16}$ \\
+$10$ & 107 & $1{,}00000000000000311$ & $-3{,}1\times10^{-15}$ \\
+$50$ & 194 & $0{,}99999999999999778$ & $+2{,}2\times10^{-15}$ \\
+$100$ & 280 & $1{,}00000000000003886$ & $-3{,}9\times10^{-14}$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Penyimpangan terbesar muncul pada $\lambda=100$, yaitu $3{,}9\times10^{-14}$, sekitar
+175 kali epsilon mesin $2{,}2\times10^{-16}$. Itu bukan tanda rumusnya salah, melainkan
+tanda penjumlahan $281$ suku berukuran sangat berbeda kehilangan beberapa digit
+terakhir; empat belas angka pertama masih benar.
+
+Pemeriksaan ketiga menyangkut total kerapatan normal, karena konstanta
+$1/\sqrt{2\pi}$ mudah salah ketik. Kuadratur adaptif pada $[-8,8]$ memberi
+$0{,}99999999999999878$, sehingga kekurangannya $1{,}22\times10^{-15}$. Teori
+meramalkan kekurangan itu tepat sebesar ekor di luar selang, yaitu
+$2\Phi(-8)=1{,}24\times10^{-15}$. Kedua angka sepakat sampai dua angka penting: yang
+hilang memang ekor, bukan kesalahan konstanta. Pada seluruh garis bilangan hasilnya
+$0{,}99999999999999978$ dengan perkiraan galat tercetak $1{,}0\times10^{-8}$, taksiran
+yang konservatif.
+
+Pemeriksaan keempat, transformasi: kerapatan $1/(2\sqrt y)$ berintegral
+$0{,}9999999999999992$, dengan sisa $8\times10^{-16}$ dari ujung $0$ tempat kerapatan
+meledak. Simulasi memberi $F_Y(0{,}09)=0{,}29944$, $F_Y(0{,}25)=0{,}50003$,
+$F_Y(0{,}49)=0{,}69944$, $F_Y(0{,}81)=0{,}90057$ berbanding teori $0{,}3$, $0{,}5$,
+$0{,}7$, $0{,}9$. Galat baku tiap angka sekitar $0{,}00145$ pada $p=0{,}3$ dan
+$0{,}00095$ pada $p=0{,}9$; keempat simpangan di bawah satu galat baku.
+
+\kertas{Periksa dengan tangan. Hitung $\binom{20}{7}0{,}35^7 0{,}65^{13}$ dan
+bandingkan dengan $0{,}184401$; jelaskan mengapa $\sum_{k=0}^{20}p_X(k)=1$ mengikuti
+teorema binomial, bukan hasil pengukuran. Terakhir: rata-rata sampel $7{,}005260$
+berbeda dari $7$ sebesar $0{,}00526$. Apakah itu kesalahan program? Jawab dengan
+galat baku $0{,}006745$.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Kode berikut dijalankan dengan Python 3, NumPy 2.5.2, dan SciPy 1.18.0. Semua angka
+pada tabel dan paragraf sebelumnya berasal dari eksekusi ini; benihnya tetap
+$20261024$, sehingga hasilnya dapat diulang.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from math import exp, lgamma, log, sqrt, pi
+from scipy import stats
+from scipy.integrate import quad
+
+rng = np.random.default_rng(20261024)
+R = 100_000
+
+# 1. binomial: rumus eksak vs Monte Carlo
+n, p = 20, 0.35
+mu, var = n * p, n * p * (1 - p)
+sd = sqrt(var)
+x = rng.binomial(n, p, size=R)
+se = sd / sqrt(R)
+print("Binomial n=20 p=0.35")
+print(f"  teori E={mu:.6f} Var={var:.6f} sd={sd:.6f}")
+print(f"  MC    rata2={x.mean():.6f} Var={x.var(ddof=1):.6f}")
+print(f"  galat baku rata2={se:.6f} z={(x.mean()-mu)/se:+.4f}")
+print(f"  galat baku Var  ={var*sqrt(2/(R-1)):.6f}")
+print(f"  P(X>=12)={stats.binom.sf(11, n, p):.6f}")
+
+# 2. jumlah pmf Poisson, dihitung dalam ruang log
+print("\nJumlah pmf Poisson, k=0..K")
+for lam in (0.5, 1.0, 3.0, 10.0, 50.0, 100.0):
+    K = int(lam + 12 * sqrt(lam) + 60)
+    s = sum(exp(-lam + k*log(lam) - lgamma(k+1)) for k in range(K+1))
+    print(f"  lam={lam:6.1f} K={K:4d} jumlah={s:.17f}"
+          f" 1-jumlah={1-s:+.2e}")
+
+# 3. total kerapatan normal harus 1
+phi = lambda t: exp(-t*t/2) / sqrt(2*pi)
+print("\nKerapatan normal baku")
+print(f"  phi(0)={phi(0):.15f} 1/sqrt(2pi)={1/sqrt(2*pi):.15f}")
+print(f"  quad [-8,8]  ={quad(phi, -8, 8)[0]:.17f}")
+print(f"  sisa={1-quad(phi, -8, 8)[0]:.2e}"
+      f"  2*Phi(-8)={2*stats.norm.cdf(-8):.2e}")
+v, e = quad(phi, -np.inf, np.inf)
+print(f"  quad (-inf,inf)={v:.17f} galat lapor={e:.1e}")
+
+# 4. transformasi X~Unif(0,1)
+u = rng.uniform(0, 1, R)
+y = u * u
+print("\nY=X^2, X~Unif(0,1)")
+print(f"  integral f_Y={quad(lambda t: 1/(2*sqrt(t)), 0, 1)[0]:.16f}")
+for yy in (0.09, 0.25, 0.49, 0.81):
+    print(f"  F_Y({yy:.2f}) MC={np.mean(y<=yy):.5f} teori={sqrt(yy):.5f}")
+z = -np.log(u)
+print("Y=-ln(X), harusnya Exp(1)")
+print(f"  rata2={z.mean():.5f} galat baku={1/sqrt(R):.5f}"
+      f" Var={z.var(ddof=1):.5f}")
+print(f"  P(Y>2) MC={np.mean(z>2):.5f} teori={exp(-2):.5f}")
+
+# 5. geometrik dan eksponensial
+g = rng.geometric(0.2, R)
+print("\nGeometrik p=0.2: E=5 Var=20")
+print(f"  rata2={g.mean():.5f} galat baku={sqrt(20/R):.5f}"
+      f" Var={g.var(ddof=1):.5f}")
+w = rng.exponential(2.0, R)
+print("Eksponensial beta=2: E=2 Var=4")
+print(f"  rata2={w.mean():.5f} galat baku={2/sqrt(R):.5f}"
+      f" Var={w.var(ddof=1):.5f}")
+print(f"  P(X>3) MC={np.mean(w>3):.5f} teori={exp(-1.5):.5f}")
+print(f"  P(X>5|X>2) MC={np.mean(w[w>2]>5):.5f} teori={exp(-1.5):.5f}")
+\end{verbatim}
+\end{lab}
+
+Keluaran yang diperoleh, apa adanya:
+
+\begin{verbatim}
+Binomial n=20 p=0.35
+  teori E=7.000000 Var=4.550000 sd=2.133073
+  MC    rata2=7.005260 Var=4.552918
+  galat baku rata2=0.006745 z=+0.7798
+  galat baku Var  =0.020348
+  P(X>=12)=0.019579
+
+Jumlah pmf Poisson, k=0..K
+  lam=   0.5 K=  68 jumlah=1.00000000000000000 1-jumlah=+0.00e+00
+  lam=   1.0 K=  73 jumlah=1.00000000000000000 1-jumlah=+0.00e+00
+  lam=   3.0 K=  83 jumlah=1.00000000000000022 1-jumlah=-2.22e-16
+  lam=  10.0 K= 107 jumlah=1.00000000000000311 1-jumlah=-3.11e-15
+  lam=  50.0 K= 194 jumlah=0.99999999999999778 1-jumlah=+2.22e-15
+  lam= 100.0 K= 280 jumlah=1.00000000000003886 1-jumlah=-3.89e-14
+
+Kerapatan normal baku
+  phi(0)=0.398942280401433 1/sqrt(2pi)=0.398942280401433
+  quad [-8,8]  =0.99999999999999878
+  sisa=1.22e-15  2*Phi(-8)=1.24e-15
+  quad (-inf,inf)=0.99999999999999978 galat lapor=1.0e-08
+
+Y=X^2, X~Unif(0,1)
+  integral f_Y=0.9999999999999992
+  F_Y(0.09) MC=0.29944 teori=0.30000
+  F_Y(0.25) MC=0.50003 teori=0.50000
+  F_Y(0.49) MC=0.69944 teori=0.70000
+  F_Y(0.81) MC=0.90057 teori=0.90000
+Y=-ln(X), harusnya Exp(1)
+  rata2=0.99811 galat baku=0.00316 Var=0.99623
+  P(Y>2) MC=0.13478 teori=0.13534
+
+Geometrik p=0.2: E=5 Var=20
+  rata2=4.99176 galat baku=0.01414 Var=19.92571
+Eksponensial beta=2: E=2 Var=4
+  rata2=1.99895 galat baku=0.00632 Var=3.98400
+  P(X>3) MC=0.22237 teori=0.22313
+  P(X>5|X>2) MC=0.22028 teori=0.22313
+\end{verbatim}
+
+Empat hal terbaca dari keluaran itu. Pertama, setiap rata-rata sampel menyimpang kurang
+dari satu galat baku: $z=+0{,}78$ untuk binomial, sedangkan $0{,}99811$, $4{,}99176$,
+dan $1{,}99895$ berbanding $1$, $5$, dan $2$ untuk tiga kasus lain. Penyimpangan
+sebesar itu harus muncul; kalau nol semua, justru ada yang salah.
+
+Kedua, variansi sampel sedikit di bawah teori pada kasus berekor panjang,
+$19{,}92571$ berbanding $20$, karena satu tarikan sangat besar mendominasi jumlah
+kuadrat. Ketiga, galat penjumlahan Poisson tumbuh bersama $\lambda$, dari nol menjadi
+$10^{-14}$ ketika jumlah sukunya bertambah dari $74$ menjadi $281$. Keempat, kerapatan
+hasil berintegral satu sampai $16$ angka, dan $F_Y$ cocok dengan $\sqrt y$ di empat
+titik uji; yang kedua lebih penting, karena integral satu hanya memeriksa konstanta,
+sedangkan kecocokan di empat titik memeriksa bentuk fungsi.
+
+Kode itu tidak membuktikan satu pun teorema di bab ini; ia memeriksa bahwa rumus yang
+ditulis memberi angka yang disebutkan. Bukti $\mathbb{E}[X]=np$ ada pada argumen
+penanda, bukti $f_Y(y)=1/(2\sqrt y)$ pada perhitungan fungsi distribusi; keluaran
+program adalah data, bukan argumen.
+
+\begin{untukdosen}
+Urutan yang saya sarankan: dua sistem dengan rata-rata sama tetapi ekor berbeda, lalu
+definisi variabel acak, lalu langsung fungsi distribusi kumulatif. Kerjakan satu tabel
+kecil di papan, gambar tangganya, tanyakan $F(1{,}4)$, baru setelah itu kerapatan.
+Tahan diri untuk tidak menyebut integral sebelum mahasiswa melihat mengapa penjumlahan
+tidak lagi cukup.
+
+Dua miskonsepsi yang paling sering muncul. Pertama, $f_X(x)$ dibaca sebagai peluang,
+sehingga kerapatan bernilai $5$ terasa mustahil dan $P(X=x)$ dianggap sama dengan
+$f_X(x)$. Kedua, $P(X=x)=0$ disimpulkan berarti mustahil, sehingga
+$P(0\le X\le1)=1$ menjadi paradoks. Jawabannya aditif terbilang: gabungan tak
+terbilang tidak dijumlah.
+
+Tanda siap lanjut: mahasiswa dapat menjelaskan perbedaan massa dan kerapatan tanpa
+membaca catatan, dan menghitung $\mathbb{E}[X^2]$ tanpa mencari kerapatan $X^2$.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+\item Variabel acak adalah fungsi dari ruang hasil ke bilangan real, bukan bilangan
+      acak. Fungsi distribusi $F_X(x)=P(X\le x)$ memuat seluruh informasi distribusi:
+      tidak turun, kontinu kanan, berlimit $0$ dan $1$.
+\item Fungsi massa membobot titik dan nilainya paling besar satu; fungsi kerapatan
+      membobot panjang, boleh melebihi satu, dan $P(X=x)=0$ di setiap titik. Peluang
+      nol bukan kemustahilan, karena yang menjumlah hanya gabungan terbilang.
+\item Harapan adalah titik tumpu dan linear tanpa syarat kebebasan;
+      $\operatorname{Var}(X)=\mathbb{E}[X^2]-\mathbb{E}[X]^2$ adalah rata-rata kuadrat
+      simpangan.
+\item Binomial $\mathbb{E}=np$, $\operatorname{Var}=np(1-p)$, diturunkan lewat
+      penanda; geometrik $\mathbb{E}=1/p$, $\operatorname{Var}=(1-p)/p^2$; Poisson
+      $\mathbb{E}=\operatorname{Var}=\lambda$, limit binomial untuk kejadian langka.
+\item Normal distandardisasi menjadi $N(0,1)$ dan dibaca lewat $\Phi$; eksponensial
+      tanpa memori, kembaran kontinu geometrik.
+\item Kovarians mengukur ketergantungan linear saja: nol tidak berarti bebas, dan
+      transformasi monoton mengubah kerapatan dengan faktor $|ds/dy|$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Misalkan $p_X(-2)=0{,}1$, $p_X(0)=0{,}4$, $p_X(3)=c$. Tentukan $c$, lalu
+        hitung $\mathbb{E}[X]$, $\mathbb{E}[X^2]$, dan $\operatorname{Var}(X)$.
+  \item Buktikan $P(a<X\le b)=F_X(b)-F_X(a)$, lalu jelaskan mengapa
+        $P(a\le X\le b)$ bisa berbeda dari $P(a<X\le b)$ untuk variabel diskret dan
+        mengapa keduanya sama untuk variabel kontinu.
+  \item Nilai klaim ini: ``karena $P(X=x)=0$ untuk setiap $x$, kejadian $X=x$
+        mustahil.'' Sebutkan bagian yang benar, bagian yang keliru, dan peran aditif
+        terbilang.
+  \item Turunkan $\mathbb{E}[X^2]=(2-p)/p^2$ untuk geometrik dengan menurunkan
+        $\sum k^2q^{k-1}$ dua kali, lalu simpulkan $\operatorname{Var}(X)$ dan periksa
+        untuk $p=0{,}2$.
+  \item Misalkan $X\sim N(3,4)$. Hitung $P(X>1)$, $P(1<X<5)$, dan kuantil 0,2 untuk
+        $X$; bandingkan dengan \texttt{scipy.stats.norm}.
+  \item Hitung $\sum_{k=0}^{40}e^{-2{,}5}2{,}5^k/k!$ dan $P(X\ge8)$ untuk Poisson
+        $\lambda=2{,}5$, lalu bandingkan dengan binomial $n=1000$, $p=0{,}0025$;
+        jelaskan arah selisihnya.
+  \item Buktikan eksponensial tanpa memori, lalu jelaskan mengapa geometrik juga tanpa
+        memori dan mengapa seragam pada bilangan bulat tidak.
+  \item Untuk $X$ seragam pada $(-1,3)$ dan $Y=X^2$, turunkan $f_Y$, periksa
+        $\int f_Y=1$, lalu hitung $\mathbb{E}[Y]$ lewat $f_Y$ dan lewat
+        $\mathbb{E}[X^2]$.
+  \item Konstruksikan dua variabel yang kovariansnya nol tetapi tidak bebas. Hitung
+        $\operatorname{Cov}$ dan $\rho$ secara eksak, dan tunjukkan peluang bersama
+        yang membuktikan ketidakbebasan.
+  \item Berapa ulangan $R$ agar galat baku rata-rata binomial $n=20$, $p=0{,}35$
+        paling banyak $0{,}005$? Berapa pula agar galat baku taksiran variansi paling
+        banyak $0{,}02$?
+\end{enumerate}
+
+\noindent\textbf{Petunjuk.} Butir 3: pisahkan pernyataan tentang peluang dari
+pernyataan tentang keberadaan himpunan. Butir 4: turunkan $\sum_{k\ge0}q^k=1/(1-q)$
+dua kali terhadap $q$, dan ingat $\sum k^2q^{k-1}$ memuat $\sum k(k-1)q^{k-1}$.
+Butir 8: untuk $0<y<1$ himpunan $A_y$ memuat dua cabang, untuk $y\ge1$ hanya satu.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini: sifat fungsi distribusi beserta buktinya,
+hubungan kerapatan dengan fungsi distribusi lewat teorema dasar kalkulus, rumus
+harapan fungsi variabel acak untuk kasus diskret, linearitas harapan, rumus variansi,
+rata-rata dan variansi binomial lewat penanda, rata-rata geometrik dan Poisson lewat
+deret, ketiadaan memori eksponensial, dan rumus transformasi monoton.
+
+Yang dikutip, bukan dibuktikan: bahwa fungsi yang memenuhi tiga sifat fungsi distribusi
+selalu berasal dari suatu ruang peluang (Wasserman, Teorema 2.8, yang arahnya memakai
+teorema Caratheodory), bahwa fungsi distribusi menentukan seluruh peluang (Wasserman,
+Teorema 2.7), normalisasi normal lewat koordinat polar (Bab 15), dan batas korelasi
+lewat Cauchy-Schwarz (Bab 10).
+
+Sumber primer: Wasserman, \emph{All of Statistics}, Bagian 2.1--2.4 (termasuk Lemma
+2.15 dan peringatan bahwa kerapatan boleh melebihi satu) dan 2.11 (Contoh 2.47 untuk
+$Y=X^2$ pada $U(-1,3)$), serta 3.1--3.4. Blitzstein dan Hwang, \emph{Introduction to
+Probability}, Bab 3--5 (LOTUS di 4.5, Poisson di 4.7, eksponensial di 5.5) dan 7.3
+untuk kovariansi.
+
+Batas keberlakuan: kerapatan tidak tunggal, sehingga setiap pernyataan tentang $f_X$
+adalah pernyataan tentang kelas fungsi yang sama hampir di mana-mana; rumus Jacobian
+menuntut monoton dan terturunkan; harapan Cauchy tidak ada, sehingga setiap
+``rata-rata'' pada data berekor sangat tebal harus dicurigai lebih dahulu. Pertanyaan
+terbuka: seberapa baik kerapatan dapat ditaksir dari data tanpa asumsi bentuk, dan
+apakah ekor distribusi nyata cukup tipis untuk membenarkan pemakaian variansi.
+\end{untukpeneliti}
+
+\peta{Bab 18 pada Wasserman, \emph{All of Statistics}, Bab 2 (2.1--2.4, Lemma 2.15,
+dan 2.11 untuk transformasi) dan Bab 3 (3.1--3.4). Pada Blitzstein dan Hwang,
+\emph{Introduction to Probability}, Bab 3 (3.6--3.7), Bab 4 (4.2, 4.5, 4.7), Bab 5
+(5.1--5.5) dan 7.3. Integral yang dipakai adalah integral Riemann Bab 13; perubahan
+variabel dimensi lebih dari satu ada di Bab 15.}

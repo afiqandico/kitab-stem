@@ -1,0 +1,1068 @@
+\chapter{Nilai Eigen dan Diagonalisasi}
+
+Setiap menit, sebuah pemantau jaringan membagi seluruh permintaan yang masuk ke dalam tiga
+keranjang: host A, host B, dan host C. Dari catatan lama ia menyusun aturan perpindahan. Dari
+permintaan yang menuju A, 80 persen tetap di A, 10 persen pindah ke B, dan 10 persen pindah ke C.
+Dari B, 30 persen pindah ke A, 60 persen bertahan, dan 10 persen pindah ke C. Dari C, 20 persen
+pindah ke A, 30 persen ke B, dan 50 persen bertahan. Bila bagian permintaan di ketiga keranjang
+pada menit ke-$k$ ditulis sebagai kolom $\mathbf{x}_{k}$, aturan itu berbentuk
+$\mathbf{x}_{k+1}=M\mathbf{x}_{k}$ dengan
+\[
+  M=\begin{pmatrix}0.8&0.3&0.2\\ 0.1&0.6&0.3\\ 0.1&0.1&0.5\end{pmatrix}.
+\]
+
+Mulai dari $\mathbf{x}_{0}=(1,0,0)$, yaitu semua permintaan mula-mula menuju A, pemantau itu
+menghitung sepuluh langkah dan memperoleh
+$\mathbf{x}_{10}=(0.5672,\;0.2661,\;0.1666)$. Tiga puluh langkah kemudian angkanya
+$(0.5667,\;0.2667,\;0.1667)$. Jumlah ketiga entri tetap satu, dan pada pembacaan kedua angka itu
+berhenti bergerak sampai empat angka di belakang koma.
+
+Pertanyaan yang layak diajukan bukan berapa hasilnya setelah empat puluh menit; perkalian berulang
+sudah menjawabnya untuk satu titik awal. Pertanyaan yang lebih berguna: adakah vektor yang hanya
+diperbesar oleh $M$ tanpa diubah arahnya? Di sini arah itu adalah
+$(17/30,\;4/15,\;1/6)=(0.5667,\;0.2667,\;0.1667)$, tepat angka yang muncul setelah empat puluh
+langkah, dan pengalinya $1$.
+
+Bab 8 memberi determinan: $\det M=1/5$, jadi $M$ invertible dan setiap sistem $M\mathbf{y}=
+\mathbf{b}$ punya solusi tunggal. Itu menjawab apakah proses dapat dibalik, bukan ke arah mana ia
+menuju, dan bukan seberapa cepat. Angka yang mengatur laju di sini adalah $1/2$: nilai eigen
+terbesar setelah $1$. Karena $(1/2)^{40}\approx9.1\times10^{-13}$, galat awal tinggal di belakang
+enam angka pertama, dan itulah sebabnya pembacaan kedua terlihat diam.
+
+Bab ini menyiapkan alat untuk membaca dua angka itu langsung dari matriksnya: cara menghitungnya,
+syarat agar arah yang dipertahankan cukup banyak untuk menjadi basis, apa yang berubah ketika
+basis diganti, lalu tiga pemakaiannya: pangkat matriks, sistem diferensial linear, dan rantai
+Markov.
+
+\begin{untukanak}
+Ambil selembar karet yang diberi garis-garis kotak, lalu tarik dari dua sisi. Kotak-kotak berubah
+menjadi belah ketupat, dan hampir semua garis menjadi miring. Tetapi ada satu garis yang tetap
+lurus dan tetap sejajar dengan dirinya sendiri: garis yang searah tarikan. Panjangnya berubah,
+arahnya tidak. Kadang ada juga garis lain yang tidak miring tetapi terbalik arahnya, seperti
+panah yang diputar setengah lingkaran.
+
+Kalau kita hanya diberi tahu berapa kali setiap garis istimewa itu mulur, kita sudah tahu seluruh
+tarikan, tanpa perlu menggambar jaringannya lagi. Itu cara yang sangat hemat: tiga atau empat
+angka menggantikan ribuan titik pada lembaran.
+
+Masalahnya, tidak semua tarikan begitu rapi. Coba pelintir sedikit lembarnya sambil menarik.
+Sekarang tidak ada garis yang benar-benar lurus lagi, dan cara hemat tadi gagal total. Ada
+tarikan yang seluruhnya bisa dijelaskan oleh beberapa angka mulur, ada yang tidak bisa.
+
+Pertanyaannya: dari gambar tarikan saja, bisakah kita menebak apakah ada garis istimewa yang
+tidak miring, dan berapa banyak? Di bab ini kita akan tahu mengapa sebagian tarikan punya garis
+seperti itu dan sebagian tidak, mengapa ada tarikan yang seluruhnya dapat diganti oleh sekadar
+beberapa angka, dan mengapa mesin hitung kadang salah menebak pada tarikan yang hampir pelintir.
+\end{untukanak}
+
+\section{Arah yang tidak berputar}
+\tingkat{dasar}
+
+Sebuah matriks persegi bekerja pada vektor: ia memutar, meregangkan, atau memipihkan. Hampir
+semua vektor keluar dengan arah yang berbeda dari arah masuknya. Sebagian kecil tidak. Vektor
+yang keluar searah dengan masuknya, hanya berbeda panjang, menandai arah yang dipertahankan
+matriks itu. Arah semacam itu yang kita beri nama lebih dulu, sebelum ada alat hitung apa pun.
+
+\kamus{nilai eigen}{eigenvalue}{Pengali pada arah yang tidak diputar: arahnya tetap, panjangnya
+dikali angka itu.}
+
+\begin{definisi}[Nilai eigen dan vektor eigen]
+Misalkan $A$ matriks $n\times n$ dengan entri real. Skalar $\lambda$ disebut \emph{nilai eigen}
+matriks $A$ bila ada vektor tak nol $\mathbf{v}\in\mathbb{R}^{n}$ dengan
+$A\mathbf{v}=\lambda\mathbf{v}$. Vektor $\mathbf{v}$ disebut \emph{vektor eigen} untuk
+$\lambda$.\index{nilai eigen}\index{vektor eigen}
+\end{definisi}
+
+Syarat $\mathbf{v}\neq\mathbf{0}$ bukan hiasan. Tanpa syarat itu, $\mathbf{0}$ memenuhi
+$A\mathbf{0}=\lambda\mathbf{0}$ untuk setiap $\lambda$, sehingga istilahnya kehilangan arti. Yang
+kita cari justru arah, dan titik nol tidak punya arah.
+
+Persamaan $A\mathbf{v}=\lambda\mathbf{v}$ dapat ditulis ulang sebagai
+$(A-\lambda I)\mathbf{v}=\mathbf{0}$. Jadi $\lambda$ adalah nilai eigen tepat ketika matriks
+$A-\lambda I$ mempunyai inti yang tidak trivial, yaitu tepat ketika $A-\lambda I$ singular.
+Karena itu pertanyaan tentang nilai eigen selalu dapat diterjemahkan menjadi pertanyaan tentang
+kekurangan pangkat, dan Bab 8 sudah menyediakan alat untuk itu.
+
+Sebelum menghitung, satu peringatan penting. Tidak setiap matriks real punya nilai eigen real.
+Matriks putar
+\[
+  R=\begin{pmatrix}0&-1\\ 1&0\end{pmatrix}
+\]
+mengirim $(1,0)$ ke $(0,1)$. Setiap vektor real berputar sembilan puluh derajat, sehingga tidak ada
+garis yang dipertahankan; $R^{2}=-I$ memutar setengah lingkaran setelah dua langkah.
+Ketidakadaan nilai eigen real di sini bukan kegagalan hitung, melainkan pernyataan geometris.
+
+Untuk mencari nilai eigen tanpa menebak, kita pakai determinan: nilai eigen adalah bilangan yang
+membuat matriks kehilangan inversnya setelah diagonalnya dikurangi bilangan itu.
+
+\kamus{polinomial karakteristik}{characteristic polynomial}{Daftar bilangan yang membuat matriks
+menjadi singular, ditulis sebagai polinomial dalam satu peubah.}
+
+\begin{definisi}[Polinomial karakteristik]
+Untuk matriks $n\times n$, \emph{polinomial karakteristik} didefinisikan sebagai
+$p_{A}(\lambda)=\det(\lambda I-A)$.\index{polinomial karakteristik}
+\end{definisi}
+
+Kita memakai $\lambda I-A$, bukan $A-\lambda I$. Keduanya berbeda faktor $(-1)^{n}$, jadi akarnya
+sama, tetapi pilihan pertama membuat polinomialnya monik, dan itu memudahkan pembacaan koefisien
+lain seperti terlihat pada akibat berikutnya.
+
+\begin{teorema}
+Skalar $\lambda$ adalah nilai eigen $A$ jika dan hanya jika $p_{A}(\lambda)=0$.
+\end{teorema}
+
+\begin{proof}
+Misalkan $A\mathbf{v}=\lambda\mathbf{v}$ dengan $\mathbf{v}\neq\mathbf{0}$. Maka
+$(A-\lambda I)\mathbf{v}=\mathbf{0}$, sehingga $A-\lambda I$ mempunyai inti tidak trivial dan
+karena itu singular. Menurut Bab 8, singularitas setara dengan determinan nol, jadi
+$\det(A-\lambda I)=0$, yang berbeda faktor $(-1)^{n}$ dari $\det(\lambda I-A)=0$.
+
+Sebaliknya, bila $\det(\lambda I-A)=0$ maka $\lambda I-A$ singular. Ruang intinya tidak trivial,
+jadi ada $\mathbf{v}\neq\mathbf{0}$ dengan $(\lambda I-A)\mathbf{v}=\mathbf{0}$, yaitu
+$A\mathbf{v}=\lambda\mathbf{v}$.
+\end{proof}
+
+Polinomial $p_{A}$ berderajat $n$ dan monik, jadi ia punya paling banyak $n$ akar berbeda. Di
+atas $\mathbb{C}$ ia selalu terurai menjadi $n$ faktor linear, sehingga setiap matriks persegi
+kompleks punya tepat $n$ nilai eigen bila dihitung dengan multiplisitas. Di atas $\mathbb{R}$ hal
+itu bisa gagal: $p_{R}(\lambda)=\lambda^{2}+1$ tidak punya akar real, tetapi punya sepasang akar
+kompleks $\pm i$.
+
+Dua koefisien teratas polinomial karakteristik memuat dua besaran yang sudah kita kenal.
+
+\begin{akibat}
+Dengan nilai eigen dihitung beserta multiplisitasnya,
+$\operatorname{tr}(A)=\sum_{i}\lambda_{i}$ dan $\det(A)=\prod_{i}\lambda_{i}$.
+\index{jejak}
+\end{akibat}
+
+\begin{proof}
+Koefisien $\lambda^{n-1}$ pada $\det(\lambda I-A)$ adalah $-\operatorname{tr}(A)$. Suku itu hanya
+dihasilkan oleh permutasi identitas pada rumus Leibniz, karena setiap permutasi lain kehilangan
+paling sedikit dua entri diagonal. Suku konstannya adalah $p_{A}(0)=\det(-A)=(-1)^{n}\det(A)$.
+Membandingkan kedua koefisien itu dengan bentuk
+$\prod_{i}(\lambda-\lambda_{i})=\lambda^{n}-(\sum_{i}\lambda_{i})\lambda^{n-1}+\dots+(-1)^{n}
+\prod_{i}\lambda_{i}$ memberi kedua identitas.
+\end{proof}
+
+Akibat itu memberi pemeriksaan murah: setelah menghitung nilai eigen dengan susah payah, jumlah dan
+hasil kalinya harus cocok dengan jejak dan determinan. Bila tidak cocok, ada kesalahan aritmetika.
+
+\begin{bacakeras}
+Dua suara, bergantian.
+
+Suara pertama: apa yang dilakukan sebuah matriks?\\
+Suara kedua: memutar, meregangkan, memipihkan.\\
+Suara pertama: kepada siapa?\\
+Suara kedua: kepada hampir semua vektor.\\
+Suara pertama: lalu ada yang tidak berputar?\\
+Suara kedua: ada. Satu arah. Kadang dua. Tidak pernah lebih dari banyaknya kolom.\\
+Suara pertama: panjangnya berubah?\\
+Suara kedua: berubah. Arahnya tetap.\\
+Suara pertama: berapa kali?\\
+Suara kedua: itu angkanya. Angka itu nilai eigen.\\
+Suara pertama: dan arahnya?\\
+Suara kedua: itu vektor eigen. Satu arah, satu angka.\\
+Suara pertama: kalau arahnya berbalik?\\
+Suara kedua: angkanya negatif. Garisnya tetap sama, hanya menghadap ke belakang.\\
+Suara pertama: kalau angkanya nol?\\
+Suara kedua: arah itu hilang, dan matriks kehilangan inversnya.
+
+Bersama: arah yang tidak berubah menyimpan angka yang mengubah panjangnya.
+
+Ulangi satu kali dengan suara biasa: arah yang tidak berubah menyimpan angka yang mengubah panjangnya.
+\end{bacakeras}
+
+\begin{resep}
+Untuk $A=\begin{pmatrix}a&b\\c&d\end{pmatrix}$ yang entrinya sudah diketahui:
+\begin{enumerate}
+  \item Kurangi $\lambda$ dari kedua entri diagonal, sehingga tersisa $A-\lambda I$.
+  \item Hitung $\det(A-\lambda I)$, atau langsung pakai $\lambda^{2}-(a+d)\lambda+(ad-bc)$.
+  \item Selesaikan persamaan kuadrat itu; periksa jumlah akarnya $a+d$ dan hasil kalinya $ad-bc$.
+  \item Untuk setiap akar $\lambda$, selesaikan $(A-\lambda I)\mathbf{v}=\mathbf{0}$ dan ambil satu
+        solusi tak nol.
+\end{enumerate}
+Langkah 3 dan 4 tidak boleh ditukar: vektor eigen baru punya arti setelah $\lambda$ diketahui, dan
+urutan kolom $P$ harus mengikuti urutan entri diagonal $D$.
+\end{resep}
+
+Sekarang satu contoh dengan tangan. Ambil
+\[
+  A=\begin{pmatrix}4&2\\ 1&3\end{pmatrix},\qquad
+  p_{A}(\lambda)=\lambda^{2}-7\lambda+10=(\lambda-5)(\lambda-2).
+\]
+Jejaknya $7=5+2$ dan determinannya $10=5\cdot2$, cocok. Untuk $\lambda=5$ kita selesaikan
+$(A-5I)\mathbf{v}=\mathbf{0}$, yaitu $-v_{1}+2v_{2}=0$ dan $v_{1}-2v_{2}=0$; kedua baris
+mengatakan hal yang sama, jadi $\mathbf{v}=(2,1)$. Untuk $\lambda=2$ diperoleh
+$2v_{1}+2v_{2}=0$, jadi $\mathbf{v}=(1,-1)$. Pemeriksaan langsung:
+\[
+  A\begin{pmatrix}2\\ 1\end{pmatrix}=\begin{pmatrix}10\\ 5\end{pmatrix}=5
+  \begin{pmatrix}2\\ 1\end{pmatrix},\qquad
+  A\begin{pmatrix}1\\ -1\end{pmatrix}=\begin{pmatrix}2\\ -2\end{pmatrix}=2
+  \begin{pmatrix}1\\ -1\end{pmatrix}.
+\]
+Kedua pemeriksaan itu dapat dilihat pada bidang. Gambar~\ref{fig:panah-eigen} menggambar kedua
+arah eigen beserta bayangannya, dan satu vektor yang bukan vektor eigen sebagai pembanding.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=0.4cm,y=0.4cm,>=latex]
+  \draw[->,layergrey!60] (-0.8,0) -- (11.4,0) node[right,font=\scriptsize] {$x$};
+  \draw[->,layergrey!60] (0,-2.9) -- (0,6.4) node[above,font=\scriptsize] {$y$};
+  \draw[->,thick,layergrey] (0,0) -- (1,0);
+  \draw[->,thick,dashed,layergrey] (0,0) -- (4,1)
+        node[right,font=\scriptsize] {$(4,1)$};
+  \draw[->,very thick,layerteal] (0,0) -- (2,1)
+        node[above left,font=\scriptsize] {$(2,1)$};
+  \fill[layerteal] (2,1) circle (2pt);
+  \draw[->,very thick,accent] (0,0) -- (10,5)
+        node[above,font=\scriptsize] {$(10,5)=5\,(2,1)$};
+  \draw[->,very thick,layerindigo] (0,0) -- (1,-1)
+        node[below left,font=\scriptsize] {$(1,-1)$};
+  \fill[layerindigo] (1,-1) circle (2pt);
+  \draw[->,very thick,layerindigo] (0,0) -- (2,-2)
+        node[below right,font=\scriptsize] {$(2,-2)=2\,(1,-1)$};
+\end{tikzpicture}
+\caption{Arah eigen matriks $A=\begin{pmatrix}4&2\\1&3\end{pmatrix}$. Vektor $(2,1)$ keluar
+sebagai $(10,5)$, yaitu $5$ kali lipat tanpa berputar; vektor $(1,-1)$ keluar sebagai $(2,-2)$,
+yaitu $2$ kali lipat. Vektor $(1,0)$ keluar sebagai $(4,1)$ dan berputar, jadi ia bukan vektor
+eigen.}
+\label{fig:panah-eigen}
+\end{figure}
+
+Vektor eigen hanya ditentukan sampai pengali: $(4,2)$ juga vektor eigen untuk $5$. Yang tunggal
+adalah arahnya, bukan panjangnya. Kebebasan itu akan kita pakai untuk merapikan matriks nanti.
+
+Untuk matriks $2\times2$ akar itu dapat ditulis langsung. Karena
+$p_{A}(\lambda)=\lambda^{2}-\operatorname{tr}(A)\lambda+\det(A)$, rumus akar memberi
+\[
+  \lambda_{1,2}=\frac{\operatorname{tr}(A)\pm\sqrt{\operatorname{tr}(A)^{2}-4\det(A)}}{2},
+\]
+sehingga tanda $\Delta=\operatorname{tr}(A)^{2}-4\det(A)$ menentukan seluruh spektrumnya. Untuk $A$
+di atas, $\Delta=49-40=9$, dan akarnya $5$ serta $2$. Bila $\Delta=0$ kedua akar berimpit, dan bila
+$\Delta<0$ tidak ada akar real: matriks putar tadi memberi $\Delta=0-4=-4$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=0.85cm,y=0.85cm,>=latex,font=\scriptsize]
+  \draw[->,layergrey!60] (-1.2,0.35) -- (6.6,0.35);
+  \foreach \x in {0,1,2,3,4,5,6} \draw[layergrey!50] (\x,0.26) -- (\x,0.44);
+  \fill[layerteal] (2,0.35) circle (2.2pt);
+  \fill[layerteal] (5,0.35) circle (2.2pt);
+  \node[above=2pt] at (2,0.35) {$2$};
+  \node[above=2pt] at (5,0.35) {$5$};
+  \node[left,align=right,text width=3.0cm] at (-1.3,0.35) {$\Delta=9$: dua akar real};
+
+  \draw[->,layergrey!60] (-1.2,-1.25) -- (6.6,-1.25);
+  \foreach \x in {0,1,2,3,4,5,6} \draw[layergrey!50] (\x,-1.34) -- (\x,-1.16);
+  \fill[layerorange] (1,-1.25) circle (2.2pt);
+  \node[above=2pt] at (1,-1.2) {$1$};
+  \node[left,align=right,text width=3.0cm] at (-1.3,-1.25) {$\Delta=0$: satu akar ganda};
+
+  \draw[->,layergrey!60] (-1.2,-2.85) -- (6.6,-2.85);
+  \foreach \x in {0,1,2,3,4,5,6} \draw[layergrey!50] (\x,-2.94) -- (\x,-2.76);
+  \draw[layergrey!80] (0,-3.55) -- (0,-2.15);
+  \draw[accent,fill=white,thick] (0,-2.3) circle (2.4pt);
+  \draw[accent,fill=white,thick] (0,-3.4) circle (2.4pt);
+  \node[left=2pt,accent] at (0,-2.3) {$i$};
+  \node[left=2pt,accent] at (0,-3.4) {$-i$};
+  \node[left,align=right,text width=3.0cm] at (-1.3,-2.85) {$\Delta=-4$: tidak ada akar real};
+\end{tikzpicture}
+\caption{Spektrum matriks $2\times2$ pada garis bilangan, dipisahkan oleh tanda
+$\Delta=\operatorname{tr}(A)^{2}-4\det(A)$. Baris atas: $A$ dengan $\Delta=49-40=9$ memberi akar
+$2$ dan $5$. Baris tengah: matriks guntingan dengan $\Delta=0$ memberi akar $1$ yang dihitung dua
+kali. Baris bawah: matriks putar dengan $\Delta=0-4=-4$ tidak memotong garis real, dan kedua
+akarnya, $\pm i$, berada di luar garis itu.}
+\label{fig:spektrum}
+\end{figure}
+
+Gambar~\ref{fig:spektrum} menyusun ketiga kemungkinan itu pada satu garis bilangan: dua titik,
+satu titik yang dihitung dua kali, atau tidak ada titik sama sekali. Yang terakhir bukan kekurangan
+gambar, melainkan pernyataan bahwa garis real tidak memuat arah yang dipertahankan.
+
+\begin{tangan}
+Bahan: satu karet gelang, dua pensil, selembar kertas, penggaris.
+
+Letakkan kedua pensil sejajar, lalu bentangkan karet gelang memutari keduanya sehingga terbentuk
+persegi panjang. Di kertas, gambar tiga panah dari sudut kiri bawah persegi itu, masing-masing pada
+sudut 30, 45, dan 60 derajat terhadap sisi bawah. Beri nama ketiganya.
+
+Geser pensil kanan dua kali lebih jauh, sehingga karet meregang. Bandingkan setiap panah dengan
+panjang aslinya. Panah yang sejajar sisi tarikan tetap pada arahnya; dua panah lain miring, dan
+yang paling miring adalah yang paling jauh dari sisi tarikan.
+
+Sekarang putar seluruh rangka sembilan puluh derajat dan ulangi. Arah yang bertahan ikut berputar
+bersama karet, karena yang istimewa adalah arahnya terhadap karet, bukan terhadap meja.
+
+Yang harus terlihat: satu arah bertahan, dua arah berputar, dan angka regangan pada arah yang
+bertahan itulah pengali yang kita sebut nilai eigen.
+\end{tangan}
+
+\section{Ruang eigen dan dua multiplisitas}
+\tingkat{menengah}
+
+Satu nilai eigen biasanya disertai lebih dari satu vektor eigen. Himpunan seluruh vektor eigen
+untuk satu nilai eigen, ditambah vektor nol, bukan kumpulan acak: ia subruang. Dimensinya nanti
+menentukan apakah matriksnya dapat disederhanakan.
+
+\begin{definisi}[Ruang eigen]
+Untuk nilai eigen $\lambda$ dari $A$, \emph{ruang eigen} adalah
+$E_{\lambda}=\operatorname{null}(A-\lambda I)=\{\mathbf{v}:A\mathbf{v}=\lambda\mathbf{v}\}$.
+\index{ruang eigen}
+\end{definisi}
+
+\kamus{ruang eigen}{eigenspace}{Seluruh arah yang tidak diputar oleh matriks, dikumpulkan menjadi
+satu subruang.}
+
+Ruang eigen selalu subruang karena ia inti sebuah matriks (Bab 7). Dimensinya paling sedikit satu
+tepat ketika $\lambda$ benar-benar nilai eigen.
+
+Ruang eigen untuk nilai eigen berbeda hanya beririsan di titik nol.
+
+\begin{proposisi}
+Bila $\lambda\neq\mu$, maka $E_{\lambda}\cap E_{\mu}=\{\mathbf{0}\}$.
+\end{proposisi}
+
+\begin{proof}
+Ambil $\mathbf{v}$ di irisan itu. Maka $A\mathbf{v}=\lambda\mathbf{v}$ dan
+$A\mathbf{v}=\mu\mathbf{v}$, sehingga $(\lambda-\mu)\mathbf{v}=\mathbf{0}$. Karena
+$\lambda-\mu\neq0$, harus $\mathbf{v}=\mathbf{0}$.
+\end{proof}
+
+Sifat itu naik ke sejumlah berhingga vektor eigen, dengan induksi. Hasilnya lemma yang menjadi
+tulang punggung bab ini.
+
+\begin{lemma}
+Vektor eigen yang bersesuaian dengan nilai eigen berbeda saling bebas linear.
+\end{lemma}
+
+\begin{proof}
+Kita buktikan dengan induksi pada banyaknya vektor. Untuk satu vektor pernyataannya benar karena
+vektor eigen tidak nol. Andaikan pernyataan berlaku untuk $m-1$ vektor, dan misalkan
+\[
+  c_{1}\mathbf{v}_{1}+\dots+c_{m}\mathbf{v}_{m}=\mathbf{0}
+\]
+dengan $\lambda_{1},\dots,\lambda_{m}$ berbeda. Kalikan persamaan itu dengan $A$, dan pakai
+$A\mathbf{v}_{i}=\lambda_{i}\mathbf{v}_{i}$:
+\[
+  c_{1}\lambda_{1}\mathbf{v}_{1}+\dots+c_{m}\lambda_{m}\mathbf{v}_{m}=\mathbf{0}.
+\]
+Kurangi $\lambda_{m}$ kali persamaan pertama dari persamaan kedua:
+\[
+  c_{1}(\lambda_{1}-\lambda_{m})\mathbf{v}_{1}+\dots
+  +c_{m-1}(\lambda_{m-1}-\lambda_{m})\mathbf{v}_{m-1}=\mathbf{0}.
+\]
+Menurut hipotesis induksi, $\mathbf{v}_{1},\dots,\mathbf{v}_{m-1}$ bebas, jadi
+$c_{i}(\lambda_{i}-\lambda_{m})=0$ untuk $i<m$. Karena $\lambda_{i}\neq\lambda_{m}$, semua
+$c_{i}=0$ untuk $i<m$. Persamaan semula tinggal $c_{m}\mathbf{v}_{m}=\mathbf{0}$, sehingga
+$c_{m}=0$.
+\end{proof}
+
+Lemma itu memberi batas atas yang rapi: matriks $n\times n$ tidak mungkin punya lebih dari $n$
+vektor eigen bebas. Kapan batas itu tercapai?
+
+Untuk menjawabnya kita butuh dua cara menghitung banyaknya kemunculan satu nilai eigen: dari
+polinomial dan dari dimensi ruang eigen. Keduanya sering berbeda, dan selisihnya yang menentukan.
+
+\kamus{multiplisitas}{multiplicity}{Berapa kali sebuah nilai eigen muncul, dihitung dengan dua cara
+yang tidak selalu sama.}
+
+\begin{definisi}[Multiplisitas aljabar dan geometrik]
+Misalkan $\lambda$ nilai eigen $A$. \emph{Multiplisitas aljabar} $\lambda$ adalah pangkat faktor
+$(\lambda'-\lambda)$ pada $p_{A}(\lambda')$. \emph{Multiplisitas geometrik} $\lambda$ adalah
+$\dim E_{\lambda}=\operatorname{nullity}(A-\lambda I)$.\index{multiplisitas}
+\end{definisi}
+
+Multiplisitas geometrik mudah dihitung: kurangi $\lambda$ dari diagonal, lalu hitung nullity
+matriks hasilnya. Multiplisitas aljabar menuntut pemfaktoran polinomial. Hubungan keduanya selalu
+satu arah.
+
+\begin{lemma}
+Untuk setiap nilai eigen $\lambda$ berlaku
+$1\le\dim E_{\lambda}\le$ multiplisitas aljabar $\lambda$.
+\end{lemma}
+
+\begin{proof}
+Pertidaksamaan kiri benar karena $\lambda$ nilai eigen, jadi $E_{\lambda}$ memuat vektor tak nol.
+
+Untuk pertidaksamaan kanan, tulis $k=\dim E_{\lambda}$ dan pilih basis
+$\mathbf{u}_{1},\dots,\mathbf{u}_{k}$ dari $E_{\lambda}$. Lengkapi menjadi basis
+$\mathbf{u}_{1},\dots,\mathbf{u}_{n}$ dari $\mathbb{R}^{n}$, yang mungkin menurut Bab 7. Dalam
+basis itu, kolom ke-$j$ matriks $A$ untuk $j\le k$ adalah $A\mathbf{u}_{j}=\lambda\mathbf{u}_{j}$,
+yaitu $\lambda$ pada posisi diagonal dan nol di tempat lain. Jadi matriks $A$ dalam basis tersebut
+berbentuk
+\[
+  \begin{pmatrix}\lambda I_{k}&C\\ 0&D\end{pmatrix}
+\]
+dengan $C$ berukuran $k\times(n-k)$ dan $D$ berukuran $(n-k)\times(n-k)$. Determinan
+$\lambda' I-A$ dalam basis itu, lewat ekspansi kofaktor pada $k$ kolom pertama atau lewat rumus
+determinan matriks blok segitiga, sama dengan $(\lambda'-\lambda)^{k}\det(\lambda' I-D)$. Jadi
+$(\lambda'-\lambda)^{k}$ membagi $p_{A}$, sehingga multiplisitas aljabar $\lambda$ paling sedikit
+$k$.
+\end{proof}
+
+Sekarang lihat kedua kemungkinan pada satu matriks. Ambil
+\[
+  A=\begin{pmatrix}2&1&1\\ 1&2&1\\ 1&1&2\end{pmatrix},\qquad
+  p_{A}(\lambda)=(\lambda-1)^{2}(\lambda-4).
+\]
+Nilai eigennya $1$ dan $4$, dengan multiplisitas aljabar $2$ dan $1$. Jejaknya $6=4+1+1$ dan
+determinannya $4=4\cdot1\cdot1$, cocok. Untuk $\lambda=4$, persamaan $(A-4I)\mathbf{v}=
+\mathbf{0}$ memberi $v_{1}=v_{2}=v_{3}$, jadi $E_{4}$ direntang $(1,1,1)$. Untuk $\lambda=1$,
+matriks $A-I$ adalah matriks yang seluruh entrinya $1$, sehingga intinya himpunan vektor yang
+jumlah entrinya nol. Himpunan itu berdimensi dua, dengan basis $(1,-1,0)$ dan $(1,0,-1)$. Jadi
+multiplisitas geometrik $1$ adalah $2$, sama dengan multiplisitas aljabarnya.
+
+Nilai eigen berulang tidak otomatis menjadi masalah; yang menjadi masalah ruang eigen yang terlalu
+kecil, dan itu terjadi pada matriks berikut.
+
+\section{Kapan matriks dapat didiagonalkan}
+\tingkat{menengah}
+
+Kalau boleh memilih basis, kita ingin matriksnya sesederhana mungkin: diagonal, sehingga setiap
+vektor basis hanya diskalakan dan tidak dicampur dengan yang lain. Apakah selalu ada basis semacam
+itu?
+
+\begin{definisi}[Dapat didiagonalkan]
+Matriks $n\times n$ disebut \emph{dapat didiagonalkan} bila ada matriks $P$ yang invertible dan
+matriks diagonal $D$ dengan $P^{-1}AP=D$, atau setara dengan itu $A=PDP^{-1}$.
+\end{definisi}
+
+\kamus{diagonalisasi}{diagonalization}{Mengganti alat ukur sampai seluruh pekerjaan matriks
+tinggal beberapa perkalian angka.}
+
+Kolom-kolom $P$ nanti akan berisi vektor eigen, dan $D$ berisi nilai eigen pada diagonalnya.
+Karena itu pertanyaan tentang diagonalisasi sebenarnya pertanyaan tentang ketersediaan vektor
+eigen yang cukup banyak.
+
+\begin{teorema}
+Matriks $n\times n$ dapat didiagonalkan jika dan hanya jika ia mempunyai $n$ vektor eigen yang
+bebas linear.\index{diagonalisasi}
+\end{teorema}
+
+\begin{proof}
+Misalkan $P^{-1}AP=D$ dengan $D=\operatorname{diag}(d_{1},\dots,d_{n})$. Kalikan dari kiri
+dengan $P$: $AP=PD$. Kolom ke-$j$ kedua ruas memberi
+$A\mathbf{p}_{j}=d_{j}\mathbf{p}_{j}$, dengan $\mathbf{p}_{j}$ kolom ke-$j$ dari $P$. Karena $P$
+invertible, setiap kolomnya tak nol, jadi $\mathbf{p}_{j}$ vektor eigen. Kolom-kolom $P$ juga
+bebas linear karena $P$ invertible. Jadi $A$ punya $n$ vektor eigen bebas.
+
+Sebaliknya, misalkan $\mathbf{p}_{1},\dots,\mathbf{p}_{n}$ vektor eigen bebas dengan
+$A\mathbf{p}_{j}=\lambda_{j}\mathbf{p}_{j}$. Susun $P$ dari vektor-vektor itu sebagai kolom dan
+$D=\operatorname{diag}(\lambda_{1},\dots,\lambda_{n})$. Maka $AP=PD$, dan karena $P$ invertible
+kita peroleh $P^{-1}AP=D$.
+\end{proof}
+
+Akibat yang paling sering dipakai dalam hitungan tangan: banyaknya nilai eigen berbeda sudah cukup.
+
+\begin{akibat}
+Bila matriks $n\times n$ mempunyai $n$ nilai eigen berbeda, ia dapat didiagonalkan.
+\end{akibat}
+
+\begin{proof}
+Ambil satu vektor eigen untuk setiap nilai eigen. Menurut lemma sebelumnya, $n$ vektor eigen
+dengan $n$ nilai eigen berbeda saling bebas. Teorema di atas lalu memberi diagonalisasi.
+\end{proof}
+
+Kebalikannya tidak berlaku: contoh $3\times3$ tadi hanya punya dua nilai eigen berbeda, tetapi
+tetap dapat didiagonalkan karena ruang eigen untuk $\lambda=1$ berdimensi dua. Syarat yang tepat
+bukan banyaknya nilai eigen, melainkan jumlah dimensi ruang eigennya.
+
+\begin{teorema}[Syarat multiplisitas]
+Matriks $n\times n$ dapat didiagonalkan jika dan hanya jika untuk setiap nilai eigennya,
+multiplisitas aljabar sama dengan multiplisitas geometrik. Syarat itu setara dengan
+$\sum_{\lambda}\dim E_{\lambda}=n$.
+\end{teorema}
+
+\begin{proof}
+Pertama, anggap jumlah dimensi seluruh ruang eigen sama dengan $n$. Untuk setiap $\lambda$ pilih
+basis $E_{\lambda}$, lalu gabungkan seluruh basis itu menjadi daftar $\mathbf{v}_{1},\dots,
+\mathbf{v}_{n}$. Daftar itu bebas linear: bila suatu kombinasi linear bernilai nol, kelompokkan
+suku menurut nilai eigennya menjadi $\mathbf{u}_{1}+\dots+\mathbf{u}_{m}=\mathbf{0}$ dengan
+$\mathbf{u}_{k}\in E_{\lambda_{k}}$. Menurut lemma tentang vektor eigen berbeda, setiap
+$\mathbf{u}_{k}=\mathbf{0}$; karena setiap $\mathbf{u}_{k}$ kombinasi basis $E_{\lambda_{k}}$,
+semua koefisiennya nol. Daftar itu juga berisi $n$ vektor di ruang berdimensi $n$, jadi ia basis
+vektor eigen, dan teorema sebelumnya menutup jalan.
+
+Kedua, anggap $A$ dapat didiagonalkan, jadi ada basis vektor eigen
+$\mathbf{p}_{1},\dots,\mathbf{p}_{n}$. Dalam basis itu matriks $A$ diagonal, sehingga
+$p_{A}(\lambda')=\prod_{j}(\lambda'-\lambda_{j})$ dan multiplisitas aljabar setiap nilai eigen
+sama dengan banyaknya $j$ dengan $\lambda_{j}=\lambda$. Banyaknya $j$ itu tidak melebihi
+$\dim E_{\lambda}$, karena vektor-vektor tersebut berada di dalam $E_{\lambda}$ dan bebas. Jadi
+multiplisitas aljabar tidak melebihi geometrik. Lemma sebelumnya memberi arah sebaliknya, sehingga
+keduanya sama. Terakhir, $\sum_{\lambda}\dim E_{\lambda}=n$ karena basis vektor eigen mengisi
+seluruh ruang.
+\end{proof}
+
+Sekarang contoh yang gagal. Ambil
+\[
+  S=\begin{pmatrix}1&1\\ 0&1\end{pmatrix},\qquad p_{S}(\lambda)=(\lambda-1)^{2}.
+\]
+Satu-satunya nilai eigen adalah $1$, dengan multiplisitas aljabar $2$. Tetapi
+$S-I=\begin{pmatrix}0&1\\ 0&0\end{pmatrix}$ berpangkat satu, jadi
+$\dim E_{1}=2-1=1$. Multiplisitas geometriknya kurang satu, dan menurut teorema di atas $S$ tidak
+dapat didiagonalkan.
+
+Secara geometris $S$ adalah guntingan: ia mempertahankan arah $(1,0)$ dan menggeser $(0,1)$ ke
+$(1,1)$. Tidak ada basis yang membuat peta ini sekadar penskalaan, karena penskalaan tidak pernah
+menggeser sesuatu yang tadinya sejajar. Kegagalan itu sifat petanya, bukan pilihan basis.
+
+\begin{untukanak}
+Pernahkah kamu mencoba merapikan sesuatu yang ternyata tidak bisa dirapikan? Ambil satu tumpukan
+kartu, lalu geser bagian atasnya sedikit ke samping. Gambar pada setiap kartu tetap sama, tetapi
+setiap titik bergeser sejauh jaraknya dari alas. Tidak ada cara memutar tumpukan itu supaya
+geseran tersebut berubah menjadi sekadar memanjangkan atau memendekkan sesuatu. Geseran tetap
+geseran.
+
+Ada benda lain yang lebih ramah. Karet yang ditarik lurus dapat dijelaskan hanya dengan berapa
+kali setiap arah mulur. Kalau kita tahu angka itu untuk beberapa arah penting, kita tahu seluruh
+tarikan, termasuk untuk titik yang tidak pernah kita ukur.
+
+Pertanyaannya: bagaimana membedakan keduanya hanya dari gambarnya, tanpa mencoba semua
+kemungkinan? Di bab ini kita akan tahu mengapa geseran selalu menyimpan satu arah yang tidak bisa
+dirapikan, mengapa ada tarikan yang punya arah istimewa cukup banyak, dan mengapa beda itu
+menentukan apakah pangkat kesepuluh sebuah mesin hitung masih dapat dipercaya.
+\end{untukanak}
+
+Guntingan mudah dikenali karena segitiga. Kegagalan yang sama muncul pada matriks yang tidak tampak
+segitiga. Ambil
+\[
+  B=\begin{pmatrix}-1&4&0\\ -1&3&0\\ 1&-2&2\end{pmatrix},\qquad
+  p_{B}(\lambda)=(\lambda-1)^{2}(\lambda-2).
+\]
+Untuk $\lambda=1$, matriks $B-I$ berpangkat dua, jadi $\dim E_{1}=3-2=1$, padahal
+multiplisitas aljabarnya $2$. Satu-satunya vektor eigen untuk $1$ adalah $(2,1,0)$. Untuk
+$\lambda=2$ ruang eigennya direntang $(0,0,1)$ dan berdimensi satu, sesuai multiplisitas
+aljabarnya. Jumlah dimensi seluruh ruang eigen hanya $2<3$, jadi $B$ tidak dapat didiagonalkan.
+Matriks semacam ini disebut \emph{defective}: ia kekurangan vektor eigen karena ruang eigennya
+sempit.\index{defective}
+
+\kamus{defective}{defective}{Matriks yang nilai eigennya berulang tetapi ruang eigennya terlalu
+sempit untuk menjadi basis.}
+
+Satu catatan sebelum kita lanjut. Dapat atau tidaknya didiagonalkan bergantung pada medan
+bilangannya: $R$ tidak dapat didiagonalkan atas $\mathbb{R}$, tetapi atas $\mathbb{C}$ ia punya dua
+nilai eigen berbeda, $\pm i$, sehingga dapat didiagonalkan. Kalimat tanpa keterangan medan karena
+itu tidak lengkap. Di sisa bab ini medan yang dipakai adalah $\mathbb{R}$ kecuali disebut lain.
+
+\section{Matriks serupa dan invarian}
+\tingkat{lanjut}
+
+Diagonalisasi adalah perubahan basis yang menghasilkan bentuk paling sederhana. Tetapi tidak
+setiap matriks dapat mencapai bentuk itu, dan pertanyaan berikutnya wajar: apa yang tetap sama
+pada semua matriks yang dihubungkan oleh perubahan basis?\index{invarian}
+
+\begin{definisi}[Matriks serupa]
+Dua matriks $n\times n$, $A$ dan $B$, disebut \emph{serupa} bila ada matriks invertible $P$
+dengan $B=P^{-1}AP$.\index{serupa}
+\end{definisi}
+
+\kamus{serupa}{similar}{Dua laporan tentang peta yang sama dari dua ruang ukur yang berbeda.}
+
+Keserupaan adalah relasi ekuivalen: setiap matriks serupa dengan dirinya sendiri, relasinya
+simetris karena $(P^{-1})^{-1}BP^{-1}=A$, dan transitif karena
+$(PQ)^{-1}A(PQ)=Q^{-1}(P^{-1}AP)Q$. Kelas-kelas itu terbagi rapi, dan diagonalisasi berarti
+menanyakan apakah suatu kelas memuat matriks diagonal.
+
+\begin{proposisi}
+Bila $A$ dan $B$ serupa, maka $p_{A}=p_{B}$. Akibatnya $A$ dan $B$ mempunyai nilai eigen yang
+sama beserta multiplisitas aljabarnya, dan juga jejak, determinan, pangkat, serta nullity yang
+sama.
+\end{proposisi}
+
+\begin{proof}
+Misalkan $B=P^{-1}AP$. Maka
+\[
+  \lambda I-B=\lambda I-P^{-1}AP=P^{-1}(\lambda I-A)P,
+\]
+sehingga
+$\det(\lambda I-B)=\det(P^{-1})\det(\lambda I-A)\det(P)=\det(\lambda I-A)$ karena
+$\det(P^{-1})\det(P)=1$. Jadi polinomial karakteristiknya sama, dan semua data yang diturunkan
+dari koefisiennya ikut sama. Kesamaan pangkat dan nullity diperoleh dari $B-\lambda I=
+P^{-1}(A-\lambda I)P$: perkalian dengan matriks invertible tidak mengubah pangkat, dan peringkat
+itulah yang menentukan nullity lewat rank-nullity.
+\end{proof}
+
+Kebalikannya tidak berlaku, dan contoh penyangkalnya sederhana: $I_{2}$ dan guntingan $S$ punya
+polinomial karakteristik sama, $(\lambda-1)^{2}$, tetapi tidak serupa. Bila $P^{-1}I_{2}P=S$, ruas
+kiri sama dengan $I_{2}$ untuk setiap $P$. Jadi polinomial karakteristik bukan invarian lengkap; ia
+hanya menyaring.
+
+Yang berubah dan yang tidak berubah dapat dipisahkan dengan rapi. Nilai eigen tidak berubah.
+Vektor eigennya berubah, dan berubah dengan cara yang mudah diingat.
+
+\begin{proposisi}
+Bila $B=P^{-1}AP$ dan $A\mathbf{v}=\lambda\mathbf{v}$, maka
+$B(P^{-1}\mathbf{v})=\lambda(P^{-1}\mathbf{v})$.
+\end{proposisi}
+
+\begin{proof}
+Hitung $B(P^{-1}\mathbf{v})=P^{-1}APP^{-1}\mathbf{v}=P^{-1}A\mathbf{v}
+=P^{-1}(\lambda\mathbf{v})=\lambda(P^{-1}\mathbf{v})$.
+\end{proof}
+
+Jadi vektor eigen ikut berpindah bersama koordinatnya, sedangkan pengalinya tinggal. Itu masuk
+akal: arah yang dipertahankan adalah sifat peta, sedangkan daftar koordinatnya bergantung pada
+basis. Karena itu nilai eigen dipakai sebagai sidik jari matriks, sedangkan vektor eigen tidak.
+
+Di sisi lain, kebebasan memilih $P$ menjelaskan mengapa dua diagonalisasi dapat tampak berbeda
+padahal keduanya benar: kolom $P$ boleh dikalikan skalar bukan nol atau dipermutasi asalkan $D$ ikut
+berpermutasi. Yang harus sama adalah himpunan nilai eigen beserta multiplisitasnya.
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Semua angka di bagian ini dihitung dengan tangan lebih dulu, lalu diperiksa dengan Python pada
+bagian lab. Kita mulai dari matriks $3\times3$ yang sudah muncul pada pembahasan ruang eigen,
+\[
+  A=\begin{pmatrix}2&1&1\\ 1&2&1\\ 1&1&2\end{pmatrix}.
+\]
+Polinomial karakteristiknya dihitung dari $\lambda I-A$, yang seluruh entri diagonalnya
+$\lambda-2$ dan seluruh entri lainnya $-1$. Dengan menulis $t=\lambda-2$ dan memakai ekspansi
+sepanjang baris pertama,
+\[
+  p_{A}(\lambda)=t\,(t^{2}-1)-(-1)\,(-t-1)+(-1)\,(1+t)=t^{3}-3t-2 .
+\]
+Bentuk itu terurai karena $t=-1$ akarnya: $t^{3}-3t-2=(t+1)^{2}(t-2)$. Kembali ke $\lambda$,
+\[
+  p_{A}(\lambda)=(\lambda-1)^{2}(\lambda-4)=\lambda^{3}-6\lambda^{2}+9\lambda-4 .
+\]
+Jejaknya $6$ dan determinannya $4$, cocok dengan $4+1+1$ dan $4\cdot1\cdot1$.
+
+Vektor eigen untuk $\lambda=4$: matriks $A-4I$ mempunyai entri diagonal $-2$ dan entri lain $1$.
+Baris-barisnya mengatakan $-2v_{1}+v_{2}+v_{3}=0$ dan seterusnya; ketiga persamaan itu terpenuhi
+tepat ketika $v_{1}=v_{2}=v_{3}$. Jadi $E_{4}$ direntang $(1,1,1)$.
+
+Vektor eigen untuk $\lambda=1$: matriks $A-I$ seluruhnya berisi $1$, jadi intinya adalah himpunan
+vektor dengan $v_{1}+v_{2}+v_{3}=0$. Basisnya dua vektor, misalnya $(1,-1,0)$ dan $(1,0,-1)$.
+Dengan demikian
+\[
+  P=\begin{pmatrix}1&1&1\\ 1&-1&0\\ 1&0&-1\end{pmatrix},\qquad
+  P^{-1}=\frac{1}{3}\begin{pmatrix}1&1&1\\ 1&-2&1\\ 1&1&-2\end{pmatrix},\qquad
+  D=\operatorname{diag}(4,1,1).
+\]
+Determinan $P$ adalah $3$, dan itulah penyebut pada $P^{-1}$. Satu entri kita periksa dengan
+tangan: entri baris pertama kolom pertama $PDP^{-1}$ adalah
+$\tfrac{1}{3}(4\cdot1\cdot1+1\cdot1\cdot1+1\cdot1\cdot1)=2$, sesuai entri $A$. Pemeriksaan
+menyeluruh dengan SymPy memberi $PDP^{-1}-A=0$ persis.
+
+Sekarang pangkat kesepuluh.\index{pangkat matriks} Mengalikan sembilan kali tidak memberi gambaran
+apa pun; diagonalisasi memberinya. Karena $A=I+J$ dengan $J$ matriks yang seluruh entrinya $1$, dan
+$J^{2}=3J$, setiap pangkat $J$ kembali menjadi kelipatan $J$:
+\[
+  J^{2}=3J,\quad J^{3}=9J,\quad\dots,\quad J^{k}=3^{k-1}J .
+\]
+Maka
+\[
+  A^{k}=(I+J)^{k}=I+\Bigl(\sum_{j=1}^{k}\binom{k}{j}3^{j-1}\Bigr)J
+  =I+\frac{4^{k}-1}{3}\,J,
+\]
+dengan langkah terakhir memakai rumus deret geometri
+$\sum_{j=1}^{k}\binom{k}{j}3^{j-1}=\bigl((1+3)^{k}-1\bigr)/3$. Untuk $k=10$ kita punya
+$4^{10}=1048576$ dan $(1048576-1)/3=349525$, sehingga
+\[
+  A^{10}=I+349525\,J=
+  \begin{pmatrix}349526&349525&349525\\ 349525&349526&349525\\ 349525&349525&349526\end{pmatrix}.
+\]
+Setiap entrinya dapat diperiksa: diagonal $1+349525$, luar diagonal $349525$. Perkalian langsung
+dengan Python memberi matriks yang sama, dengan selisih terbesar $1.05\times10^{-9}$ karena
+aritmetika floating-point.
+
+Bentuk rumus itu menjelaskan apa yang tidak terlihat pada hasil akhir. Suku $4^{k}$ menguasai arah
+$(1,1,1)$; suku konstan $1$ bertahan pada arah yang jumlah entrinya nol. Nilai eigen $4$ dan $1$
+adalah dua laju pertumbuhan, dan pangkat matriks hanyalah campuran keduanya. Bila matriks tidak
+dapat didiagonalkan, campuran itu berubah bentuk: muncul $k\lambda^{k}$ atau, untuk $\lambda=1$,
+faktor $k$ murni.
+
+Contoh defektif tadi memperlihatkan hal itu. Untuk $B$ yang gagal didiagonalkan tadi,
+\[
+  B^{k}=
+  \begin{pmatrix}1-2k&4k&0\\ -k&1+2k&0\\ 2^{k}-1&-2(2^{k}-1)&2^{k}\end{pmatrix},
+\]
+yang dapat dibuktikan dengan induksi dan cocok untuk $k=1$. Pada $k=10$ rumus itu memberi
+\[
+  B^{10}=\begin{pmatrix}-19&40&0\\ -10&21&0\\ 1023&-2046&1024\end{pmatrix},
+\]
+sama dengan hasil perkalian berulang. Entri kiri atas, $-19=1-2\cdot10$, tumbuh linear, bukan
+eksponensial: nilai eigen $1$ mengendalikan arah itu, dan kekurangan vektor eigen menambahkan satu
+faktor $k$.
+
+Sekarang penerapan pertama: proses yang menetap. Untuk matriks rantai Markov $M$ di pembuka,
+\index{rantai Markov}
+\[
+  p_{M}(\lambda)=\lambda^{3}-\tfrac{19}{10}\lambda^{2}+\tfrac{11}{10}\lambda-\tfrac15
+  =(\lambda-1)\bigl(\lambda-\tfrac12\bigr)\bigl(\lambda-\tfrac25\bigr).
+\]
+Jejaknya $19/10$ dan determinannya $1/5$, cocok dengan $1+\tfrac12+\tfrac25$ dan
+$1\cdot\tfrac12\cdot\tfrac25$. Vektor eigen untuk $\lambda=1$ dicari dari $M\mathbf{v}=\mathbf{v}$,
+yaitu $(M-I)\mathbf{v}=\mathbf{0}$, ditambah syarat jumlah entrinya satu. Penyelesaiannya memberi
+$\boldsymbol{\pi}=(17/30,\;4/15,\;1/6)$. Pemeriksaan satu koordinat dengan tangan:
+\[
+  \tfrac{8}{10}\cdot\tfrac{17}{30}+\tfrac{3}{10}\cdot\tfrac{8}{30}
+  +\tfrac{2}{10}\cdot\tfrac{5}{30}
+  =\tfrac{13.6+2.4+1.0}{30}=\tfrac{17}{30}.
+\]
+Jadi $\boldsymbol{\pi}$ benar-benar titik tetap.
+
+Karena $M$ punya tiga nilai eigen berbeda, ia dapat didiagonalkan. Setiap titik awal karena itu
+terurai sebagai
+\[
+  \mathbf{x}_{k}=\boldsymbol{\pi}+c_{2}\bigl(\tfrac12\bigr)^{k}\mathbf{v}_{2}
+  +c_{3}\bigl(\tfrac25\bigr)^{k}\mathbf{v}_{3},
+\]
+dengan $c_{2},c_{3}$ bergantung pada $\mathbf{x}_{0}$. Suku kedua dan ketiga mengecil, dan yang
+menentukan laju adalah $1/2$. Untuk $\mathbf{x}_{0}=(1,0,0)$ kita peroleh $c_{2}\mathbf{v}_{2}$
+berorde $10^{-1}$, sehingga galat setelah sepuluh langkah berorde
+$10^{-1}\cdot(1/2)^{10}\approx10^{-4}$, dan setelah empat puluh langkah berorde
+$(1/2)^{40}\approx9.1\times10^{-13}$. Hasil hitung sesuai: $\mathbf{x}_{10}$ berbeda dari
+$\boldsymbol{\pi}$ pada angka keempat, sedangkan $\mathbf{x}_{40}$ sudah sama sampai enam angka.
+
+Penerapan kedua: sistem diferensial. Bila $\mathbf{x}(t)$ memenuhi
+$\mathbf{x}'=A\mathbf{x}$ dengan $A$ di atas, solusinya $\mathbf{x}(t)=e^{At}\mathbf{x}(0)$.
+Karena $A=I+J$ dan $J^{2}=3J$,
+\[
+  e^{At}=e^{t}e^{Jt}=e^{t}\Bigl(I+\frac{e^{3t}-1}{3}J\Bigr)
+  =e^{t}I+\frac{e^{4t}-e^{t}}{3}J .
+\]
+Pada $t=0$ rumus itu memberi $I$. Untuk $t=0.5$ entri luar diagonalnya $(e^{2}-e^{0.5})/3=1.9134$,
+dan Python memberi angka yang sama sampai empat angka. Komponen sepanjang $(1,1,1)$ tumbuh seperti
+$e^{4t}$; komponen pada bidang jumlah nol tumbuh seperti $e^{t}$, sehingga solusi cepat sejajar
+dengan $(1,1,1)$. Nilai eigen real positif berarti pertumbuhan; nilai eigen imajiner murni seperti
+$\pm i$ berarti osilasi tanpa pertumbuhan.
+
+Penerapan ketiga: iterasi pangkat. Mengalikan berulang lalu menormalkan hasilnya,
+$\mathbf{x}_{k+1}=A\mathbf{x}_{k}/\lVert A\mathbf{x}_{k}\rVert$, membuat arah berputar menuju vektor
+eigen dominan, karena $\lambda_{1}^{k}$ mengalahkan $\lambda_{2}^{k}$ bila
+$|\lambda_{1}|>|\lambda_{2}|$. Untuk $A$ di atas mulai dari $(1,0)$, sudutnya berjalan $0^\circ$,
+$14.04^\circ$, $21.25^\circ$, $24.39^\circ$, $25.69^\circ$, $26.21^\circ$, dan menuju
+$\arctan(1/2)=26.57^\circ$; nisbah Rayleigh $\mathbf{x}^{\top}A\mathbf{x}/\mathbf{x}^{\top}
+\mathbf{x}$ berjalan $4.00$, $4.65$, $4.88$, $4.96$, $4.98$, $4.99$, menuju $5$.
+Gambar~\ref{fig:iterasi-pangkat} memperlihatkan putaran itu.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=3.2,>=latex]
+  \draw[layergrey!35] (0,0) circle (1);
+  \draw[->,layergrey!60] (-1.25,0) -- (1.55,0) node[right,font=\scriptsize] {$x$};
+  \draw[->,layergrey!60] (0,-0.35) -- (0,1.2) node[above,font=\scriptsize] {$y$};
+  \draw[->,semithick,layergrey] (0,0) -- (0:1);
+  \draw[->,thick,layerindigo!45] (0,0) -- (14.04:1);
+  \draw[->,thick,layerindigo!70] (0,0) -- (21.25:1);
+  \draw[->,very thick,layerindigo] (0,0) -- (24.39:1);
+  \foreach \a in {0,14.04,21.25,24.39} \fill[layerindigo!70] (\a:1) circle (1.3pt);
+  \draw[->,very thick,dashed,accent] (0,0) -- (26.565:1.42);
+  \node[right,font=\scriptsize,accent,align=left] at (26.565:1.42)
+        {$(2,1)$\\[1pt]$26.57^\circ$};
+\end{tikzpicture}
+\caption{Iterasi pangkat pada $A=\begin{pmatrix}4&2\\1&3\end{pmatrix}$ mulai dari $(1,0)$.
+Panah penuh adalah arah setelah $k=0,1,2,3$ langkah, dengan sudut $0^\circ$, $14.04^\circ$,
+$21.25^\circ$, dan $24.39^\circ$. Panah putus-putus adalah arah eigen dominan $(2,1)$ pada
+$26.57^\circ$, yang didekati tanpa pernah dilewati; dua panah terakhir berimpit karena sudutnya
+makin rapat, dan itu justru inti gambarnya.}
+\label{fig:iterasi-pangkat}
+\end{figure}
+
+\kertas{Untuk $J$ matriks yang seluruh entrinya $1$, ambil $B=J-I$. Tentukan nilai eigen $B$
+lebih dulu, lalu ramalkan $B^{10}$ memakai pola $I+\frac{\mu^{10}-(-1)^{10}}{3}J$ dengan $\mu$
+nilai eigen bukan nol dari $B$. Periksa ramalan itu dengan Python, lalu jelaskan mengapa $B$ dapat
+didiagonalkan meskipun punya nilai eigen berulang. Sebagai latihan tambahan, hitung $e^{Bt}$ dan
+tentukan limit $t\to\infty$ dari $e^{-2t}e^{Bt}$.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from scipy.linalg import expm
+
+np.set_printoptions(precision=4, suppress=True)
+
+A = np.array([[2., 1., 1.],
+              [1., 2., 1.],
+              [1., 1., 2.]])
+lam, V = np.linalg.eig(A)
+print("nilai eigen A :", np.round(np.sort(lam.real), 10))
+for i in range(3):
+    sisa = A @ V[:, i] - lam[i] * V[:, i]
+    print("  sisa Av-lv  :", round(float(np.linalg.norm(sisa)), 16))
+print("A^10 lewat diagonalisasi :")
+print(np.round((V @ np.diag(lam ** 10) @ np.linalg.inv(V)).real).astype(int))
+print("A^10 lewat pangkat biasa :")
+print(np.linalg.matrix_power(A, 10).astype(int))
+print("selisih maks :", np.abs((V @ np.diag(lam ** 10)
+                              @ np.linalg.inv(V)).real
+                             - np.linalg.matrix_power(A, 10)).max())
+print("cond V       :", round(float(np.linalg.cond(V)), 4))
+
+A2 = np.array([[4., 2.],
+               [1., 3.]])
+x = np.array([1., 0.])
+print("iterasi pangkat pada A2:")
+for k in range(6):
+    sudut = np.degrees(np.arctan2(x[1], x[0]))
+    rq = float(x @ A2 @ x / (x @ x))
+    print("  k=%d sudut=%7.2f rayleigh=%.4f" % (k, sudut, rq))
+    x = A2 @ x / np.linalg.norm(A2 @ x)
+print("sudut batas  :", round(float(np.degrees(np.arctan2(1., 2.))), 2))
+
+B = np.array([[-1., 4., 0.],
+              [-1., 3., 0.],
+              [1., -2., 2.]])
+print("eigen B      :", np.round(np.sort(np.linalg.eigvals(B).real), 10))
+print("rank(B - I)  :", np.linalg.matrix_rank(B - np.eye(3)))
+print("B^10         :")
+print(np.linalg.matrix_power(B, 10).astype(int))
+
+M = np.array([[0.8, 0.3, 0.2],
+              [0.1, 0.6, 0.3],
+              [0.1, 0.1, 0.5]])
+print("jumlah kolom :", M.sum(axis=0))
+print("eigen M      :", np.round(np.sort(np.linalg.eigvals(M).real), 10))
+x = np.array([1., 0., 0.])
+for _ in range(10):
+    x = M @ x
+print("x setelah 10 :", np.round(x, 6))
+for _ in range(30):
+    x = M @ x
+print("x setelah 40 :", np.round(x, 6))
+
+C = np.array([[1., 1000.], [0., 2.]])
+Cp = C.copy()
+Cp[1, 0] = 1e-6
+print("eigen C      :", np.round(np.sort(np.linalg.eigvals(C).real), 6))
+print("eigen C+1e-6 :", np.round(np.sort(np.linalg.eigvals(Cp).real), 6))
+print("cond V(C)    :", round(float(np.linalg.cond(np.linalg.eig(C)[1])), 1))
+print("expm(0.5A)   :", round(float(expm(0.5 * A)[0, 1]), 4))
+print("rumus        :", round(float((np.exp(2) - np.exp(0.5)) / 3), 4))
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+nilai eigen A : [1. 1. 4.]
+  sisa Av-lv  : 8e-16
+  sisa Av-lv  : 1.1e-15
+  sisa Av-lv  : 3e-16
+A^10 lewat diagonalisasi :
+[[349526 349525 349525]
+ [349525 349526 349525]
+ [349525 349525 349526]]
+A^10 lewat pangkat biasa :
+[[349526 349525 349525]
+ [349525 349526 349525]
+ [349525 349525 349526]]
+selisih maks : 1.0477378964424133e-09
+cond V       : 1.5227
+iterasi pangkat pada A2:
+  k=0 sudut=   0.00 rayleigh=4.0000
+  k=1 sudut=  14.04 rayleigh=4.6471
+  k=2 sudut=  21.25 rayleigh=4.8820
+  k=3 sudut=  24.39 rayleigh=4.9578
+  k=4 sudut=  25.69 rayleigh=4.9840
+  k=5 sudut=  26.21 rayleigh=4.9938
+sudut batas  : 26.57
+eigen B      : [1. 1. 2.]
+rank(B - I)  : 2
+B^10         :
+[[  -19    40     0]
+ [  -10    21     0]
+ [ 1023 -2046  1024]]
+jumlah kolom : [1. 1. 1.]
+eigen M      : [0.4 0.5 1. ]
+x setelah 10 : [0.5672 0.2661 0.1666]
+x setelah 40 : [0.5667 0.2667 0.1667]
+eigen C      : [1. 2.]
+eigen C+1e-6 : [0.999 2.001]
+cond V(C)    : 2000.0
+expm(0.5A)   : 1.9134
+rumus        : 1.9134
+\end{verbatim}
+\end{lab}
+
+Baris pertama keluaran itu menyebut nilai eigen dalam urutan menaik, $1,1,4$. Tiga baris
+berikutnya adalah sisa $A\mathbf{v}-\lambda\mathbf{v}$ untuk ketiga vektor eigen yang dikembalikan
+pustaka. Sisa berorde $10^{-16}$ berarti persamaannya terpenuhi sampai batas presisi mesin; tidak ada sisa
+yang persis nol karena vektor eigen dinormalkan dan dihitung secara iteratif. Vektor eigen pustaka
+juga bukan $(1,1,1)$ dan $(1,-1,0)$, melainkan kelipatan ternormalkan: arahnya sama, panjangnya
+berbeda, dan diagonalisasi hanya peduli arah.
+
+Dua blok $A^{10}$ memberi angka bulat yang identik, dengan selisih terbesar $1.05\times10^{-9}$.
+Selisih itu bukan kesalahan aljabar: entri sebesar $3.5\times10^{5}$ dihitung lewat $V$, $V^{-1}$,
+dan pangkat bilangan real, sehingga galat pembulatan berorde $10^{-16}$ ikut membesar.
+
+Nilai \texttt{cond V} sebesar $1.5227$ dekat dengan satu, dan itu kabar baik: $A$ simetris,
+sehingga vektor eigennya dapat dipilih saling tegak lurus dan $P$ mendekati ortogonal.
+Diagonalisasi untuk matriks semacam itu jauh lebih stabil.
+
+Blok iterasi pangkat mengulang hitungan pada Gambar~\ref{fig:iterasi-pangkat}: sudutnya naik dari
+$0$ ke $26.21$ derajat, tetap di bawah batas $26.57$, sedangkan nisbah Rayleigh naik dari $4.0000$
+ke $4.9938$ menuju $5$.
+
+Blok $B$ menunjukkan sisi lain: nilai eigennya $1,1,2$ dan \texttt{rank(B - I)} sama dengan $2$,
+jadi nullity-nya $1$. Multiplisitas geometrik untuk $\lambda=1$ hanya satu, sedangkan aljabarnya
+dua; matriksnya defektif. Blok $B^{10}$ memperlihatkan akibatnya: entri $-19$ dan $1024$
+berdampingan, yang pertama tumbuh linear dan yang kedua eksponensial.
+
+Blok $M$ memeriksa bahwa jumlah setiap kolomnya satu, sehingga $\mathbf{x}_{k}$ tetap stokastik.
+Nilai eigennya $0.4$, $0.5$, dan $1$; setelah empat puluh langkah angkanya berhenti bergerak pada
+enam angka, sesuai laju $(1/2)^{k}$ yang diturunkan dengan tangan.
+
+Blok terakhir memperingatkan satu hal: matriks $C$ punya nilai eigen $1$ dan $2$, dan bila satu entri
+nol di bawah diagonal diganti $10^{-6}$, nilai eigennya bergeser menjadi $0.999$ dan $2.001$;
+perpindahan $10^{-3}$, seribu kali lebih besar daripada gangguannya. Angka itu dapat dihitung
+persis: akar $\lambda^{2}-3\lambda+1.999$ adalah $1.5\mp\sqrt{2510}/100$, yaitu $0.999000998$ dan
+$2.000999002$. Pergeseran itu sebanding dengan $10^{-6}\cdot1000/(2-1)$: gangguan dikali entri besar
+dibagi celah kedua nilai eigen. Bilangan kondisi $2000$ menangkap pembesaran yang sama. Nilai eigen
+tetap kontinu terhadap entri, tetapi tidak harus kontinu secara Lipschitz dengan konstanta satu.
+
+\begin{tantangan}
+Carilah satu matriks $2\times2$ yang kedua nilai eigennya real dan berbeda, tetapi kedua vektor
+eigennya tidak saling tegak lurus. Tunjukkan pilihan kita benar dengan menghitung hasil kali
+titiknya, lalu jelaskan mengapa matriks simetris tidak dapat dipakai (jawabannya menunggu Bab 10).
+
+Petunjuk 1: dua vektor tegak lurus tepat ketika hasil kali titiknya nol. Mulailah dari matriks
+segitiga atas yang sederhana, lalu hitung kedua vektor eigennya tanpa membulatkan.
+
+Petunjuk 2: matriks $\begin{pmatrix}2&1\\0&3\end{pmatrix}$ sudah cukup. Vektor eigen untuk $3$
+adalah $(1,1)$ dan untuk $2$ adalah $(1,0)$; hasil kali titiknya $1$, bukan nol. Bandingkan dengan
+matriks simetris $A$ di lab, yang memberi $\texttt{cond V}\approx1.5$.
+
+Kalau mentok, kembali ke bagian Matriks serupa dan invarian, lalu ke paragraf bilangan kondisi di
+Lab komputasi.
+\end{tantangan}
+
+\begin{untukdosen}
+Urutan mengajar yang berhasil dipakai: nilai eigen lebih dulu sebagai arah yang dipertahankan,
+baru polinomial karakteristik sebagai alat hitung. Bila polinomial datang lebih dulu, mahasiswa
+melihat akar polinomial dan lupa bahwa yang dicari arah. Setelah ruang eigen, masuk multiplisitas
+geometrik lewat nullity, baru syarat diagonalisasi. Contoh guntingan sebaiknya diberikan sebelum
+teorema syarat, supaya teorema menjawab pertanyaan yang sudah terasa.
+
+Dua miskonsepsi khas. Pertama, mahasiswa menganggap nilai eigen berulang selalu berarti tidak
+dapat didiagonalkan. Matriks $(2,1,1;1,2,1;1,1,2)$ di bagian contoh membantahnya dengan
+multiplisitas geometrik dua. Kedua, mereka menuliskan vektor eigen sebagai baris pada $P$, lalu
+mendapat $P^{-1}AP$ yang bukan diagonal dan menyalahkan rumusnya. Aturan yang perlu diulang:
+vektor eigen adalah kolom, dan urutan kolom $P$ harus sama dengan urutan diagonal $D$.
+
+Aktivitas kelas: bagi kelas menjadi dua kelompok untuk matriks $(2,1,1;1,2,1;1,1,2)$. Kelompok
+pertama menghitung $A^{10}$ lewat diagonalisasi, kelompok kedua lewat pangkat berulang atau
+perkalian berulang cepat. Bandingkan hasilnya di papan, lalu minta kelas menjelaskan mengapa kedua
+jalan harus bertemu. Kegaduhan biasanya muncul pada penyebut $3$ di $P^{-1}$.
+
+Tanda kesiapan lanjut: mahasiswa dapat mengatakan, tanpa menghitung, mengapa matriks guntingan
+tidak dapat didiagonalkan, dan dapat menebak bentuk $S^{k}$ untuk guntingan $2\times2$. Bila
+mereka menyebut munculnya faktor $k$, mereka siap masuk Bab 10.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item $\lambda$ nilai eigen $A$ bila ada $\mathbf{v}\neq\mathbf{0}$ dengan
+        $A\mathbf{v}=\lambda\mathbf{v}$. Nilai eigen adalah akar $p_{A}(\lambda)=\det(\lambda I-A)$,
+        dan $E_{\lambda}=\operatorname{null}(A-\lambda I)$ adalah subruangnya.
+  \item Derajat $p_{A}$ adalah $n$, jadi ada paling banyak $n$ nilai eigen berbeda. Atas
+        $\mathbb{C}$ selalu ada $n$ bila dihitung dengan multiplisitas; atas $\mathbb{R}$ tidak,
+        seperti pada matriks putar.
+  \item $\operatorname{tr}(A)=\sum_{i}\lambda_{i}$ dan $\det(A)=\prod_{i}\lambda_{i}$, keduanya
+        dihitung dengan multiplisitas. Ini pemeriksaan murah untuk setiap hitungan tangan.
+  \item Untuk setiap nilai eigen, $1\le\dim E_{\lambda}\le$ multiplisitas aljabar. Vektor eigen
+        dengan nilai eigen berbeda selalu bebas linear.
+  \item $A$ dapat didiagonalkan tepat ketika ada $n$ vektor eigen bebas, dan tepat ketika
+        multiplisitas aljabar sama dengan geometrik untuk setiap nilai eigen. Bila tidak, $A$
+        disebut defektif, dan $A^{k}$ pada umumnya memuat faktor $k$, bukan hanya $\lambda^{k}$.
+  \item Matriks serupa mempunyai polinomial karakteristik, nilai eigen, jejak, dan determinan
+        yang sama; kebalikannya tidak berlaku. Vektor eigen ikut berubah bersama basis.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Tentukan nilai eigen dan vektor eigen
+        $A_{1}=\begin{pmatrix}3&1\\ 2&2\end{pmatrix}$, lalu susun $P$ dan $D$ serta periksa
+        $P^{-1}A_{1}P=D$ dengan mengalikan balik.
+
+  \item Hitung $G^{10}$ untuk $G=\begin{pmatrix}4&2\\ 1&3\end{pmatrix}$ lewat diagonalisasi,
+        lalu periksa hasilnya dengan fungsi \texttt{matrix\_power} dari NumPy. Tuliskan pula
+        bentuk umum $G^{k}$.
+
+  \item Buktikan bahwa bila $\lambda$ nilai eigen $A$ maka $\lambda^{2}$ nilai eigen $A^{2}$,
+        dan secara umum $\lambda^{k}$ nilai eigen $A^{k}$ untuk setiap bilangan bulat $k\ge1$.
+        Jelaskan mengapa kebalikannya gagal: berikan $A$ dengan $A^{2}=-I$, lalu bandingkan nilai
+        eigen $A^{2}$ dengan nilai eigen real $A$.
+        (Petunjuk: pakai matriks putar di awal bab; ia tidak punya nilai eigen real.)
+
+  \item Buktikan bahwa $A$ invertible jika dan hanya jika $0$ bukan nilai eigen $A$, dan bahwa
+        dalam hal itu nilai eigen $A^{-1}$ adalah $1/\lambda$ untuk setiap nilai eigen $\lambda$
+        dari $A$.
+        (Petunjuk: mulai dari $A\mathbf{v}=\lambda\mathbf{v}$, kalikan dengan $A^{-1}$ dari kiri,
+        dan pastikan $\lambda\neq0$ supaya pembagiannya sah.)
+
+  \item Nilai klaim ini: \emph{dua matriks persegi berukuran sama yang mempunyai polinomial
+        karakteristik sama pasti serupa.} Tentukan benar, salah, atau belum cukup bukti, dan
+        sertakan alasan atau contoh penyangkal.
+
+  \item Buktikan bahwa $A$ dan $A^{\top}$ mempunyai polinomial karakteristik yang sama, dengan
+        memakai $\det(\lambda I-A)=\det((\lambda I-A)^{\top})$ dan sifat determinan pada Bab 8.
+        Jelaskan mengapa ini berarti transpos tidak mengubah nilai eigen, tetapi biasanya
+        mengubah vektor eigen.
+
+  \item Matriks $K=\begin{pmatrix}2&1&0\\ 0&2&0\\ 0&0&1\end{pmatrix}$ mempunyai nilai eigen
+        $2,2,1$. Tentukan pangkat $K-2I$, lalu putuskan apakah $K$ dapat didiagonalkan. Jelaskan
+        jawabanmu dengan syarat multiplisitas.
+
+  \item Rantai Markov dua keadaan mempunyai matriks
+        $T=\begin{pmatrix}0.9&0.4\\ 0.1&0.6\end{pmatrix}$. Tentukan nilai eigen $T$, titik
+        tetapnya, dan banyak langkah yang diperlukan agar galat awal menyusut di bawah
+        $10^{-6}$. Periksa jawabanmu dengan Python.
+        (Petunjuk: setelah nilai eigen diketahui, galat menyusut seperti $|\lambda_{2}|^{k}$;
+        selesaikan $|\lambda_{2}|^{k}<10^{-6}$ dengan logaritma.)
+
+  \item Buktikan: bila $A$ dapat didiagonalkan dengan $A=PDP^{-1}$, maka
+        $\operatorname{tr}(A^{k})=\sum_{i}\lambda_{i}^{k}$ untuk setiap $k\ge1$, dengan memakai
+        $\operatorname{tr}(XY)=\operatorname{tr}(YX)$. Untuk $B$ yang defektif tadi, hitung
+        $\operatorname{tr}(B^{10})$ dari matriks yang tercetak, lalu bandingkan dengan
+        $1^{10}+1^{10}+2^{10}$. Jelaskan mengapa kesamaan itu tetap berlaku walaupun $B$
+        defektif, dan di titik mana bukti tadi memakai diagonalisasi.
+        (Petunjuk: jejak tidak berubah oleh perubahan basis; pakai bentuk $B^{k}$ yang sudah
+        diturunkan.)
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini adalah pernyataan aljabar atas medan apa pun dan berdimensi
+hingga: kesetaraan nilai eigen dengan akar polinomial karakteristik, kebebasan vektor eigen untuk
+nilai eigen berbeda, ketaksamaan $1\le\dim E_{\lambda}\le$ multiplisitas aljabar, dan kesetaraan
+diagonalisasi dengan dua syarat yang dipakai di sini. Rujukan bakunya Axler, \emph{Linear Algebra
+Done Right} edisi ke-4, bagian 5A dan 5D (5.55, empat syarat setara, dan 5.54); versi matriks ada
+di Anton, \emph{Elementary Linear Algebra} edisi ke-11, bagian 5.1 dan 5.2.
+
+Yang lebih sering dipopulerkan daripada dibuktikan ada dua. Pertama, klaim bahwa nilai eigen
+``mengukur kepentingan'', dasar penjelasan PageRank: vektor eigen utama matriks stokastik memberi
+bobot tunak hanya bila rantainya tak tereduksi dan aperiodik, dan itu isi teorema Perron-Frobenius,
+yang tidak dibuktikan di sini; bukti lengkapnya di Strang, \emph{Introduction to Linear Algebra}
+edisi ke-6, Apendiks 8. Kedua, klaim bahwa polinomial karakteristik adalah cara praktis menghitung
+nilai eigen: untuk $n\ge5$ tidak ada rumus akar umum, dan pustaka memakai algoritma QR pada
+matriks, bukan pemfaktoran polinomial. Bab ini juga berhenti pada kasus dapat didiagonalkan; bentuk
+Jordan dan polinomial minimal tidak dibahas, dan ada di Hoffman dan Kunze, \emph{Linear Algebra}
+edisi ke-2, bagian 6.3 dan 7.3.
+
+Pertanyaan terbuka: seberapa jauh nilai eigen bergeser bila entri diganggu, yang jawaban
+kuantitatifnya menuntut teorema Bauer-Fike atau pseudospektrum; dan apakah kedefektifan itu sendiri
+stabil secara numerik. Batas keberlakuan: dimensi hingga, medan real atau kompleks, tanpa klaim
+tentang stabilitas algoritma.
+\end{untukpeneliti}
+
+\peta{Bab ini mengikuti Anton, \emph{Elementary Linear Algebra} edisi ke-11, Bab 5: bagian 5.1
+(Eigenvalues and Eigenvectors), 5.2 (Diagonalization), 5.3 (Complex Vector Spaces), 5.4
+(Application: Differential Equations), dan 5.5 (Application: Dynamical Systems and Markov
+Chains). Padanan yang lebih abstrak ada di Axler, \emph{Linear Algebra Done Right} edisi ke-4,
+Bab 5: 5A (nilai eigen dan ruang eigen), 5B (keberadaan nilai eigen atas ruang vektor kompleks),
+dan 5D (operator yang dapat didiagonalkan, termasuk 5.55). Untuk rantai Markov dan teorema
+Perron-Frobenius, lihat Strang, \emph{Introduction to Linear Algebra} edisi ke-6, bagian 6.1,
+6.2, 6.5, dan Apendiks 8. Bentuk kanonik untuk matriks defektif ada di Hoffman dan Kunze,
+\emph{Linear Algebra} edisi ke-2, Bab 6 (Elementary Canonical Forms), bagian 6.3 untuk polinomial
+minimal, dan Bab 7 (The Rational and Jordan Forms), bagian 7.3 untuk bentuk Jordan.}

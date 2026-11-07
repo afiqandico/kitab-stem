@@ -1,0 +1,1038 @@
+\chapter{Axioms of the Real Numbers and Supremum}
+
+A program searches for the length of the diagonal of a square with side one. It keeps
+two numbers, $a=1$ and $b=2$, with $a^2-2<0<b^2-2$. At every step it computes the
+midpoint $m=(a+b)/2$, evaluates $m^2-2$, and then replaces $a$ or $b$ by $m$ so that
+the signs at the two ends stay different. After 40 steps the width of the interval is
+below $10^{-12}$, after 100 steps below $10^{-30}$. But the program never produces an
+answer: no step yields $x^2-2=0$ exactly, and the two endpoints keep squeezing
+something that is not a rational number.
+
+That failure is not a mistake in the algorithm. It shows that the rational numbers
+have holes, and that the set $\{q\in\mathbb{Q}: q^2<2\}$ has no least upper bound
+inside $\mathbb{Q}$.
+
+Chapter 1 taught us to write proofs. Chapter 2 gave us the language of sets and
+functions, and used $|x|$ and $\sup$ as computing tools without asking where they come
+from. What is still missing is the object that makes those tools legitimate. This
+chapter builds it, not out of decimals, but out of three groups of statements accepted
+without proof: the field laws, the order laws, and completeness. Everything else,
+including the existence of $\sqrt{2}$, is derived from there.
+
+\begin{untukanak}
+Imagine a ruler that has only fraction marks: one half, one quarter, one eighth, and
+ever closer together. There are no other numbers on that ruler. Now measure the
+diagonal of a square whose side is one hand-span. The end of the diagonal falls
+between two marks, and it always does, no matter how close the marks are. We can get
+as near as we like, but never exactly.
+
+The question is: does that length really exist? The ruler clearly has no answer. Yet
+the diagonal, if you carry it around or lay it on the floor, has a definite length.
+That length does not disappear merely because our measuring tool does not contain it.
+
+The same story happens with numbers. If we have only fractional numbers, there is a
+point on the line that has no name. Mathematicians close that hole with a single
+promise: every collection of numbers that is bounded above has a lowest roof. In this
+chapter we will learn why that promise is needed, what its consequences are, and how
+it gives a name to the diagonal length above, namely root two.
+\end{untukanak}
+
+\section{Field axioms}
+\tingkat{basic}
+
+We do not define the real numbers as endless decimals: that approach makes addition
+complicated, and makes the definition of a least upper bound circular, since
+``the supremum of all decimal cuts'' already uses the numbers being built. It is
+cleaner to state the properties first and then derive the rest.
+
+The first layer is algebraic. We assume two operations that obey the rules we have
+used since school; the following definition only gives those rules a name.
+
+\begin{definisi}[Field]\index{field}
+A set $F$ is called a \emph{field} if addition and multiplication are defined on its
+members so that: the result of both operations always lies in $F$; both operations are
+commutative and associative; there is an element $0$ with $0+x=x$ and an element
+$1\neq 0$ with $1\cdot x=x$; every $x$ has a negative $-x$ with $x+(-x)=0$; every
+$x\neq 0$ has a reciprocal $1/x$ with $x\cdot(1/x)=1$; and $x(y+z)=xy+xz$ holds.
+\end{definisi}
+
+Those axioms mention neither order, nor distance, nor completeness. Other sets
+therefore satisfy them too. The rational numbers with ordinary addition and
+multiplication form a field. A reasonable question: what is already contained inside
+those rules?
+
+Three algebraic statements we usually memorize turn out to be consequences, not
+axioms; the one most often used is multiplication by zero, which destroys everything.
+
+\begin{teorema}
+In an arbitrary field, for all $x,y$: (a) $0\cdot x=0$;
+(b) $(-x)y=-(xy)$; (c) $(-x)(-y)=xy$; (d) if $xy=0$ then $x=0$ or $y=0$.
+\end{teorema}
+
+\begin{proof}
+(a) From $0+0=0$ and the distributive law, $0\cdot x=(0+0)x=0\cdot x+0\cdot x$.
+Add $-(0\cdot x)$ to both sides. The left side becomes $0$, the right side becomes
+$0\cdot x$. Hence $0=0\cdot x$.
+
+(b) Compute $(-x)y+xy=(-x+x)y=0\cdot y=0$, using (a). Hence $(-x)y$ is the negative
+of $xy$, and that negative is unique.
+
+(c) Apply (b) twice: $(-x)(-y)=-\bigl(x(-y)\bigr)=-\bigl(-(xy)\bigr)=xy$.
+The last step uses $--a=a$, which is also a consequence of the uniqueness of the
+negative.
+
+(d) Suppose $x\neq 0$ and $xy=0$. Multiply by $1/x$: $(1/x)(xy)=0$, so that
+$y=0$. Hence one of the factors is zero.
+\end{proof}
+
+Not one of those four statements is assumed; all of them descend from the distributive
+law and the existence of negatives. This pattern is used throughout the book: state as
+few rules as possible, then harvest the consequences.
+
+\kamus{field}{lapangan}{A set with two arithmetic operations whose rules stay fixed, like
+a toolbox whose lid always shuts tight: the result of a computation never leaves the
+box.}
+
+Chapter 2 used $\mathbb{Q}$ as a countable set. Here it appears in a different role:
+as an ordered field. Those two properties are not yet enough, and that is the content
+of the next section.
+
+\section{Order axioms}
+\tingkat{basic}
+
+A field alone cannot compare two numbers. We need a relation ``less than'' that
+respects addition and multiplication, because without it inequalities cannot be
+manipulated. The order axioms say three things: any two numbers can be compared, the
+comparison is transitive, and adding or multiplying by a positive number does not
+break it.
+
+\begin{definisi}[Ordered field]\index{ordered field}
+A field $F$ is called \emph{ordered} if there is a relation $<$ on $F$ such that for
+all $a,b,c$: exactly one of $a<b$, $a=b$, $b<a$ holds; if $a<b$ and $b<c$ then
+$a<c$; if $a<b$ then $a+c<b+c$; and if $a<b$ and $c>0$ then $ac<bc$.
+\end{definisi}
+
+Almost every sign rule we memorize is a consequence of that definition, not an
+addition to it. The following proof derives five of them at once; the pattern is the
+same: add something to both sides, or multiply by a number whose sign is known.
+
+\begin{proposisi}
+In every ordered field: (a) if $x>0$ then $-x<0$, and conversely;
+(b) if $x>0$ and $y<z$ then $xy<xz$; (c) if $x<0$ and $y<z$ then $xy>xz$;
+(d) if $x\neq 0$ then $x^2>0$, in particular $1>0$; (e) if $0<x<y$ then
+$0<1/y<1/x$.
+\end{proposisi}
+
+\begin{proof}
+(a) If $x>0$, add $-x$ to both sides: $0>-x$. Conversely, if $x<0$ then
+$0-x>0$, that is, $-x>0$.
+
+(b) Since $z>y$, we have $z-y>0$. Multiply by $x>0$: $x(z-y)>0$. Hence
+$xz=x(z-y)+xy>xy$.
+
+(c) From (a), $-x>0$. Apply (b) to $-x$ and $y<z$: $(-x)y<(-x)z$. By the previous
+Theorem, the left side is $-(xy)$ and the right side is $-(xz)$. Hence
+$-(xy)<-(xz)$, and by (a) again $xy>xz$.
+
+(d) If $x>0$, the order axiom applied to $y=x>0$ gives $x^2>0$. If $x<0$ then
+$-x>0$, so that $(-x)^2>0$; yet $(-x)^2=x^2$. For $x=0$ clearly $x^2=0$. Since
+$1=1^2$, we obtain $1>0$.
+
+(e) Since $y>0$ and $1/y\neq 0$, from (d) $1/y>0$; the same holds for $1/x$.
+Multiply $x<y$ by the positive number $(1/x)(1/y)$: the result is $1/y<1/x$.
+\end{proof}
+
+Two consequences that are used often: $a<b$ is equivalent to $b-a>0$, and $a<b$ is
+equivalent to $-b<-a$; the second explains why multiplying by a negative number
+reverses the direction, because multiplying by $-1$ reflects the number line about
+zero. Another consequence: if $0<a<b$ then $a^2<b^2$, simply by multiplying $a<b$ by
+$a>0$ and then by $b>0$ and adding the two. Hence comparing squares is equivalent to
+comparing the original positive numbers; every time we write $q^2<2$ for a rational
+$q$, we are comparing $q$ with something that need not be rational.
+
+\kamus{ordered field}{lapangan terurut}{A field whose members can be arranged like the
+steps of a staircase, and whose arithmetic rules do not disturb that arrangement.}
+
+Note what we do not have yet. We do not know whether there is a positive number smaller
+than every $1/n$, and we do not know whether $\{q\in\mathbb{Q}: q^2<2\}$ has a roof.
+That is not a question of order but a question of completeness.
+
+\section{Absolute value and the triangle inequality}
+\tingkat{intermediate}
+
+In Chapter 2 we wrote $|x-y|$ as a distance, and used it to compare errors, without
+proving that the symbol behaves like a distance. Now its properties are derived from
+the order. Absolute value discards the sign and leaves the distance to the point zero;
+the following definition writes two branches, and it is the second branch that is
+usually used.
+
+\begin{definisi}[Absolute value]\index{absolute value}
+For $x\in\mathbb{R}$, $|x|=x$ if $x\ge 0$ and $|x|=-x$ if $x<0$. Equivalently,
+$|x|=\max\{x,-x\}$, and for real numbers $|x|=\sqrt{x^2}$ with the root discussed in
+the next section.
+\end{definisi}
+
+From that definition it follows directly: $|x|\ge 0$, $|{-x}|=|x|$, $|x|^2=x^2$, and
+$|xy|=|x|\,|y|$. The last is proved by checking the four sign combinations, or by
+noting that both sides are nonnegative and their squares agree.
+
+Inequalities containing an absolute value are easiest to handle after being converted
+into two ordinary inequalities. The following lemma is the reason that conversion is
+legitimate.
+
+\begin{lemma}
+For $c\ge 0$, $|x|\le c$ if and only if $-c\le x\le c$.
+\end{lemma}
+
+\begin{proof}
+If $|x|\le c$: for $x\ge 0$ we have $x=|x|\le c$ and $-c\le 0\le x$; for
+$x<0$ we have $-x=|x|\le c$, so that $x\ge -c$, and $x<0\le c$. Hence
+$-c\le x\le c$.
+
+Conversely, if $-c\le x\le c$: for $x\ge 0$, $|x|=x\le c$; for $x<0$,
+$|x|=-x\le c$ because $x\ge -c$. In both cases $|x|\le c$.
+\end{proof}
+
+The triangle inequality is the only tool we need to control the difference of two
+numbers. Its name comes from a picture: the length of one side of a triangle does not
+exceed the sum of the lengths of the other two sides.
+
+\begin{teorema}[Triangle inequality]\index{triangle inequality}
+For all $x,y\in\mathbb{R}$, $|x+y|\le |x|+|y|$. Moreover
+$\bigl||x|-|y|\bigr|\le |x-y|$.
+\end{teorema}
+
+\begin{proof}
+From the definition, $-|x|\le x\le |x|$ and $-|y|\le y\le |y|$. Add the two pairs:
+$-(|x|+|y|)\le x+y\le |x|+|y|$. By the previous lemma with $c=|x|+|y|$, we obtain
+$|x+y|\le |x|+|y|$.
+
+For the second part, write $x=(x-y)+y$ and apply the first part:
+$|x|\le |x-y|+|y|$, so that $|x|-|y|\le |x-y|$. Swapping the roles of $x$ and $y$
+gives $|y|-|x|\le |x-y|$. Since $c\le d$ and $-c\le d$ is equivalent to $|c|\le d$,
+we have $\bigl||x|-|y|\bigr|\le |x-y|$.
+\end{proof}
+
+As a check, take $x=3$ and $y=-5$: $|x+y|=2$ while $|x|+|y|=8$, so the inequality is
+slack. For $x=3$ and $y=5$ both sides equal $8$ and the inequality becomes an equation;
+that happens exactly when the signs agree or one of them is zero.
+
+Its practical use: bounds on distance become bounds on functions. If
+$|x-\sqrt2|<\delta$, then
+\[
+|x^2-2|=|x-\sqrt2|\,|x+\sqrt2|<\delta\,(2\sqrt2+\delta),
+\]
+because $|x+\sqrt2|\le|x-\sqrt2|+2\sqrt2$. For $\delta=10^{-3}$ that bound equals
+$0.002829427$, and the true value at $x=\sqrt2+10^{-3}$ is also $0.002829427$ since
+$x^2-2=2\sqrt2\,\delta+\delta^2$ exactly: the bound is tight. For $\delta=10^{-6}$ the
+same bound shrinks to $2.828428\times10^{-6}$.
+
+\kamus{absolute value}{nilai mutlak}{The distance of a point from zero on the number line,
+regardless of which side of zero the point lies on.}
+
+The triangle inequality uses only the order axioms, not completeness, so it also holds
+in $\mathbb{Q}$ and cannot distinguish the two. The distinguishing tool appears in the
+next section.
+
+\section{Completeness: the least upper bound}
+\tingkat{intermediate}
+
+Order gives comparison, but it does not give a roof. The set
+$A=\{1-1/n: n\in\mathbb{N}\}$ contains numbers that come ever closer to one without
+ever equaling one: one is not a member, yet it is the tightest bound. The set
+$B=\{q\in\mathbb{Q}: q^2<2\}$ is bounded, yet it has no tight bound in
+$\mathbb{Q}$. Both show that a slack bound and a tightest bound need different names.
+
+\begin{untukanak}
+Imagine we must put up a tent roof for a group of children. A roof that is too low:
+some head sticks out. A roof that is too high: the tent wastes material and wobbles.
+What we are looking for is the lowest roof that still lets all the children fit. Call
+it the right roof.
+
+Now something strange happens. In that group there is no tallest child; there is always
+someone a little taller. Yet the right roof still exists, because their heights are
+bounded: nobody is as tall as a tree. The right roof is determined by the whole group,
+not by a single child.
+
+In this chapter the right roof has a name: the least upper bound. The property that
+guarantees a right roof always exists is called completeness. The fractional numbers
+are incomplete: there are groups of bounded height whose right roof is not among the
+fractional numbers. A question you can take home: if there is no tallest child, how do
+you prove that the right roof really is the lowest one?
+\end{untukanak}
+
+An upper bound is a ceiling that contains every member; the least upper bound is the
+lowest ceiling among them. The following definition names both, together with their
+mirror image below.
+
+\begin{definisi}[Upper bound and supremum]\index{upper bound}\index{supremum}
+Let $A\subseteq\mathbb{R}$ and $A\neq\varnothing$. A number $u$ is called an
+\emph{upper bound} of $A$ if $a\le u$ for every $a\in A$. If $A$ has at least one upper
+bound, $A$ is called bounded above. A number $s$ is called the \emph{supremum} of $A$,
+written $s=\sup A$, if $s$ is an upper bound of $A$ and $s\le u$ for every upper bound
+$u$. Dually, $t$ is called the \emph{infimum} of $A$, written $t=\inf A$, if $t$ is a
+lower bound and $t\ge v$ for every lower bound $v$.
+\end{definisi}
+
+The two conditions in the definition of supremum are often confused: the first says
+that $s$ is still an upper bound, the second that no upper bound is smaller. For
+$A=\{1-1/n\}$, the number $1$ satisfies both while $2$ satisfies only the first; that
+set also has no largest member, so ``maximum'' and ``supremum'' are not synonyms.
+
+\begin{bacakeras}
+Two voices. The first voice asks, the second answers. Read them aloud alternately with
+a friend.
+
+``What is that fence?'' ``The fence is an upper bound: every member of the collection
+lies below it.'' ``How many fences are there?'' ``Many. Every higher fence is also a
+fence.'' ``Then which one do we use?'' ``The lowest one. Its name is the least upper
+bound.'' ``What if that lowest fence happens to be occupied by a member of the
+collection?'' ``Then it is also a maximum. If it is not occupied, it is still the least
+upper bound. Two names, two jobs.''
+
+Repeat three times, faster each time: a tall fence is not the answer, the lowest fence
+is the answer.
+
+The line the reader must repeat, once, in a clear voice: an upper bound is a fence; the
+least upper bound is the lowest fence that still holds all the members in.
+\end{bacakeras}
+
+Figure~\ref{fig:sup-garis} places both ideas on a single line. The members of
+$A=\{1-1/n\}$ crowd toward one direction without ever reaching the end; every number to
+the right of one is an upper bound, and the leftmost among them is the supremum.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=1.5cm,y=1cm,font=\small]
+  \draw[-{Latex[length=2mm]},ink,thick] (-0.35,0) -- (5.5,0);
+  \foreach \t in {0,1,2,3,4,5}{
+    \draw[ink] (\t,0.07) -- (\t,-0.07);
+    \node[below=2pt,ink] at (\t,0) {$\t$};
+  }
+  \foreach \n in {1,...,6}{
+    \fill[accent] ({1-1/\n},1.0) circle (1.7pt);
+  }
+  \draw[accent,thick,fill=white] (1,1.0) circle (1.7pt);
+  \node[anchor=west,accent,font=\footnotesize] at (1.18,1.0) {members of $A=\{1-1/n\}$};
+  \draw[layergrey,dashed] (1,0.95) -- (1,0);
+  \node[accent,anchor=west,font=\footnotesize] at (1.12,0.45)
+    {$\sup A=1$, and $1$ is not a member of $A$};
+  \fill[layerteal!14] (1,-0.95) rectangle (5.35,-0.6);
+  \draw[layerteal,thick] (1,-0.95) rectangle (5.35,-0.6);
+  \node[layerteal!80!black,font=\footnotesize] at (3.2,-0.775) {all upper bounds of $A$};
+  \draw[accent,line width=1.4pt] (1,-1.02) -- (1,-0.52);
+\end{tikzpicture}
+\caption{The set $A=\{1-1/n:n\in\mathbb{N}\}$ on the number line. Every $u\ge 1$
+is an upper bound; the smallest, $u=1$, is $\sup A$. The number $1$ is not a member of
+$A$, so $A$ has no maximum.}
+\label{fig:sup-garis}
+\end{figure}
+
+\kamus{supremum}{supremum (batas atas terkecil)}{The lowest roof that still covers every
+member of the set; that roof need not belong to the set.}
+
+A supremum, if it exists, is unique; the second condition can be written with epsilon,
+and that form is the one most often used in proofs.
+
+\begin{lemma}
+(i) If $A$ has a supremum, then its supremum is unique. (ii) A number $s$ is the
+supremum of $A$ if and only if $s$ is an upper bound of $A$ and for every
+$\varepsilon>0$ there exists $a\in A$ with $a>s-\varepsilon$.
+\end{lemma}
+
+\begin{proof}
+(i) Suppose $s$ and $s'$ are both suprema. Since $s$ is an upper bound and $s'$ is a
+supremum, $s'\le s$. Since $s'$ is an upper bound and $s$ is a supremum, $s\le s'$.
+Hence $s=s'$.
+
+(ii) Suppose $s$ is an upper bound and the epsilon condition holds, but there is an
+upper bound $u<s$. Take $\varepsilon=s-u>0$. By the epsilon condition there is
+$a\in A$ with $a>s-\varepsilon=u$, contradicting that $u$ is an upper bound.
+Conversely, if $s$ is a supremum and there is $\varepsilon>0$ such that
+$a\le s-\varepsilon$ for all $a\in A$, then $s-\varepsilon$ is an upper bound smaller
+than $s$, contradicting that $s$ is the least upper bound.
+\end{proof}
+
+\begin{resep}
+To prove that a number $s$ is the supremum of a set $A$:
+\begin{enumerate}
+\item Show $A\neq\varnothing$ by naming one of its members.
+\item Prove that $s$ is an upper bound: take arbitrary $a\in A$, show $a\le s$.
+\item Prove that no upper bound is smaller: take $\varepsilon>0$, produce
+      $a\in A$ with $a>s-\varepsilon$, for instance $a=1-1/n$ with $n>1/\varepsilon$.
+\item Conclude: $s$ is an upper bound and every number below $s$ is not an upper bound,
+      so $s=\sup A$.
+\end{enumerate}
+Order warning: step 2 must be finished before step 3. Choosing $a>s-\varepsilon$ first
+proves nothing, since $s$ is not yet known to be an upper bound. For
+$A=\{1-1/n\}$, the number $1/2$ passes step 3 but fails step 2.
+\end{resep}
+
+The following axiom distinguishes $\mathbb{R}$ from $\mathbb{Q}$. It cannot be proved
+from the field and order laws, because it is a statement about the completeness of the
+line.
+
+\begin{teorema}[Least-upper-bound property]\index{completeness axiom}
+Every nonempty set $A\subseteq\mathbb{R}$ that is bounded above has a supremum in
+$\mathbb{R}$.
+\end{teorema}
+
+\begin{proof}[Proof]
+This statement is accepted as the completeness axiom. Other equivalent formulations:
+nested interval intersections, and convergence of Cauchy sequences. We choose the
+supremum because it is the most directly usable; the construction of $\mathbb{R}$ from
+$\mathbb{Q}$ that proves it exists is in the Appendix to Chapter 1 of Rudin.
+\end{proof}
+
+The infimum need not be axiomatized: it is the supremum seen in a mirror.
+
+\begin{proposisi}
+If $A$ is nonempty and bounded below, then $\inf A=-\sup(-A)$, with
+$-A=\{-a: a\in A\}$.
+\end{proposisi}
+
+\begin{proof}
+The set $-A$ is nonempty and bounded above, so $s=\sup(-A)$ exists. For every
+$a\in A$ we have $-a\le s$, hence $a\ge -s$: so $-s$ is a lower bound of $A$. Now
+take $t>-s$. Then $-t<s$, so $-t$ is not an upper bound of $-A$; there is $a\in A$
+with $-a>-t$, that is, $a<t$. Hence $t$ is not a lower bound of $A$. Therefore $-s$
+is the greatest lower bound.
+\end{proof}
+
+First consequence of completeness: the natural numbers have no ceiling. It sounds
+trivial, but without completeness it cannot be proved.
+
+\begin{teorema}[Archimedean property]\index{archimedean property}
+For every $x>0$ and every $y\in\mathbb{R}$ there exists $n\in\mathbb{N}$ with
+$nx>y$.
+\end{teorema}
+
+\begin{proof}
+Suppose the contrary: there are $x>0$ and $y$ such that $nx\le y$ for all $n$. Then the
+set $S=\{nx: n\in\mathbb{N}\}$ is nonempty and bounded above by $y$, so
+$\alpha=\sup S$ exists. Since $x>0$, the number $\alpha-x$ is smaller than $\alpha$ and
+therefore not an upper bound of $S$. Hence there is $m$ with $mx>\alpha-x$, which gives
+$(m+1)x>\alpha$. Yet $(m+1)x\in S$, and $\alpha$ is an upper bound of $S$. Contradiction.
+\end{proof}
+
+The reciprocal version is the one most often used: for every $\varepsilon>0$ there is
+$n$ with $1/n<\varepsilon$, simply by applying the theorem to $x=\varepsilon$ and
+$y=1$. The phrase ``for $n$ sufficiently large'' is shorthand for that consequence, and
+now we know it is legitimate.
+
+That property also destroys very small positive numbers: there is no $\delta>0$ that is
+smaller than $1/n$ for all $n$, because $1/\delta$ would become an upper bound of
+$\mathbb{N}$. Real analysis therefore needs no ``infinitesimals''.
+
+Second consequence: every open interval, however small, contains a rational number.
+
+\begin{teorema}[Density of $\mathbb{Q}$]\index{density}
+If $x<y$ are real numbers, then there exists $p\in\mathbb{Q}$ with $x<p<y$.
+\end{teorema}
+
+\begin{proof}
+Since $y-x>0$, the Archimedean property gives $n\in\mathbb{N}$ with $n(y-x)>1$. Apply
+Archimedes again to obtain integers $m_1>nx$ and $m_2>-nx$; so
+$-m_2<nx<m_1$. Since $nx$ is trapped between two integers, there is an integer
+$m$ with $m-1\le nx<m$. Then $nx<m$, and from $m-1\le nx$ we get
+$m\le nx+1<ny$. Since $n>0$, division gives $x<m/n<y$.
+\end{proof}
+
+That proof is constructive: it gives a recipe for finding $p$, namely choosing $n$
+large enough and then rounding $nx$ upward. It does not give a small denominator, so
+efficient approximation still demands other ideas.
+
+\section{Why the rational numbers are not enough}
+\tingkat{advanced}
+
+The program in the opening fails because the set it squeezes has no roof in
+$\mathbb{Q}$. Let us prove that, not merely display the numbers. Take
+$A=\{q\in\mathbb{Q}: q^2<2\}$. This set is nonempty, since $1\in A$, and it is bounded
+above inside $\mathbb{Q}$: if $q\ge 3/2$ then $q^2\ge 9/4>2$, so $3/2$ is an upper
+bound.
+
+The intervals that program keeps are drawn as a stack of ever shorter bars
+(Figure~\ref{fig:selang-bersarang}). Each bar still contains root two and its length
+halves, while all its endpoints stay rational; the bars narrow onto a single point
+without ever touching it.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=9cm,y=1cm,font=\small]
+  \foreach \y/\a/\b/\lab/\pan in {%
+    0/1/2/{$[1,\; 2]$}/{$1$},
+    0.55/1/1.5/{$[1,\; \tfrac32]$}/{$1/2$},
+    1.1/1.25/1.5/{$[\tfrac54,\; \tfrac32]$}/{$1/4$},
+    1.65/1.375/1.5/{$[\tfrac{11}{8},\; \tfrac32]$}/{$1/8$},
+    2.2/1.375/1.4375/{$[\tfrac{11}{8},\; \tfrac{23}{16}]$}/{$1/16$},
+    2.75/1.40625/1.4375/{$[\tfrac{45}{32},\; \tfrac{23}{16}]$}/{$1/32$}}{
+    \fill[layerindigo!12] (\a,\y) rectangle (\b,\y+0.3);
+    \draw[layerindigo,thick] (\a,\y) rectangle (\b,\y+0.3);
+    \node[layerindigo,anchor=east,font=\footnotesize] at (\a-0.018,\y+0.15) {\lab};
+    \node[layergrey,anchor=west,font=\footnotesize] at (\b+0.015,\y+0.15) {\pan};
+  }
+  \draw[accent,dashed,thick] (1.41421,-0.25) -- (1.41421,3.15);
+  \node[accent,font=\footnotesize,above] at (1.41421,3.15) {$\sqrt2$};
+  \draw[-{Latex[length=1.6mm]},layergrey] (1.0,-0.12) -- (2.0,-0.12);
+  \node[layergrey,font=\footnotesize,below] at (1.5,-0.14) {length $=1$};
+\end{tikzpicture}
+\caption{The intervals kept by the opening program: $[1,2]$, $[1,\tfrac32]$,
+$[\tfrac54,\tfrac32]$, $[\tfrac{11}{8},\tfrac32]$, $[\tfrac{11}{8},\tfrac{23}{16}]$,
+$[\tfrac{45}{32},\tfrac{23}{16}]$. Their lengths fall from $1$ to $1/32$; continued
+without end, the intersection shrinks to a single point, namely $\sqrt2$, which is not
+a rational number.}
+\label{fig:selang-bersarang}
+\end{figure}
+
+First step: there is no largest member. Every rational with $q^2<2$ can still be nudged
+a little upward without passing two, and the size of the nudge has a formula.
+
+\begin{lemma}
+If $q\in\mathbb{Q}$, $q>0$, and $q^2<2$, then there exists $h\in\mathbb{Q}$, $h>0$,
+with $(q+h)^2<2$. In particular $q+h\in A$ and $q+h>q$.
+\end{lemma}
+
+\begin{proof}
+Take $h=\dfrac{2-q^2}{2q+2}$. Since $q^2<2$ and $2q+2>0$, we have $h>0$ and $h$
+rational. Also $h<1$, because $2-q^2<2q+2$ is equivalent to $q^2+2q>0$, which is true
+for $q>0$. Then $h^2\le h$, so
+\[
+(q+h)^2=q^2+2qh+h^2\le q^2+h(2q+1)
+=q^2+(2-q^2)\frac{2q+1}{2q+2}<q^2+(2-q^2)=2,
+\]
+because $\frac{2q+1}{2q+2}<1$.
+\end{proof}
+
+That formula can be checked numerically. For $q=1393/985$ we have $2-q^2=1/970225$, so
+$h=1/4684660$ and
+\[
+q+h=\frac{6625109}{4684660}=1.414213411432206\ldots,
+\]
+whose square is $1.999999573074719\ldots<2$. So $1393/985$ is not the largest member,
+even though its squared error is already about one part in a million. This procedure
+can be repeated without end: there is no last step.
+
+\begin{tangan}
+Materials: 1.5 m of rope, six pieces of tape, a tape measure.
+
+Stick the tape on the floor perpendicular to the wall, at distances $60/n$ cm for
+$n=1,\ldots,6$: 60, 30, 20, 15, 12, and 10 cm. You have only stuck six, but the rule
+does not stop. Stretch the rope across as a fence, then slide it toward the wall. Each
+time you stop, check one thing: are all the tape marks on the same side of the rope as
+the wall? As long as they are, the rope is still a fence.
+
+The rope can be brought arbitrarily close to the wall and still be a fence: 5 cm, 1 cm,
+1 mm. What stops it is not the tape but the wall. The collection of tape marks has no
+smallest member, and not one of them touches the wall. The lowest fence still exists
+--- the wall --- and it is not a member of the collection. That is the supremum.
+\end{tangan}
+
+It is not only the maximum that is missing. The least upper bound is missing from the
+rational numbers as well, and the proof requires one fact about root two.
+
+\begin{proposisi}
+The set $A=\{q\in\mathbb{Q}: q^2<2\}$ has no supremum in $\mathbb{Q}$.
+\end{proposisi}
+
+\begin{proof}
+Suppose $p\in\mathbb{Q}$ is the supremum of $A$. Since $1\in A$, we have $p\ge 1>0$. We
+show that $p^2=2$, which is impossible because no rational number has square two.
+
+If $p^2<2$, the previous lemma gives $q=p+h\in A$ with $q>p$, contradicting that $p$
+is an upper bound. If $p^2>2$, take $k=(p^2-2)/(2p)>0$, which is rational and smaller
+than $p$ since $p^2-2<2p^2$. For every $q\in A$,
+\[
+(p-k)^2=p^2-2pk+k^2>p^2-2pk=2>q^2,
+\]
+so $q<p-k$ for $q>0$, and for $q\le 0$ this is clear because $p-k>0$: the number
+$p-k$ is still an upper bound of $A$, but smaller than $p$.
+That contradicts $p$ being the least upper bound. Hence $p^2=2$.
+
+Now $p=m/n$ with $m,n$ integers having no common factor. From $m^2=2n^2$, $m^2$ is
+even, so $m$ is even; write $m=2r$. Then $4r^2=2n^2$, that is, $n^2=2r^2$, so $n$
+is even as well. Both are even, contradicting the choice of $m,n$.
+\end{proof}
+
+Inside $\mathbb{R}$ that does not happen. The same set, viewed this time as a set of
+real numbers, is bounded above by $2$, so by the completeness axiom it has a supremum.
+That supremum is the number we name $\sqrt{2}$. The following proof closes the two
+remaining possibilities, and its shape imitates the earlier lemma with $q$ replaced by
+a real number.
+
+\begin{teorema}[Existence of root two]\index{square root of two}
+There is exactly one $s>0$ with $s^2=2$.
+\end{teorema}
+
+\begin{proof}
+Let $E=\{t\in\mathbb{R}: t>0,\ t^2<2\}$. This set is nonempty because $1\in E$, and it
+is bounded above by $2$: if $t>2$ then $t^2>4>2$, so $t\notin E$. By the
+least-upper-bound property, $s=\sup E$ exists, and $s\ge 1>0$ because $1\in E$.
+
+Suppose $s^2<2$. Take $h=\frac12\min\{1,(2-s^2)/(2s+1)\}$. Then $0<h<1$ and
+$h(2s+1)<2-s^2$: if the first value is the minimum, $h=\frac12$ and
+$\frac12(2s+1)\le\frac12(2-s^2)<2-s^2$; if the second is, $h(2s+1)=\frac12(2-s^2)$.
+Since $h<1$, we have $h^2<h$, so
+\[
+(s+h)^2=s^2+2sh+h^2<s^2+h(2s+1)<s^2+(2-s^2)=2 .
+\]
+Hence $s+h\in E$ although $s+h>s$, contradicting that $s$ is an upper bound of $E$.
+Therefore $s^2\ge 2$.
+
+Suppose $s^2>2$. Take $k=(s^2-2)/(2s)>0$; then $k<s$ because $s^2-2<2s^2$. For every
+$t\in E$ with $t\ge s-k$ we have
+\[
+t^2\ge(s-k)^2=s^2-2sk+k^2>s^2-2sk=2,
+\]
+so $t\notin E$. Hence $s-k$ is an upper bound of $E$ smaller than $s$, contradicting
+that $s$ is the least upper bound. Since $s^2<2$ and $s^2>2$ are both impossible,
+$s^2=2$.
+
+Uniqueness: if $s,t>0$ and $s^2=t^2=2$, then $(s-t)(s+t)=0$. Since $s+t>0$, $s=t$.
+\end{proof}
+
+The number $s$ is irrational, by the parity argument above: the hole in $\mathbb{Q}$ is
+real, and $\mathbb{R}$ closes it with exactly one number. What closes it is not order
+and not the field laws, but completeness. The opening program fails not from lack of
+precision, but because its number system does not contain the object it is looking for.
+
+One thing must be stated honestly: we have not built $\mathbb{R}$ from $\mathbb{Q}$, we
+have only assumed that $\mathbb{R}$ satisfies three groups of axioms. The construction
+is known. Dedekind cuts $\mathbb{Q}$ in two: a \emph{cut} is a subset
+$\alpha\subset\mathbb{Q}$ that is nonempty, not all of $\mathbb{Q}$, closed downward,
+and without a largest member. That last property is exactly our lemma above. Cantor
+uses equivalence classes of rational Cauchy sequences; both appeared in 1872. The
+details are in the Appendix to Chapter 1 of Rudin.
+
+That construction explains the standing of decimals. For $x>0$, take $n_0$ the largest
+integer with $n_0\le x$, then $n_1$ the largest digit with $n_0+n_1/10\le x$, then
+$n_2$ with $n_0+n_1/10+n_2/100\le x$, and so on. That cut is bounded above by $x$, so
+its supremum exists and equals $x$. A decimal is not the raw material of the real
+numbers but a way of naming a supremum; completeness guarantees that the name exists,
+not that the name can be written with fractions.
+
+\kamus{completeness axiom}{aksioma kelengkapan}{The promise that the number line has no
+holes: every collection that is bounded above always has a lowest roof.}
+
+The existence of $\sqrt2$ makes the computational problem sensible: $s$ can be
+computed without knowing its digits in advance. Newton's iteration,
+$x_{k+1}=\frac12(x_k+2/x_k)$, stays rational when $x_k$ is rational, so the whole
+process runs inside $\mathbb{Q}$. From $s^2=2$ we get
+\[
+x_{k+1}-s=\frac{(x_k-s)^2}{2x_k},\qquad e_{k+1}=e_k^2\cdot\frac{s}{2x_k},
+\]
+with $e_k=|x_k-s|/s$. The right side of the first form is nonnegative, so every step
+stays above $s$; there the factor $\frac{s}{2x_k}$ does not exceed $1/2$, so
+$e_{k+1}\le e_k^2/2$ and the number of correct digits roughly doubles at each step.
+
+One warning: we have not proved that $x_k\to s$. That needs the tools of Chapter 4.
+What can be said now: since $e_1<0.061$, from $e_{k+1}\le e_k^2/2$ one can derive
+$e_k\le 2^{-(2^k-1)}$ for $k\ge 1$, and that is enough to design an honest numerical
+test.
+
+\section{Intervals, accumulation points, and open sets}
+\tingkat{advanced}
+
+With the supremum in hand, we can name the pieces of the number line, like the finish
+rules of a race: the line is the same, only whether the line itself counts differs.
+Those names are used again in Chapter 11 and Chapter 13, so we take only what we need
+without building a topology in full.
+
+An interval is a piece of the line with no holes. The following definition writes the
+nine possible forms; all are determined by two endpoints and by the decision whether
+each endpoint counts.
+
+\begin{definisi}[Interval]
+Let $a<b$ be real numbers. The set $(a,b)=\{x: a<x<b\}$ is called an open interval,
+$[a,b]=\{x: a\le x\le b\}$ a closed interval, and $[a,b)$, $(a,b]$ are mixed forms. The
+sets $(a,\infty)=\{x: x>a\}$, $[a,\infty)$, $(-\infty,b)$,
+$(-\infty,b]$, and $\mathbb{R}$ itself are called unbounded intervals. All nine forms
+are called intervals.
+\end{definisi}
+
+The feature that marks them all: if two points lie in the interval, the whole segment
+between them lies there too, so intervals are called hole-free. The list above is not
+proved complete; the classification only inspects upper bound, lower bound, and whether
+that bound is included. The notion of a point being ``near'' is expressed by a
+neighborhood, that is, a small open interval around one point.
+
+\begin{definisi}[Neighborhood, interior point, open, closed]\index{open set}\index{closed set}\index{accumulation point}
+For $\varepsilon>0$, the neighborhood of a point $x$ is
+$V_\varepsilon(x)=(x-\varepsilon,x+\varepsilon)$. A point $x$ is called an interior
+point of $S\subseteq\mathbb{R}$ if $V_\varepsilon(x)\subseteq S$ for some
+$\varepsilon>0$; $S$ is called open if every member is an interior point. A point $x$ is
+called an accumulation point of $S$ if every $V_\varepsilon(x)$ contains a member of
+$S$ different from $x$. A set $S$ is called closed if its complement is open.
+\end{definisi}
+
+A few examples organize the intuition. The interval $(0,1)$ is open and not closed,
+because every neighborhood of $0$ meets it. The interval $[0,1]$ is closed and not open,
+while $[0,1)$ is neither. The set $\mathbb{Q}$ is also neither, because every
+neighborhood contains rationals and irrationals. The set $\{1/n:n\in\mathbb{N}\}$ is not
+closed: $0$ lies in its complement, but every neighborhood of $0$ contains some $1/n$.
+The set $\mathbb{Z}$ is closed, because its complement is the union of the open
+intervals $(k,k+1)$.
+
+So ``closed'' is not the negation of ``open'': $\mathbb{R}$ and $\varnothing$ are both
+open and closed at once, and the complement of an open set is always closed. The density
+of $\mathbb{Q}$ makes these examples sharper. Every neighborhood contains rationals and
+irrationals, so no point is an interior point of $\mathbb{Q}$ or of its complement: that
+set is dense and hole-ridden everywhere at once. Completeness therefore cannot be
+replaced by density.
+
+A neighborhood is itself open, and that is what makes the definition of an interior
+point reusable.
+
+\begin{proposisi}
+(i) Every neighborhood $V_\varepsilon(x)$ is open. (ii) The union of an arbitrary
+family of open sets is open. (iii) The intersection of finitely many open sets is open.
+\end{proposisi}
+
+\begin{proof}
+(i) Take $y\in V_\varepsilon(x)$, so $|y-x|<\varepsilon$. Set
+$\delta=\varepsilon-|y-x|>0$. For every $z\in V_\delta(y)$,
+$|z-x|\le|z-y|+|y-x|<\delta+|y-x|=\varepsilon$ by the triangle inequality. Hence
+$V_\delta(y)\subseteq V_\varepsilon(x)$.
+
+(ii) If $x$ lies in the union, it lies in one of its members, and since that member is
+open there is a neighborhood of $x$ contained in it, hence also contained in the union.
+
+(iii) If $x$ lies in the finite intersection $S_1\cap\cdots\cap S_n$, then for each $i$
+there is $\varepsilon_i>0$ with $V_{\varepsilon_i}(x)\subseteq S_i$. Take
+$\varepsilon=\min\{\varepsilon_1,\ldots,\varepsilon_n\}>0$. Then $V_\varepsilon(x)$ is
+contained in every $S_i$, hence contained in the intersection.
+\end{proof}
+
+Item (iii) holds only for finite intersections: $\bigcap_n(-1/n,1/n)=\{0\}$ is not open,
+because for $x\neq0$ the Archimedean property gives $n$ with $1/n<|x|$.
+
+\section{Worked examples}
+\tingkat{intermediate}
+
+Three computations promised earlier are carried out here: Newton's iteration, rational
+approximation to error below $10^{-6}$, and a check that $\{q:q^2<2\}$ has no maximum.
+All the numbers are computed with exact fractions.
+
+Starting from $x_0=1$, the iteration $x_{k+1}=(x_k+2/x_k)/2$ gives the following
+fractions; the denominators grow, and that is the price paid for accuracy.
+
+\begin{center}\small
+\begin{tabular}{rlll}
+\hline
+$k$ & $x_k$ & decimal & relative error \\
+\hline
+0 & $1$ & $1$ & $2.92893\times10^{-1}$ \\
+1 & $3/2$ & $1.5$ & $6.06602\times10^{-2}$ \\
+2 & $17/12$ & $1.41666666667$ & $1.73461\times10^{-3}$ \\
+3 & $577/408$ & $1.41421568627$ & $1.50183\times10^{-6}$ \\
+4 & $665857/470832$ & $1.41421356237$ & $1.12774\times10^{-12}$ \\
+5 & $886731088897/627013566048$ & $1.41421356237$ & $6.35896\times10^{-25}$ \\
+\hline
+\end{tabular}
+\end{center}
+
+The relative error is measured against $\sqrt{2}=1.414213562373095\ldots$. The reduction
+factor climbs by itself: from step 0 to 1 about $4.8$, then $35$, $1155$, and
+$1.3\times10^{6}$ --- that is the signature of squaring. The ratio $e_{k+1}/e_k^2$ takes
+the values $0.7071$, $0.4714$, $0.4991$, $0.49999925$, and $0.5$, in agreement with the
+formula $e_{k+1}=e_k^2\cdot\frac{s}{2x_k}$ because $x_k$ approaches $s$ from above. At
+steps 4 and 5 the decimals agree to eleven digits; the next digits do not appear because
+we print twelve significant digits, not because the error stops falling. The fraction at
+step 5 has twelve digits with error $6.36\times10^{-25}$, and one additional digit
+demands roughly one more step.
+
+The second method uses rational approximations that spend denominators more
+economically, namely the continued fraction of $\sqrt2$:
+\[
+1,\quad \frac32,\quad \frac75,\quad \frac{17}{12},\quad \frac{41}{29},\quad \ldots
+\]
+with $p_{k+1}=p_k+2q_k$ and $q_{k+1}=p_k+q_k$ starting from $(p_0,q_0)=(1,1)$. The
+following table lists their absolute errors.
+
+\begin{center}\small
+\begin{tabular}{rlll}
+\hline
+$p/q$ & decimal & absolute error & $p^2-2q^2$ \\
+\hline
+$1/1$ & $1$ & $4.14214\times10^{-1}$ & $-1$ \\
+$3/2$ & $1.5$ & $8.57864\times10^{-2}$ & $1$ \\
+$7/5$ & $1.4$ & $1.42136\times10^{-2}$ & $-1$ \\
+$17/12$ & $1.41666666667$ & $2.45310\times10^{-3}$ & $1$ \\
+$41/29$ & $1.41379310345$ & $4.20459\times10^{-4}$ & $-1$ \\
+$99/70$ & $1.41428571429$ & $7.21519\times10^{-5}$ & $1$ \\
+$239/169$ & $1.41420118343$ & $1.23789\times10^{-5}$ & $-1$ \\
+$577/408$ & $1.41421568627$ & $2.12390\times10^{-6}$ & $1$ \\
+$1393/985$ & $1.41421319797$ & $3.64404\times10^{-7}$ & $-1$ \\
+$3363/2378$ & $1.41421362489$ & $6.25218\times10^{-8}$ & $1$ \\
+\hline
+\end{tabular}
+\end{center}
+
+The first approximation whose error is below $10^{-6}$ is $1393/985$ with error
+$3.64\times10^{-7}$; the one before it, $577/408$, is still $2.12\times10^{-6}$. The last
+column explains why: since $p^2-2q^2=\pm1$,
+\[
+\left|\frac pq-\sqrt2\right|
+=\frac{|p^2-2q^2|}{q^2\left(\frac pq+\sqrt2\right)}
+<\frac{1}{2\sqrt2\,q^2},
+\]
+so the error falls like the inverse square of the denominator. For $q=985$ that bound is
+$3.644\times10^{-7}$ and the true error is $3.64404\times10^{-7}$: almost exactly,
+because $\frac pq$ is already very close to $\sqrt2$. The denominator 985 is far smaller
+than $627013566048$ at Newton step 5, although its error is only about a million times
+larger --- that is the difference between a method chasing quadratic error and one
+chasing the smallest rational error.
+
+Figure~\ref{fig:tangga-akar} displays that error column as a descending staircase. The
+sign of $p^2-2q^2$ alternates, so the fractions jump from below to above root two, and
+the ratio of two successive errors approaches $5.8284=(1+\sqrt2)^2$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=1.02cm,y=1cm,font=\small]
+  \foreach \lv in {1,...,7}{
+    \draw[layergrey!20] (0.55,\lv) -- (10.75,\lv);
+    \node[layergrey,anchor=east,font=\scriptsize] at (0.45,\lv) {$10^{-\lv}$};
+  }
+  \node[layergrey,anchor=east,font=\scriptsize] at (0.45,0) {$10^{0}$};
+  \draw[-{Latex[length=2mm]},ink,thick] (0.55,0) -- (10.95,0);
+  \draw[-{Latex[length=2mm]},ink,thick] (0.55,0) -- (0.55,7.85);
+  \foreach \k/\lab in {%
+    1/{$1/1$},2/{$3/2$},3/{$7/5$},4/{$17/12$},5/{$41/29$},
+    6/{$99/70$},7/{$239/169$},8/{$577/408$},9/{$1393/985$},10/{$3363/2378$}}{
+    \draw[ink] (\k,0.07) -- (\k,-0.07);
+    \node[rotate=32,anchor=north east,font=\scriptsize,layergrey] at (\k,-0.12) {\lab};
+  }
+  \foreach \k/\v in {1/0.3828,3/1.8473,5/3.3763,7/4.9073,9/6.4384}{
+    \fill[accent] (\k,\v) circle (1.8pt);
+  }
+  \foreach \k/\v in {2/1.0666,4/2.6103,6/4.1418,8/5.6729,10/7.2040}{
+    \fill[layerteal] (\k,\v) circle (1.8pt);
+  }
+  \draw[layergrey,dashed,thick] (0.55,6) -- (10.75,6);
+  \node[layergrey,font=\scriptsize,anchor=south east] at (10.7,6.02) {threshold $10^{-6}$};
+  \fill[accent] (0.95,7.55) circle (1.8pt);
+  \node[right,font=\scriptsize] at (1.05,7.55) {below $\sqrt2$};
+  \fill[layerteal] (4.35,7.55) circle (1.8pt);
+  \node[right,font=\scriptsize] at (4.45,7.55) {above $\sqrt2$};
+  \node[font=\scriptsize,anchor=north] at (5.7,-1.18) {successive fractions};
+  \node[font=\scriptsize,rotate=90,anchor=south] at (-0.35,3.9) {$|p/q-\sqrt2|$};
+\end{tikzpicture}
+\caption{A staircase of rational approximations: the error $|p/q-\sqrt2|$ for ten
+successive fractions, logarithmic scale. The $10^{-6}$ threshold is first crossed by
+$1393/985$, with error $3.644\times10^{-7}$; after that each step falls by a factor of
+$5.8284$.}
+\label{fig:tangga-akar}
+\end{figure}
+
+The third check concerns the absence of a maximum. One more step from the previous $q$
+gives
+\[
+q'=\frac{149856914148961}{105964844887080}=1.41421349985133266\ldots,
+\]
+and its square is still below two. Both numbers are rational, both lie in $A$, and each
+is larger than the one before: there is no reason for this process to stop.
+
+\begin{tantangan}
+Consider $S=\{q\in\mathbb{Q}: q\ge 0,\ q^2\le 2\}$. At first glance this set has a
+largest member: the number whose square is exactly two, since the sign $\le$ seems to
+include that bound in the set. Prove that $S$ has no maximum, then determine $\sup S$ in
+$\mathbb{R}$ and explain why the answer is not a member of $S$.
+
+Hint 1: members of $S$ must be rational. First check whether your candidate for largest
+is even allowed to be a member of the set.
+
+Hint 2: for every $q\in S$ with $q>0$ we have $q^2<2$ strictly, because $q^2=2$ is
+impossible for a rational. So the shift lemma $h=(2-q^2)/(2q+2)$ applies and produces a
+larger member of $S$; the unattainable bound is $\sqrt2$.
+
+If you get stuck, go back to the section ``Why the rational numbers are not enough'' and
+to the lemma on shifting.
+\end{tantangan}
+
+Finally, the Archimedean property in numbers. For $\varepsilon=10^{-6}$ we need
+$n>10^{6}$. At $n=10^{6}$ the reciprocal is exactly $10^{-6}$, which is not less than
+$\varepsilon$; at $n=10^{6}+1$ the reciprocal is $9.99999\times10^{-7}$, which does
+qualify. One unit in $n$ decides whether the choice is legitimate, and that is why
+strict inequalities must be respected.
+
+\kertas{For $x=1393/985$, compute $h=(2-x^2)/(2x+2)$ and check by hand that
+$(x+h)^2<2$. Then compute the relative error $|x-\sqrt2|/\sqrt2$ and compare it with
+$1/(2\sqrt2\,x^2)$. Explain why the two are almost equal, and why that fact does not
+contradict the absence of a maximum in $A$.}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+The following code runs with Python 3 and \texttt{mpmath} for high-precision
+arithmetic; Newton's iteration uses \texttt{Fraction}, so there is no rounding before
+printing.
+
+\begin{lab}
+\begin{verbatim}
+from fractions import Fraction as F
+import mpmath as mp
+mp.mp.dps = 40
+root2 = mp.sqrt(2)
+
+print("Newton for root two, x0 = 1")
+x = F(1)
+for k in range(6):
+    v = mp.mpf(x.numerator) / x.denominator
+    print(k, f"{x.numerator}/{x.denominator}", mp.nstr(v, 12),
+          mp.nstr(abs(v - root2) / root2, 6))
+    x = (x + F(2) / x) / 2
+
+print()
+print("Successive rational approximations, error < 1e-6 ?")
+p, q = 1, 1
+for k in range(10):
+    v = mp.mpf(p) / q
+    print(f"{p}/{q}", mp.nstr(v, 12), mp.nstr(abs(v - root2), 6),
+          abs(v - root2) < mp.mpf(10) ** -6)
+    p, q = p + 2 * q, p + q
+
+print()
+print("Test: {rational q : q^2 < 2} has no maximum")
+q = F(1393, 985)
+for k in range(2):
+    h = (2 - q * q) / (2 * q + 2)
+    q = q + h
+    print(q, mp.nstr(mp.mpf(q.numerator) / q.denominator, 18), q * q < 2)
+\end{verbatim}
+\end{lab}
+
+The output obtained, verbatim:
+
+\begin{verbatim}
+Newton for root two, x0 = 1
+0 1/1 1.0 0.292893
+1 3/2 1.5 0.0606602
+2 17/12 1.41666666667 0.00173461
+3 577/408 1.41421568627 1.50183e-6
+4 665857/470832 1.41421356237 1.12774e-12
+5 886731088897/627013566048 1.41421356237 6.35896e-25
+
+Successive rational approximations, error < 1e-6 ?
+1/1 1.0 0.414214 False
+3/2 1.5 0.0857864 False
+7/5 1.4 0.0142136 False
+17/12 1.41666666667 0.0024531 False
+41/29 1.41379310345 0.000420459 False
+99/70 1.41428571429 7.21519e-5 False
+239/169 1.41420118343 1.23789e-5 False
+577/408 1.41421568627 2.1239e-6 False
+1393/985 1.41421319797 3.64404e-7 True
+3363/2378 1.41421362489 6.25218e-8 True
+
+Test: {rational q : q^2 < 2} has no maximum
+6625109/4684660 1.41421341143220639 True
+149856914148961/105964844887080 1.41421349985133266 True
+\end{verbatim}
+
+Three things are readable from that output. The Newton error stops being printed at
+twelve digits at step 4, even though the true value still falls to $6.4\times10^{-25}$:
+what limits it is the print width, not the mathematics. The $10^{-6}$ threshold is
+crossed exactly at $1393/985$, where the column of \texttt{True} begins. Both numbers in
+the maximum test are also \texttt{True}: both are rational and both have squares below
+two.
+
+That code proves nothing. It checks that the formulas in this chapter give the numbers
+stated and that the direction of the inequalities is right; the proofs remain in the
+lemmas and theorems. Program output is data, not argument.
+
+\begin{untukdosen}
+The teaching order I suggest: the root-finding program in the opening, then the field
+axioms with $0\cdot x=0$ proved on the board, then order, absolute value, and
+completeness. Do not postpone completeness; the entire content of the chapter depends on
+it.
+
+Two misconceptions appear often. First, students think a supremum must be a member of
+the set, so they reject $\sup\{1-1/n\}=1$. Second, students think completeness can be
+proved from the field and order laws, whereas $\mathbb{Q}$ satisfies both and fails
+completeness. Both disappear once students see those two examples side by side.
+
+A blackboard activity that works: each student takes $q=1.4$, computes
+$h=(2-q^2)/(2q+2)$ and checks $(q+h)^2<2$; the differing results are precisely what
+shows the formula works for every $q$. A readiness signal: students can explain why $A$
+has no maximum without computing.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+\item The real numbers rest on three groups of axioms: field, order, completeness.
+      The first gives algebra, the second comparison, the third closes the holes.
+\item From the field laws we derive $0\cdot x=0$, $(-x)y=-(xy)$, and the absence of
+      zero divisors.
+\item From the order laws we derive the sign rules, including nonnegative squares and
+      $1>0$.
+\item Absolute value turns distance into inequality: $|x|\le c$ is equivalent to
+      $-c\le x\le c$, and $|x+y|\le|x|+|y|$.
+\item Completeness guarantees a supremum for every nonempty set that is bounded above,
+      and then yields the Archimedean property and the density of $\mathbb{Q}$.
+\item $\mathbb{Q}$ satisfies the field and order laws but is not complete:
+      $\{q: q^2<2\}$ has no maximum; in $\mathbb{R}$ its supremum is $\sqrt{2}$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Prove that in an ordered field, $a<b$ is equivalent to $-b<-a$, and conclude
+        that multiplying an inequality by $-1$ reverses its direction.
+  \item Prove $a<\frac{a+b}{2}<b$ for $a<b$, then explain why that result does not
+        require completeness whereas $\sup\{q:q^2<2\}$ does.
+  \item Compute $\sup$ and $\inf$ of the set $S=\{2-1/n : n\in\mathbb{N}\}$, then check
+        both conditions of the definition. Also determine whether $S$ has a maximum.
+  \item Assess this claim: ``Since every positive number is greater than $1/n$ for some
+        $n$, there is no smallest positive real number.'' True, false, or not yet
+        proved? Name the part that the proof supports.
+  \item With $h=(2-q^2)/(2q+2)$, compute $q+h$ for $q=1$ and $q=7/5$, then check that
+        both still lie in $A=\{q\in\mathbb{Q}:q^2<2\}$. Compare the sizes of the
+        increases.
+  \item Show that if $|x|\le 2$ and $|y|\le 2$ then
+        $|x^3-y^3|\le 12\,|x-y|$, and say where the triangle inequality is used.
+  \item Prove that if $S$ is open then its complement is closed, and conversely, using
+        the definition of a neighborhood.
+  \item Compute five steps of Newton's iteration for $\sqrt{3}$ starting from $x_0=2$,
+        and report the relative error at each step. Check whether the ratio
+        $e_{k+1}/e_k^2$ approaches $1/2$.
+  \item Show $\bigcap_{n=1}^{\infty}(-1/n,1/n)=\{0\}$ and explain why that does not
+        contradict the closedness of finite intersections.
+  \item Prove that between any two real numbers there is always an irrational number.
+\end{enumerate}
+
+\noindent\textbf{Hints.} Item 4: the claim contains two different statements, one about
+every $\varepsilon$ and one about the existence of a minimum. Item 8: use
+$e_{k+1}=e_k^2\cdot\frac{\sqrt3}{2x_k}$ and $x_k\ge\sqrt3$. Item 10: apply the density
+of $\mathbb{Q}$ to $x/\sqrt2$ and $y/\sqrt2$, then multiply back.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is genuinely proved: the completeness axiom does not follow from the field and
+order laws, because $\mathbb{Q}$ satisfies both and fails the third. The existence of a
+complete ordered field is proved by Rudin via Dedekind cuts, and there it is also stated
+without proof that any two complete ordered fields are isomorphic; that claim is not
+used here.
+
+Primary sources: Rudin, \emph{Principles of Mathematical Analysis}, Chapter 1
+(Definition 1.12, Proposition 1.18, Theorems 1.19--1.21, the Appendix on cuts); Abbott,
+\emph{Understanding Analysis}, Chapter 1 (The Axiom of Completeness and its
+consequences).
+
+What remains open: the effective content of Newton's iteration. Without an explicit
+initial bound, $e_{k+1}\le e_k^2/2$ does not yet give a step count; that requires
+Chapter 4 and, for general functions, Kantorovich theory. The chapter's scope: topology
+only as far as intervals and neighborhoods, and $\mathbb{R}$ assumed rather than built.
+\end{untukpeneliti}
+
+\peta{Chapter 3 in Rudin, \emph{Principles of Mathematical Analysis}: Chapter 1 (Ordered
+Sets, Fields, The Real Field, The Least-Upper-Bound Property, the Archimedean property,
+density of $\mathbb{Q}$, existence of $n$-th roots, Appendix on Dedekind cuts). In
+Abbott, \emph{Understanding Analysis}: Chapter 1 (The Axiom of Completeness and
+Consequences of Completeness); open sets and accumulation points from Chapter 3, not
+developed here.}

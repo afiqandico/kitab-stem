@@ -1,0 +1,965 @@
+\chapter[Kriptografi: Modular sampai Kuantum]{Kriptografi: Bilangan Bulat Modular sampai Ancaman Kuantum}
+
+Seorang mahasiswa mengumpulkan tugas berisi sandi buatan sendiri. Setiap huruf diganti nomornya,
+nomor itu dikalikan tiga, lalu sisanya dibagi dua puluh enam dipakai sebagai huruf baru. Untuk
+membuka pesan, ia mengalikan lagi dengan sembilan. Ketika ditanya dari mana angka sembilan itu,
+jawabannya hampir benar: ``karena membagi tidak ada di sini, saya mengalikan dengan
+kebalikannya.'' Penguji lalu mengganti pengali tiga dengan pengali empat. Tugas itu tidak pernah
+selesai. Pada pengali empat, huruf pertama dan huruf keempat belas menghasilkan simbol yang
+sama, sehingga dua pesan berbeda menghasilkan sandi identik.
+
+Pertanyaan yang muncul dari kegagalan itu adalah pertanyaan seluruh bab ini: kapan sebuah
+bilangan boleh dibagi di dalam aritmetika sisa? Jawabannya pendek: tepat ketika bilangan itu
+tidak berbagi faktor dengan modulusnya. Jawaban pendek itu, ditekan terus, menghasilkan tiga hal
+yang dipakai setiap peramban: pertukaran kunci, kunci publik, dan tanda tangan digital.
+
+Tiga bab sebelumnya dipakai secara eksplisit. Bab 2 memberi bahasa untuk bijeksi dan partisi;
+di sini bijeksi membuktikan bahwa perkalian dengan unit hanya mengacak urutan, dan partisi
+menghitung orde. Bab 3 memberi sifat kelengkapan bilangan real, dan sifat itu tidak menyeberang,
+karena $\mathbb{Z}_n$ tidak punya urutan yang cocok dengan perkalian; yang menggantikannya
+adalah keterhinggaan, sebab pada himpunan berhingga pemetaan injektif otomatis surjektif. Bab 28
+menjelaskan mengapa ``aman'' tidak bisa menjadi teorema tanpa syarat.
+
+Satu peringatan berlaku untuk seluruh halaman. Semua modulus di sini kecil, dipilih agar bisa
+diperiksa dengan tangan dan Python dalam hitungan detik. Modulus terbesar, $1\,050\,589$,
+difaktorkan skrip enam baris. Tidak ada satu pun sandi di sini yang aman dipakai.
+
+\begin{untukanak}
+Bayangkan jam dinding di ruang kelas. Jarumnya bergerak dari angka satu sampai dua belas, lalu
+kembali ke satu. Jam itu tidak pernah menunjukkan angka tiga belas atau dua puluh. Kalau kita
+memutar jarum lima langkah, lalu lima langkah lagi, lalu lima langkah lagi, kita tidak perlu
+tahu berapa lima ditambah lima ditambah lima; kita cukup melihat di mana jarum berhenti.
+
+Sekarang bayangkan kunci kombinasi dengan tiga belas posisi. Kita boleh memutar sejauh berapa
+pun, dan yang tercatat hanya posisi terakhir. Kalau kita memutar tiga langkah, berapa kali
+kita harus memutar tiga langkah lagi supaya kembali ke tempat semula? Jawabannya sembilan, dan
+itu bukan kebetulan, melainkan karena tiga dan tiga belas tidak punya faktor bersama. Coba hal
+yang sama dengan empat langkah pada kunci dua belas posisi: berapa pun kali kita memutar, kita
+tidak akan pernah mendarat di semua posisi, karena empat dan dua belas punya faktor bersama.
+
+Di bab ini kita akan tahu mengapa perbedaan kecil itu menentukan apakah sebuah pesan bisa
+dibuka kembali atau hilang selamanya, dan mengapa dua orang yang belum pernah bertemu bisa
+menyepakati satu angka rahasia di depan orang ketiga yang mendengar semuanya.
+\end{untukanak}
+
+\section{Kelas sisa: aritmetika yang berputar}
+\tingkat{dasar}
+
+Kita mulai dengan membakukan gagasan ``sisa'' yang sudah dipakai di paragraf pertama.
+\index{aritmetika modular}
+Dua bilangan bulat disebut kongruen modulo $n$ bila selisihnya habis dibagi $n$.
+
+\begin{definisi}
+Misalkan $n\ge1$ bilangan bulat. Untuk $a,b\in\mathbb{Z}$ kita tulis $a\equiv b\pmod{n}$
+bila $n$ membagi $a-b$. Himpunan kelas ekuivalensi di bawah relasi ini disebut
+$\mathbb{Z}_n$, dan kelas yang memuat $a$ ditulis $[a]_n$.
+\end{definisi}
+
+Kita berutang dua hal: bahwa ini benar-benar relasi ekuivalensi, dan bahwa sisanya tunggal.
+
+\begin{lemma}
+Kongruensi modulo $n$ adalah relasi ekuivalensi pada $\mathbb{Z}$, dan setiap kelas
+$[a]_n$ memuat tepat satu wakil pada $\{0,1,\dots,n-1\}$, sehingga $|\mathbb{Z}_n|=n$.
+\end{lemma}
+
+\begin{proof}
+Refleksif: $n$ membagi $0$. Simetris: bila $n\mid(a-b)$ maka $n\mid(b-a)$. Transitif: bila
+$n\mid(a-b)$ dan $n\mid(b-c)$ maka $n\mid(a-c)$ karena $(a-c)=(a-b)+(b-c)$. Untuk
+ketunggalan, ambil $a$ dan tinjau $S=\{a-qn\ge0: q\in\mathbb{Z}\}$. Himpunan itu tidak kosong
+menurut sifat Archimedes (Bab 3), jadi punya anggota terkecil $r$. Bila $r\ge n$ maka
+$r-n\in S$ lebih kecil dari $r$, kontradiksi; jadi $0\le r<n$. Bila $r'$ juga memenuhi
+$0\le r'<n$, maka $r-r'$ kelipatan $n$ yang nilainya di antara $-(n-1)$ dan $n-1$, sehingga
+harus nol.
+\end{proof}
+
+Operasi pada $\mathbb{Z}_n$ didefinisikan lewat wakilnya, dan definisi semacam ini berbahaya:
+bila hasilnya bergantung pada wakil, operasinya bukan fungsi. Lemma berikut menutup lubang itu
+dengan satu baris aljabar.
+
+\begin{lemma}
+Bila $a\equiv a'$ dan $b\equiv b'$ modulo $n$, maka $a+b\equiv a'+b'$ dan $ab\equiv a'b'$
+modulo $n$.
+\end{lemma}
+
+\begin{proof}
+Tulis $a'=a+kn$ dan $b'=b+ln$. Maka $a'+b'=(a+b)+(k+l)n$ dan $a'b'=ab+(al+bk+kln)n$.
+\end{proof}
+
+Penjumlahan dan perkalian karena itu terdefinisi baik, dan keduanya mewarisi asosiatif serta
+distributif dari $\mathbb{Z}$. Yang hilang adalah urutan: tidak ada cara memberi tanda
+``$<$'' pada $\mathbb{Z}_n$ sehingga $a<b$ berakibat $a+c<b+c$ dan $ac<bc$ untuk $c$ positif.
+Alat supremum Bab 3 berhenti di pintu masuk, dan yang bekerja di dalam adalah pencacahan.
+
+Pembagian belum tentu ada. Kelas $[3]_{26}$ punya kebalikan, yaitu $[9]_{26}$, sebab
+$3\cdot9=27\equiv1$. Kelas $[2]_{26}$ tidak punya: setiap kelipatan dua genap, sedangkan
+$27$ ganjil, jadi $2b\equiv1$ tidak punya penyelesaian. Akibatnya perkalian dengan dua mod dua
+puluh enam bukan bijeksi, karena $[0]$ dan $[13]$ keduanya menuju $[0]$.
+
+\kamus{kelas sisa}{residue class}{semua bilangan yang berhenti di posisi jam yang sama,
+seperti pukul tiga pagi dan pukul tiga sore}
+
+\begin{definisi}
+Kelas $[a]_n$ disebut unit bila ada $[b]_n$ dengan $[a]_n[b]_n=[1]_n$. Himpunan semua unit
+modulo $n$ ditulis $U(n)$, dan banyak anggotanya ditulis $\varphi(n)$.
+\end{definisi}
+
+Untuk $n=26$ ada dua belas unit, yaitu kelas dari $1,3,5,7,9,11,15,17,19,21,23,25$. Program di
+lab menghitungnya ulang; angka itu muncul lagi di bagian tiga dengan nama berbeda.
+
+\section{Faktor persekutuan, Euklid, dan kapan pembagian ada}
+\tingkat{dasar}
+
+\index{faktor persekutuan terbesar}
+Pertanyaan ``kapan $[a]_n$ punya kebalikan'' ternyata pertanyaan tentang faktor persekutuan
+terbesar, yang punya algoritme berumur lebih dari dua ribu tahun.
+
+\begin{definisi}
+Untuk $a,b\in\mathbb{Z}$ yang tidak keduanya nol, $\gcd(a,b)$ adalah bilangan asli terbesar
+yang membagi $a$ dan $b$.
+\end{definisi}
+
+Kunci algoritme Euklid adalah satu kesamaan himpunan: pembagi bersama $a$ dan $b$ sama persis
+dengan pembagi bersama $b$ dan $a-qb$.
+
+\begin{lemma}
+Untuk setiap $q\in\mathbb{Z}$, $\gcd(a,b)=\gcd(b,a-qb)$.
+\end{lemma}
+
+\begin{proof}
+Bila $d$ membagi $a$ dan $b$, maka $d$ membagi $a-qb$. Sebaliknya bila $d$ membagi $b$ dan
+$a-qb$, maka $d$ membagi $(a-qb)+qb=a$. Jadi kedua pasangan punya himpunan pembagi bersama
+yang sama, sehingga pembagi terbesarnya sama.
+\end{proof}
+
+Menukar $(a,b)$ menjadi $(b,a\bmod b)$ karena itu tidak mengubah jawaban tetapi mengecilkan
+$b$, dan prosesnya berhenti karena bilangan asli tidak mengecil tanpa batas.
+
+\begin{teorema}[Bezout]
+Untuk $a,b$ yang tidak keduanya nol, ada $x,y\in\mathbb{Z}$ dengan $ax+by=\gcd(a,b)$.
+\end{teorema}
+
+\begin{proof}
+Tinjau $S=\{ax+by>0: x,y\in\mathbb{Z}\}$. Himpunan ini tidak kosong karena memuat $|a|$ atau
+$|b|$, dan setiap himpunan bagian tak kosong dari bilangan asli punya anggota terkecil; inilah
+bentuk diskret dari sifat infimum di Bab 3. Misalkan $d=ax_0+by_0$ anggota terkecil itu.
+Bagilah $a$ oleh $d$: $a=qd+r$ dengan $0\le r<d$. Maka $r=a(1-qx_0)+b(-qy_0)$, jadi $r\in S$
+bila $r>0$. Karena $d$ terkecil, $r>0$ mustahil; jadi $r=0$ dan $d\mid a$, dan dengan cara
+sama $d\mid b$. Jadi $d\le\gcd(a,b)$. Sebaliknya $\gcd(a,b)$ membagi setiap bentuk $ax+by$,
+khususnya $d$, sehingga $\gcd(a,b)\le d$.
+\end{proof}
+
+\begin{teorema}
+Kelas $[a]_n$ adalah unit jika dan hanya jika $\gcd(a,n)=1$.
+\end{teorema}
+
+\begin{proof}
+Bila $[a]_n$ unit, ada $b$ dengan $ab\equiv1$, yaitu $ab-1=kn$. Setiap pembagi bersama $a$ dan
+$n$ membagi $ab$ dan $kn$, jadi membagi $1$; maka $\gcd(a,n)=1$. Sebaliknya, bila
+$\gcd(a,n)=1$, teorema Bezout memberi $ax+ny=1$. Dibaca modulo $n$, kesamaan itu berbunyi
+$ax\equiv1$, jadi $[x]_n$ kebalikan $[a]_n$.
+\end{proof}
+
+Bukti itu sekaligus memberi resep: jalankan Euklid, lalu susun ulang mundur. Untuk $a=1071$ dan
+$b=462$ langkahnya tiga pembagian,
+\[
+1071=2\cdot462+147,\qquad 462=3\cdot147+21,\qquad 147=7\cdot21+0,
+\]
+sehingga $\gcd=21$. Menyusun mundur memberi $21=1071\cdot(-3)+462\cdot7$, dan karena faktor
+persekutuannya $21$ bukan $1$, kelas $[462]_{1071}$ bukan unit.
+
+Berapa lama algoritme ini bekerja? Setiap dua langkah sisa setidaknya terbagi dua, jadi jumlah
+pembagian sebanding dengan jumlah digit. Batas tajam diberikan Lame pada 1844: tidak lebih dari
+$\log_\phi(b)+1$ pembagian dengan $\phi=(1+\sqrt5)/2$, dan yang mencapainya adalah pasangan
+Fibonacci berurutan. Pasangan $(F_{47},F_{46})=(2\,971\,215\,073,\ 1\,836\,311\,903)$ butuh
+$45$ pembagian, sedangkan $\log_\phi(F_{46})=44{,}33$. Untuk dua ribu pasangan acak tiga puluh
+dua bit, rata-ratanya $18{,}75$ dengan maksimum $32$.
+
+\kamus{invers modular}{modular inverse}{angka yang bila dikalikan dengan bilangan asal
+menghasilkan sisa satu, seperti tombol ``batalkan'' pada mesin kasir}
+
+\section{Fermat kecil dan Euler}
+\tingkat{menengah}
+
+Bab ini butuh satu fakta tentang pangkat, dan fakta itu lahir dari pencacahan: kalikan semua
+unit dengan satu unit tetap; hasilnya daftar yang sama dengan urutan berbeda.
+
+\begin{lemma}
+Bila $\gcd(a,n)=1$, pemetaan $[x]_n\mapsto[ax]_n$ adalah bijeksi dari $U(n)$ ke $U(n)$.
+\end{lemma}
+
+\begin{proof}
+Hasilnya berada di $U(n)$ karena hasilkali dua unit adalah unit: bila $xx'\equiv1$ dan
+$yy'\equiv1$ maka $(xy)(x'y')\equiv1$. Pemetaannya injektif: bila $ax\equiv ay$, kalikan kedua
+ruas dengan kebalikan $a$ yang ada menurut teorema unit di bagian dua. Himpunannya berhingga,
+dan pada himpunan berhingga pemetaan injektif dari himpunan ke dirinya sendiri otomatis
+surjektif (Bab 2). Jadi ia bijeksi.
+\end{proof}
+
+\begin{teorema}[Euler]
+Bila $\gcd(a,n)=1$, maka $a^{\varphi(n)}\equiv1\pmod n$.
+\end{teorema}
+
+\begin{proof}
+Misalkan $u_1,\dots,u_k$ semua unit modulo $n$, dengan $k=\varphi(n)$, dan $P=u_1\cdots u_k$.
+Menurut lemma di atas, daftar $au_1,\dots,au_k$ memuat setiap unit tepat sekali, jadi
+\[
+a^kP\equiv(au_1)(au_2)\cdots(au_k)\equiv u_1u_2\cdots u_k=P\pmod n .
+\]
+Karena $P$ sendiri unit, ia punya kebalikan, dan kedua ruas boleh dikalikan dengannya.
+Hasilnya $a^k\equiv1$.
+\end{proof}
+
+\begin{akibat}[Fermat kecil]
+Bila $p$ prima dan $p\nmid a$, maka $a^{p-1}\equiv1\pmod p$. Untuk semua $a$ berlaku
+$a^p\equiv a\pmod p$.
+\end{akibat}
+
+Bentuk kedua mengikuti yang pertama: bila $p\mid a$ kedua ruas nol, bila tidak, kalikan
+$a^{p-1}\equiv1$ dengan $a$. Nama ``kecil'' membedakannya dari teorema terakhir Fermat, yang jauh lebih sulit.
+
+Angka dua belas dari bagian pertama kini punya dua nama: $\varphi(26)=12$, dan
+$3^{12}\equiv1\pmod{26}$; program memeriksa bahwa $5^{12}$ dan $7^{12}$ juga $\equiv1$.
+Pangkat besar karena itu bisa dipangkas: untuk $7^{222}\bmod13$ tulis $222=12\cdot18+6$,
+sehingga $7^{222}\equiv7^6\equiv9\cdot10\equiv12$ karena $7^2\equiv10$ dan $7^4\equiv9$.
+
+Kebalikannya tidak berlaku, dan itu penting untuk kejujuran bab ini. Bilangan $561=3\cdot11\cdot17$
+bukan prima, tetapi $a^{560}\equiv1\pmod{561}$ untuk setiap $a$ yang tidak berbagi faktor
+dengannya; program memeriksa seluruh $a$ tanpa menemukan penyangkal. Bilangan semacam ini
+disebut Carmichael, dan karena itu uji keprimaan praktis memakai Miller--Rabin.
+
+\kamus{fungsi phi}{Euler totient function}{banyaknya posisi pada kunci kombinasi yang bisa
+mencapai seluruh posisi lain, yaitu posisi yang tidak berbagi faktor dengan jumlah posisi}
+
+\section{Grup siklik, orde, dan akar primitif}
+\tingkat{menengah}
+
+Kalau kita mengalikan satu unit berulang kali, hasilnya berputar dan akhirnya kembali ke satu.
+Pertanyaan yang berguna adalah berapa lama putaran itu.
+
+\begin{definisi}
+Untuk $\gcd(a,n)=1$, orde $a$ modulo $n$ adalah bilangan asli terkecil $k$ dengan
+$a^k\equiv1\pmod n$, ditulis $\operatorname{ord}_n(a)$.
+\end{definisi}
+
+Orde selalu ada: barisan $a^0,a^1,\dots$ hanya punya $\varphi(n)$ nilai berbeda, jadi dua di
+antaranya sama dan $a^{i-j}\equiv1$ untuk suatu $i>j$. Batas itu bisa dipertajam: orde membagi
+$\varphi(n)$.
+
+\begin{lemma}
+Bila $\gcd(a,n)=1$, maka $\operatorname{ord}_n(a)$ membagi $\varphi(n)$.
+\end{lemma}
+
+\begin{proof}
+Misalkan $k=\operatorname{ord}_n(a)$ dan $H=\{a^0,\dots,a^{k-1}\}$, yang anggotanya berbeda
+semua, jadi $|H|=k$. Untuk setiap unit $x$, himpunan $xH=\{xa^0,\dots,xa^{k-1}\}$ juga punya
+$k$ anggota, karena perkalian dengan unit adalah bijeksi. Himpunan-himpunan $xH$ membentuk
+partisi dari $U(n)$: dua di antaranya sama atau lepas, sebab $xH$ dan $yH$ beririsan bila dan
+hanya bila $y^{-1}x\in H$ (Bab 2). Jadi $\varphi(n)$ adalah $k$ dikalikan banyaknya bagian.
+\end{proof}
+
+\begin{definisi}
+Bila $\operatorname{ord}_n(g)=\varphi(n)$, maka $g$ disebut akar primitif modulo $n$. Untuk
+unit $h$, bilangan $k$ dengan $g^k\equiv h$ disebut logaritma diskret $h$ terhadap basis $g$.
+\end{definisi}
+
+Modulo $13$, $2,6,7,11$ berorde penuh $12$ dan karena itu akar primitif, sedangkan $3$ dan $9$
+berorde $3$, $5$ dan $8$ berorde $4$, $4$ dan $10$ berorde $6$, dan $12$ berorde $2$. Semua
+angka itu membagi $12$.
+
+Bagi $2$, putarannya mengunjungi keduabelas kelas bukan nol sebelum kembali:
+$2,4,8,3,6,12$, lalu $11,9,5,10,7,1$. Gambar~\ref{fig:jam} menampilkannya sebagai jam tiga
+belas posisi. Bagi $3$, putarannya hanya $3,9,1$ lalu berulang.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\foreach \k in {0,...,12}
+  \node[circle,draw,inner sep=1pt,minimum size=6mm,font=\scriptsize] (n\k)
+    at ({90-360*\k/13}:2.1cm) {\k};
+\node[font=\footnotesize,align=center] at (0,0) {kalikan\\ dengan 2};
+\foreach \a/\b in {1/2,2/4,4/8,8/3,3/6,6/12,12/11,11/9,9/5,5/10,10/7,7/1}
+  \draw[-{Latex[length=1.5mm]},semithick] (n\a) to[bend left=18] (n\b);
+\end{tikzpicture}
+\caption{Perkalian dengan $2$ modulo $13$ berputar melalui keduabelas kelas bukan nol
+sebelum kembali ke $1$. Panjang putaran itulah orde, dan orde penuh berarti $2$ akar
+primitif modulo $13$.}
+\label{fig:jam}
+\end{figure}
+
+Keberadaan akar primitif untuk setiap prima $p$ adalah teorema Gauss, dan buktinya kami
+lewati. Yang perlu dibawa: untuk prima $p$, unit adalah satu putaran berisi $p-1$ posisi, dan
+setiap unit adalah pangkat dari satu akar primitif. Bila $h=g^k$, mengetahui $k$ berarti
+mengetahui $h$, tetapi tidak sebaliknya; asimetri itu bahan mentah kriptografi kunci publik.
+
+\kamus{akar primitif}{primitive root}{satu posisi awal yang, bila diputar terus, melewati
+semua posisi lain sebelum kembali}
+
+\section{Pertukaran kunci Diffie-Hellman}
+\tingkat{menengah}
+
+\index{diffie-hellman}
+Dua orang ingin menyepakati satu angka rahasia, dan satu-satunya saluran yang mereka punya
+didengar pihak ketiga. Pada 1976 Diffie dan Hellman menunjukkan bahwa hal itu mungkin, dan
+mekanismenya hanya memakai dua rumus.
+
+Mereka sepakat lebih dulu pada prima $p$ dan akar primitif $g$ modulo $p$; keduanya boleh
+diumumkan. Alice memilih $a$ rahasia dan mengirim $A=g^a\bmod p$. Bob memilih $b$ rahasia dan
+mengirim $B=g^b\bmod p$. Alice menghitung $K=B^a\bmod p$, Bob menghitung $K=A^b\bmod p$.
+Keduanya memperoleh angka yang sama, karena
+\[
+B^a\equiv(g^b)^a\equiv g^{ab}\equiv(g^a)^b\equiv A^b\pmod p .
+\]
+Yang dilihat penyadap hanyalah $p,g,A,B$. Untuk memperoleh $K$ ia perlu $g^{ab}$, dan cara
+termudah yang diketahui adalah menemukan $a$ atau $b$, yaitu menyelesaikan logaritma diskret.
+
+\begin{bacakeras}
+Bacakan sebagai dialog dua suara, bergantian, satu baris satu tarikan napas.
+
+Suara pertama: ``Sepakat dulu, umumkan dua.''
+Suara kedua: ``Simpan sendiri, jangan disebut.''
+Suara pertama: ``Pangkatkan, bagi sisa, kirim hasilnya.''
+Suara kedua: ``Terima kiriman, pangkatkan lagi.''
+Suara pertama: ``Sisa terakhir, itulah kuncinya.''
+Bersama: ``Dua arah, satu angka, tidak pernah lewat.''
+
+Ulangi tiga kali, makin cepat. Baris yang membuat lidah tersendat adalah langkah yang belum
+dipahami, bukan baris yang perlu dihapal lebih keras. Sesudah lancar, tutup buku dan sebutkan
+empat hal berurutan: yang diumumkan, yang disimpan, yang dikirim, yang dihitung. Menyebut angka
+rahasia lebih dulu membatalkan seluruh permainan.
+
+Baris yang diulang tiga kali dengan suara keras: ``yang dikirim hasil pangkat, yang disimpan
+pangkatnya.''
+\end{bacakeras}
+
+Angka konkretnya, seluruhnya diperiksa program di bagian lab: $p=10\,007$, $g=5$ berorde
+$10\,006$ sehingga akar primitif, $a=1234$, $b=5678$. Maka $A=5^{1234}\bmod p=4873$ dan
+$B=5^{5678}\bmod p=3189$. Alice menghitung $3189^{1234}\bmod p=5674$; Bob menghitung
+$4873^{5678}\bmod p=5674$. Kunci bersama mereka $5674$, dan angka itu tidak pernah melintasi
+saluran. Gambar~\ref{fig:dh} menampilkan alurnya beserta apa yang didengar penyadap.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize,
+  kotak/.style={draw,rounded corners=2pt,align=left,inner sep=4pt,text width=4.4cm}]
+\node[kotak] (a) {\textbf{Alice}\\ $a=1234$ rahasia\\ $A=5^{1234}\bmod p=4873$};
+\node[kotak,right=3.4cm of a] (b) {\textbf{Bob}\\ $b=5678$ rahasia\\
+  $B=5^{5678}\bmod p=3189$};
+\node[kotak,below=1.3cm of $(a)!0.5!(b)$, text width=9.2cm, fill=black!4]
+  (e) {\textbf{Penyadap} mendengar $p=10\,007$, $g=5$, $A=4873$, $B=3189$, lalu bermaksud
+  menghitung $K=A^{b}$ atau $K=B^{a}$; untuk itu ia harus menemukan $a$ atau $b$.};
+\draw[-{Latex}] ([yshift=3mm]a.east) -- node[above,font=\scriptsize]{$A$}
+  ([yshift=3mm]b.west);
+\draw[-{Latex}] ([yshift=-3mm]b.west) -- node[below,font=\scriptsize]{$B$}
+  ([yshift=-3mm]a.east);
+\draw[-{Latex},dashed] (e.north -| a.south) -- (a.south);
+\draw[-{Latex},dashed] (e.north -| b.south) -- (b.south);
+\end{tikzpicture}
+\caption{Alur pertukaran kunci Diffie-Hellman pada contoh angka di teks. Nilai $A$ dan $B$
+melintasi saluran terbuka; yang tidak melintas adalah eksponen $a$ dan $b$, dan justru
+keduanya yang dibutuhkan penyadap.}
+\label{fig:dh}
+\end{figure}
+
+Kesamaan itu hanya menyatakan protokolnya konsisten, bukan aman. Yang bisa dibuktikan hanyalah
+pernyataan bersyarat: bila logaritma diskret modulo $p$ sulit, menghitung $g^{ab}$ dari $A$
+dan $B$ juga sulit. Syarat itu bukan teorema; ada grup tempat logaritma diskret mudah, jadi
+keamanannya sifat kelompok tertentu.
+
+\begin{tangan}
+Bahan: cat air kuning, satu warna rahasia per orang (merah dan biru), empat gelas plastik,
+satu sendok, dua lembar kertas putih.
+
+Langkah pertama, di depan meja: tuang satu sendok cat kuning ke gelas masing-masing. Kuning itu
+peran prima dan basis, dan keduanya diumumkan. Langkah kedua, di balik punggung: tiap orang
+menambahkan dua sendok warna rahasianya, mengaduk, lalu menyerahkan gelas campurannya. Langkah
+ketiga: masing-masing menambahkan dua sendok warna rahasianya sendiri ke gelas yang baru
+diterima, mengaduk, lalu menotolkan satu tetes ke kertas.
+
+Yang harus terlihat: dua totolan itu sewarna, padahal tidak satu pun dari kedua orang itu
+pernah menyerahkan warna rahasianya. Gelas campuran pertama yang dipegang orang ketiga tidak
+bisa dipisah kembali; ia hanya melihat dua warna kusam yang berbeda.
+\end{tangan}
+
+Dua jebakan parameter layak disebut. Pertama, $g$ harus membangkitkan subkelompok besar berorde
+prima: modulus $10\,007$ adalah prima aman dengan $p-1=2\cdot5003$, dan program mencatat bahwa
+$5^{5003}\bmod p=10\,006$ berorde hanya $2$. Bila Alice memakai basis itu, kunci bersamanya
+hanya bernilai $1$ atau $10\,006$, dan penyadap tidak perlu menghitung logaritma apa pun.
+Kedua, protokol ini tidak menyebut identitas siapa pun, sehingga penyadap bisa berdiri di tengah
+dan membaca semuanya. Gambar~\ref{fig:dh} hanya menggambarkan penyadap pasif.
+
+Tentang ukuran: modulus $10\,007$ bisa dibobol dalam waktu kurang dari satu detik oleh
+algoritme indeks kalkulus, dan kita memakainya karena hasil pangkatnya muat di satu halaman.
+Praktik nyata memakai $2048$ bit atau lebih, dan itu pun batas waktu, bukan jaminan.
+
+\begin{untukanak}
+Bayangkan dua orang yang ingin menyepakati satu warna rahasia, padahal semua percakapan mereka
+didengar. Mereka sepakat lebih dulu pada satu warna dasar, misalnya kuning. Alice memilih warna
+rahasianya, mencampurnya dengan kuning, lalu mengirim hasil campurannya. Bob melakukan hal yang
+sama dengan warna rahasianya sendiri. Sekarang masing-masing mencampur warna yang diterimanya
+dengan warna rahasianya sendiri. Keduanya mendapat warna yang sama, dan penyadap hanya melihat
+dua campuran yang tidak bisa dipisah kembali.
+
+Pemisahan itulah yang dianggap sulit: mencampur warna gampang, memisahkan satu campuran tanpa
+salah satu asalnya dianggap tidak. Kriptografi mengganti warna menjadi angka dan ``dianggap
+tidak gampang'' menjadi kalimat matematika.
+
+Di bab ini kita akan tahu bagaimana angka menggantikan warna, dan mengapa keamanannya
+bergantung pada satu kalimat ``dianggap'' yang tidak pernah dibuktikan siapa pun.
+\end{untukanak}
+
+\section{RSA: dari kunci ke pesan dan kembali}
+\tingkat{menengah}
+
+\index{rsa}
+Diffie-Hellman menyepakati kunci, tetapi tidak mengirim pesan. Setahun kemudian Rivest,
+Shamir, dan Adleman menunjukkan bahwa sifat yang sama bisa dipakai untuk dua kunci berbeda:
+satu untuk mengunci, satu untuk membuka.
+
+Pilih dua prima besar $p$ dan $q$, hitung $n=pq$ dan $\varphi(n)=(p-1)(q-1)$. Pilih $e$ dengan
+$\gcd(e,\varphi(n))=1$; teorema unit memberi kebalikannya $d$ modulo $\varphi(n)$. Kunci publik
+$(n,e)$, kunci rahasia $d$. Untuk pesan $0\le m<n$, sandinya $c=m^e\bmod n$ dan pembukaannya
+$m=c^d\bmod n$.
+
+Mengapa pembukaan mengembalikan $m$? Karena $ed=1+k\varphi(n)$, sehingga
+$c^d=m^{ed}=m\,(m^{\varphi(n)})^k$. Bila $\gcd(m,n)=1$, teorema Euler membuat kurung itu satu.
+Kasus sisanya menjelaskan mengapa $n$ harus hasilkali dua prima berbeda.
+
+\begin{teorema}
+Misalkan $n=pq$ dengan $p,q$ prima berbeda, $ed\equiv1\pmod{(p-1)(q-1)}$, dan $0\le m<n$.
+Maka $m^{ed}\equiv m\pmod n$.
+\end{teorema}
+
+\begin{proof}
+Bila $p\nmid m$, Fermat kecil memberi $m^{p-1}\equiv1\pmod p$, sehingga
+$m^{ed}=m\,(m^{p-1})^{k(q-1)}\equiv m\pmod p$. Bila $p\mid m$, kedua ruas kongruen nol modulo
+$p$. Jadi kesamaan berlaku modulo $p$ untuk setiap $m$, dan dengan alasan sama modulo $q$.
+Karena $p$ dan $q$ keduanya membagi $m^{ed}-m$ dan $\gcd(p,q)=1$, hasilkali keduanya juga
+membagi bilangan itu: bila $m^{ed}-m=pt$ dan $q\mid pt$ dengan $q$ prima serta $q\nmid p$,
+maka $q\mid t$, jadi $pq\mid m^{ed}-m$.
+\end{proof}
+
+Contoh angkanya kecil dan seluruhnya diperiksa program. Ambil $p=1019$, $q=1031$, maka
+$n=1\,050\,589$ dan $\varphi(n)=1018\cdot1030=1\,048\,540$. Pilih $e=65\,537$; Euklid memberi
+$d=60\,493$, dan memang $65\,537\cdot60\,493=3\,964\,529\,741=1+3781\cdot1\,048\,540$. Pesan
+$m=424\,242$ menghasilkan sandi $c=552\,241$, dan $c^d\bmod n$ kembali $424\,242$. Modulus itu hanya dua puluh satu bit dan difaktorkan skrip enam baris.
+
+RSA polos, rumus di atas tanpa tambahan apa pun, tidak aman; tiga alasannya bisa ditunjukkan
+dengan modulus yang sama. Pertama, ia deterministik: pesan yang sama selalu menghasilkan sandi
+yang sama, sehingga pesan berulang bisa dikenali. Kedua, ia multiplikatif:
+$E(m_1)E(m_2)\equiv E(m_1m_2)$, dan program memperlihatkan
+$E(1234)\cdot E(567)\bmod n=551\,173$ dibuka menjadi $699\,678$, tepat $1234\cdot567$. Ketiga,
+pesan kecil tidak terlindungi: dengan $e=3$ dan $m=42$, sandinya $74\,088$, kebetulan sama
+dengan $42^3$ karena hasilnya belum melewati $n$, sehingga akar pangkat tiga biasa memulihkan
+pesan.
+
+Ketiganya ditutup dengan bantalan: pesan diberi tambahan acak sebelum dipangkatkan, sehingga
+hasilnya panjang penuh, selalu berbeda, dan tidak lagi multiplikatif. RSA-OAEP, standar yang
+dipakai hari ini, punya bukti keamanan terhadap serangan chosen-ciphertext dalam model oracle
+acak dengan asumsi RSA berlaku. Dalam praktik RSA membungkus kunci simetris $256$ bit lalu data
+dienkripsi dengan AES; pola ini disebut enkripsi hibrida, karena RSA lambat: waktunya
+sebanding pangkat tiga panjang modulus.
+
+\kamus{bantalan}{padding}{isi tambahan yang dimasukkan ke dalam paket sebelum dikirim,
+seperti bubble wrap yang membuat setiap paket berbeda bentuk dan ukuran}
+
+\section{Fungsi hash, MAC, dan tanda tangan}
+\tingkat{menengah}
+
+\index{fungsi hash}
+Enkripsi menyembunyikan isi. Kadang yang dibutuhkan bukan menyembunyikan, melainkan meringkas:
+satu sidik jari pendek yang berubah bila isinya berubah.
+
+\begin{definisi}
+Fungsi hash kriptografis memetakan pesan sepanjang apa pun ke keluaran berukuran tetap. Ia
+harus tahan pra-gambar (dari $h$, sulit menemukan $m$ dengan $H(m)=h$), tahan pra-gambar
+kedua (dari $m$, sulit menemukan $m'\neq m$ dengan $H(m')=H(m)$), dan tahan tabrakan (sulit
+menemukan sepasang $m,m'$ berbeda dengan hash sama).
+\end{definisi}
+
+Ketiga sifat itu tidak setara; yang paling lemah paling sering disalahpahami. Ketahanan
+tabrakan dibatasi ulang tahun: bila keluaran punya $N$ nilai, tabrakan muncul setelah kira-kira
+$1{,}177\sqrt N$ percobaan, bukan setelah $N$; untuk $128$ bit angka itu $2{,}17\cdot10^{19}$
+dan untuk $64$ bit $5{,}06\cdot10^{9}$. Program di lab menguji ramalan itu pada SHA-256 yang
+dipotong menjadi $16$ bit: rata-rata $362{,}7$ sampel melawan ramalan $320{,}8$, dengan sebaran
+dari $100$ sampai $743$. Jadi hash berkeluaran $n$ bit hanya memberi ketahanan tabrakan $n/2$
+bit.
+
+MAC menambahkan kunci pada hash: dua pihak yang berbagi kunci dapat memeriksa bahwa pesan
+datang dari pihak lain dan tidak berubah, karena tanpa kunci tidak ada cara menghitung tag yang
+benar. Batasnya: MAC hanya berguna antara dua pihak yang sama-sama memegang kunci, sehingga
+pihak ketiga tidak bisa menjadi saksi.
+
+Tanda tangan memakai pasangan kunci dengan arah terbalik: penandatangan memakai kunci rahasia,
+pemeriksa memakai kunci publik. Pada RSA, tanda tangan atas $m$ adalah $s=H(m)^d\bmod n$, dan
+pemeriksaan membandingkan $s^e\bmod n$ dengan $H(m)$. Keharusan memakai $H$ bukan soal
+kenyamanan: tanpa hash, tanda tangan RSA bersifat multiplikatif seperti enkripsinya,
+sehingga dari tanda tangan dua dokumen seseorang bisa menyusun tanda tangan sah untuk hasilkali
+keduanya tanpa memiliki kunci rahasia. Hash memutus sifat itu, karena $H(m_1m_2)$ tidak
+berhubungan dengan $H(m_1)H(m_2)$. Syarat keamanannya adalah ketahanan terhadap pemalsuan
+eksistensial di bawah serangan pesan terpilih, dan sekali lagi itu asumsi.
+
+\kamus{tanda tangan digital}{digital signature}{cap lilin pada dokumen yang bisa diperiksa
+siapa saja tetapi hanya bisa dibuat oleh pemegang cetakannya}
+
+\section{Apa yang sebenarnya diasumsikan model keamanan}
+\tingkat{lanjut}
+
+Setiap kalimat ``sulit'' di bab ini adalah janji tentang apa yang tidak bisa dilakukan
+algoritme yang dikenal, bukan pernyataan tentang apa yang mustahil.
+
+\begin{definisi}
+Fungsi $f$ disebut satu arah bila ada algoritme polinomial untuk menghitung $f(x)$ dari $x$,
+tetapi untuk $y$ acak di daerah hasil, setiap algoritme polinomial gagal menemukan $x$ dengan
+$f(x)=y$ kecuali dengan peluang yang dapat diabaikan.
+\end{definisi}
+
+Arahnya digambarkan pada Gambar~\ref{fig:tangga-satu-arah}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small,
+  kotak/.style={draw,rounded corners=2pt,align=center,inner sep=5pt,
+    minimum height=0.95cm}]
+  \node[kotak,draw=layerbrown] (pq) at (0,0) {$p$, $q$ prima acak};
+  \node[kotak,draw=ink] (n) at (4.0,0) {$n=p\,q$};
+  \node[kotak,draw=layergrey,dashed] (s) at (8.2,0) {penyerang};
+  \draw[-{Latex},very thick,layerjade] (pq) -- (n);
+  \node[font=\scriptsize,layerjade,above] at (2.0,0.06)
+    {kalikan: mudah, polinomial};
+  \draw[-{Latex},thick,layergrey] (n) -- (s);
+  \node[font=\scriptsize,layergrey,above] at (6.1,0.06) {melihat $n$};
+  \draw[layerplum,thick,dashed] (n.south) -- (4.0,-1.35);
+  \draw[layerplum,thick,dashed] (0,-1.35) -- (pq.south);
+  \draw[-{Latex},layerplum,thick,dashed] (4.0,-1.35) -- (0,-1.35);
+  \draw[layerplum,very thick] (1.86,-1.12)--(1.86,-1.58);
+  \draw[layerplum,very thick] (2.04,-1.12)--(2.04,-1.58);
+  \node[font=\scriptsize,layerplum,below] at (2.0,-1.62)
+    {faktorkan: sulit, tidak ada algoritme polinomial yang dikenal};
+\end{tikzpicture}
+\caption{Dua arah yang tidak sama mahal. Dari $p$ dan $q$ ke $n$ cukup satu
+perkalian, sedangkan dari $n$ kembali ke $p$ dan $q$ adalah masalah yang sampai
+hari ini tidak punya algoritme polinomial yang dikenal; selisih itulah yang
+dipakai RSA dan Diffie-Hellman. Palang pada panah balik menandai arah yang
+diandaikan tertutup, bukan arah yang sudah terbukti mustahil.}
+\label{fig:tangga-satu-arah}
+\end{figure}
+
+Definisi itu tidak menyebut satu fungsi pun, dan itu bukan kelalaian. Sampai hari ini tidak ada
+bukti bahwa fungsi satu arah ada; keberadaannya akan berakibat $P\neq NP$, yang juga masih
+terbuka. Kriptografi kunci publik karena itu berdiri di atas konjektur, dan rantainya berakhir di
+asumsi yang tidak berubah menjadi teorema karena dipakai lama.
+
+\index{asumsi faktorisasi}
+Asumsi faktorisasi mengatakan: untuk $n$ hasilkali dua prima acak berukuran $k$ bit, tidak ada
+algoritme polinomial dalam $k$ untuk memfaktorkannya. Algoritme terbaik yang diketahui,
+penyaringan medan bilangan, berjalan dalam waktu $L_n[1/3,1{,}923]$, yang tumbuh
+subeksponensial. Bilangan RSA-250, sepanjang $250$ digit atau sekitar $829$ bit, difaktorkan
+pada 2020 dengan biaya sekitar $2\,700$ core-tahun.
+
+Padanan kekuatan yang dicatat NIST dalam SP 800-57 berguna sebagai peta kasar.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Kekuatan (bit) & Modulus RSA atau DH (bit) & Sandi simetris \\
+\midrule
+112 & 2048 & 3DES tiga kunci \\
+128 & 3072 & AES-128 \\
+192 & 7680 & AES-192 \\
+256 & 15360 & AES-256 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Angka kolom tengah adalah taksiran biaya algoritme terbaik saat tabel disusun, jadi tabel
+semacam ini punya tanggal kedaluwarsa.
+
+Model keamanan formal menutup celah retorika dengan permainan: penantang membangkitkan kunci,
+menjawab permintaan enkripsi, lalu memilih dua pesan dan mengirimkan enkripsi salah satunya;
+skema aman bila penyerang tidak bisa menebak yang mana jauh di atas peluang setengah. Keamanan
+dibuktikan sebagai reduksi: penyerang yang menang diubah menjadi algoritme pemfaktor $n$,
+sehingga seluruh keraguan pindah ke satu tempat yang sempit tetapi tidak hilang.
+
+\section{Shor, dan apa yang runtuh bersamanya}
+\tingkat{lanjut}
+
+\index{algoritma shor}
+Seluruh bangunan di atas bergantung pada satu kesulitan, dan pada 1994 Peter Shor menunjukkan
+bahwa komputer kuantum menyelesaikannya dalam waktu polinomial.
+
+Gagasannya terbagi dua, dan bagian pertama klasik sepenuhnya. Untuk memfaktorkan $n$, pilih $a$
+dengan $\gcd(a,n)=1$ dan hitung $r=\operatorname{ord}_n(a)$. Bila $r$ ganjil, ulangi dengan $a$
+lain. Bila $r$ genap dan $a^{r/2}\not\equiv-1\pmod n$, maka $\gcd(a^{r/2}-1,n)$ adalah faktor
+tak sejati dari $n$: karena $a^r\equiv1$, bilangan $a^{r/2}$ adalah akar kuadrat dari satu
+yang bukan $\pm1$, dan akar semacam itu hanya muncul bila modulusnya terbagi. Sisa pekerjaannya
+mencari orde, dan inilah bagian yang kuantum.
+
+Bagian klasik saja tidak cukup. Untuk $n=1019\cdot1031$ kami mencoba $2\,996$ unit acak dan
+hanya $319$, sekitar $10{,}6$ persen, memenuhi syarat sehingga memberi faktor; keberhasilan
+karena itu hasil pengulangan dengan $a$ berbeda. Yang hilang tanpa komputer kuantum adalah cara
+cepat menemukan $r$: tidak ada algoritme klasik yang diketahui berjalan polinomial dalam
+$\log n$.
+
+Komputer kuantum mencari $r$ dengan transformasi Fourier kuantum, dan di situlah percepatannya
+berasal. Akibatnya bukan hanya RSA yang runtuh: algoritme Shor juga menyelesaikan logaritma
+diskret, baik pada $\mathbb{Z}_p$ maupun pada kurva eliptik, sehingga Diffie-Hellman, DSA, ECDH, dan ECDSA ikut runtuh, termasuk kurva eliptik yang modulusnya paling
+pendek karena kebal terhadap indeks kalkulus.
+
+Yang tidak runtuh adalah sandi simetris dan fungsi hash. Grover memberi percepatan kuadratik
+pada pencarian kunci, sehingga AES-128 turun dari $2^{128}$ menjadi sekitar $2^{64}$ operasi
+kuantum, sedangkan AES-256 tetap di sekitar $2^{128}$; ketahanan tabrakan hash praktis tidak
+berubah. Jawaban untuk data simetris karena itu sederhana: pakai kunci dua kali lebih panjang.
+
+Perlu dibedakan dua hal yang sering dicampur dalam berita. Shor membuktikan bahwa faktornya
+bisa dihitung polinomial pada komputer kuantum tanpa galat; membangun mesinnya persoalan
+teknik lain. Taksiran Gidney dan Ekera (2021) menyebut sekitar dua puluh juta qubit fisik dan
+delapan jam untuk modulus $2048$ bit, hampir seluruhnya untuk koreksi galat. Angka itu turun
+beberapa orde besaran dalam satu dekade, tetapi belum ada mesin yang mendekati. Yang berlaku
+sekarang adalah pola ``tangkap sekarang, buka nanti'': pesan hari ini bisa disimpan dan dibuka
+ketika mesinnya ada.
+
+\section{Kriptografi pasca-kuantum: lattice dan Kyber}
+\tingkat{lanjut}
+
+\index{kriptografi pasca-kuantum}
+Bila faktorisasi jatuh, yang dibutuhkan adalah masalah lain yang tidak jatuh bersamanya.
+Kandidat terkuat berasal dari lattice, yaitu himpunan titik yang dibangkitkan kombinasi bilangan
+bulat dari beberapa vektor.
+
+\index{lattice}
+\emph{Learning with errors} menyusun masalahnya begini. Diberikan matriks $A$ acak
+$m\times n$ atas $\mathbb{Z}_q$ dan vektor $b=As+e\bmod q$, dengan $s$ rahasia dan $e$ galat
+kecil, temukan $s$. Tanpa $e$ ini hanya sistem persamaan linear yang diselesaikan eliminasi
+Gauss (Bab 8); dengan $e$ kecil tetapi tidak nol, sistemnya hampir konsisten dan mencari $s$
+dianggap sulit. Reduksi Regev (2005) menambah daya tariknya: menyerang skema acak sama sulitnya
+dengan menyelesaikan kasus terburuk lattice, bukan kasus rata-rata pilihan penyerang.
+
+Kyber, yang dibakukan NIST pada Agustus 2024 sebagai ML-KEM dalam FIPS 203, adalah varian modul
+dari gagasan itu dengan $n=256$, $k=3$, dan $q=3329$. Kunci publiknya $1\,184$ byte dan
+ciphertext-nya $1\,088$ byte, sekitar $37$ dan $34$ kali kunci simetris $32$ byte yang
+dibungkusnya, dan biaya ruang itu nyata. Tanda tangan pasca-kuantum punya cerita serupa:
+ML-DSA (Dilithium) juga berbasis lattice, sedangkan SLH-DSA (SPHINCS+) memilih jalan
+konservatif berbasis hash.
+
+Kejujuran yang wajib di sini: asumsi lattice jauh lebih muda daripada asumsi faktorisasi.
+Faktorisasi diserang sejak Gauss; LWE baru berumur dua puluh tahun, dan sejarah kriptografi
+penuh skema yang tampak kuat lalu patah setelah sepuluh tahun dianalisis. Karena itu transisi
+yang dianjurkan bukan penggantian, melainkan hibrida: kunci sesi dibentuk dari Kyber dan dari
+pertukaran Diffie-Hellman sekaligus.
+
+\section{Ketika keluaran menjadi oracle: padding dan model}
+\tingkat{lanjut}
+
+\index{padding oracle}
+Ada satu keluarga serangan yang tidak menyerang matematikanya, melainkan cara program menjawab.
+Bleichenbacher pada 1998 menunjukkan bahwa RSA dengan bantalan PKCS\#1 v1.5 bisa dibuka
+sepenuhnya bila server menjawab berbeda untuk ``bantalan salah'' dan ``bantalan benar tetapi isi
+salah''. Setiap jawaban membocorkan satu bit tentang pesan, dan dengan beberapa ribu pertanyaan
+pesannya terbaca. Matematika RSA tidak dilanggar; yang dilanggar adalah asumsi bahwa penyerang
+hanya melihat ciphertext.
+
+Pola ancamannya sama dengan yang dibahas Bab 29 dan Bab 30. Model pembelajaran mesin yang
+mengembalikan probabilitas, atau pesan galat yang berbeda-beda, adalah oracle; penyerang yang
+boleh bertanya berkali-kali memakai perbedaan kecil itu untuk menyimpulkan apa yang seharusnya
+tidak ia ketahui, termasuk apakah sebuah contoh ada di data latih. Bab 30 menambahkan
+peringatan yang berlaku di kedua dunia: pengukuran yang tampak membaik belum tentu karena
+pertahanannya bekerja.
+
+Pelajaran defensifnya karena itu sama. Keluaran harus dibuat seragam: satu pesan galat untuk
+semua kegagalan, waktu tanggap yang tidak bergantung pada rahasia, penolakan yang tidak
+membedakan sebab. Untuk model, ini berarti membatasi jumlah kueri dan menyamarkan skor. Semua
+itu mengurangi kebocoran, tidak menghapusnya.
+
+\begin{tantangan}
+Sebuah pustaka memakai AES-GCM dengan kunci $K$ yang sama untuk dua pesan, tetapi penghitung
+nonce-nya ter-reset sehingga nonce $96$ bit yang sama terpakai dua kali. Penyerang memegang
+kedua sandi, kedua tag, dan isi pesan pertama, yaitu halaman login yang tetap. Tunjukkan
+bagaimana ia memperoleh kunci autentikasi $H$, lalu mengapa $H$ cukup untuk memalsukan tag pesan
+buatannya tanpa mengetahui $K$.
+
+Petunjuk 1: nonce yang sama memberi kunci aliran yang sama, sehingga selisih kedua sandi
+menghapus kunci itu.
+
+Petunjuk 2: tag adalah polinomial dalam $H$ dengan koefisien yang diketahui; dua tag dengan
+nonce sama memberi dua persamaan bagi satu $H$, dan selisihnya menjadi polinomial yang akarnya
+dapat dihitung.
+
+Kalau mentok, kembali ke bagian ``Fungsi hash, MAC, dan tanda tangan'' dan baca ulang paragraf
+tentang MAC.
+\end{tantangan}
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Kita hitung satu invers dengan tangan, karena langkah mundurnya adalah tempat kesalahan paling
+sering terjadi. Ambil $\varphi(n)=1\,048\,540$ dari modulus mainan di bagian enam dan
+$e=65\,537$. Euklid maju memberi
+\[
+1\,048\,540=15\cdot65\,537+65\,485,\qquad 65\,537=1\cdot65\,485+52,
+\]
+\[
+65\,485=1259\cdot52+17,\qquad 52=3\cdot17+1,\qquad 17=17\cdot1+0 .
+\]
+Sisa terakhir yang bukan nol adalah $1$, jadi $\gcd=1$ dan inversnya ada. Susun mundur mulai
+dari sisa satu:
+\[
+1=52-3\cdot17=52-3(65\,485-1259\cdot52)=3778\cdot52-3\cdot65\,485 .
+\]
+Lanjutkan dengan $52=65\,537-65\,485$ dan $65\,485=1\,048\,540-15\cdot65\,537$:
+\[
+1=3778\cdot65\,537-3781\cdot65\,485
+=3778\cdot65\,537-3781(1\,048\,540-15\cdot65\,537).
+\]
+Kelompokkan: $1=(3778+15\cdot3781)\cdot65\,537-3781\cdot1\,048\,540
+=60\,493\cdot65\,537-3781\cdot1\,048\,540$. Jadi $d=60\,493$, dan tanda negatifnya hilang
+karena dibaca modulo $\varphi(n)$. Pemeriksaannya satu baris: $65\,537\cdot60\,493
+=3\,964\,529\,741$, sedangkan $3781\cdot1\,048\,540=3\,964\,529\,740$; selisihnya satu.
+
+Dua hitungan lain di bab ini bisa diperiksa dengan cara yang sama: pemangkasan $7^{222}\bmod13$
+di bagian tiga, yang memakai $222=12\cdot18+6$ dan memberi $12$, dan pertukaran kunci kecil
+$p=23$, $g=5$, $a=4$, $b=3$ yang memberi $A=4$, $B=10$, dan kunci $18$ dari kedua arah.
+
+\begin{resep}
+Empat langkah mencari invers $a$ modulo $n$.
+\begin{enumerate}
+  \item Tulis $(a,n)$. Jalankan Euklid: ganti $(a,n)$ dengan $(n,a\bmod n)$ sampai sisanya
+        nol; catat tiap baris $n_0=q\,n_1+r$.
+  \item Sisa bukan nol terakhir adalah $\gcd$. Bila bukan $1$, berhenti; inversnya tidak ada.
+  \item Dari baris terakhir yang bersisa $1$, tulis $1=r-q\,s$, lalu ganti $s$ dan $r$ dengan
+        bentuk baris di atasnya, satu baris ke atas untuk setiap langkah.
+  \item Kumpulkan koefisien $a$; itulah inversnya. Bila negatif, tambahkan $n$ sampai masuk
+        $0,\dots,n-1$, lalu periksa $a\cdot x\bmod n=1$.
+\end{enumerate}
+Peringatan urutan: susun mundur dari sisa terkecil naik ke atas, jangan dari baris pertama.
+Menukar peran $a$ dan $n$ juga mengubah jawaban: invers $a$ modulo $n$ bukan invers $n$
+modulo $a$.
+\end{resep}
+
+\kertas{Ulangi perhitungan pertama tanpa melihat teks. Tulis lima baris Euklid maju untuk
+$65\,537$ dan $1\,048\,540$, lalu susun mundur sampai memperoleh $d$. Periksa dengan
+mengalikan $e$ dan $d$ lalu membaginya dengan $\varphi(n)$: sisanya harus satu. Sesudah itu
+jawab: mengapa langkah yang sama tidak bisa dipakai untuk membuka RSA tanpa kunci rahasia,
+padahal seluruh perhitungan ini hanya butuh lima pembagian?}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Program berikut memakai pustaka standar saja dan berjalan di bawah satu detik. Ia memeriksa
+empat klaim di badan bab: unit modulo $26$, statistik langkah Euklid, kesamaan kunci
+Diffie-Hellman, dan kelonggaran RSA polos. Bagian terakhir menguji ramalan ulang tahun pada
+SHA-256 yang dipotong menjadi dua byte.
+
+\begin{lab}
+\begin{verbatim}
+import hashlib, math, random
+
+def egcd(a, b):
+    if b == 0:
+        return a, 1, 0
+    g, x, y = egcd(b, a % b)
+    return g, y, x - (a // b) * y
+
+def invers(a, n):
+    g, x, _ = egcd(a, n)
+    return None if g != 1 else x % n
+
+def langkah(a, b):
+    k = 0
+    while b:
+        a, b = b, a % b
+        k += 1
+    return k
+
+def orde(a, n):
+    k, y = 1, a % n
+    while y != 1:
+        y = y * a % n
+        k += 1
+    return k
+
+unit = [a for a in range(26) if invers(a, 26) is not None]
+print("unit mod 26:", len(unit), unit)
+print("invers 3 mod 26 =", invers(3, 26), " invers 2 mod 26 =", invers(2, 26))
+
+g0, x0, y0 = egcd(1071, 462)
+print("gcd(1071,462) =", g0, " x,y =", x0, y0, " langkah =", langkah(1071, 462))
+
+p, g, a, b = 10007, 5, 1234, 5678
+A, B = pow(g, a, p), pow(g, b, p)
+print("DH: A =", A, " B =", B, " K =", pow(B, a, p), pow(A, b, p))
+print("orde(5) =", orde(5, p), " orde(5^5003) =", orde(pow(5, 5003, p), p))
+
+random.seed(29)
+L = [langkah(random.getrandbits(32), random.getrandbits(32))
+     for _ in range(20000)]
+print("euklid 32-bit: rata %.3f, maks %d, min %d" % (sum(L) / len(L), max(L), min(L)))
+
+p, q, e = 1019, 1031, 3
+n, phi = p * q, (p - 1) * (q - 1)
+d = invers(e, phi)
+print("RSA: n =", n, " bit =", n.bit_length(), " phi =", phi, " d =", d)
+for m in (424242, 42):
+    c = pow(m, e, n)
+    print("  m =", m, " c =", c, " D(c) =", pow(c, d, n), " m^3 =", m ** 3)
+kali = pow(1234, e, n) * pow(567, e, n) % n
+print("E(1234)E(567) mod n =", kali, " D(kali) =", pow(kali, d, n),
+      " 1234*567 mod n =", 1234 * 567 % n)
+
+def tabrakan():
+    terlihat, k = {}, 0
+    while True:
+        m = random.getrandbits(32)
+        h = hashlib.sha256(m.to_bytes(4, "big")).digest()[:2]
+        k += 1
+        if h in terlihat:
+            return k
+        terlihat[h] = m
+
+T = [tabrakan() for _ in range(20)]
+print("tabrakan 16-bit: rata %.1f, min %d, maks %d" % (sum(T) / 20, min(T), max(T)))
+print("prediksi sqrt(pi/2 * 2^16) =", round(math.sqrt(math.pi / 2 * 2**16), 1))
+\end{verbatim}
+
+Keluarannya, apa adanya:
+
+\begin{verbatim}
+unit mod 26: 12 [1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25]
+invers 3 mod 26 = 9  invers 2 mod 26 = None
+gcd(1071,462) = 21  x,y = -3 7  langkah = 3
+DH: A = 4873  B = 3189  K = 5674 5674
+orde(5) = 10006  orde(5^5003) = 2
+euklid 32-bit: rata 18.750, maks 32, min 6
+RSA: n = 1050589  bit = 21  phi = 1048540  d = 699027
+  m = 424242  c = 618000  D(c) = 424242  m^3 = 76355615883580488
+  m = 42  c = 74088  D(c) = 42  m^3 = 74088
+E(1234)E(567) mod n = 551173  D(kali) = 699678  1234*567 mod n = 699678
+tabrakan 16-bit: rata 362.7, min 100, maks 743
+prediksi sqrt(pi/2 * 2^16) = 320.8
+\end{verbatim}
+\end{lab}
+
+Baris pertama menegaskan bagian pertama: dua belas unit modulo $26$, dengan $1$ dan $25$
+kebalikan dirinya sendiri dan sepuluh sisanya berpasangan; angka $12$ itu sama dengan
+$\varphi(26)$.
+
+Baris kedua dan ketiga memperlihatkan dua wajah Euklid: tiga pembagian untuk $1071$ dan $462$
+dengan koefisien Bezout $(-3,7)$, dan rata-rata $18{,}75$ pembagian dengan maksimum $32$ untuk
+dua ribu pasangan acak $32$ bit. Baris keempat dan kelima adalah pertukaran kunci yang
+dijanjikan: $4873$ dan $3189$ di saluran, $5674$ di kedua ujung, sedangkan $5^{5003}$ berorde
+$2$ dan karena itu jebakan bagian lima.
+
+Tiga baris RSA memperlihatkan dua hal berlawanan. Untuk $m=424\,242$ semuanya bekerja: sandi
+$618\,000$ kembali menjadi $424\,242$. Untuk $m=42$ dengan $e=3$, sandinya $74\,088$, persis
+$42^3$, sehingga tidak ada kunci yang perlu dicari, hanya akar pangkat tiga; baris berikutnya
+menunjukkan sifat multiplikatif: hasil kali dua sandi membuka pesan hasil kali.
+
+Empat baris terakhir menguji ramalan ulang tahun: rata-rata $362{,}7$ sampel melawan ramalan
+$320{,}8$, dengan sebaran lebar seperti yang diharapkan distribusi eksponensial.
+
+\begin{untukdosen}
+Urutan mengajar yang saya sarankan: mulai dari sandi mahasiswa di pembuka, lalu lemma
+keterdefinisian dan teorema unit pada pertemuan pertama; sisakan Diffie-Hellman dan RSA untuk
+pertemuan kedua, dan taruh Shor serta pasca-kuantum sebagai bacaan pertemuan ketiga. Jangan
+mengajarkan Euklid sebelum menanyakan ``kapan pembagian ada''.
+
+Dua miskonsepsi yang hampir selalu muncul. Pertama, mahasiswa mengira $\varphi(n)=n-1$ untuk
+semua $n$, lalu kaget ketika $\varphi(26)=12$; sembuhkan dengan meminta mereka mendaftar unit
+modulo $26$ di papan sebelum rumus apa pun disebut. Kedua, mereka mengira RSA aman karena $n$
+sulit difaktorkan, tanpa menyebut ukuran $n$ dan tanpa menyebut bahwa kesulitan itu asumsi;
+minta mereka menuliskan klaim keamanan dalam bentuk ``bila ... maka ...''.
+
+Aktivitas papan tulis: dua kelompok menghitung $3^{12}\bmod26$, satu dengan perkalian berulang
+dan satu dengan Fermat kecil, lalu bandingkan waktu dan hasilnya. Tanda kesiapan: mereka bisa
+menjelaskan tanpa catatan mengapa $[2]_{26}$ tidak punya kebalikan.
+\end{untukdosen}
+
+\section{Ringkasan}
+\begin{ringkasan}
+\begin{itemize}
+    \item Aritmetika modulo $n$ bekerja pada kelas sisa, dan pembagian hanya ada untuk kelas yang
+        tidak berbagi faktor dengan $n$; Euklid memberi kebalikannya dalam waktu sebanding
+        jumlah digit.
+    \item Lemma pengacakan, yaitu perkalian dengan unit hanyalah pengacakan urutan, memberi
+        teorema Euler dalam lima baris dan Fermat kecil sebagai akibat. Orde membagi
+        $\varphi(n)$, dan akar primitif adalah unsur berorde penuh.
+    \item Diffie-Hellman menyepakati kunci lewat kesamaan $g^{ab}$ dari dua arah, dengan keamanan
+        bersyarat pada kesulitan logaritma diskret; tanpa autentikasi ia jatuh pada serangan
+        orang di tengah.
+    \item RSA membalik arah: kunci publik mengunci, kunci rahasia membuka, dan buktinya memakai
+        Fermat kecil pada kedua faktor prima. RSA polos deterministik, multiplikatif, dan tidak
+        melindungi pesan kecil; bantalan menutup ketiganya.
+    \item Fungsi hash memberi sidik jari, MAC memberi keaslian antara dua pihak yang berbagi
+        kunci, tanda tangan memberi bukti yang bisa diperiksa siapa saja; ketahanan tabrakan
+        hanya separuh panjang keluaran, dan angka $362{,}7$ melawan $320{,}8$ di lab
+        menunjukkan ramalan itu bekerja.
+    \item Semua jaminan di bab ini bersyarat. Shor meruntuhkan RSA dan seluruh logaritma diskret
+        bila komputer kuantum berskala besar ada; sandi simetris dan hash cukup menggandakan
+        panjang kunci, dan skema lattice seperti ML-KEM adalah pengganti yang mungkin.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\begin{latihan}
+\begin{enumerate}
+  \item Nilai klaim ini: ``Karena $2^{100}\equiv1\pmod{101}$, bilangan $101$ terbukti prima.''
+        Tentukan benar, salah, atau belum cukup bukti, dan sebutkan apa yang dibuktikan
+        kongruensi itu.
+  \item Buktikan bahwa hasilkali dua unit modulo $n$ juga unit, lalu simpulkan bahwa $U(n)$
+        tertutup terhadap perkalian; tunjukkan juga bahwa bila $a$ bukan unit, ada $b\neq0$
+        dengan $ab\equiv0\pmod n$.
+  \item Buktikan bahwa untuk prima $p$, $a^2\equiv1\pmod p$ hanya dipenuhi $a\equiv1$ atau
+        $a\equiv-1$; jelaskan mengapa hal yang sama gagal untuk modulus $8$, dan sebutkan
+        semua akar kuadrat dari satu modulo $8$.
+  \item Buktikan $\varphi(pq)=\varphi(p)\varphi(q)$ untuk prima berbeda $p,q$ dengan menghitung
+        kelas $0\le a<pq$ yang berbagi faktor dengan $pq$, lalu periksa pada $p=1019$ dan
+        $q=1031$.
+  \item Hitung $17^{-1}\bmod3120$ dengan Euklid mundur, lalu periksa dengan Python. Ulangi
+        untuk $65\,537^{-1}\bmod1\,048\,540$ dan bandingkan jumlah pembagian keduanya.
+  \item Hitung $5^{100}\bmod101$, $3^{200}\bmod101$, dan $2^{1000}\bmod101$ memakai Fermat
+        kecil, tanpa menghitung pangkat penuh. Periksa ketiganya dengan \texttt{pow(a,k,m)}.
+  \item Pada modulus $23$ dengan basis $5$, Alice memakai $a=7$ dan Bob $b=15$. Hitung $A$,
+        $B$, dan kunci bersama, lalu hitung kunci yang diperoleh penyadap aktif yang mengganti
+        $A$ dengan $11$ di depan Bob, dan jelaskan mengapa dua kunci berbeda muncul.
+  \item Jelaskan mengapa RSA dengan $e=3$ dan pesan $m<n^{1/3}$ bisa dibuka tanpa kunci rahasia,
+        berapa panjang pesan terpanjang yang terkena pada modulus $1\,050\,589$, dan apa yang
+        dilakukan bantalan untuk mencegahnya.
+  \item Nilai klaim ini: ``ML-KEM sudah terbukti aman, jadi kita bisa berhenti memakai RSA
+        sekarang.'' Sebutkan dua hal yang harus benar agar kalimat pertama masuk akal, dan satu
+        alasan mengapa kalimat kedua tetap keliru meski yang pertama benar.
+  \item Sebuah sistem memakai hash berkeluaran $48$ bit. Berapa sampel yang dibutuhkan untuk
+        peluang tabrakan satu per dua, dan berapa bila keluarannya dipotong menjadi $32$ bit?
+\end{enumerate}
+
+Petunjuk untuk tiga butir tersulit. Butir 3: tulis $a^2-1=(a-1)(a+1)$ dan pakai lemma Euklid;
+untuk modulus $8$, cari akar dengan mencoba $a=0,\dots,7$. Butir 7: hitung $11^7\bmod23$
+sebagai kunci yang dilihat Bob, lalu bandingkan dengan $11^{15}\bmod23$ yang dihitung Alice.
+Butir 9: bedakan ``terbukti aman'' dari ``aman terhadap serangan yang diketahui''.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini adalah bagian matematikanya: teorema Bezout, teorema unit,
+teorema Euler, lemma orde, dan teorema RSA semuanya punya bukti lengkap dan tidak bergantung
+pada dugaan. Yang hanya dipopulerkan adalah kata ``aman''. Tidak ada teorema yang menyatakan
+RSA-2048 sulit; yang ada taksiran biaya algoritme terbaik yang diketahui, dan taksiran itu
+berubah setiap kali ada kemajuan kriptanalisis.
+
+Sumber primernya: Diffie dan Hellman (1976), bagian 3--4; Rivest, Shamir, dan Adleman (1978),
+bagian 2--4; Shor (1997), bagian 5 untuk reduksi faktorisasi ke pencarian orde; Regev (2005),
+bagian 3 untuk reduksi LWE; Bleichenbacher (1998); Gidney dan Ekera (2021); FIPS 203 dan 204.
+
+Batas keberlakuan yang perlu disebut: reduksi keamanan biasanya menghasilkan batas longgar,
+model serangan tidak memuat saluran samping, dan serangan padding menunjukkan bahwa selisih satu
+pesan galat cukup meruntuhkan skema yang terbukti aman dalam model. Pertanyaan terbuka: seberapa
+ketat reduksi untuk ML-KEM, apakah ada algoritme kuantum yang lebih cepat untuk masalah lattice,
+dan bagaimana membuktikan keamanan skema yang dipakai bersama data rahasia tanpa membocorkan
+pola akses.
+\end{untukpeneliti}
+
+\peta{Bab 31 pada Diffie dan Hellman (1976), bagian 3 untuk pertukaran kunci; Rivest, Shamir,
+dan Adleman (1978), bagian 2--4 untuk RSA dan tanda tangan; Shor (1997), bagian 5--6 untuk
+reduksi faktorisasi ke pencarian orde; Regev (2005), bagian 3 untuk reduksi LWE; Bleichenbacher
+(1998); Gidney dan Ekera (2021); FIPS 203 dan 204. Pada Bab 2 untuk bijeksi dan partisi, pada
+Bab 3 untuk sifat Archimedes dan bentuk diskret sifat infimum, pada Bab 8 untuk eliminasi
+Gauss, pada Bab 26 untuk alasan klaim keamanan tidak bisa berbentuk teorema tanpa syarat, dan
+pada Bab 29--30 untuk pola ancaman oracle.}

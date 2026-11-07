@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "If you use this book, please cite it as below."
+type: book
+title: "Kenapa Mesin Bisa Salah? Dari Aljabar Linear sampai Keamanan Machine Learning"
+authors:
+  - family-names: "Pangimpian"
+    given-names: "Afiq Andico"
+version: "1.0.0"
+date-released: "2026-11-07"
+license: "CC-BY-4.0"
+repository-code: "https://github.com/afiqandico/kitab-stem"
+language: "id"
+keywords:
+  - "aljabar linear"
+  - "analisis real"
+  - "peluang dan statistika"
+  - "optimasi"
+  - "jaringan saraf"
+  - "adversarial machine learning"
+  - "Lean 4"
+  - "privasi diferensial"
+abstract: >-
+  Buku ajar bertingkat 32 bab yang menghubungkan fondasi matematis (aljabar
+  linear, analisis real, peluang, optimasi) dengan pembelajaran mesin, metode
+  formal Lean 4, adversarial machine learning, keamanan NIDS, kriptografi
+  pasca-kuantum, dan privasi diferensial. Tersedia dalam edisi Indonesia dan
+  Inggris yang setara; seluruh 304 kunci latihan diperiksa ulang dengan
+  perhitungan nyata, dan pemeriksanya disertakan di repositori.
+notes: >-
+  Edisi Inggris: "Why Machines Can Be Wrong: From Linear Algebra to
+  Machine-Learning Security" (First Edition), 638 halaman. Kode MIT.

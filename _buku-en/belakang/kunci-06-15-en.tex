@@ -1,0 +1,584 @@
+% Answer keys for Chapters 6--15. This file is \input directly inside the document.
+% Every number comes from the check scripts in the temporary working directory.
+
+\section*{Chapter 6: Vector Spaces and Subspaces}
+\begin{enumerate}[label=\textbf{6.\arabic*}]
+  \item $W$ is the solution set of the homogeneous system $x-2y+z=0$, $x+y=0$, so it is
+        closed under addition and scalar multiplication. From $x=-y$ and $z=3y$ we get
+        $W=\operatorname{span}\{(-1,1,3)\}$: a one-vector basis, $\dim W=1$.
+
+  \item The set $D=\{A:a_{11}=a_{22}=0\}$ is closed under addition and scalars,
+        because both diagonal entries stay zero. Every one of its members is
+        $\begin{pmatrix}0&b\\c&0\end{pmatrix}=bE_{12}+cE_{21}$, so
+        $\{E_{12},E_{21}\}$ is a basis and $\dim D=2$.
+
+  \item $(1+x)+(1+x^{2})=2+x+x^{2}$: the set is linearly dependent, hence
+        $\dim\operatorname{span}S=2$. The vector $x$ is not in that span, because
+        $a(1+x)+b(1+x^{2})$ demands $a=1$ and $a+b=0$ at the same time. So
+        $\{1+x,\ 1+x^{2},\ x\}$ is a basis of $P_{2}$.
+
+  \item Collect the coefficients: $(c_{1}+c_{3})\mathbf{v}_{1}+(c_{1}+c_{2})
+        \mathbf{v}_{2}+(c_{2}+c_{3})\mathbf{v}_{3}=\mathbf{0}$. Independence of
+        $\{\mathbf{v}_{1},\mathbf{v}_{2},\mathbf{v}_{3}\}$ gives three homogeneous
+        equations with determinant $2\ne0$, so $c_{1}=c_{2}=c_{3}=0$.
+
+  \item $U$ is the $xy$-plane, $W$ is the plane $x=y$. Their intersection is
+        $U\cap W=\operatorname{span}\{(1,1,0)\}$, so $\dim(U\cap W)=1$ and
+        $\dim(U+W)=2+2-1=3$. The formula fits: $U+W=\mathbb{R}^{3}$, and numpy
+        gives the rank of the four spanning vectors together as $3$.
+
+  \item Elimination puts pivots in columns $1,2,4$, so the rank is $3$; a basis of the
+        column space is $(1,2,0)$, $(2,4,1)$, and $(4,9,1)$. Nullity $4-3=1$ with
+        basis $\{(-1,-1,1,0)\}$; \texttt{matrix\_rank} and
+        \texttt{null\_space} confirm both numbers.
+
+  \item False. In $\mathbb{R}^{2}$ take $U_{1}=\operatorname{span}\{(1,0)\}$,
+        $U_{2}=\operatorname{span}\{(0,1)\}$, $U_{3}=\operatorname{span}\{(1,1)\}$.
+        All pairwise intersections are $\{\mathbf{0}\}$, yet
+        $(1,1)=(1,0)+(0,1)$: the representation is not unique, and
+        $\dim U_{1}+\dim U_{2}+\dim U_{3}=3>2=\dim\mathbb{R}^{2}$.
+
+  \item Take a basis $\mathbf{u}_{1},\dots,\mathbf{u}_{n-1}$ of $U$. That set is
+        linearly independent and has fewer than $n$ elements, so it does not yet span
+        $V$; there is some $\mathbf{v}\in V$ outside its span. The extension theorem makes
+        $\mathbf{u}_{1},\dots,\mathbf{u}_{n-1},\mathbf{v}$ a basis of $V$, so that
+        $V=U\oplus\operatorname{span}\{\mathbf{v}\}$.
+
+  \item A polynomial of degree at most $4$ that vanishes at $0$ and $1$ is divisible
+        by $x(x-1)$, so $p=x(x-1)(a+bx+cx^{2})$: three free parameters,
+        dimension $3$. Basis $\{x(x-1),\,x^{2}(x-1),\,x^{3}(x-1)\}$. The evaluation
+        matrix $2\times5$ has rank $2$, so nullity $5-2=3$.
+
+  \item The coordinates satisfy $c_{1}+c_{2}+c_{3}+c_{4}=4$, $c_{2}+c_{3}+c_{4}=2$,
+        $c_{3}+c_{4}=-5$, $c_{4}=1$. From the bottom: $c_{4}=1$, $c_{3}=-6$,
+        $c_{2}=7$, $c_{1}=2$. So $[q]_{B}=(2,7,-6,1)$, the same as the result of
+        \texttt{numpy.linalg.solve}.
+\end{enumerate}
+
+\section*{Chapter 7: Basis, Dimension, and Linear Transformations}
+\begin{enumerate}[label=\textbf{7.\arabic*}]
+  \item Solve $c_{1}(1,1,0)+c_{2}(1,0,1)+c_{3}(0,1,1)=(2,-1,3)$, that is
+        $c_{1}+c_{2}=2$, $c_{1}+c_{3}=-1$, $c_{2}+c_{3}=3$. The result is
+        $c=(-1,3,0)$, so $[\mathbf{w}]_{B'}=(-1,3,0)$. Back:
+        $-1(1,1,0)+3(1,0,1)+0=(2,-1,3)$.
+
+  \item Let $\varphi$ be an isomorphism. Because $\varphi$ is bijective,
+        $\mathbf{b}_{i}=\varphi^{-1}(\mathbf{e}_{i})$ is defined; because
+        $\varphi^{-1}$ is linear and bijective, $\{\mathbf{b}_{i}\}$ is a basis and
+        $\varphi=\varphi_{B}$. It is not unique because each basis $B$ gives a
+        different isomorphism.
+
+  \item $A$ has rank $2$ (pivots in columns $2,3$), nullity $1$. Kernel:
+        $x_{2}=0$, $2x_{3}=0$, so $\ker A=\operatorname{span}\{(1,0,0)\}$.
+        Range $\operatorname{span}\{(1,0,0),(0,2,0)\}$. This is the derivative matrix
+        on $P_{2}$ in the basis $(1,x,x^{2})$: $D(1)=0$, $D(x)=1$,
+        $D(x^{2})=2x$.
+
+  \item $\operatorname{im}(S\circ T)\subseteq\operatorname{im}S$ gives
+        rank$(S\circ T)\le$ rank $S$. Besides that,
+        $\ker T\subseteq\ker(S\circ T)$, so nullity$(S\circ T)\ge$ nullity $T$;
+        rank-nullity applied to both maps gives rank$(S\circ T)\le$ rank $T$.
+
+  \item False. $\begin{pmatrix}1&0\\0&0\end{pmatrix}$ and
+        $\begin{pmatrix}0&1\\0&0\end{pmatrix}$ both have rank $1$, but
+        the second is nilpotent (trace $0$, square zero) while the first
+        has trace $1$. Rank measures only the dimension of the range.
+
+  \item $T$ sends $\mathbf{b}_{1},\mathbf{b}_{2},\mathbf{b}_{3}$ to $(1,0)$,
+        $(3,1)$, $(3,2)$. Coordinates relative to $C$ are $(x,y)\mapsto(y,x-y)$,
+        so the columns are $(0,1),(1,2),(2,1)$ and
+        $[T]_{C\leftarrow B}=\begin{pmatrix}0&1&2\\1&2&1\end{pmatrix}$.
+        For $\mathbf{v}=(1,2,3)$: $[\mathbf{v}]_{B}=(-1,-1,3)$ gives
+        $(5,0)$, the same as $[T(\mathbf{v})]_{C}$.
+
+  \item Take a basis $\mathbf{u}_{1},\dots,\mathbf{u}_{m}$ of $U$ with
+        $m=\dim V$. It is linearly independent and has $\dim V$ elements, so it spans
+        $V$; hence every $\mathbf{v}\in V$ lies in $U$, that is $U=V$.
+
+  \item $B=P^{-1}AP$, so $B\mathbf{x}=\mathbf{0}\iff AP\mathbf{x}=\mathbf{0}
+        \iff P\mathbf{x}\in\ker A$. The mapping $\mathbf{x}\mapsto P\mathbf{x}$ is
+        an isomorphism from $\ker B$ onto $\ker A$, so the nullities agree. That
+        equality is exactly the statement that the dimension of the kernel does not
+        depend on the basis.
+
+  \item The third row is the sum of the first two, so rank $2$ and nullity
+        $4-2=2$. A nonzero kernel vector $(-2,-1,1,0)$: $F(-2,-1,1,0)=\mathbf{0}$.
+        That direction shifts no feature at all, because
+        $F(\mathbf{x}+t\mathbf{k})=F(\mathbf{x})$ for all $t$.
+\end{enumerate}
+
+\section*{Chapter 8: Linear Systems, Determinants, and Inverses}
+\begin{enumerate}[label=\textbf{8.\arabic*}]
+  \item The pivots that appear are $1$, $1$, $-1$; no row needs swapping, so
+        $\det A=1\cdot1\cdot(-1)=-1$. Backward: $z=3$, $y=-1$, $x=2$. Cramer
+        gives $\det A_{x}=-2$, $\det A_{y}=1$, $\det A_{z}=-3$; divided by $-1$
+        the result is $(2,-1,3)$.
+
+  \item Cofactor expansion gives $\det M=0$. The refuting vector is
+        $\mathbf{v}=(1,-1,-1,1)$: every row gives $0$, for instance
+        $0-1-2+3=0$. So $\det M=0$ without any expansion. numpy gives
+        $5.3\times10^{-15}$, not zero, because elimination subtracts nearly equal
+        numbers and the rounding error is counted too.
+
+  \item Leibniz formula: $\det A=\sum_{\sigma}\operatorname{sgn}(\sigma)
+        \prod_{i}a_{i\sigma(i)}$. If columns $j$ and $k$ agree, pair every
+        $\sigma$ with $\sigma\circ(j\,k)$; the products of the terms are the same but
+        the signs are opposite, so the sum of all terms is zero.
+
+  \item Multiply $A\operatorname{adj}A=(\det A)I$ by the determinant:
+        $\det A\cdot\det(\operatorname{adj}A)=(\det A)^{n}$, because
+        $\det(cI)=c^{n}$. If $\det A\ne0$, divide by $\det A$. If
+        $\det A=0$, both sides vanish for $n\ge2$, so the equality still holds.
+
+  \item False as a general statement. Sensitivity is measured by
+        $\kappa(A)=\lVert A\rVert\,\lVert A^{-1}\rVert$, not by $\det A$:
+        $A=\varepsilon I$ has $\det A=\varepsilon^{n}$ very small yet
+        $\kappa=1$. A small determinant is dangerous only when it comes with a
+        large $\lVert A^{-1}\rVert$.
+
+  \item $\lVert A\rVert_{1}=2+\varepsilon$ and
+        $A^{-1}=\frac1\varepsilon\begin{pmatrix}1+\varepsilon&-1\\-1&1\end{pmatrix}$
+        give $\lVert A^{-1}\rVert_{1}=(2+\varepsilon)/\varepsilon$. So
+        $\kappa_{1}(A)=(2+\varepsilon)^{2}/\varepsilon$. The condition $\kappa>10^{6}$
+        is $\varepsilon<4.000016\times10^{-6}$; at
+        $\varepsilon=4\times10^{-6}$ numpy gives $1.000004\times10^{6}$.
+
+  \item Adding a multiple of a row means multiplying on the left by
+        $E=I+cE_{ij}$, and $\det E=1$, so $\det B=\det A$. Because $B=EA$,
+        we have $B^{-1}=A^{-1}E^{-1}$ with $E^{-1}=I-cE_{ij}$.
+
+  \item $A+AD=A(I+D)$, and $I+D$ is diagonal, so
+        $\det(A+AD)=\det A\prod_{i}(1+d_{i})$. It is invertible exactly when
+        $\det A\ne0$ and no $d_{i}=-1$. Example $\det A=5$ with
+        $D=\operatorname{diag}(2,-\tfrac12,3)$: the left side is $30$, the right side
+        $5\cdot3\cdot\tfrac12\cdot4=30$.
+
+  \item With $A=\begin{pmatrix}1&2&3\\0&1&4\\5&6&0\end{pmatrix}$,
+        $\det A=1$ and
+        \[
+          \operatorname{adj}A=A^{-1}=
+          \begin{pmatrix}-24&18&5\\20&-15&-4\\-5&4&1\end{pmatrix},
+        \]
+        the same as \texttt{numpy.linalg.inv} up to machine error. For
+        $\det A=7$:
+        $\begin{pmatrix}2&1&0\\1&1&0\\0&0&7\end{pmatrix}^{-1}$ contains
+        $1/7$ in the third entry, because division by $7$ cannot be avoided.
+\end{enumerate}
+
+\section*{Chapter 9: Eigenvalues and Diagonalization}
+\begin{enumerate}[label=\textbf{9.\arabic*}]
+  \item $\operatorname{tr}A_{1}=5$ and $\det A_{1}=4$, so $\lambda=4$ and
+        $\lambda=1$. Eigenvectors: $(1,1)$ for $\lambda=4$, $(1,-2)$ for
+        $\lambda=1$. Then $P=\begin{pmatrix}1&1\\1&-2\end{pmatrix}$ and
+        $D=\operatorname{diag}(4,1)$; $P^{-1}A_{1}P=D$ is verified.
+
+  \item $\lambda=5,2$ with eigenvectors $(2,1)$ and $(1,-1)$. For
+        $k\ge1$,
+        \[
+          G^{k}=\frac13
+          \begin{pmatrix}2\cdot5^{k}+2^{k}&2\cdot5^{k}-2\cdot2^{k}\\
+          5^{k}-2^{k}&5^{k}+2\cdot2^{k}\end{pmatrix},
+        \]
+        so that
+        $G^{10}=\begin{pmatrix}6510758&6509734\\3254867&3255891\end{pmatrix}$,
+        the same as \texttt{matrix\_power}.
+
+  \item $A\mathbf{v}=\lambda\mathbf{v}$ gives
+        $A^{2}\mathbf{v}=\lambda^{2}\mathbf{v}$; induction gives
+        $A^{k}\mathbf{v}=\lambda^{k}\mathbf{v}$. The converse fails:
+        $A=\begin{pmatrix}0&-1\\1&0\end{pmatrix}$ has $A^{2}=-I$ with eigenvalue
+        $-1$, whereas $A$ itself has no real eigenvalue.
+
+  \item $0$ is an eigenvalue $\iff$ there is $\mathbf{v}\ne\mathbf{0}$ with
+        $A\mathbf{v}=\mathbf{0}$ $\iff$ $\ker A\ne\{\mathbf{0}\}$ $\iff$ $A$ is not
+        invertible. If $A$ is invertible and $A\mathbf{v}=\lambda\mathbf{v}$, then
+        $\lambda\ne0$ and $A^{-1}\mathbf{v}=\lambda^{-1}\mathbf{v}$.
+
+  \item False. $\begin{pmatrix}1&0\\0&1\end{pmatrix}$ and
+        $\begin{pmatrix}1&1\\0&1\end{pmatrix}$ both have characteristic
+        polynomial $(\lambda-1)^{2}$, but the second is defective:
+        $\operatorname{rank}(J-I)=1$, so nullity $1<2$.
+
+  \item $\lambda I-A$ and its transpose have the same determinant, because
+        $\det X=\det X^{\top}$; hence $A$ and
+        $A^{\top}$ have the same characteristic polynomial and the same eigenvalues.
+        Their eigenvectors do not: $A$ and $A^{\top}$ have different eigenspaces as
+        soon as $A$ is not symmetric.
+
+  \item $K-2I=\begin{pmatrix}0&1&0\\0&0&0\\0&0&-1\end{pmatrix}$ has rank $2$,
+        so nullity $=1$. The algebraic multiplicity of $\lambda=2$ is $2$,
+        the geometric one is $1$; because $1<2$, $K$ cannot be diagonalized.
+
+  \item $\lambda=1$ and $0.5$. The fixed point of $x=4y$ with $x+y=1$ is
+        $(0.8;0.2)$. The error shrinks like $0.5^{k}$; because
+        $0.5^{19}=1.91\times10^{-6}>\allowbreak10^{-6}$ and
+        $0.5^{20}=9.54\times10^{-7}$, it takes $20$ steps.
+
+  \item The printed matrix gives
+        $\operatorname{tr}(B^{10})=(-19)+21+1024=1026$, and
+        $1^{10}+1^{10}+2^{10}=1026$: they agree. For a diagonalizable $A$,
+        $A^{k}=PD^{k}P^{-1}$ yields
+        $\operatorname{tr}(A^{k})=\operatorname{tr}(D^{k})=\sum_{i}\lambda_{i}^{k}$.
+        For defective $B$ that step is unavailable, because $B$ has no $P$ and $D$.
+        Instead use the Schur triangular form $B=QTQ^{-1}$ with $T$ upper triangular
+        and diagonal $\lambda_{i}=1,1,2$; then $B^{k}=QT^{k}Q^{-1}$, and $T^{k}$ is
+        still upper triangular with diagonal $\lambda_{i}^{k}$, so
+        $\operatorname{tr}(B^{k})=\operatorname{tr}(T^{k})
+        =\sum_{i}\lambda_{i}^{k}=1026$. The trace is invariant under change of basis
+        ($\operatorname{tr}XY=\operatorname{tr}YX$), which is why the result does not
+        depend on $Q$. In short: diagonalization carries the proof only in the
+        diagonalizable case; in the defective case the proof switches to the
+        triangular form, the formula stays the same, and the factor $k$ that appears
+        in the entries of $B^{k}$ never touches the diagonal.
+\end{enumerate}
+
+\section*{Chapter 10: Orthogonality, SVD, and Least Squares}
+\begin{enumerate}[label=\textbf{10.\arabic*}]
+  \item $(1,0,0)$ and $(0,1,1)$ are already orthogonal, so
+        $\operatorname{proj}_{W}\mathbf{b}=1\cdot(1,0,0)+\frac{4}{2}(0,1,1)
+        =(1,2,2)=\mathbf{b}$. Because $\mathbf{b}\in W$, the distance is $0$;
+        \texttt{qr} gives $QQ^{\top}\mathbf{b}=(1,2,2)$ as well.
+
+  \item $\mathbf{b}=\mathbf{p}+\mathbf{r}$ with $\mathbf{r}\perp W$, so
+        $\mathbf{r}\perp\mathbf{p}$ and Pythagoras gives
+        $\lVert\mathbf{b}\rVert^{2}=\lVert\mathbf{p}\rVert^{2}
+        +\lVert\mathbf{r}\rVert^{2}$. If $\mathbf{p}$ is not an orthogonal
+        projection, $\mathbf{r}$ is not perpendicular to $\mathbf{p}$; on an oblique
+        basis in $\mathbb{R}^{2}$ a cross term $2\langle\mathbf{p},\mathbf{r}
+        \rangle\ne0$ appears.
+
+  \item Orthonormal columns: $(A^{\top}A)_{ij}=\mathbf{a}_{i}^{\top}\mathbf{a}_{j}
+        =\delta_{ij}$, so $A^{\top}A=I$. The normal equations
+        $A^{\top}A\hat{\mathbf{x}}=A^{\top}\mathbf{b}$ immediately give
+        $\hat{\mathbf{x}}=A^{\top}\mathbf{b}$. All singular values of $A$ are
+        $1$, so $\kappa(A)=1$.
+
+  \item False. $A=\begin{pmatrix}1&0\\0&1\\1&1\end{pmatrix}$ gives
+        $A^{\top}A=\begin{pmatrix}2&1\\1&2\end{pmatrix}$, which is invertible
+        ($\det=3$), yet its rows are dependent: the third row is the sum of the first
+        two. What invertibility of $A^{\top}A$ guarantees is only independence of the
+        columns.
+
+  \item Singular values $2$ and $0$, so rank $1$;
+        $U=V=\frac{1}{\sqrt2}\begin{pmatrix}1&1\\1&-1\end{pmatrix}$ (up to
+        sign). $A^{+}=\frac14\begin{pmatrix}1&1\\1&1\end{pmatrix}$, so
+        $A^{+}\mathbf{b}=(1,1)$ and the residual is $(-1,1)$ with norm
+        $\sqrt2=1.4142$; \texttt{pinv} agrees.
+
+  \item 
+Write $\mathbf{b}=A\hat{\mathbf{x}}+\mathbf{r}$ with
+        $A\hat{\mathbf{x}}\in\operatorname{col}A$. For
+        $\mathbf{h}\in\operatorname{col}A$ the function
+        $t\mapsto\lVert\mathbf{b}-A(\hat{\mathbf{x}}+t\mathbf{h})\rVert^{2}$ is
+        minimal at $t=0$, hence $\langle\mathbf{r},\mathbf{h}\rangle=0$; this is the
+        ``necessary'' direction. Conversely, if
+        $\langle\mathbf{r},\mathbf{h}\rangle=0$ for every
+        $\mathbf{h}\in\operatorname{col}A$, then
+        $\lVert\mathbf{b}-A\mathbf{x}\rVert^{2}=\lVert\mathbf{r}\rVert^{2}+\lVert
+        A(\hat{\mathbf{x}}-\mathbf{x})\rVert^{2}\ge\lVert\mathbf{r}\rVert^{2}$, so
+        $\hat{\mathbf{x}}$ minimises. Column independence is what makes
+        $\hat{\mathbf{x}}$ unique.
+
+  \item $\mathbf{u}_{1}=(1,1,1)/\sqrt3$; the remainder $(1,1,0)-\frac23(1,1,1)
+        =\frac13(1,1,-2)$, so $\mathbf{u}_{2}=(1,1,-2)/\sqrt6$; then
+        $\mathbf{u}_{3}=(1,-1,0)/\sqrt2$. $\lVert Q^{\top}Q-I\rVert$:
+        $6.7\times10^{-16}$ (by hand), $3.1\times10^{-16}$ (\texttt{qr}).
+        The signs may differ because each $\mathbf{u}_{i}$ is determined only up to
+        $\pm$.
+
+  \item $AA^{\top}\mathbf{x}=\mathbf{0}$ gives
+        $\lVert A^{\top}\mathbf{x}\rVert^{2}=\mathbf{x}^{\top}AA^{\top}
+        \mathbf{x}=0$, so $A^{\top}\mathbf{x}=\mathbf{0}$; independence of the rows
+        makes $\mathbf{x}=\mathbf{0}$. Hence $AA^{\top}$ is square and invertible.
+        For $\mathbf{x}=A^{\top}(AA^{\top})^{-1}\mathbf{b}$ we have
+        $A\mathbf{x}=\mathbf{b}$ and
+        $\mathbf{x}\in\operatorname{col}A^{\top}=(\ker A)^{\perp}$.
+
+  \item With the last reading $314.3$: $\sum y=1540.5$,
+        $\sum Ty=157161.7$, determinant $50$. Cramer:
+        $a=(52030\cdot1540.5-510\cdot157161.7)/50=-5.04$ and
+        $b=(5\cdot157161.7-510\cdot1540.5)/50=3.07$;
+        \texttt{lstsq} agrees. The intercept shifts by $-10.10$, the slope by $+0.10$;
+        the endpoint has leverage $0.6$, the largest of the five.
+
+  \item $B$ has rank $1$, so $B^{+}$ gives
+        $\mathbf{x}^{+}=\frac{1}{70}(1,2)\approx(0.01429;\,0.02857)$ and
+        $\mathbf{k}=(-2,1)$. All solutions are $\mathbf{x}^{+}+t\mathbf{k}$;
+        because $\mathbf{x}^{+}\perp\mathbf{k}$,
+        $\lVert\mathbf{x}^{+}+t\mathbf{k}\rVert^{2}=\lVert\mathbf{x}^{+}
+        \rVert^{2}+t^{2}\lVert\mathbf{k}\rVert^{2}$ is minimal at $t=0$.
+\end{enumerate}
+
+\section*{Chapter 11: Continuity and Uniform Continuity}
+\begin{enumerate}[label=\textbf{11.\arabic*}]
+  \item $\lvert(2x-1)-5\rvert=2\lvert x-3\rvert$, so $\delta=\varepsilon/2$ is
+        valid and largest: at $x=3+\delta$ the value is exactly $\varepsilon$.
+        The choice $\delta=\varepsilon/3$ is also valid, but it uses only a third of the
+        room available.
+
+  \item $\lvert x^{2}-c^{2}\rvert=\lvert x-c\rvert\,\lvert x+c\rvert$; with
+        $\lvert x-c\rvert<1$ we get $\lvert x+c\rvert\le2\lvert c\rvert+1$,
+        so $\delta=\min(1,\varepsilon/(2\lvert c\rvert+1))$. At $c=2$:
+        $\delta=0.002$; at $c=100$: $\delta=4.975\times10^{-5}$.
+
+  \item Partly true. $1/x$ is indeed continuous at every point of $(0,1]$. But the
+        uniform conclusion is wrong: $(0,1]$ is not compact and $1/x$ is unbounded
+        near $0$. The refuting pair $x_{n}=1/n$, $y_{n}=1/(n+1)$:
+        $\lvert x_{n}-y_{n}\rvert\to0$ but the difference of the values is $1$.
+
+  \item Given $\varepsilon$, take $\delta_{f}$ and $\delta_{g}$; with
+        $\delta=\min(\delta_{f},\delta_{g})$,
+        $\lvert(f+g)(x)-(f+g)(y)\rvert\le\varepsilon/2+\varepsilon/2$.
+        For $fg$: $f=g=x$ on $\mathbb{R}$ with $x_{n}=n$,
+        $y_{n}=n+1/n$ gives difference $2+1/n^{2}\ge2$.
+
+  \item $\lvert\sqrt x-\sqrt y\rvert^{2}\le\lvert x-y\rvert$ (rationalize the
+        denominator), so $\delta=\varepsilon^{2}$ works for all
+        $x,y\ge0$. Only $x,y\ge0$ is used, so that the roots are defined;
+        closedness is not needed because the proof never touches a limit point outside
+        the domain.
+
+  \item 
+$(1+\delta)^{3}-1=\varepsilon$ gives
+        $\delta=(1+\varepsilon)^{1/3}-1=0{,}0033223$. The choice
+        $\delta=\varepsilon/3=0{,}0033333$ is actually too large:
+        $(1+\varepsilon/3)^{3}-1-\varepsilon=\varepsilon^{2}/3+\varepsilon^{3}/27>0$
+        for every $\varepsilon>0$, so it violates the bound and is not valid.
+
+  \item With $\delta=\varepsilon/2$: the largest difference
+        $2\delta-\delta^{2}=0.009975<\varepsilon$, so it is safe but not
+        optimal. With $\delta=1-\sqrt{1-\varepsilon}=0.0050126$: the largest
+        difference $1-(1-\delta)^{2}=\varepsilon$ exactly, attained at
+        $x=1-\delta$.
+
+  \item $\lvert f\rvert$ is continuous on the compact $[a,b]$, so it attains a minimum $m$;
+        because $f\ne0$ everywhere, $m>0$ and $\lvert f\rvert\ge m$. For
+        $f(x)=x$ on $(0,1)$ the conclusion fails: the infimum is $0$ and it is not
+        attained.
+
+  \item At $c\ne0$ take $q_{n}\to c$ rational and $r_{n}\to c$ irrational; the
+        function values tend to $c$ and $-c$, which differ, so $f$ is not continuous. At $0$:
+        $\lvert f(x)\rvert=\lvert x\rvert\to0=f(0)$. The function $\lvert f\rvert$
+        is $x\mapsto\lvert x\rvert$, continuous everywhere; there is no
+        contradiction because $\lvert f\rvert$ throws away the sign information.
+\end{enumerate}
+
+\section*{Chapter 12: Derivatives: One and Several Variables}
+\begin{enumerate}[label=\textbf{12.\arabic*}]
+  \item $\bigl((2+h)^{3}-8\bigr)/h=12+6h+h^{2}\to12$. For $\sqrt x$:
+        $(\sqrt{2+h}-\sqrt2)/h=1/(\sqrt{2+h}+\sqrt2)\to1/(2\sqrt2)
+        =0.3535534$. In both cases $h$ drops out of the denominator.
+
+  \item $f'(c)>0$ makes $(f(c+h)-f(c))/h>f'(c)/2>0$ for $h$ small enough,
+        so $f(c+h)>f(c)$. That is only a one-sided statement. The example
+        $f(x)=x+2x^{2}\sin(1/x^{2})$ has $f'(0)=1>0$ but is not increasing on
+        any neighbourhood of $0$: its derivative changes sign arbitrarily close
+        to $0$.
+
+  \item Differentiate $1/g$ first: $(1/g)'=-g'/g^{2}$; here the continuity of $g$
+        is used, so that $g(x+h)\to g(x)\ne0$. Then
+        $(f/g)'=f'\cdot(1/g)+f\cdot(1/g)'$, which simplifies to
+        $(f'g-fg')/g^{2}$.
+
+  \item False. $f(x,y)=xy/(x^{2}+y^{2})$ for $(x,y)\ne(0,0)$ and
+        $f(0,0)=0$: both partial derivatives at the origin exist and equal $0$,
+        but along $y=x$ the value is $\tfrac12$, so $f$ is not continuous
+        there.
+
+  \item $\nabla f=(3x^{2}y-y^{3},\,x^{3}-3xy^{2})$, at $(2,1)$ equal to
+        $(11,2)$. The steepest ascent direction is $(11,2)/\sqrt{125}$, the maximum rate
+        $\sqrt{125}=11.1803$. The central difference with $h=10^{-4}$ gives relative error
+        $9.1\times10^{-10}$ and $1.0\times10^{-8}$, consistent with order $h^{2}$ in the
+        second component.
+
+  \item By the mean value theorem,
+        $f(b)-f(a)=f'(\xi)(b-a)=0$ for every pair $a<b$ in the interval, so
+        $f$ is constant. On a disconnected set that step fails because $\xi$
+        need not lie in the set; for example $f=0$ on $(0,1)$ and $f=1$
+        on $(2,3)$.
+
+  \item At $(0,1)$: $J_{H}=\begin{pmatrix}1&1\\1&2\end{pmatrix}$; at
+        $H(0,1)=(1,1)$: $J_{G}=\begin{pmatrix}2&1\\1&-1\end{pmatrix}$. The matrix
+        product is $\begin{pmatrix}3&4\\0&-1\end{pmatrix}$, and the direct derivative
+        gives the same matrix.
+
+  \item $f_{x}=3x^{2}-3y$, $f_{y}=3y^{2}-3x$; both zero gives $y=x^{2}$ and
+        $x=y^{2}$, so $x(x^{3}-1)=0$: the points $(0,0)$ and $(1,1)$. The Hessian
+        $\begin{pmatrix}6x&-3\\-3&6y\end{pmatrix}$: at $(0,0)$ its determinant is
+        $-9<0$ (saddle), at $(1,1)$ its determinant is $27>0$ with $f_{xx}=6>0$
+        (local minimum, $f=-1$). If the determinant is zero, that test says nothing.
+
+  \item $p_{2}(x)=1+\tfrac12h-\tfrac18h^{2}$ at $h=0.04$ gives $1.0198$,
+        whereas $\sqrt{1.04}=1.0198039$; the error is
+        $3.9\times10^{-6}$, the Lagrange remainder
+        $\frac{3}{8}\xi^{-5/2}h^{3}/6\le4.0\times10^{-6}$. The bound is tight, not loose, because $\xi$ is close
+        to $1$: the Lagrange remainder really does nearly equal the actual error.
+\end{enumerate}
+
+\section*{Chapter 13: Riemann Integrals and the Fundamental Theorem of Calculus}
+\begin{enumerate}[label=\textbf{13.\arabic*}]
+  \item $U_{n}=\frac1n\sum_{k=1}^{n}\frac kn=\frac{n+1}{2n}$ and
+        $L_{n}=\frac{n-1}{2n}$, so $U_{n}-L_{n}=1/n\to0$: $f$ is integrable
+        and $\int_{0}^{1}x\,dx=\tfrac12$.
+
+  \item $\bigl\lvert\lvert f(x)\rvert-\lvert f(y)\rvert\bigr\rvert
+        \le\lvert f(x)-f(y)\rvert$ (reverse triangle inequality), so
+        integrability carries over. The bound comes from $-\lvert f\rvert\le f\le\lvert f\rvert$
+        and monotonicity of the integral. The converse is false: $f=1$ on the rationals and
+        $-1$ on the irrationals has $\lvert f\rvert=1$, which is integrable.
+
+  \item False. The correct part: the upper and lower sums of a bounded function are always
+        finite. What the proof does not support is the equality
+        $\sup_{\mathcal{P}}L=\inf_{\mathcal{P}}U$. The Dirichlet function is bounded
+        with $U-L=1$ for every partition.
+
+  \item On a uniform partition each subinterval contributes oscillation
+        $f(x_{k})-f(x_{k-1})$, so that
+        $U-L\le\frac{b-a}{n}\sum_{k}\bigl(f(x_{k})-f(x_{k-1})\bigr)
+        =\frac{(b-a)(f(b)-f(a))}{n}$. For a non-monotone function that telescoping fails
+        because the signs of the oscillations are not uniform.
+
+  \item $\int_{0}^{1}(3x^{2}-2x+1)\,dx=[x^{3}-x^{2}+x]_{0}^{1}=1$. Simpson
+        with $n=100$ gives $1.0000000000$ and \texttt{quad} $1.0000000000$
+        (error $1.1\times10^{-14}$); the three numbers differ by zero to machine
+        precision.
+
+  \item $\int_{1}^{10}x^{-2}dx=1-\tfrac1{10}=0.9$ and
+        $\int_{1}^{\infty}x^{-2}dx=1$. Their difference is $0.1=\tfrac1{10}$ exactly,
+        namely the tail $\int_{10}^{\infty}x^{-2}dx=1/10$; there is no need to recompute it,
+        because the missing part is exactly that tail.
+
+  \item If $f(x_{0})>0$, continuity gives $f>\tfrac12f(x_{0})$ on an interval of
+        width $2\delta$ around $x_{0}$ (of width $\delta$ when $x_{0}$ is an
+        endpoint), so the integral is at least
+        $\tfrac12\delta f(x_{0})>0$: a contradiction. For $f$ that is merely integrable
+        the statement fails: $f=1$ at a single point and $0$ elsewhere has integral
+        $0$.
+
+  \item $u=\sin x$: $\int_{0}^{1}u\,du=\tfrac12$. Through the identity:
+        $\tfrac12\int_{0}^{\pi/2}\sin2x\,dx
+        =\tfrac12\bigl[-\tfrac12\cos2x\bigr]_{0}^{\pi/2}=\tfrac12$. \texttt{quad}
+        gives $0.5$ as well.
+
+  \item On every subinterval there is a rational (value $1$) and an irrational (value
+        $0$), so $U(\mathcal{P},D)=1$ and $L(\mathcal{P},D)=0$; the difference is $1$
+        for all $\mathcal{P}$. The Riemann criterion demands that this difference can be
+        made as small as we please, so $D$ is not integrable.
+
+  \item The integral bounds give $\frac1{101}<\sum_{n=101}^{\infty}n^{-2}
+        <\frac1{100}$, that is $9.9010\times10^{-3}$ up to
+        $1.0000\times10^{-2}$. Their midpoint is $9.9505\times10^{-3}$,
+        whereas the true value is $9.950167\times10^{-3}$; the relative error is
+        $3.3\times10^{-5}$.
+\end{enumerate}
+
+\section*{Chapter 14: Series of Functions and the Exchange of Limits}
+\begin{enumerate}[label=\textbf{14.\arabic*}]
+  \item $\sup_{[0,1]}\lvert x^{n}\rvert=1$ for all $n$, attained at $x=1$.
+        At $x=0.9$: $0.3487$ for $n=10$, $2.656\times10^{-5}$ for
+        $n=100$, $1.748\times10^{-46}$ for $n=1000$. The first column is flat
+        because the peak is always at the endpoint; the second column shrinks because $0.9<1$.
+
+  \item For $n\ge N$, $\lVert f_{n}-f\rVert_{\infty}<\varepsilon$, so
+        $\lVert f\rVert_{\infty}\le\lVert f_{N}\rVert_{\infty}+1$ and likewise
+        for $\lVert f_{n}\rVert_{\infty}$. Pointwise convergence is not enough:
+        $f_{n}=n\chi_{(0,1/n)}$ converges to $0$ at every point but
+        $\lVert f_{n}\rVert_{\infty}=n$.
+
+  \item The peak is at $x=1/\sqrt n$ with
+        $\lVert f_{n}\rVert_{\infty}=1/(2\sqrt n)\to0$, and that bound holds
+        for all $x$ at once, so the convergence is uniform. The condition
+        $1/(2\sqrt n)<0.01$ requires $\sqrt n>50$, so $n=2501$.
+
+  \item False. Pointwise reasoning gives one $N$ for each $x$, not
+        one $N$ for all $x$. The counterexample is $x_{n}=2^{-1/n}$:
+        $x_{n}^{n}=\tfrac12$ for every $n$, so
+        $\sup_{[0,1)}\lvert x^{n}\rvert\ge\tfrac12$ and it does not tend to $0$.
+
+  \item The error $\lvert e-S_{N}(1)\rvert$ for $N=5,10,15$:
+        $1.615\times10^{-3}$, $2.731\times10^{-8}$,
+        $5.077\times10^{-14}$; the bound $e/(N+1)!$ gives
+        $3.775\times10^{-3}$, $6.810\times10^{-8}$,
+        $1.299\times10^{-13}$, always larger. At $N=20$ the bound is already
+        $5.32\times10^{-20}$, far below machine precision, so the measured error
+        stops at $4.44\times10^{-16}$. The bound first drops below $10^{-16}$
+        at $N=18$, and there the true error is unmeasurable as well.
+
+  \item The sum is $(1-x)/(1-x)=1$ for $x\in[0,1)$, whereas at $x=1$ the
+        sum is $0$. The limit is not continuous even though every partial sum is
+        continuous; the uniform limit of continuous functions must be continuous, so
+        the convergence is not uniform.
+
+  \item Radii: $R=1$ for $\sum x^{n}/n^{2}$, $R=e$ for
+        $\sum(n!/n^{n})x^{n}$, $R=\tfrac12$ for $\sum2^{n}x^{n}/n$. The ratio of the
+        $1001$st and $1000$th terms: $0.998003$; $0.368063$ (so
+        $R\approx2.7169$); $1.998002$. The slowest is $\sum x^{n}/n^{2}$,
+        because its ratio tends to $1$ like $(1-1/n)^{2}$.
+
+  \item $\lvert f_{n}g-fg\rvert=\lvert f_{n}-f\rvert\,\lvert g\rvert
+        \le\lVert f_{n}-f\rVert_{\infty}\lVert g\rVert_{\infty}\to0$. Without
+        boundedness of $g$: $f_{n}=x+1/n\to x$ uniformly on $(0,1)$, but
+        $(x+1/n)/x=1+1/(nx)$ is unbounded, so $f_{n}g$ does not converge
+        uniformly.
+
+  \item The peak is at $x=1/\sqrt{2n+1}$. For $n=10$: height $1.3397$ at
+        $x=0.2182$, $\int_{0}^{1}f_{10}=\tfrac{5}{11}=0.4545$. For
+        $n=100$: height $4.2835$ at $x=0.07053$, the integral
+        $\tfrac{50}{101}=0.4950$. The height follows $\sqrt{n/(2e)}$; the area
+        tends to $\tfrac12$ because the peak gets narrower.
+
+  \item Differentiating $\sum_{n\ge0}x^{n}=1/(1-x)$ gives
+        $\sum_{n\ge1}nx^{n-1}=1/(1-x)^{2}$; at $x=\tfrac12$ we get
+        $\sum_{n\ge1}n/2^{n}=2$. The tail remainder is $(N+2)/2^{N}$, so
+        $N=39$ gives $7.46\times10^{-11}<10^{-10}$.
+\end{enumerate}
+
+\section*{Chapter 15: Multiple Integrals, Change of Variables, and Vector Field Theorems}
+\begin{enumerate}[label=\textbf{15.\arabic*}]
+  \item Cartesian: $\int_{-1}^{1}\int_{-\sqrt{1-x^{2}}}^{\sqrt{1-x^{2}}}
+        (x^{2}+y^{2})\,dy\,dx=\pi/2$. Polar:
+        $\int_{0}^{2\pi}\int_{0}^{1}r^{3}\,dr\,d\theta
+        =2\pi\cdot\tfrac14=\pi/2=1.5708$. \texttt{dblquad} gives
+        $1.5707963268$; in this test environment the Cartesian route requires $8379$
+        evaluations, the polar route $441$.
+
+  \item For $T(\mathbf{u})=A\mathbf{u}$ linear, $DT=A$ is constant, so
+        its Jacobian determinant is $\det A$ and $\lvert\det A\rvert$ is the area
+        scale factor. If $\det A\ne0$ the map is one-to-one on $D$, so
+        $\iint_{T(D)}f=\lvert\det A\rvert\iint_{D}f\circ T$.
+
+  \item Clockwise, each side is traversed in reverse, so the four terms of the example
+        change sign: $-\tfrac13-2-\tfrac23+1=-2$, whereas the right-hand side stays
+        $2$. The bottom and right sides that used to contribute $+\tfrac13$ and $+2$
+        become negative; the left side that used to be $-1$ becomes $+1$.
+
+  \item $x=au$, $y=bv$, $z=cw$ gives Jacobian $abc$ and the unit ball:
+        $V=abc\cdot\frac{4\pi}{3}=\frac{4\pi abc}{3}$. At $a=b=c=1$
+        the result is $4.1888$, the familiar formula for the volume of a ball.
+
+  \item False. $\operatorname{curl}F=0$ does hold at every point where $F$
+        is defined, but the domain has a hole so the curl test does not apply.
+        The supporting number: $\oint_{\lvert\mathbf{r}\rvert=1}F\cdot d\mathbf{r}
+        =2\pi\ne0$, so $F$ is not conservative.
+
+  \item If the integral does not depend on the path, two paths $C_{1},C_{2}$ from
+        $A$ to $B$ give the same integral, so the circulation around $C_{1}-C_{2}$ is zero.
+        Conversely, if every closed curve has zero circulation, $C_{1}-C_{2}$ is
+        closed and hence the two integrals agree.
+
+  \item $\operatorname{curl}F=(0,0,2)$; the flux through $z=1-x^{2}-y^{2}$ with
+        upward normal $=2\cdot\pi=2\pi$. The line integral along the boundary
+        $x^{2}+y^{2}=1$, $z=0$:
+        $\int_{0}^{2\pi}(-\sin t,\cos t,0)\cdot(-\sin t,\cos t,0)\,dt=2\pi$.
+        Both are $6.2832$.
+
+  \item $\operatorname{div}F=0$ away from the origin, so the multiple integral is $0$,
+        whereas the flux through the unit sphere is $4\pi=12.5664$. Gauss's theorem
+        requires a $C^{1}$ field on a region that contains the whole interior of the
+        surface; that condition is violated at the enclosed origin.
+
+  \item $\det J=r^{2}\sin\varphi$, zero at $\varphi=0$ and $\varphi=\pi$. At both
+        poles the map stops being one-to-one: all $\theta$ give the same point.
+        On $0<\varphi<\pi$ the map is one-to-one and $\det J>0$, so the change of
+        variables formula remains valid even though the determinant is zero on the boundary.
+\end{enumerate}

@@ -1,0 +1,1048 @@
+\chapter{Deret Fungsi dan Pertukaran Limit}
+
+Sebuah pustaka numerik kecil menghitung $\ln(1+x)$ dengan deret
+$\sum_{k\ge 1}(-1)^{k+1}x^{k}/k$. Penulisnya menguji fungsi itu pada $x=0.5$
+dengan dua belas suku dan membandingkannya dengan pustaka standar: galatnya
+$6.4\times 10^{-6}$. Uji itu lolos, dokumentasi menyebut deretnya akurat sampai
+enam angka, dan kodenya masuk produksi. Pemakai pertama memanggilnya dengan
+$x=0.99$. Dua belas suku memberi $0.6529204447$, sedangkan
+$\ln 1.99=0.6881346387$. Galatnya $3.5\times10^{-2}$, sekitar lima ribu kali
+lebih besar, pada fungsi yang sama dengan jumlah suku yang sama.
+
+Kerusakan itu bukan kesalahan ketik. Untuk setiap $x$ di $(-1,1)$ deretnya
+konvergen ke $\ln(1+x)$; yang berubah hanya berapa suku yang dibutuhkan: $16$
+suku di $x=0.5$, $89$ di $x=0.9$, $721$ di $x=0.99$, $5248$ di $x=0.999$,
+semuanya untuk galat di bawah $10^{-6}$. Tidak ada satu bilangan suku yang cukup
+untuk semua $x$, sebab $x$ boleh sedekat apa pun ke $1$.
+
+Bandingkan dengan potongan tertutup $[-r,r]$, $0<r<1$. Di sana satu anggaran
+berlaku serentak untuk semua $x$: sisa deret berganti tanda dibatasi
+$r^{N+1}/(N+1)$, dan batas itu tidak menyebut $x$. Untuk $r=0.5$ dan $N=12$
+batasnya $9.4\times10^{-6}$, galat sebenarnya $6.4\times10^{-6}$. Inilah
+perbedaan yang seluruh bab ini bicarakan.
+
+Bab 5 mengurus deret bilangan, dan setiap $x$ memberi deret bilangan yang
+berbeda. Bab 11 dan 13 mendefinisikan kekontinuan dan integral titik demi titik,
+jadi keduanya tidak punya cara memindahkan limit melewati tanda integral tanpa
+syarat tambahan. Alat yang belum ada adalah jarak antara dua fungsi; begitu
+jarak itu ada, seluruh keluarga deret menjadi satu barisan di ruang metrik.
+
+\begin{untukanak}
+Bayangkan sebuah kelas dengan tiga puluh murid, dan guru menulis satu bilangan
+di papan: seratus. Tugas setiap murid menebak bilangan itu, dan setelah tiap
+tebakan guru mengumumkan apakah tebakan itu makin dekat. Murid pertama cepat
+sekali: dalam lima tebakan ia sudah meleset kurang dari satu. Murid kedua
+lambat: butuh dua puluh tebakan. Murid ketiga sangat lambat: butuh seratus.
+Tetapi ketiganya, kalau diberi waktu cukup, akhirnya meleset kurang dari satu.
+
+Sekarang guru mengganti pertanyaannya. Bukan "apakah setiap murid akhirnya
+dekat", melainkan "adakah satu saat ketika semua murid sudah dekat pada saat
+yang sama". Untuk kelas tadi jawabannya tidak: murid paling lambat selalu
+tertinggal, dan selalu bisa ditambah murid yang lebih lambat lagi.
+
+Pertanyaan yang sama muncul pada rumus yang dipakai komputer. Sebuah rumus
+mungkin benar untuk setiap nilai yang dimasukkan, tetapi jumlah suku yang
+dibutuhkan bisa membengkak tanpa batas begitu nilainya mendekati ujung. Kalau
+program menganggap "benar untuk setiap nilai" sama dengan "satu rumus cukup
+untuk semua nilai", program itu akan meleset jauh pada nilai yang paling
+merepotkan, dan melesetnya tidak kelihatan pada uji yang dipilih penulisnya.
+
+Di bab ini kita akan tahu mengapa dua pertanyaan tadi bukan soal kata-kata,
+melainkan soal apakah dua operasi boleh ditukar urutannya: limit dengan
+integral, limit dengan turunan, dan penjumlahan dengan keduanya.
+\end{untukanak}
+
+\section{Konvergensi titik demi titik dan konvergensi seragam}
+\tingkat{dasar}
+
+Ambil keluarga fungsi $f_1,f_2,\ldots$ yang semuanya terdefinisi pada satu
+himpunan $E\subseteq\mathbb{R}$. Untuk satu titik $x$ yang kita pegang tetap,
+nilai $f_1(x),f_2(x),\ldots$ hanyalah barisan bilangan, dan Bab 4 sudah
+mengatakan apa artinya barisan itu konvergen. Karena itu definisi pertama hampir
+menulis dirinya sendiri.
+
+\begin{definisi}
+Misalkan $f_n$ dan $f$ terdefinisi pada $E\subseteq\mathbb{R}$.
+\begin{enumerate}
+\item Kita katakan $f_n\to f$ \emph{titik demi titik}\index{konvergensi titik
+      demi titik} pada $E$ bila untuk setiap $x\in E$ dan setiap
+      $\varepsilon>0$ terdapat $N$ sehingga $n\ge N$ berakibat
+      $|f_n(x)-f(x)|<\varepsilon$. Di sini $N$ boleh bergantung pada $x$ dan
+      pada $\varepsilon$.
+\item Kita katakan $f_n\to f$ \emph{seragam}\index{konvergensi seragam} pada
+      $E$ bila untuk setiap $\varepsilon>0$ terdapat $N$ sehingga $n\ge N$
+      berakibat $|f_n(x)-f(x)|<\varepsilon$ untuk \emph{semua} $x\in E$
+      sekaligus. Di sini $N$ hanya bergantung pada $\varepsilon$.
+\item Bila $h$ terbatas pada $E$, norma supremum\index{norma supremum} $h$
+      adalah $\|h\|_\infty=\sup_{x\in E}|h(x)|$.
+\end{enumerate}
+\end{definisi}
+
+\kamus{konvergensi seragam}{uniform convergence}{semua titik harus sudah dekat
+pada saat yang sama, bukan satu per satu menurut jadwalnya masing-masing.}
+
+Satu kuantor berpindah tempat, dan seluruh isi bab ini bergantung pada
+perpindahan itu. Pada definisi pertama urutannya "untuk setiap titik, ada
+ambang". Pada definisi kedua urutannya "ada satu ambang untuk semua titik".
+Kalimat pertama benar untuk deret pada pembuka bab, kalimat kedua salah, dan
+selisih keduanya adalah selisih antara $16$ suku dan $5248$ suku.
+
+\begin{bacakeras}
+Dua suara bergantian.
+
+Suara pertama: ``Apakah deret ini sampai?''
+Suara kedua: ``Sampai. Perlahan, tetapi sampai.''
+Suara pertama: ``Sampai untuk titik ini?''
+Suara kedua: ``Untuk titik ini. Untuk titik sebelah, lain kali, dengan tempo sendiri.''
+
+Itulah janji yang pertama. Setiap titik boleh lambat, asal ia punya satu tempo
+untuk dirinya sendiri. Titik yang jauh dari ujung sampai dalam belasan langkah;
+titik yang menempel di ujung butuh ribuan.
+
+Sekarang suara pertama bertanya dengan kata lain: ``Adakah satu tempo untuk
+semua titik sekaligus?''
+
+Suara kedua diam lebih lama. ``Di selang tertutup yang berhenti sebelum ujung,
+ada. Di seluruh selang terbuka, tidak. Dan yang tidak ada itu bukan kegagalan
+hitungan; ia hanya menuntut tempo yang bergerak bersama titiknya.''
+
+Ulangi baris ini sampai terasa di lidah: semua titik boleh lambat, asal satu
+tempo. Bila temponya harus berbeda untuk tiap titik, namanya bukan seragam.
+\end{bacakeras}
+
+\begin{contoh}
+Misalkan $f_n(x)=x^n$ pada $E=[0,1]$. Untuk $0\le x<1$ berlaku $x^n\to0$,
+sedangkan $x^n=1$ untuk semua $n$ bila $x=1$. Jadi $f_n$ konvergen titik demi
+titik ke
+\[
+  f(x)=\begin{cases}0, & 0\le x<1,\\ 1, & x=1.\end{cases}
+\]
+Kekonvergenan itu tidak seragam, sebab $\sup_{x\in[0,1]}|x^n-f(x)|=1$ untuk
+setiap $n$: di $x=1$ selisihnya tepat $1$, dan untuk $x$ yang cukup dekat ke $1$
+dari kiri $x^n$ mendekati $1$ sementara $f(x)=0$.
+\end{contoh}
+
+Contoh itu memperlihatkan dua hal. Pertama, limit titik demi titik fungsi kontinu
+tidak harus kontinu: setiap $x^n$ kontinu, limitnya melompat di $x=1$. Kedua,
+keseragaman bergantung pada himpunannya, bukan hanya pada rumus fungsinya.
+
+Ketergantungan itu bisa diukur. Pada $[0,r]$ dengan $r<1$ kekonvergenannya
+seragam, sebab $\sup_{[0,r]}|x^n|=r^n\to0$. Yang menarik adalah bila batas
+kanannya ikut bergerak bersama $n$. Pada $[0,1-1/n]$ supremumnya
+$(1-1/n)^n\to1/e=0.3678794412$; jadi menyempit sebesar $1/n$ belum
+menyelamatkan keseragaman. Pada $[0,1-1/\sqrt{n}]$ supremumnya
+$(1-1/\sqrt n)^n$, yang runtuh seperti $e^{-\sqrt n}$: $2.2\times10^{-2}$ pada
+$n=10$, $2.7\times10^{-5}$ pada $n=100$, $2.2\times10^{-44}$ pada $n=10^4$. Laju
+penyempitan, bukan rumus fungsinya, yang menentukan.
+
+Uji diagonal memberi keterangan tambahan yang lebih tajam. Ambil titik
+$x_n=1-1/n$ yang mengejar titik putus. Maka $f_n(x_n)=(1-1/n)^n\to1/e$,
+sedangkan $f(x_n)=0$ untuk semua $n$. Jadi bukan hanya supremumnya yang tidak
+mengecil: nilai di titik-titik yang dipilih dengan tepat pun menolak menuju
+limit titik demi titiknya. Pola ini dipakai berulang kali di bab ini. Untuk
+menyangkal keseragaman, cari satu barisan titik yang membuat selisihnya tetap
+besar.
+
+Dua keluarga sederhana memisahkan kedua gejala itu. Yang pertama, $g_n$ adalah
+segitiga bertinggi $1$ dengan alas $1/n$ dan puncak di $1-1/n$: puncaknya
+bergerak ke kanan, tingginya tidak pernah turun, dan luasnya $1/(2n)$. Titik
+$x<1$ hanya tersentuh puncak selama $1/(2(1-x))<n<3/(2(1-x))$, jadi di $x=0.9$
+hanya sembilan nilai $n$ memberi nilai positif, di $x=0.99$ sembilan puluh
+sembilan, dan setelah puncak terakhir lewat nilainya nol selamanya. Limitnya nol
+di setiap titik, sedangkan $\|g_n\|_\infty=1$. Yang kedua, $h_n$ bertinggi $1/n$
+dengan alas $1$ di tempat yang sama: puncaknya mengecil, bukan berpindah, dan
+$\|h_n\|_\infty=1/n\to0$ (Gambar~\ref{fig:puncak}).
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=5.6cm,y=3.1cm,font=\small]
+  \draw[->,layergrey] (0,0)--(1.15,0) node[right,font=\scriptsize]{$x$};
+  \draw[->,layergrey] (0,0)--(0,1.32) node[above,font=\scriptsize]{$y$};
+  \node[below,font=\scriptsize,layergrey] at (1,0) {$1$};
+  \foreach \n/\c in {16/layerindigo!15,8/layerindigo!30,4/layerindigo!50,2/layerindigo!75}{
+    \fill[\c] ({1-1/\n-1/(2*\n)},0) -- ({1-1/\n},1) -- ({1-1/\n+1/(2*\n)},0) -- cycle;
+  }
+  \draw[dashed,layergrey] (0,1)--(1.06,1);
+  \node[above,font=\scriptsize,layergrey] at (0.72,1) {tinggi $1$};
+  \begin{scope}[xshift=7.0cm]
+    \draw[->,layergrey] (0,0)--(1.15,0) node[right,font=\scriptsize]{$x$};
+    \draw[->,layergrey] (0,0)--(0,1.32) node[above,font=\scriptsize]{$y$};
+    \node[below,font=\scriptsize,layergrey] at (1,0) {$1$};
+    \foreach \n/\c in {8/layerteal!18,4/layerteal!32,2/layerteal!52,1/layerteal!72}{
+      \fill[\c] (0,0) -- (0.5,{1/\n}) -- (1,0) -- cycle;
+    }
+    \node[right,font=\scriptsize,layergrey] at (0.52,0.5) {$n=2$};
+    \node[right,font=\scriptsize,layergrey] at (0.52,0.25) {$n=4$};
+    \node[right,font=\scriptsize,layergrey] at (0.52,0.125) {$n=8$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Puncak yang bergerak dan puncak yang mengecil. Kiri: $g_n$ bertinggi
+tetap $1$ dengan alas $1/n$ dan puncak di $1-1/n$; tingginya tidak turun,
+sehingga $\|g_n\|_\infty=1$ walaupun $g_n(x)\to0$ di setiap titik. Kanan: $h_n$
+bertinggi $1/n$ dengan alas $1$ di tempat yang sama; seluruh grafiknya masuk
+pita setinggi $1/n$, sehingga konvergen seragam.}
+\label{fig:puncak}
+\end{figure}
+
+\begin{lemma}
+$f_n\to f$ seragam pada $E$ jika dan hanya jika $\|f_n-f\|_\infty\to0$.
+\end{lemma}
+
+\begin{proof}
+Kekonvergenan seragam berarti: untuk setiap $\varepsilon>0$ ada $N$ sehingga
+untuk $n\ge N$ berlaku $|f_n(x)-f(x)|\le\varepsilon$ pada semua $x\in E$,
+yaitu $\sup_x|f_n(x)-f(x)|\le\varepsilon$. Itu persis pernyataan bahwa barisan
+bilangan real $\|f_n-f\|_\infty$ menuju nol. Satu-satunya selisih teknis adalah
+bahwa definisi memakai $<\varepsilon$ sedangkan norma memakai $\le\varepsilon$;
+keduanya setara karena $\varepsilon$ sebarang.
+\end{proof}
+
+Lemma itu mengubah pertanyaan tentang fungsi menjadi pertanyaan tentang satu
+barisan bilangan: memeriksa keseragaman cukup dengan satu supremum, menolaknya
+cukup dengan menunjukkan supremum itu tidak menuju nol, seperti pada $x^n$.
+
+Keseragaman punya gambar yang tepat, yaitu pita. Ambil $\varepsilon=0.1$. Bila
+seluruh grafik $f_n$ untuk $n\ge N$ termuat di antara $f-\varepsilon$ dan
+$f+\varepsilon$, maka satu $N$ itu bekerja untuk semua titik. Yang diperiksa
+bukan satu titik, melainkan apakah ada bagian grafik yang keluar dari pita
+selebar $0.2$. Pada $g_n$ pita itu selalu ditembus puncaknya; keadaan yang
+diharapkan terlihat di Gambar~\ref{fig:pita}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=2.55cm,y=4.0cm,font=\small]
+  \draw[->,layergrey] (0,0)--(4.5,0) node[right,font=\scriptsize]{$x$};
+  \draw[->,layergrey] (0,0)--(0,1.18) node[above,font=\scriptsize]{$y$};
+  \fill[layergrey!12] plot[domain=0:4,samples=90] (\x,{0.55+0.22*sin(2*\x r)+0.1})
+    -- plot[domain=4:0,samples=90] (\x,{0.55+0.22*sin(2*\x r)-0.1}) -- cycle;
+  \draw[dashed,layergrey] plot[domain=0:4,samples=90] (\x,{0.55+0.22*sin(2*\x r)+0.1});
+  \draw[dashed,layergrey] plot[domain=0:4,samples=90] (\x,{0.55+0.22*sin(2*\x r)-0.1});
+  \draw[thick,accent] plot[domain=0:4,samples=90] (\x,{0.55+0.22*sin(2*\x r)});
+  \draw[thick,layerindigo] plot[domain=0:4,samples=180]
+    (\x,{0.55+0.22*sin(2*\x r)+0.06*cos(9*\x r)});
+  \draw[<->,layergrey] (3.78,{0.55+0.22*sin(2*3.78 r)-0.1})
+    -- (3.78,{0.55+0.22*sin(2*3.78 r)+0.1});
+  \node[right,font=\scriptsize,layergrey] at (3.8,{0.55+0.22*sin(2*3.78 r)}) {$0.2$};
+  \node[accent,font=\scriptsize,above left] at (0.42,{0.55+0.22*sin(2*0.42 r)}) {$f$};
+  \node[layerindigo,font=\scriptsize,below right] at (0.95,{0.55+0.22*sin(2*0.95 r)+0.06*cos(9*0.95 r)}) {$f_n$};
+\end{tikzpicture}
+\caption{Pita seragam selebar $0.2$ di sekeliling $f$, yaitu di antara $f-0.1$
+dan $f+0.1$. Grafik $f_n$ yang bergelombang masih termuat seluruhnya di dalam
+pita, jadi $\|f_n-f\|_\infty\le0.1$ dan satu $N$ yang sama bekerja untuk semua
+titik sekaligus.}
+\label{fig:pita}
+\end{figure}
+
+\begin{tangan}
+Ambil tali sepanjang dua meter, selotip, dan dua orang. Bentangkan tali lurus di
+lantai, lalu tempel lima tanda berjarak sama. Orang pertama memegang ujung kiri
+dan mengangkatnya $5$ cm saja. Lihat: hanya ujung itu yang naik, empat tanda
+lain masih menempel di lantai. Itu kekonvergenan titik demi titik.
+
+Sekarang kedua orang mengangkat kedua ujung bersama-sama dengan hitungan yang
+sama: $5$ cm, lalu $3$ cm, lalu $1$ cm, lalu setengah sentimeter. Amati seluruh
+panjang tali. Tidak ada titik yang tertinggal di lantai, dan jarak terjauh tali
+ke lantai sama di semua titik, sebab keduanya diangkat serentak. Itu
+kekonvergenan seragam.
+
+Terakhir, orang pertama mengangkat ujungnya sambil berjalan ke tengah, sementara
+orang kedua menurunkan ujungnya. Talinya tetap miring, dan selalu ada bagian
+yang $5$ cm di atas lantai: setiap titik akhirnya turun, tetapi jarak terjauh
+tidak pernah mengecil. Itulah $g_n$ pada Gambar~\ref{fig:puncak}.
+\end{tangan}
+
+\begin{lemma}[Kriteria Cauchy seragam]
+Barisan $f_n$ konvergen seragam pada $E$ jika dan hanya jika untuk setiap
+$\varepsilon>0$ ada $N$ sehingga $n,m\ge N$ berakibat
+$|f_n(x)-f_m(x)|<\varepsilon$ untuk semua $x\in E$. Syarat terakhir ini disebut
+kriteria Cauchy seragam\index{kriteria Cauchy seragam}.
+\end{lemma}
+
+\begin{proof}
+$(\Rightarrow)$ Bila $f_n\to f$ seragam, ambil $N$ dari definisi kekonvergenan
+untuk $\varepsilon/2$. Untuk $n,m\ge N$ dan setiap $x$,
+\[
+  |f_n(x)-f_m(x)|\le|f_n(x)-f(x)|+|f(x)-f_m(x)|<\varepsilon .
+\]
+$(\Leftarrow)$ Untuk setiap $x$ tetap, barisan $f_n(x)$ adalah barisan Cauchy
+di $\mathbb{R}$, jadi konvergen ke suatu bilangan yang kita sebut $f(x)$. Ini
+mendefinisikan sebuah fungsi $f$ titik demi titik. Untuk memperoleh
+keseragamannya, tetapkan $n\ge N$ pada kondisi Cauchy dan biarkan
+$m\to\infty$. Karena $f_m(x)\to f(x)$, diperoleh $|f_n(x)-f(x)|\le\varepsilon$
+untuk semua $x\in E$ sekaligus, dan $N$ yang dipakai tidak bergantung pada $x$.
+\end{proof}
+
+Bukti arah kedua hanya memakai kelengkapan $\mathbb{R}$: ruang fungsi lengkap
+terhadap norma supremum, dan kelengkapan itulah yang membuat deret fungsi bisa
+dijumlahkan tanpa takut limitnya keluar dari kelas fungsi yang kita pakai.
+
+\begin{catatan}
+Kekonvergenan seragam adalah sifat pasangan: barisan dan himpunannya. Kalimat
+"$x^n$ konvergen seragam" tidak lengkap tanpa menyebut pada himpunan mana. Pada
+$[0,1]$ jawabannya tidak, pada $[0,0.99]$ ya: norma supremum galatnya
+$0.99^n$, yaitu $0.37$ pada $n=100$ dan $4.3\times10^{-5}$ pada $n=1000$.
+Karena itu setiap klaim keseragaman di bab ini menyebut himpunannya.
+\end{catatan}
+
+\section{Uji Weierstrass: keseragaman dari satu deret bilangan}
+\tingkat{menengah}
+
+Deret fungsi adalah deret yang sukunya fungsi. Jumlah parsialnya
+$S_N=\sum_{n=1}^{N}f_n$ adalah fungsi, jadi deret fungsi tidak lain adalah
+barisan fungsi yang khusus, dan semua definisi bagian sebelumnya berlaku begitu
+kita mengganti $f_n$ dengan $S_N$.
+
+\begin{definisi}
+Deret $\sum_{n\ge1}f_n$ \emph{konvergen titik demi titik} pada $E$ bila untuk
+setiap $x\in E$ deret bilangan $\sum_n f_n(x)$ konvergen. Deret itu
+\emph{konvergen seragam}\index{deret fungsi} pada $E$ bila barisan jumlah
+parsialnya konvergen seragam pada $E$.
+\end{definisi}
+
+Uji berikut adalah cara termurah memperoleh keseragaman, dan hampir semua
+contoh di buku ini memakainya. Idenya: bila setiap suku dibatasi oleh bilangan
+yang deretnya konvergen, maka ekor deret fungsi dibatasi oleh ekor deret
+bilangan itu, dan ekor bilangan tidak tahu-menahu soal $x$.
+
+\begin{teorema}[Uji-$M$ Weierstrass]\index{uji Weierstrass}
+Misalkan $f_n$ terdefinisi pada $E$ dan ada bilangan $M_n\ge0$ dengan
+$|f_n(x)|\le M_n$ untuk semua $x\in E$ dan semua $n$. Jika $\sum M_n$
+konvergen, maka $\sum f_n$ konvergen seragam pada $E$. Bila $E$ adalah selang
+tertutup terbatas dan setiap $f_n$ kontinu, maka jumlahnya kontinu pada $E$.
+\end{teorema}
+
+\begin{proof}
+Tulis $S_N=\sum_{i=1}^{N}f_i$. Untuk $n>m$ dan setiap $x\in E$,
+\[
+  |S_n(x)-S_m(x)|\le\sum_{i=m+1}^{n}|f_i(x)|\le\sum_{i=m+1}^{n}M_i .
+\]
+Karena $\sum M_n$ konvergen, ekor $\sum_{i=m+1}^{n}M_i$ dapat dibuat lebih
+kecil dari $\varepsilon$ asalkan $m,n$ cukup besar, dan pilihan itu tidak
+menyebut $x$. Kriteria Cauchy seragam menutup bukti keseragamannya. Untuk
+kekontinuan, setiap $S_N$ kontinu sebagai jumlah berhingga fungsi kontinu, dan
+limit seragam fungsi kontinu kontinu; pernyataan terakhir itu dibuktikan di
+bagian berikut.
+\end{proof}
+
+\begin{contoh}
+Pada $E=[-1,1]$ deret $\sum_{n\ge1}x^n/n^2$ konvergen seragam, sebab
+$|x^n/n^2|\le1/n^2$ dan $\sum1/n^2=\pi^2/6$ konvergen. Jumlahnya kontinu pada
+$[-1,1]$, dan nilainya di $x=1$ adalah $1.6449340668$. Jumlah dua juta suku
+memberi $1.6449335668$; selisihnya $5.0\times10^{-7}$, sebanding dengan batas
+ekor $1/N=5\times10^{-7}$. Di $x=-1$ deretnya konvergen ke $-\pi^2/6$, sebab
+suku-sukunya berganti tanda dengan nilai mutlak yang menurun menuju nol.
+\end{contoh}
+
+\begin{contoh}
+Pada $E=\mathbb{R}$ deret $\sum_{n\ge0}2^{-n}\sin(2^n x)$ konvergen seragam,
+sebab $|2^{-n}\sin(2^n x)|\le2^{-n}$ dan $\sum2^{-n}=1$. Setiap suku kontinu,
+jadi jumlahnya kontinu di setiap titik. Yang mengejutkan, jumlah itu tidak
+terdiferensialkan di titik mana pun: hasil klasik Weierstrass (1872), diperluas
+Hardy sampai nisbah $1$, kita kutip tanpa bukti. Keseragaman menjamin
+kekontinuan, tetapi tidak menjamin apa pun tentang turunan.
+\end{contoh}
+
+\begin{catatan}
+Uji-$M$ memberi syarat cukup, bukan syarat perlu, dan kegagalannya bukan bukti
+apa-apa. Deret $\sum_{n\ge1}(-1)^n(1-x)x^n$ pada $[0,1]$ konvergen seragam:
+sisa setelah suku ke-$N$ dibatasi $(1-x)x^{N+1}$, yang maksimumnya pada $[0,1]$
+adalah $\tfrac{1}{N+2}\left(\tfrac{N+1}{N+2}\right)^{N+1}\to0$, yaitu
+$3.20\times10^{-2}$ pada $N=10$ dan $3.67\times10^{-4}$ pada $N=1000$. Tetapi
+$\sup_{[0,1]}|f_n|=n^n/(n+1)^{n+1}$, sebanding dengan $1/(en)$, sehingga
+$\sum_n\sup|f_n|$ divergen: $0.88$ sampai $N=10$ dan $2.53$ sampai $N=1000$.
+Tidak ada deret pembanding yang konvergen, jadi uji-$M$ tidak terpakai walaupun
+keseragamannya benar.
+\end{catatan}
+
+\begin{untukanak}
+Ada dua cara mengerjakan sederet tugas. Cara pertama: selesaikan semua tugas
+satu per satu, baru kemudian hitung totalnya. Cara kedua: hitung totalnya sambil
+mengerjakan, lalu selesaikan sisanya. Untuk penjumlahan biasa kedua cara memberi
+hasil yang sama, dan kita terbiasa menukarnya tanpa berpikir.
+
+Tetapi ada tugas yang tidak suka ditukar. Bayangkan kamu mengukur panjang
+bayangan sebuah tiang setiap jam selama satu hari, menghitung rata-ratanya, lalu
+mencari jam ketika rata-rata itu paling panjang. Balik urutannya: cari dulu jam
+terpanjang pada tiap hari, lalu rata-ratakan jam itu sepanjang bulan. Dua
+hasilnya bisa berbeda jauh, bukan karena hitungannya salah, tetapi karena
+"paling panjang" dan "rata-rata" memang tidak saling bertukar.
+
+Hal yang sama terjadi pada rumus yang dipakai untuk menjumlahkan tak hingga
+banyak suku, lalu mengintegralkan atau menurunkannya. Kadang urutannya boleh
+ditukar dan hasilnya sama persis; kadang tidak, dan selisihnya besar. Di bab ini
+kita akan tahu tanda bahayanya sebelum hasilnya meleset.
+\end{untukanak}
+
+\section{Kapan limit boleh ditukar}
+\tingkat{menengah}
+
+Tiga operasi yang biasa kita pakai pada fungsi adalah menghitung limit di
+sebuah titik, mengintegralkan, dan menurunkan. Ketiganya sendiri adalah limit:
+kekontinuan di $x_0$ berarti $\lim_{x\to x_0}f(x)=f(x_0)$, integral adalah
+limit jumlah Riemann, turunan adalah limit hasil bagi selisih. Jadi memindahkan
+limit barisan melewati salah satu operasi itu berarti menukar dua limit, dan
+pertukaran itu tidak gratis: harganya satu hipotesis, yaitu
+keseragaman\index{pertukaran limit}.
+
+\begin{teorema}
+Bila $f_n$ kontinu pada $E$ dan $f_n\to f$ seragam pada $E$, maka $f$ kontinu
+pada $E$.
+\end{teorema}
+
+\begin{proof}
+Ambil $x_0\in E$ dan $\varepsilon>0$. Karena kekonvergenannya seragam, ada $n$
+dengan $\|f_n-f\|_\infty<\varepsilon/3$. Karena $f_n$ kontinu di $x_0$, ada
+$\delta>0$ sehingga $|x-x_0|<\delta$ berakibat $|f_n(x)-f_n(x_0)|<\varepsilon/3$.
+Maka untuk $x\in E$ dengan $|x-x_0|<\delta$,
+\[
+  |f(x)-f(x_0)|\le|f(x)-f_n(x)|+|f_n(x)-f_n(x_0)|+|f_n(x_0)-f(x_0)|
+  <\varepsilon .
+\]
+\end{proof}
+
+Perhatikan urutan logisnya: $n$ dipilih lebih dulu, baru $\delta$, dan
+$\delta$ boleh bergantung pada $n$. Yang tidak boleh adalah memilih $\delta$
+yang harus bekerja untuk semua $n$ sekaligus.
+
+\begin{tantangan}
+Deret $\sum_{n\ge0}\bigl(x^{2n}-x^{2n+1}\bigr)$ bersuku kontinu pada $[0,1]$
+dan konvergen di setiap titiknya. Tentukan jumlahnya, lalu tunjukkan jumlah itu
+tidak kontinu di $x=1$. Mengapa hasil ini tidak membantah teorema di atas?
+Jawaban yang benar harus menyebut satu bilangan yang boleh bergantung pada
+$\varepsilon$ tetapi tidak boleh bergantung pada $x$.
+
+Petunjuk 1: jumlah parsialnya punya bentuk tertutup, dan bentuk itu memuat
+$x^{2N+2}$.
+
+Petunjuk 2: untuk $x<1$ jumlahnya $1/(1+x)$, sedangkan di $x=1$ setiap suku
+bernilai nol; jadi nilainya melompat dari $1/2$ ke $0$.
+
+Kalau mentok, kembali ke bagian uji diagonal dan tanyakan apa yang terjadi pada
+$x_N=1-1/N$.
+\end{tantangan}
+
+\begin{teorema}[Integrasi suku demi suku]
+Bila $f_n$ terintegralkan Riemann pada $[a,b]$ dan $f_n\to f$ seragam pada
+$[a,b]$, maka $f$ terintegralkan pada $[a,b]$ dan
+\[
+  \int_a^b f=\lim_{n\to\infty}\int_a^b f_n .
+\]
+\end{teorema}
+
+\begin{proof}
+Untuk keterintegralannya, ambil $\varepsilon>0$ dan pilih $n$ dengan
+$\|f_n-f\|_\infty<\varepsilon$. Karena $f_n$ terintegralkan, ada partisi
+$\mathcal{P}$ dengan $U(\mathcal{P},f_n)-L(\mathcal{P},f_n)<\varepsilon(b-a)$.
+Pada setiap subselang, $M_i(f)\le M_i(f_n)+\varepsilon$ dan
+$m_i(f)\ge m_i(f_n)-\varepsilon$, sehingga
+$U(\mathcal{P},f)\le U(\mathcal{P},f_n)+\varepsilon(b-a)$ dan
+$L(\mathcal{P},f)\ge L(\mathcal{P},f_n)-\varepsilon(b-a)$. Ketiga ketaksamaan
+itu memberi $U(\mathcal{P},f)-L(\mathcal{P},f)<3\varepsilon(b-a)$, dan kriteria
+keterintegralan Bab 13 menutup argumennya. Untuk nilai integralnya, cukup
+dicatat bahwa
+\[
+  \left|\int_a^b f_n-\int_a^b f\right|
+  =\left|\int_a^b (f_n-f)\right|
+  \le\int_a^b|f_n-f|\le(b-a)\,\|f_n-f\|_\infty ,
+\]
+dan ruas kanan menuju nol.
+\end{proof}
+
+\begin{akibat}[Integrasi deret]
+Bila $\sum_{n\ge1}f_n$ konvergen seragam pada $[a,b]$ dan setiap $f_n$
+terintegralkan di sana, maka
+\[
+  \int_a^b\sum_{n=1}^{\infty}f_n=\sum_{n=1}^{\infty}\int_a^b f_n .
+\]
+\end{akibat}
+
+Akibat ini diterapkan pada jumlah parsial, dengan keseragaman biasanya
+diperiksa lewat uji-$M$. Contohnya, deret $\sum_{n\ge1}x^n/n^2$ konvergen seragam
+pada $[0,1]$, sehingga
+\[
+  \int_0^1\sum_{n=1}^{\infty}\frac{x^n}{n^2}\,dx
+  =\sum_{n=1}^{\infty}\frac{1}{n^2(n+1)}=\frac{\pi^2}{6}-1=0.6449340668 .
+\]
+Angka terakhir juga diperoleh dengan menjumlahkan dua juta suku pertama deret di
+ruas kanan, yang memberi $0.6449340668$ pada presisi mesin.
+
+\begin{contoh}[Kegagalan tanpa keseragaman]
+Misalkan $f_n(x)=nx(1-x^2)^n$ pada $[0,1]$. Untuk setiap $x\in(0,1]$ faktor
+$(1-x^2)^n$ mengecil secara geometri, jadi $n(1-x^2)^n\to0$ dan $f_n(x)\to0$;
+di $x=0$ semua $f_n$ bernilai $0$. Jadi limit titik demi titiknya fungsi nol.
+Integralnya dapat dihitung tepat dengan substitusi $u=1-x^2$:
+\[
+  \int_0^1 nx(1-x^2)^n\,dx=\frac{n}{2}\int_0^1 u^n\,du=\frac{n}{2(n+1)} .
+\]
+Barisan itu menuju $1/2$, bukan $0$. Kuadratur numerik memberi
+$0.4545454545$ untuk $n=10$ dan $0.4950495050$ untuk $n=100$, sama dengan
+$n/(2(n+1))$ sampai digit terakhir. Jadi $\lim_n\int_0^1f_n=1/2$ sedangkan
+$\int_0^1\lim_nf_n=0$.
+\end{contoh}
+
+Kegagalan itu punya bentuk geometris. Fungsi $f_n$ bernilai nol di kedua ujung
+dan memuncak di $x=1/\sqrt{2n+1}$, dengan tinggi $1.3396685$ pada $n=10$ dan
+$4.2834707$ pada $n=100$: puncaknya makin tinggi dan makin sempit, sehingga
+luasnya tetap sekitar $1/2$ sementara tingginya di setiap titik menuju nol.
+
+\begin{teorema}[Turunan suku demi suku]
+Misalkan $f_n$ terdiferensialkan pada $[a,b]$, barisan $f_n'$ konvergen seragam
+pada $[a,b]$, dan ada satu titik $x_0\in[a,b]$ tempat $f_n(x_0)$ konvergen.
+Maka $f_n$ konvergen seragam ke suatu $f$ yang terdiferensialkan pada $[a,b]$,
+dan
+\[
+  f'(x)=\lim_{n\to\infty}f_n'(x)
+\]
+untuk setiap $x\in[a,b]$.
+\end{teorema}
+
+\begin{proof}[Rangka bukti]
+Intinya teorema nilai rata-rata pada selisih dua suku: untuk $m,n$ dan setiap
+$x,y\in[a,b]$,
+\[
+  \bigl|(f_n-f_m)(x)-(f_n-f_m)(y)\bigr|\le\|f_n'-f_m'\|_\infty\,|x-y| .
+\]
+Karena $f_n'$ Cauchy seragam, ruas kanan dapat dibuat kecil serentak untuk semua
+pasangan $x,y$ begitu $m,n$ besar. Bersama kekonvergenan di satu titik $x_0$,
+ketaksamaan itu membuat $f_n$ Cauchy seragam, jadi $f_n\to f$ seragam. Untuk
+turunan, bagi dengan $|x-y|$, biarkan $y\to x$, lalu tukar dua limit yang
+muncul; ketaksamaan yang sama menjamin pertukaran itu sah. Rincian teknisnya ada
+pada Rudin, Teorema 7.17.
+\end{proof}
+
+Syarat "ada satu titik tempat $f_n(x_0)$ konvergen" tidak dapat dibuang: $f_n$
+dan $f_n+1$ punya barisan turunan yang sama, tetapi hanya satu di antaranya yang
+konvergen di $x_0$. Sebaliknya, keseragaman $f_n$ saja juga tidak cukup untuk
+menyimpulkan apa pun tentang turunan.
+
+\begin{contoh}[Turunan yang tidak konvergen]
+Misalkan $f_n(x)=\sin(nx)/n$ pada $[0,\pi]$. Karena $\|f_n\|_\infty=1/n$,
+barisan itu konvergen seragam ke fungsi nol; nilainya $0.1$ pada $n=10$ dan
+$0.01$ pada $n=100$. Tetapi $f_n'(x)=\cos(nx)$: di $x=0$ barisan itu bernilai
+$1$ untuk semua $n$, sedangkan di $x=\pi/2$ nilainya $0,-1,0,1,0,-1,\ldots$
+menurut paritas $n$, yang tidak konvergen. Jadi $f_n'$ tidak konvergen titik
+demi titik di mana pun kecuali titik-titik khusus, apalagi seragam. Turunan
+tidak memaafkan osilasi kecil berfrekuensi tinggi: $f_n$ mengecil menuju nol,
+tetapi kemiringannya tidak.
+\end{contoh}
+
+Gambar~\ref{fig:turunan} memuat tiga kurva turunan itu pada $[0,\pi]$. Di
+$x=\pi/2$ ketiganya bernilai $1$, $0$, dan $-1$: tiga nilai berbeda dari satu
+barisan di satu titik, dan itu sudah cukup untuk mengatakan limitnya tidak ada.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=3.4cm,y=1.5cm,font=\small]
+  \draw[->,layergrey] (0,0)--(3.55,0) node[right,font=\scriptsize]{$x$};
+  \draw[->,layergrey] (0,-1.28)--(0,1.28) node[above,font=\scriptsize]{$y$};
+  \draw[dashed,layergrey] (1.571,-1.25)--(1.571,1.25);
+  \node[below,font=\scriptsize,layergrey] at (1.571,-1.25) {$\pi/2$};
+  \draw[thick,layerindigo] plot[domain=0:3.1416,samples=160] (\x,{cos(4*\x r)});
+  \draw[thick,layerteal] plot[domain=0:3.1416,samples=160] (\x,{cos(5*\x r)});
+  \draw[thick,layerorange] plot[domain=0:3.1416,samples=160] (\x,{cos(6*\x r)});
+  \fill[ink] (1.571,1) circle (1.5pt);
+  \fill[ink] (1.571,0) circle (1.5pt) node[right,font=\scriptsize] {$0$};
+  \fill[ink] (1.571,-1) circle (1.5pt) node[right,font=\scriptsize] {$-1$};
+  \node[right,font=\scriptsize] at (1.585,1.06) {$1$};
+\end{tikzpicture}
+\caption{Turunan $f_n'=\cos(nx)$ pada $[0,\pi]$ untuk $n=4$ (indigo), $n=5$
+(teal), dan $n=6$ (oranye). Di $x=\pi/2$ nilainya $1$, $0$, dan $-1$: tiga nilai
+berbeda dari satu barisan di satu titik, jadi limit turunannya tidak ada,
+walaupun $f_n=\sin(nx)/n$ konvergen seragam ke nol dengan amplitudo $1/4$,
+$1/5$, dan $1/6$.}
+\label{fig:turunan}
+\end{figure}
+
+\begin{catatan}
+Dalam pembelajaran mesin, fungsi risiko sering ditulis sebagai harapan atas
+distribusi data, $\mathbb{E}_{(x,y)\sim D}[\ell(f(x),y)]$, lalu diturunkan
+terhadap parameter model. Bila distribusinya diskret berhingga, seperti pada
+himpunan latih, harapan itu jumlah berhingga dan pertukaran turunan dengan
+penjumlahan selalu sah tanpa syarat. Bila kontinu, harapan itu integral, dan
+memindahkan turunan ke dalamnya menuntut syarat dominasi yang lebih halus
+daripada keseragaman; alatnya adalah teorema kekonvergenan dominan dari teori
+ukur, yang tidak dibahas di sini. "Turunkan di dalam integral" adalah operasi
+berizin, bukan operasi yang selalu benar.
+\end{catatan}
+
+\section{Deret pangkat dan jari-jari konvergensi}
+\tingkat{lanjut}
+
+Deret pangkat adalah deret fungsi dengan bentuk paling kaku: suku ke-$n$ adalah
+koefisien tetap dikali $x^n$. Kekakuan itu berbuah. Himpunan tempat deretnya
+konvergen selalu sebuah selang yang simetris terhadap pusatnya, sehingga seluruh
+informasi tentang di mana deret itu berguna termuat dalam satu bilangan.
+
+\begin{definisi}
+Deret berbentuk $\sum_{n\ge0}a_nx^n$ dengan $a_n\in\mathbb{R}$ disebut deret
+pangkat\index{deret pangkat} berpusat di $0$. Bilangan
+\[
+  R=\sup\Bigl\{r\ge0:\ \sum_{n\ge0}a_nr^n\ \text{konvergen}\Bigr\}
+\]
+disebut jari-jari konvergensi\index{jari-jari konvergensi} deret itu.
+\end{definisi}
+
+\kamus{deret pangkat}{power series}{deret yang sukunya koefisien tetap dikali
+pangkat naik dari satu variabel, seperti resep yang sama untuk semua nilai.}
+
+\kamus{jari-jari konvergensi}{radius of convergence}{jarak terjauh dari pusat
+tempat resep itu masih menghasilkan bilangan berhingga.}
+
+\begin{teorema}
+Misalkan $\sum a_nx^n$ deret pangkat dengan jari-jari $R$. Maka deret itu
+konvergen mutlak untuk setiap $|x|<R$ dan divergen untuk setiap $|x|>R$.
+Selain itu
+\[
+  \frac{1}{R}=\limsup_{n\to\infty}|a_n|^{1/n},
+\]
+dengan kesepakatan $1/0=\infty$ dan $1/\infty=0$.
+\end{teorema}
+
+\begin{proof}
+Tetapkan $x\ne0$ dan tulis $|a_nx^n|^{1/n}=|x|\cdot|a_n|^{1/n}$. Menurut uji
+akar Bab 5, deret $\sum a_nx^n$ konvergen mutlak bila
+$\limsup_n|a_nx^n|^{1/n}<1$, yaitu bila $|x|<1/\limsup_n|a_n|^{1/n}$, dan
+divergen bila limit superior itu lebih besar dari $1$, sebab sukunya tidak
+menuju nol. Karena $x$ sebarang, batas antara kedua rejim itu tepat
+$R=1/\limsup_n|a_n|^{1/n}$, dan himpunan kekonvergenannya termuat di $[-R,R]$.
+\end{proof}
+
+Pada $|x|=R$ uji akar tidak memberi keputusan, dan memang tidak ada keputusan
+umum: $\sum x^n/n^2$ konvergen di kedua ujung, $\sum x^n/n$ hanya di $x=-1$, dan
+$\sum x^n$ di keduanya divergen.
+
+\begin{akibat}
+Bila $a_n\ne0$ untuk $n$ cukup besar dan $|a_{n+1}/a_n|\to L$, maka $R=1/L$
+dengan kesepakatan yang sama seperti di atas.
+\end{akibat}
+
+Alasannya adalah rantai ketaksamaan
+\[
+  \liminf|a_{n+1}/a_n|\le\liminf|a_n|^{1/n}\le\limsup|a_n|^{1/n}
+  \le\limsup|a_{n+1}/a_n|,
+\]
+yang dibuktikan sebagai latihan di Bab 5. Bila nisbah punya limit, keempat
+bilangan itu sama, jadi rumus nisbah dan rumus akar memberi $R$ yang sama. Dalam
+hitungan tangan, rumus nisbah hampir selalu lebih cepat.
+
+Sekarang bagian yang membuat deret pangkat berguna: ia boleh diturunkan dan
+diintegralkan suku demi suku, dan hasilnya berlaku di seluruh selang
+kekonvergenannya, bukan hanya di potongan kecilnya.
+
+\begin{teorema}[Turunan dan integral suku demi suku]
+Misalkan $\sum a_nx^n$ berjari-jari $R>0$. Maka untuk setiap $x$ dengan
+$|x|<R$,
+\[
+  \frac{d}{dx}\sum_{n\ge0}a_nx^n=\sum_{n\ge1}n\,a_nx^{n-1},
+  \qquad
+  \int_0^x\sum_{n\ge0}a_nt^n\,dt=\sum_{n\ge0}\frac{a_n}{n+1}x^{n+1},
+\]
+dan kedua deret baru itu juga berjari-jari $R$.
+\end{teorema}
+
+\begin{proof}
+Ambil $r$ dengan $0<r<R$ dan pilih $\rho$ dengan $r<\rho<R$. Deret
+$\sum|a_n|\rho^n$ konvergen, jadi ada $C$ dengan $|a_n|\rho^n\le C$ untuk semua
+$n$. Untuk $|x|\le r$,
+\[
+  |n\,a_nx^{n-1}|\le n\,\frac{C}{\rho}\left(\frac{r}{\rho}\right)^{n-1},
+\]
+dan deret $\sum_n n(r/\rho)^{n-1}$ konvergen sebab $r/\rho<1$. Uji-$M$ karena
+itu memberi keseragaman deret turunan pada $[-r,r]$, dan teorema turunan suku
+demi suku memberi kesamaan di sana. Setiap titik $|x|<R$ termuat pada suatu
+$[-r,r]$ dengan $r<R$, jadi kesamaannya berlaku di seluruh $(-R,R)$. Untuk
+integral, jalan yang sama dipakai pada $\sum|a_n|r^{n-1}$, yang juga konvergen.
+Jari-jari tidak berubah karena koefisien deret turunan adalah $na_n$, dan
+\[
+  \limsup_n(n|a_n|)^{1/n}
+  =\limsup_n|a_n|^{1/n}\cdot\lim_n n^{1/n}
+  =\limsup_n|a_n|^{1/n},
+\]
+sebab $n^{1/n}\to1$. Argumen yang sama berlaku untuk koefisien $a_n/(n+1)$,
+karena $(n+1)^{-1/n}\to1$.
+\end{proof}
+
+Bukti itu memakai seluruh isi bab: uji-$M$ untuk keseragaman, teorema turunan
+untuk memindahkan limit, dan rumus jari-jari untuk memastikan deret baru tidak
+menyempit. Keseragaman hanya diklaim pada $[-r,r]$, $r<R$; pada contoh pembuka,
+$\ln(1+x)$ seragam pada setiap $[-r,r]$ dengan $r<1$ tetapi tidak pada $(-1,1)$.
+
+\begin{contoh}
+Untuk $|x|<1$, deret geometri memberi $\sum_{n\ge0}x^n=1/(1-x)$. Menurunkan
+suku demi suku,
+\[
+  \sum_{n\ge1}n\,x^{n-1}=\frac{1}{(1-x)^2},
+\]
+dan pada $x=1/2$ ruas kanannya $4$. Jumlah dua ratus suku pertama deret di ruas
+kiri memberi $4.000000$ pada presisi mesin. Mengintegralkan suku demi suku dari
+$0$ ke $x$ memberi
+\[
+  \sum_{n\ge1}\frac{(-1)^{n+1}x^n}{n}=\ln(1+x),\qquad |x|<1,
+\]
+yaitu deret pada pembuka bab. Kedua hasil itu bukan kebetulan numerik: keduanya
+konsekuensi teorema di atas, karena $1/2$ dan $x$ yang dipakai terletak di dalam
+jari-jari.
+\end{contoh}
+
+Dengan teorema itu, pertanyaan pembuka bab terjawab. Deret $\ln(1+x)$ konvergen
+seragam pada setiap $[-r,r]$ dengan $r<1$, sebab $|(-1)^{n+1}x^n/n|\le r^n/n$
+dan $\sum r^n/n$ konvergen. Pada $(-1,1)$ keseragamannya gagal, dan harganya
+terlihat pada jumlah suku: $16$ di $x=0.5$, $5248$ di $x=0.999$. Di titik ujung
+$x=1$ deretnya tetap konvergen, sebab menjadi deret harmonik berganti tanda. Itu
+bukan akibat jari-jari melainkan teorema Abel: bila $\sum a_nR^n$ konvergen,
+maka $\sum a_nx^n$ konvergen seragam pada $[0,R]$. Kita kutip; buktinya ada di
+Rudin, bab "Some Special Functions", Teorema 8.2.
+
+Satu peringatan praktis: batas seragam dirancang untuk kasus terburuk. Pada
+deret $\ln(1+x)$ dengan $N=12$ dan $r=0.5$, batas $r^{13}/13=9.4\times10^{-6}$
+hanya tiga kali galat sebenarnya di $x=0.5$, tetapi di $x=0.1$ ia longgar sekitar
+sepuluh ribu kali.
+
+\begin{resep}
+\begin{enumerate}
+\item Tulis selisihnya, $M_N=\sup_{x\in E}|f_N(x)-f(x)|$, atau taksir dengan
+      nilai di titik yang paling buruk.
+\item Cari titik $x_N$ yang memaksimalkan selisih itu; biasanya puncak, atau
+      titik yang mengejar ujung selang.
+\item Hitung $M_N$ sebagai ungkapan yang hanya memuat $N$, lalu periksa
+      $M_N\to0$.
+\end{enumerate}
+Peringatan urutan: cari $x_N$ lebih dulu untuk setiap $N$, baru hitung
+supremumnya. Membalik urutan itu, yaitu memilih $N$ lalu mencari satu $x$ yang
+mewakili semua titik, memberi kesimpulan seragam yang salah pada $g_n$ di
+Gambar~\ref{fig:puncak}, yang puncaknya justru bergeser bersama $N$.
+\end{resep}
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Tiga kelompok angka di bawah ini dihitung ulang di lab komputasi. Yang pertama
+mengukur kegagalan keseragaman $x^n$ pada $[0,1]$.
+
+\begin{center}
+\small
+\begin{tabular}{rrrrr}
+\hline
+$n$ & $\sup_{[0,1]}x^n$ & $(1-\tfrac1n)^n$ & $(1-\tfrac1{\sqrt n})^n$ & $0.9^{\,n}$\\
+\hline
+$10$    & $1$ & $0.3486784401$ & $2.234\times10^{-2}$ & $0.3486784401$\\
+$100$   & $1$ & $0.3660323413$ & $2.656\times10^{-5}$ & $2.656\times10^{-5}$\\
+$1000$  & $1$ & $0.3676954248$ & $1.108\times10^{-14}$ & $1.748\times10^{-46}$\\
+$10000$ & $1$ & $0.3678610464$ & $2.249\times10^{-44}$ & $<10^{-450}$\\
+\hline
+\end{tabular}
+\end{center}
+
+Kolom kedua dan kelima adalah dua laju yang berbeda. Di titik tetap $x=0.9$
+galatnya $0.9^n$, turun dengan faktor $0.9$ per suku: perlu $132$ suku untuk
+mencapai $10^{-6}$, sedangkan di $x=0.5$ cukup $20$ suku dan di $x=0.99$ perlu
+$1375$. Setiap titik punya laju eksponensialnya sendiri, dengan basis $x$. Kolom
+kedua tidak bergerak: galat seragam pada $[0,1]$ tetap $1$ untuk semua $n$, jadi
+laju penurunannya nol. Yang dibandingkan karena itu bukan dua bilangan,
+melainkan sesuatu yang menuju nol dan sesuatu yang tidak.
+
+Kelompok angka kedua adalah galat aproksimasi $e^{x}$ dengan deret Taylor di
+$x=1$. Sisa deretnya dibatasi $\frac{e}{(N+1)!}$ untuk $x\in[0,1]$, sebab
+turunan ke-$(N+1)$ dari $e^x$ adalah $e^x\le e$.
+
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\hline
+$N$ & $S_N(1)=\sum_{k=0}^{N}\frac{1}{k!}$ & $e-S_N(1)$ & batas $\frac{e}{(N+1)!}$\\
+\hline
+$5$  & $2.716666666667$ & $1.615\times10^{-3}$ & $3.775\times10^{-3}$\\
+$10$ & $2.718281801146$ & $2.731\times10^{-8}$ & $6.810\times10^{-8}$\\
+$15$ & $2.718281828459$ & $5.063\times10^{-14}$ & $1.299\times10^{-13}$\\
+$20$ & $2.718281828459$ & $0$ (di bawah presisi) & $5.320\times10^{-20}$\\
+\hline
+\end{tabular}
+\end{center}
+
+Batas itu selalu benar dan lebih besar daripada galat sebenarnya, dengan faktor
+sekitar $2.3$ sampai $2.6$: sisanya kira-kira
+$\frac{1}{(N+1)!}\left(1+\frac{1}{N+2}+\cdots\right)$, dan $e$ muncul karena
+sukunya dijumlahkan di $x=1$. Pada $N=20$ galat sebenarnya tidak terukur lagi,
+sebab $5.3\times10^{-20}$ jauh di bawah satu unit pembulatan terakhir pada
+besaran $2.718$, yaitu sekitar $4.4\times10^{-16}$.
+
+Kelompok angka ketiga adalah tiga jari-jari konvergensi, dihitung dengan dua
+cara berbeda pada suku ke-$1000$.
+
+\begin{center}
+\small
+\begin{tabular}{llrr}
+\hline
+deret & $R$ dari rumus & $|a_{1000}/a_{1001}|$ & $|a_{1000}|^{1/1000}$\\
+\hline
+$\sum x^n/n^2$          & $1$              & $1.0020010000$ & $0.9862794856$\\
+$\sum \frac{n!}{n^n}x^n$ & $e=2.7182818285$ & $2.7169239322$ & $0.3694916635$\\
+$\sum \frac{2^n}{n}x^n$  & $0.5$            & $0.5005000000$ & $1.9862320968$\\
+\hline
+\end{tabular}
+\end{center}
+
+Kolom ketiga menaksir $R$ dari nisbah dua suku berurutan, kolom keempat dari
+kebalikan taksiran akar. Untuk deret kedua, $|a_n/a_{n+1}|=(1+1/n)^n$ naik ke
+$e$; pada $n=1000$ nilainya $2.7169239$, meleset $0.0014$. Untuk deret pertama,
+$(1+1/n)^2$ turun ke $1$ dari atas, jadi taksirannya $1.0020$, dan kekeliruan
+$0.0020$ itu tanda kita baru di suku ke-$1000$. Kolom keempat lebih lambat menuju
+limitnya, sebab $|a_n|^{1/n}$ mendekati $1$ dengan laju $|\ln a_n|/n$; pada
+$n=1000$ selisihnya $0.0016$, sebanding dengan $\ln(2\pi n)/(2n)$ dikali $1/e$.
+
+\kertas{Ringkasan angka. Galat seragam $x^n$ pada $[0,1]$ adalah $1$ untuk setiap
+$n$, sementara galat di titik tetap $x$ adalah $x^n$: $132$ suku untuk $10^{-6}$
+di $x=0.9$, $1375$ suku di $x=0.99$. Deret $e^x$ di $x=1$ mencapai galat
+$2.7\times10^{-8}$ dengan $10$ suku, di bawah batas $6.8\times10^{-8}$.
+Jari-jari tiga deret adalah $1$, $e$, dan $0.5$; integral
+$\int_0^1 nx(1-x^2)^n dx=n/(2(n+1))$ bernilai $0.4545$ pada $n=10$, sementara
+limit fungsinya nol.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Kode berikut dijalankan apa adanya pada Python 3.14.4 dengan NumPy 2.5.2 dan
+SciPy 1.18.0. Ia menghitung ulang ketiga kelompok angka di atas, ditambah
+kuadratur untuk contoh tandingan integral.
+
+\begin{lab}
+\begin{verbatim}
+import math
+import numpy as np
+from scipy.integrate import quad
+
+print("n      sup[0,1]   (1-1/n)^n   (1-1/sqrt n)^n     0.9^n")
+for n in (10, 100, 1000, 10000):
+    a = (1 - 1/n)**n
+    b = (1 - 1/math.sqrt(n))**n
+    print(f"{n:6d} {1.0:9.6f} {a:11.6f} {b:17.3e} {0.9**n:10.3e}")
+
+print()
+print("suku ln(1+x) agar galat < 1e-6")
+for x in (0.5, 0.9, 0.99, 0.999):
+    N = 1
+    while x**N / N > 1e-6:
+        N += 1
+    s = sum(((-1)**(k+1)) * x**k / k for k in range(1, N + 1))
+    print(f"x={x:6.3f}  N={N:5d}  galat={abs(math.log(1+x) - s):.3e}")
+
+print()
+print("N      S_N              e - S_N        e/(N+1)!")
+for N in (5, 10, 15, 20):
+    s = math.fsum(1/math.factorial(k) for k in range(N + 1))
+    b = math.e / math.factorial(N + 1)
+    print(f"{N:3d} {s:.12f} {math.e - s:14.3e} {b:13.3e}")
+
+print()
+print("jari-jari dari nisbah suku ke-1000 dan ke-1001 (log-space)")
+la = lambda n: -2 * math.log(n)
+lb = lambda n: math.lgamma(n + 1) - n * math.log(n)
+lc = lambda n: n * math.log(2) - math.log(n)
+for nama, g in (("a", la), ("b", lb), ("c", lc)):
+    R = math.exp(g(1000) - g(1001))
+    H = math.exp(g(1000) / 1000)
+    print(f"deret {nama}: R = {R!r}   |a_n|^(1/n) = {H!r}")
+print("e =", repr(math.e))
+
+print()
+print("f_n(x) = n x (1-x^2)^n di [0,1]")
+for n in (10, 100):
+    val, _ = quad(lambda x, n=n: n * x * (1 - x*x)**n, 0, 1)
+    print(f"n={n:4d}  integral={val!r}  n/(2(n+1))={n/(2*(n+1))!r}")
+\end{verbatim}
+\end{lab}
+
+Keluaran yang diperoleh:
+
+\begin{verbatim}
+n      sup[0,1]   (1-1/n)^n   (1-1/sqrt n)^n     0.9^n
+    10  1.000000    0.348678         2.234e-02  3.487e-01
+   100  1.000000    0.366032         2.656e-05  2.656e-05
+  1000  1.000000    0.367695         1.108e-14  1.748e-46
+ 10000  1.000000    0.367861         2.249e-44  0.000e+00
+
+suku ln(1+x) agar galat < 1e-6
+x= 0.500  N=   16  galat=3.049e-07
+x= 0.900  N=   89  galat=4.478e-07
+x= 0.990  N=  721  galat=4.915e-07
+x= 0.999  N= 5248  galat=4.993e-07
+
+N      S_N              e - S_N        e/(N+1)!
+  5 2.716666666667      1.615e-03     3.775e-03
+ 10 2.718281801146      2.731e-08     6.810e-08
+ 15 2.718281828459      5.063e-14     1.299e-13
+ 20 2.718281828459      0.000e+00     5.320e-20
+
+jari-jari dari nisbah suku ke-1000 dan ke-1001 (log-space)
+deret a: R = 1.0020010000000001   |a_n|^(1/n) = 0.9862794856312105
+deret b: R = 2.7169239322350776   |a_n|^(1/n) = 0.36949166347196
+deret c: R = 0.5004999999999973   |a_n|^(1/n) = 1.9862320968418674
+e = 2.718281828459045
+
+f_n(x) = n x (1-x^2)^n di [0,1]
+n=  10  integral=0.4545454545454544  n/(2(n+1))=0.45454545454545453
+n= 100  integral=0.4950495049504951  n/(2(n+1))=0.49504950495049505
+\end{verbatim}
+
+Empat hal perlu dibaca dari keluaran ini. Pertama, kolom kedua tetap $1.000000$
+untuk keempat nilai $n$, sementara kolom kelima sudah $3.5\times10^{-1}$ pada
+$n=10$: kegagalan keseragaman terlihat sebagai angka. Kedua, baris terakhir kolom
+kelima tercetak $0.000e+00$ bukan karena galatnya nol, melainkan karena
+$0.9^{10000}=10^{-457.6}$ di bawah batas \texttt{float64} terkecil yang masih
+normal: underflow.
+
+Ketiga, kolom keempat memberi bukti numerik untuk dua limit yang sudah
+dibuktikan: $(1-1/n)^n\to1/e=0.3678794$ dan $(1-1/\sqrt n)^n\to0$, yang runtuh
+jauh lebih cepat.
+
+Keempat, kuadratur SciPy memberi $0.4545454545454544$ untuk $n=10$, sedangkan
+rumus $n/(2(n+1))$ memberi $0.45454545454545453$; selisih satu unit pembulatan
+terakhir. Tanpa bentuk tertutup, kita tidak punya cara memastikan kuadratur tidak
+mengukur hal lain.
+
+Satu hal yang tidak terlihat di keluaran: semua batas di bab ini batas atas.
+Baris $N$ yang dilaporkan kode dipilih dengan memeriksa $x^N/N$, jadi $N$ itu
+dijamin cukup, bukan terkecil; galat sebenarnya $3.0\times10^{-7}$ sampai
+$5.0\times10^{-7}$ di bawah $10^{-6}$.
+
+\begin{untukdosen}
+Urutan mengajar yang saya sarankan: mulai dari kegagalan pustaka $\ln(1+x)$ pada
+pembuka, lalu definisi titik demi titik dan seragam dengan $x^n$ sebagai contoh
+tunggal. Jangan buru-buru ke uji-$M$. Habiskan satu pertemuan penuh untuk
+memastikan mahasiswa bisa mengatakan dengan tepat mengapa $x^n$ gagal seragam
+dan mengapa $(1-1/\sqrt n)^n$ berhasil. Setelah itu uji-$M$, lalu tiga teorema
+pertukaran, masing-masing dengan contoh tandingannya sendiri.
+
+Dua miskonsepsi yang paling sering muncul. Pertama, mahasiswa mengira "setiap
+$f_n$ kontinu dan $f_n\to f$" sudah cukup untuk menyimpulkan $f$ kontinu; mereka
+lupa bahwa yang dibutuhkan keseragaman, dan $x^n$ adalah obatnya. Kedua,
+mahasiswa mengira keseragaman turun-menurun: bila $f_n\to f$ seragam maka
+$f_n'\to f'$. Contoh $\sin(nx)/n$ mematahkan itu dalam satu baris; sebaiknya
+ditulis di papan sebelum teorema turunan muncul.
+
+Aktivitas papan tulis yang berhasil: tulis empat barisan fungsi tanpa nama,
+yaitu $x^n$, $x^n/n$, $nx(1-x^2)^n$, dan $\sin(nx)/n$, lalu minta kelas
+menentukan untuk masing-masing apakah konvergen titik demi titik, seragam, dan
+apakah integral serta turunannya bertukar. Jawabannya membentuk tabel $4\times4$
+yang bisa diisi dalam dua puluh menit. Mahasiswa siap lanjut bila ia bisa
+menjelaskan mengapa deret pangkat hanya seragam pada $[-r,r]$.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+\item Kekonvergenan titik demi titik memberi setiap titik ambangnya sendiri;
+      kekonvergenan seragam menuntut satu ambang untuk semua titik sekaligus,
+      dan perbedaan itu setara dengan $\|f_n-f\|_\infty\to0$.
+\item Uji-$M$ Weierstrass menyimpulkan keseragaman dari satu deret bilangan
+      pembanding. Ia syarat cukup, bukan perlu; kegagalannya tidak membuktikan
+      apa pun.
+\item Limit seragam fungsi kontinu kontinu, dan integralnya boleh ditukar dengan
+      limit. Turunan menuntut keseragaman barisan turunan ditambah kekonvergenan
+      di satu titik.
+\item Ketiga hipotesis itu tidak dapat dihapus: $x^n$, $nx(1-x^2)^n$, dan
+      $\sin(nx)/n$ masing-masing mematahkan satu di antaranya.
+\item Deret pangkat konvergen mutlak di dalam jari-jarinya dan divergen di luar;
+      di dalam jari-jari ia boleh diturunkan dan diintegralkan suku demi suku
+      tanpa mengubah jari-jarinya.
+\item Keseragaman selalu lokal: $\ln(1+x)$ seragam pada setiap $[-r,r]$, $r<1$,
+      tetapi tidak pada $(-1,1)$, dan harganya terlihat pada jumlah suku, dari
+      $16$ di $x=0.5$ sampai $5248$ di $x=0.999$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+\item Hitung dengan Python, untuk $n=10,100,1000$, nilai
+      $\sup_{x\in[0,1]}|x^n|$ dan nilai $x^n$ di $x=0.9$. Jelaskan mengapa
+      kolom pertama datar dan kolom kedua tidak.
+
+\item Buktikan: bila $f_n\to f$ seragam pada $E$ dan setiap $f_n$ terbatas pada
+      $E$, maka $f$ terbatas pada $E$ dan barisan $\|f_n\|_\infty$ terbatas.
+      Tunjukkan dengan contoh bahwa kekonvergenan titik demi titik tidak cukup.
+
+\item Misalkan $f_n(x)=x/(1+nx^2)$ pada $\mathbb{R}$. Tunjukkan bahwa
+      $f_n\to0$ titik demi titik, tentukan $\|f_n\|_\infty$, dan buktikan bahwa
+      kekonvergenannya seragam. Berapa $n$ terkecil sehingga
+      $\|f_n\|_\infty<0.01$?
+
+\item Nilai klaim ini: benar, salah, atau belum cukup bukti. "Karena $x^n\to0$
+      untuk setiap $x\in[0,1)$, barisan $f_n(x)=x^n$ konvergen seragam pada
+      $[0,1)$." Sebutkan tepat di mana penalaran itu patah, dan berikan satu
+      barisan titik yang membuktikannya.
+
+\item Hitung galat $|e-S_N(1)|$ untuk $N=5,10,15,20$ dan bandingkan dengan
+      batas $e/(N+1)!$. Berapa $N$ terkecil agar batas itu di bawah
+      $10^{-16}$? Apakah galat sebenarnya masih bisa diukur pada $N$ itu?
+
+\item Buktikan bahwa deret $\sum_{n\ge0}x^n(1-x)$ konvergen titik demi titik
+      pada $[0,1]$ tetapi tidak seragam, dengan menghitung jumlahnya lebih dulu
+      dan memeriksa kekontinuannya.
+
+\item Hitung jari-jari konvergensi $\sum x^n/n^2$, $\sum(n!/n^n)x^n$, dan
+      $\sum 2^nx^n/n$ dari nisbah suku ke-$1000$ dan ke-$1001$, lalu bandingkan
+      dengan nilai eksaknya. Deret mana yang taksirannya paling lambat, dan
+      mengapa?
+
+\item Buktikan bahwa bila $f_n\to f$ seragam pada $E$ dan $g$ terbatas pada $E$,
+      maka $f_ng\to fg$ seragam pada $E$. Tunjukkan dengan contoh bahwa
+      keterbatasan $g$ tidak dapat dihapus.
+
+\item Untuk $f_n(x)=nx(1-x^2)^n$ pada $[0,1]$, hitung titik puncak, tinggi
+      puncak, dan $\int_0^1f_n$ untuk $n=10,100$. Bandingkan tinggi puncak
+      dengan $\sqrt{n/(2e)}$ dan jelaskan mengapa luasnya tidak menuju nol.
+
+\item Turunkan $\sum_{n\ge0}x^n=1/(1-x)$ suku demi suku dan pakai hasilnya
+      untuk menghitung $\sum_{n\ge1}n/2^n$. Berapa suku yang diperlukan agar
+      jumlah parsialnya berada dalam $10^{-10}$ dari nilai eksaknya?
+\end{enumerate}
+
+\noindent\emph{Petunjuk untuk tiga butir tersulit.} Butir 4: sifat seragam
+menuntut satu $N$ untuk semua $x$, jadi cukup tunjukkan bahwa untuk setiap $n$
+ada $x$ dengan $x^n\ge\tfrac12$; ambil $x=2^{-1/n}$. Butir 6: jumlahkan deret
+geometrinya lebih dulu; hasilnya fungsi yang berbeda dari limitnya di satu titik,
+dan limit seragam fungsi kontinu harus kontinu. Butir 8: tulis
+$|f_ng-fg|=|f_n-f|\,|g|$ dan pakai $\|g\|_\infty$; untuk contoh tandingannya
+ambil $g(x)=1/x$ pada $(0,1)$ dan $f_n$ yang mengecil seragam tetapi tidak
+cukup cepat.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang terbukti dengan bukti lengkap di bab ini: kesetaraan keseragaman dengan
+norma supremum, kriteria Cauchy seragam, uji-$M$ Weierstrass, ketiga teorema
+pertukaran beserta contoh tandingannya, rumus jari-jari lewat limit superior, dan
+ketetapan jari-jari pada penurunan serta pengintegralan suku demi suku. Dua hasil
+dikutip tanpa bukti: ketidakdiferensialan fungsi Weierstrass (1872, diperluas
+Hardy 1916) dan teorema Abel. Sumber primernya Rudin, \emph{Principles of
+Mathematical Analysis}, bab "Sequences and Series of Functions" (7.1--7.17) dan
+"Some Special Functions" (8.1--8.2); Abbott, \emph{Understanding Analysis}, bab
+"Sequences and Series of Functions"; Stewart, \emph{Calculus}, bagian "Power
+Series".
+
+Yang sering dipopulerkan berlebihan adalah gagasan bahwa keseragaman
+menghilangkan semua masalah. Ia menghilangkan tiga masalah tertentu, pada selang
+tempat ia berlaku, dan tidak lebih. Pada deret Fourier keseragaman justru jarang,
+dan pertukaran integral tetap sah karena alasan lain. Pada aproksimasi jaringan
+saraf, yang dipakai adalah kekonvergenan pada himpunan hingga.
+
+Pertanyaan terbuka: bila $f_n$ hanya diketahui lewat nilai pada grid berhingga,
+seberapa besar kekeliruan taksiran $\|f_n\|_\infty$ oleh maksimum di grid? Tanpa
+asumsi keteraturan tidak ada jawaban umum, dan untuk puncak sempit grid yang
+tampak rapat bisa meleset seluruhnya. Batas keberlakuan: semua fungsi di sini
+bernilai real pada himpunan bagian $\mathbb{R}$, dengan aritmetika 64-bit pada
+Python 3.14.4, NumPy 2.5.2, dan SciPy 1.18.0.
+\end{untukpeneliti}
+
+\peta{Bab 14 pada Rudin, \emph{Principles of Mathematical Analysis}, bab
+"Sequences and Series of Functions" (7.1--7.17) dan "Some Special Functions"
+(8.1--8.2); pada Abbott, \emph{Understanding Analysis}, bab "Sequences and
+Series of Functions"; pada Stewart, \emph{Calculus}, bagian "Power Series" dan
+"Taylor and Maclaurin Series". Basisnya paruh kedua bab \emph{Integral, Deret
+Fungsi, dan Pertukaran Limit} edisi pertama buku ini. Bab ini memakai definisi
+limit dan kriteria Cauchy dari Bab 4, uji akar Bab 5, kekontinuan seragam Bab 11,
+serta kriteria keterintegralan Bab 13, semuanya dirujuk, tidak diulang.}

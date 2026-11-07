@@ -1,0 +1,239 @@
+% Answer keys for Chapters 1--5. This file is \input directly inside the document.
+% Every number comes from _wrap/kunci/cek.py.
+
+\section*{Chapter 1: The Language of Mathematics and the Art of Proof}
+\begin{enumerate}[label=\textbf{1.\arabic*}]
+  \item $\exists \varepsilon>0\ \forall N\in\mathbb{N}\ \exists n\ge N:\ |a_{n}-L|\ge
+        \varepsilon$. In words: there is one tolerance that is never attained,
+        because however large $N$ is chosen, there is always a later term that
+        deviates by at least that $\varepsilon$.
+
+  \item The negation of ``every prime $>2$ is odd'' is ``some prime $>2$ is even''.
+        That negation is \emph{false}, so the original statement is true and there is
+        no counterexample. For the second claim, the negation is ``for every $n$,
+        $n^{2}+n+41$ is prime''; the counterexample is $n=40$ with $1681=41^{2}$.
+
+  \item $n^{2}+n=n(n+1)$. Cases: $n=2k$ gives $2k(2k+1)$, $n=2k+1$ gives
+        $(2k+1)(2k+2)=2(2k+1)(k+1)$. Contraposition: if $n(n+1)$ is odd then $n$
+        and $n+1$ are both odd, yet two consecutive numbers cannot both be odd.
+
+  \item Check: $n=1$ gives $1$, $n=2$ gives $5$, $n=3$ gives $14$, matching
+        $n(n+1)(2n+1)/6$. Induction step: add $(k+1)^{2}$ to both sides, then
+        $\frac{k(k+1)(2k+1)}{6}+(k+1)^{2}=\frac{(k+1)(k+2)(2k+3)}{6}$.
+
+  \item Strong induction on $n$. For $n=1$: $k=0$, $m=1$. For even $n$ write
+        $n=2j$ with $j<n$; the induction hypothesis gives $j=2^{k}m$, so that
+        $n=2^{k+1}m$ with $m$ still odd. The strong hypothesis is used exactly here:
+        $j<n$, not $j=n-1$.
+
+  \item (a) True, the ordinary induction principle. (b) False: take $P(n)$ to mean
+        $n\le 10^{6}$; the counterexample is $n=10^{6}+1$. (c) False: $n=40$ gives
+        $1681=41^{2}$. (d) False: $n=3$ is divisible by $3$ but not by $6$.
+
+  \item The script finds $87$ primes out of $101$ values for $n=0$ through $100$. It
+        fails at $40$, $41$, $44$, $49$, $56$, $65$, $76$, $81$, $82$, $84$, $87$, $89$,
+        $91$, $96$. Only $5$ of the $14$ have the form $p-1$ or $p$: $40,41$ via
+        $p=41$, $82$ via $83$, $89$, $96$ via $97$.
+
+  \item $2^{1}=2>1$; $2^{2}=4=4$; $2^{3}=8<9$; $2^{4}=16=16$; $2^{5}=32>25$. Hence
+        $n_{0}=5$. Induction: if $2^{k}>k^{2}$ and $k\ge 5$, then
+        $2^{k+1}>2k^{2}\ge(k+1)^{2}$ because $k^{2}-2k-1>0$.
+
+  \item 
+The claim is false, because $n=40$ gives $40^{2}+40+41=1\,681=41^{2}$, which
+        is not prime. Forty data points only support it, they do not prove it: one
+        counterexample is enough to refute ``for every $n\ge0$''.
+
+  \item False: $n=2$ gives $4\mid 4$ but $4\nmid 2$. The correct claim is:
+        $4\mid n^{2}$ implies $2\mid n$. Proof by contraposition: if
+        $n=2k+1$ then $n^{2}=4k^{2}+4k+1\equiv 1 \pmod 4$.
+\end{enumerate}
+
+\section*{Chapter 2: Sets, Relations, Functions, and Cardinality}
+\begin{enumerate}[label=\textbf{2.\arabic*}]
+  \item $x\in A\cap(B\cup C)\iff x\in A\wedge(x\in B\vee x\in C)\iff
+        (x\in A\wedge x\in B)\vee(x\in A\wedge x\in C)$, using distributivity of
+        $\wedge$ over $\vee$. Second: $x\in A\setminus(B\setminus C)\iff x\in
+        A\wedge(\neg x\in B\vee x\in C)\iff x\in(A\setminus B)\cup(A\cap C)$.
+
+  \item False. The smallest counterexample: $A=\{1\}$ with $R=\varnothing$; the empty
+        relation is vacuously symmetric and transitive, but $(1,1)\notin R$. What is
+        missing is reflexivity for elements that occur in no pair at all.
+
+  \item Take $S_{1},S_{2}\subseteq A$ with $f(S_{1})=f(S_{2})$. For $s\in S_{1}$
+        there is $t\in S_{2}$ with $f(s)=f(t)$, and injectivity gives $s=t\in S_{2}$.
+        Without injectivity: $f$ constant on $\{1,2\}$ makes $f(\{1\})=f(\{2\})$.
+
+  \item The direction $(\Leftarrow)$ is trivial. For $(\Rightarrow)$: if $a=b$, the
+        equality $\{\{a\}\}=\{\{c\},\{c,d\}\}$ forces $\{c\}=\{c,d\}$, so $c=d=a$. If
+        $a\ne b$, then $\{a\}$ must equal $\{c\}$, since $\{c,d\}$ has size
+        two; so $a=c$ and then $b=d$.
+
+  \item Define $g:f(A)\to A$ by choosing one preimage for each $y\in f(A)$;
+        $g$ is injective, so $|f(A)|\le|A|$ by the previous lemma. If $f$ is not
+        injective, two elements of $A$ give one value, so $|f(A)|<|A|$.
+
+  \item $\binom{5}{2}=10$ partitions of type $2+3$ and $5$ of type $1+4$, altogether
+        $15=2^{4}-1=S(5,2)$. The script counts partitions directly and also
+        gives $15$; the total number of equivalence relations on $5$ elements is $52$.
+
+  \item $\pi(7,5)=T_{12}+5=78+5=83$. For $1000$: $T_{44}=990\le 1000<T_{45}=1035$,
+        so $s=44$, $n=10$, $m=34$; the check $\pi(34,10)=990+10=1000$.
+
+  \item Cumulative through $k=9$ is $27$; level $k=10$ contains $1/9,\,3/7,\,7/3,\,
+        9/1$ at positions $28$--$31$, so $7/3$ sits at position $30$. Because
+        $\varphi(11)=10$, position $41$ is the last term of level $11$, namely
+        $10/1$.
+
+  \item Arrange $A_{n}=\{a_{n1},a_{n2},\dots\}$ and then run the Cantor diagonal over
+        the pairs $(n,m)$: every member of $\bigcup A_{n}$ appears at least once,
+        and discarding the repeated appearances does not increase the count.
+
+  \item $g(x)=\tan\bigl(\pi(x-\tfrac12)\bigr)$ is a bijection from $(0,1)$ onto
+        $\mathbb{R}$. Its domain must be restricted because $\tan$ is infinite
+        at $\pm\tfrac12\pi$; on $[0,1]$ that formula is undefined at both ends.
+\end{enumerate}
+
+\section*{Chapter 3: Axioms of the Real Numbers and Supremum}
+\begin{enumerate}[label=\textbf{3.\arabic*}]
+  \item $a<b$ means $b-a>0$. Add $-a-b$ to both sides (closure under
+        addition): $(-a)-(-b)=b-a>0$, that is $-b<-a$. The reverse direction is obtained
+        by adding $a+b$. Hence multiplying by $-1$ reverses the direction.
+
+  \item Since $a<b$, we have $2a<a+b$ and $a+b<2b$; multiply by $\tfrac12>0$ and
+        we get $a<\frac{a+b}{2}<b$. Only the order axioms are used. Conversely
+        $\sup\{q:q^{2}<2\}$ does not exist in $\mathbb{Q}$, so completeness is required.
+
+  \item $\sup S=2$: $2$ is an upper bound, and $2-\varepsilon$ is not an upper bound because
+        $2-1/n>2-\varepsilon$ for $n>1/\varepsilon$. $\inf S=1$ is attained at
+        $n=1$, so a minimum exists; no maximum exists because $2\notin S$.
+
+  \item True. The premise is the Archimedean property: for every $x>0$ there is $n$ with
+        $1/n<x$. Consequently, if $m>0$ were the least, then $m/2>0$ is smaller
+        than $m$, a contradiction.
+
+  \item $q=1$: $h=1/4$, so $q+h=5/4$ with $(5/4)^{2}=1. 5625<2$. $q=7/5$:
+        $h=1/120$, so $q+h=169/120\approx 1. 4083$ with square
+        $1. 9834<2$. The second increment is $30$ times smaller: the closer $q$ is to
+        $\sqrt2$, the shorter the correction.
+
+  \item $|x^{3}-y^{3}|=|x-y|\,|x^{2}+xy+y^{2}|\le|x-y|\bigl(|x|^{2}+|x||y|+|y|^{2}\bigr)
+        \le 12\,|x-y|$, because each term is at most $4$. The triangle inequality
+        is used in the second step to split the absolute value of a sum.
+
+  \item If $S$ is open and $x$ is a limit point of $S^{c}$ with $x\in S$, then there is
+        $B(x,r)\subseteq S$, so that $B(x,r)\cap S^{c}=\varnothing$: a contradiction.
+        Conversely, if $S$ is closed and $x\in S^{c}$, the absence of a ball inside
+        $S^{c}$ makes $x$ a limit point of $S\subseteq S$, a contradiction.
+
+  \item $x_{1}=7/4$; $x_{2}=97/56\approx 1. 732143$;
+        $x_{3}=18817/10864\approx 1. 732050810$; $x_{4}$ and $x_{5}$ agree to
+        $16$ digits, $1. 732050807568877$. Relative error after
+        five steps: $1. 0363\times10^{-2}$, $5. 3145\times10^{-5}$,
+        $1. 4121\times10^{-9}$, $9. 97\times10^{-19}$, $4. 97\times10^{-37}$.
+        Ratios $e_{k+1}/e_{k}^{2}$: $0. 4330$, $0. 4949$, $0. 5000$, tending to $1/2$.
+
+  \item $0$ lies in every $(-1/n,1/n)$. For $x\ne0$ choose $n>1/|x|$, then
+        $x\notin(-1/n,1/n)$. A finite intersection of open sets stays open, whereas
+        this infinite intersection equals $\{0\}$, which is not open.
+
+  \item By density of $\mathbb{Q}$, in the interval $(a/\sqrt2,\,b/\sqrt2)$ there is
+        $q\in\mathbb{Q}$ with $q\ne0$. Then $a<q\sqrt2<b$, and $q\sqrt2$ is irrational
+        because if it were rational then $\sqrt2$ would be rational.
+\end{enumerate}
+
+\section*{Chapter 4: Sequences and Limits}
+\begin{enumerate}[label=\textbf{4.\arabic*}]
+  \item $|x_{n}-\tfrac23|=\Bigl|\frac{3(2n-1)-2(3n+4)}{3(3n+4)}\Bigr|
+        =\frac{11}{9n+12}$. The condition is $n>\frac{11/\varepsilon-12}{9}$, so
+        $N(\varepsilon)=\bigl\lfloor(11/\varepsilon-12)/9\bigr\rfloor$. For
+        $\varepsilon=10^{-3}$: $N=1220$, while the smallest term that qualifies is
+        $n=1221$ with error $9. 9991\times10^{-4}$.
+
+  \item $\bigl||x_{n}|-|L|\bigr|\le|x_{n}-L|$ (the reverse triangle inequality),
+        so the same $\varepsilon$ bound applies. The converse is false:
+        $x_{n}=(-1)^{n}$ gives $|x_{n}|=1$ convergent, but $x_{n}$ diverges.
+
+  \item For $x_{n}$: even terms $2+1/n\to2$, odd terms $1/n\to0$; hence
+        $\limsup=2$, $\liminf=0$ (the maximum $2. 5$ at $n=2$ is not the limsup). For
+        $y_{n}$: even $1+1/n\to1$, odd $-(1+1/n)\to-1$; hence $\limsup=1$,
+        $\liminf=-1$. Numerically at $n=1000$: $1{,}001$ and $-1{,}001$.
+
+  \item Partly right, wrong conclusion. It is true that $(1+1/n)^{n}$ increases and
+        is bounded by $3$, so its limit exists and is at most $3$. But an upper bound
+        is not the value of the limit: the limit is $e\approx 2. 7183$.
+
+  \item $3=\bigl(3^{n}\bigr)^{1/n}\le(2^{n}+3^{n})^{1/n}\le 3\cdot 2^{1/n}$, and
+        $2^{1/n}\to1$ because $(1+\delta)^{n}\ge 1+n\delta$ (Bernoulli) gives
+        $\delta\le 2^{1/n}-1\le 1/n$. Both fences go to $3$.
+
+  \item The error is $<10^{-6}$ first at $n=12$ ($2. 6146\times10^{-7}$) and
+        $<10^{-12}$ at $n=21$. The ratio of successive errors settles at $0. 250000$, consistent with
+        $|x_{n+1}-2|=|x_{n}-2|/(\sqrt{2+x_{n}}+2)\to|x_{n}-2|/4$.
+
+  \item A Cauchy sequence is bounded: take $\varepsilon=1$ and get $N$; all terms after $N$
+        lie in $(x_{N}-1,x_{N}+1)$, and the rest are finitely many. A bounded monotone
+        sequence converges by the monotone convergence theorem, and a convergent sequence
+        is Cauchy.
+
+  \item $\varepsilon=10^{-3}$ gives the threshold $5/\varepsilon-2=4998$, so
+        $N=4998$ is valid. Errors: $n=4998$ gives exactly $10^{-3}$ (not yet qualifying), $n=4999$
+        gives $9. 9980\times10^{-4}$, $n=5000$ gives $9. 9960\times10^{-4}$.
+        $N-1=4997$ is not valid because $n=4998>4997$ still has error exactly
+        $\varepsilon$, not less.
+
+  \item Suppose $x_{n}\not\to L$; then there is $\varepsilon>0$ and a subsequence
+        $(x_{n_{k}})$ with $|x_{n_{k}}-L|\ge\varepsilon$. By
+        Bolzano--Weierstrass that subsequence has a subsequence converging to $L'$ with
+        $|L'-L|\ge\varepsilon$, contradicting the hypothesis.
+\end{enumerate}
+
+\section*{Chapter 5: Infinite Series}
+\begin{enumerate}[label=\textbf{5.\arabic*}]
+  \item $s_{20}=2. 4999451576$, whereas the sum is $5/2=2. 5$; the error is
+        $5. 4842\times10^{-5}$. The bound $\frac{r^{21}}{1-r}$ gives exactly the same
+        figure, $5. 4842\times10^{-5}$, because the tail is geometric with positive terms.
+
+  \item $\frac{1}{n(n+2)}=\frac12\bigl(\frac1n-\frac1{n+2}\bigr)$, so that
+        $s_{N}=\frac12\bigl(1+\frac12-\frac{1}{N+1}-\frac{1}{N+2}\bigr)$; its limit is
+        $\frac12\cdot\frac32=\frac34$.
+
+  \item Because $a_{n}\to0$, for $n\ge N$ we have $0\le a_{n}\le1$, so
+        $a_{n}^{2}\le a_{n}$; the comparison test closes it. The converse is false:
+        $a_{n}=1/n$ gives $\sum a_{n}^{2}$ convergent but $\sum a_{n}$ divergent.
+
+  \item False. The argument breaks at ``smaller than a geometric term of ratio $\tfrac12$ for
+        $n$ sufficiently large'': $1/n<(1/2)^{n}$ in fact fails, because $(1/2)^{n}$ shrinks
+        far faster. The comparison test needs an inequality on the whole tail. The
+        harmonic series diverges.
+
+  \item (a) Convergent, ratio test: the ratio $\to\tfrac12<1$. (b) Divergent, ratio test:
+        the ratio $2\bigl(\frac{n}{n+1}\bigr)^{2}\to2>1$. (c) Convergent, ratio test:
+        $\bigl(\frac{n}{n+1}\bigr)^{n}\to\frac1e\approx0. 3679<1$. (d) Divergent,
+        $p$-series with $p=\tfrac13\le1$.
+
+  \item $s_{10^{6}}=1. 6449330668$ and $\pi^{2}/6=1. 6449340668$; the difference is
+        $9. 9999950\times10^{-7}$, close to $\frac1N$. After the correction
+        $\frac1N-\frac{1}{2N^{2}}$ the result is $1. 6449340668$ with error
+        $2. 2\times10^{-16}$. Correct decimal digits: $5$ before, $15$ after.
+
+  \item We need $\frac{1}{\sqrt{N+1}}<10^{-3}$, that is $N+1>10^{6}$, so $N=10^{6}$.
+        At that $N$ the sum is $0. 6043986435$ while the limit is
+        $0. 6048986434$; the actual error is $5. 0000\times10^{-4}$, exactly half the
+        bound. The bound is loose by about a factor of two.
+
+  \item $|b_{n}|\le M$ gives $|a_{n}b_{n}|\le M|a_{n}|$. Because $\sum M|a_{n}|$
+        converges, the comparison test concludes that $\sum|a_{n}b_{n}|$ converges.
+
+  \item After $K$ blocks, the positive terms used run up to denominator $6K-1$ and the
+        negative terms up to $\frac{1}{2K}$, so
+        $S_{K}=H_{6K}-\frac12H_{3K}-\frac12H_{K}\to\ln6-\frac12\ln3=\ln(2\sqrt3)
+        \approx1. 2425$. Numerically $K=10^{6}$ gives $1. 2424531$. Its ratio to
+        $\ln2$ is $1. 7925$, so it is not a rational multiple of $\ln2$.
+
+  \item Write $p_{n}=\max(a_{n},0)$ and $q_{n}=\max(-a_{n},0)$; then
+        $a_{n}=p_{n}-q_{n}$ and $|a_{n}|=p_{n}+q_{n}$. If both of those series
+        converged, $\sum|a_{n}|$ would converge, contradicting conditional
+        convergence. Hence both diverge, and those two unbounded piles are the fuel
+        of the Riemann rearrangement theorem.
+\end{enumerate}

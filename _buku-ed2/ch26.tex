@@ -1,0 +1,1141 @@
+\chapter{Generalisasi, Regularisasi, dan Pelatihan}
+
+Sebuah tim keamanan membangun pendeteksi intrusi dari dua besaran mentah: banyak
+permintaan per detik dan ukuran muatan rata-rata. Dari dua besaran itu mereka
+menurunkan dua puluh satu ciri dengan mengalikan dan memangkatkan keduanya sampai
+derajat lima, lalu melatih pengklasifikasi logistik pada enam puluh koneksi berlabel.
+Pada data latihan, pendeteksi itu salah pada nol dari enam puluh koneksi. Pada dua
+puluh ribu koneksi baru yang tidak pernah dilihatnya, ia salah pada tiga puluh dua
+persen. Model yang sama, bobot yang sama, dua angka yang berbeda jauh.
+
+Angka nol itu bukan kebetulan dan bukan prestasi. Dengan dua puluh satu ciri dan enam
+puluh contoh, sebuah bidang pemisah selalu dapat ditemukan yang memotong setiap contoh
+latih dengan benar, termasuk contoh yang labelnya keliru. Yang dipelajari model itu
+bukan bentuk pemisah yang benar, melainkan posisi enam puluh titik itu. Begitu titiknya
+berganti, bidangnya salah tempat.
+
+Bab 25 mengajari kita menghitung gradien dan menurunkannya sampai galat latih kecil;
+Bab 20 mengajari kita membaca satu angka beserta ketidakpastiannya. Tidak satu pun
+menjawab pertanyaan yang menentukan di sini: besaran apa yang harus dikecilkan supaya
+angka di lapangan ikut mengecil, dan bagaimana memilih setelan latihan tanpa menipu diri
+sendiri.
+
+\begin{untukanak}
+Seorang murid diberi enam puluh soal latihan menjelang ujian. Ia belajar dengan cara
+menghafal: setiap soal beserta jawabannya, sampai huruf per huruf. Pada soal latihan ia
+selalu benar, seratus dari seratus, dan ia pulang dengan bangga. Pada ujian, soalnya
+berbeda: angkanya lain, kalimatnya lain, urutannya lain. Nilainya jatuh, dan gurunya
+bingung karena murid ini tampak paling rajin.
+
+Murid kedua belajar lebih lambat. Ia tidak menghafal jawaban, ia mencari polanya: kapan
+harus dibagi, kapan harus dikali, kapan jawabannya masuk akal. Pada soal latihan ia
+salah pada beberapa nomor, dan ia tidak bangga. Pada ujian ia justru lebih baik.
+
+Sekarang bagian yang membuat penasaran. Andaikan murid pertama diberi dua ribu soal
+latihan, bukan enam puluh. Apakah menghafal masih buruk? Ternyata tidak selalu: kalau
+soalnya cukup banyak dan bervariasi, menghafal menjadi cara belajar yang mahal tetapi
+bekerja. Jadi masalahnya bukan menghafal, melainkan menghafal dari contoh yang sedikit.
+Di bab ini kita akan tahu mengapa jumlah contoh dan kerumitan cara belajar harus
+seimbang, mengapa menambah kerumitan justru memperburuk nilai ujian, dan bagaimana
+mengukur keseimbangan itu tanpa harus menunggu ujian.
+\end{untukanak}
+
+\section{Dua galat dan satu jurang}
+\tingkat{dasar}
+
+Setiap model yang dilatih punya dua angka, dan keduanya dihitung dengan cara sama
+persis: proporsi kesalahan pada sekumpulan contoh. Bedanya hanya himpunan mana yang
+dipakai. Kalimat sehari-harinya: nilai ujian di rumah berbeda dari nilai ujian di
+sekolah, walaupun soalnya sama jenisnya.
+
+\kamus{generalisasi}{generalization}{kemampuan mengerjakan soal baru, bukan soal yang
+sudah dihafal}
+
+\begin{definisi}[Galat latih, galat populasi, dan jurang]
+\index{generalisasi}
+Misalkan contoh $(x_i,y_i)$ diambil dari distribusi $\mathcal{D}$ yang tidak diketahui.
+Untuk hipotesis $h$ dan galat 0-1, \emph{galat populasi} adalah
+$R(h)=\mathbb{P}_{(x,y)\sim\mathcal{D}}\bigl(h(x)\neq y\bigr)$, sedangkan \emph{galat
+latih} pada $n$ contoh adalah
+$\hat R_n(h)=\frac1n\sum_{i=1}^n \mathbf{1}\{h(x_i)\neq y_i\}$.
+Selisih $R(h)-\hat R_n(h)$ disebut \emph{jurang generalisasi} untuk $h$ itu.
+\end{definisi}
+
+Galat latih dapat dihitung; galat populasi tidak, sebab distribusinya tidak diketahui.
+Yang dapat kita lakukan hanyalah menaksirnya pada himpunan lain yang tidak dipakai
+melatih, dan penaksir itu sendiri bergoyang seperti setiap proporsi pada Bab 20. Jadi
+setiap angka "galat validasi" dalam bab ini adalah taksiran, bukan kebenaran.
+
+Sekarang dua penyakit yang berlawanan. Kalimat sehari-harinya: model yang terlalu
+sederhana tidak mampu menangkap polanya, sedangkan model yang terlalu rumit menghafal
+kebetulan.
+
+\begin{definisi}[Underfitting dan overfitting]
+\index{underfitting}
+\index{overfitting}
+Sebuah model \emph{underfitting} bila galat latih dan galat populasi keduanya tinggi:
+modelnya terlalu kaku untuk bentuk yang sebenarnya. Sebuah model \emph{overfitting}
+bila galat latih rendah tetapi jurang generalisasinya besar: modelnya menyesuaikan diri
+pada kebetulan data latih, bukan pada bentuk yang sebenarnya.
+\end{definisi}
+
+Kedua penyakit itu tidak simetris dalam praktik. Underfitting terlihat jelas: galat latih
+tinggi, dan menambah ciri menolong. Overfitting menipu, sebab satu-satunya angka yang
+tersedia dengan mudah, yaitu galat latih, justru tampak sempurna. Model pada pembuka bab
+adalah contoh paling murni: bobot terbesarnya $406{,}204$, tanda bahwa skornya bergantung
+pada perbedaan kecil di antara titik, bukan pada skala yang masuk akal.
+
+Yang mengatur keduanya adalah \emph{kapasitas}: seberapa kaya himpunan fungsi yang boleh
+dipilih model. Untuk pengklasifikasi linear atas $d$ ciri, kapasitas naik dengan $d$;
+untuk jaringan saraf, dengan jumlah unit, kedalaman, dan jumlah langkah latihan.
+Kapasitas bukan sekadar cacah parameter: model besar yang diregularisasi kuat dapat
+berperilaku seperti model kecil.
+
+\begin{bacakeras}
+Dua suara, bergantian.
+
+``Seratus dari seratus. Berarti ia paham, bukan?''
+
+``Belum tentu. Seratus dari seratus hanya berarti tidak ada soal yang baru.''
+
+``Jadi menghafal itu salah?''
+
+``Menghafal bukan salah. Menghafal dari sedikit contoh yang salah.''
+
+``Bedanya di mana?''
+
+``Di soal yang tidak ada di catatan. Hafalan menjawab yang sudah pernah dilihat.
+Pemahaman menjawab yang belum pernah dilihat.''
+
+``Dan kalau soalnya dua ribu, bukan enam puluh?''
+
+``Maka hafalan mulai menolong. Bukan karena hafalan berubah menjadi pemahaman, tetapi
+karena kebetulan yang tersimpan semakin banyak yang terpakai lagi.''
+
+Ucapkan sekali lagi, pelan: hafalan menjawab yang sudah ada, pemahaman menjawab yang
+belum ada. Ulangi baris itu sampai terasa wajar di mulut: sudah ada, belum ada.
+\end{bacakeras}
+
+Jurang generalisasi menyusut ketika contoh bertambah. Pada eksperimen kapasitas dengan
+anggaran langkah tetap, jurangnya $0{,}1338$ pada $n=60$, $0{,}0274$ pada $n=150$,
+$0{,}0193$ pada $n=600$, dan $0{,}0097$ pada $n=2400$, sedangkan galat latihnya hampir
+tidak bergerak di kisaran $0{,}17$ sampai $0{,}21$.
+
+\section{Dekomposisi bias-variansi}
+\tingkat{menengah}
+
+Pertanyaan yang lebih tajam: dari mana jurang itu berasal. Kalimat sehari-harinya:
+seorang penembak dapat meleset karena bidikannya bergeser ke satu arah, atau karena
+tangannya gemetar, dan dua sebab itu menuntut obat yang berbeda.
+
+\kamus{bias-variansi}{bias-variance}{meleset sistematis lawan gemetar; keduanya
+menyumbang galat, dan menekan yang satu kadang menaikkan yang lain}
+
+\begin{teorema}[Dekomposisi bias-variansi]
+\index{bias-variansi}
+Misalkan $y=f(x)+\varepsilon$ dengan $\mathbb{E}[\varepsilon]=0$ dan
+$\operatorname{Var}(\varepsilon)=\sigma^2$, dan misalkan $\hat f$ dilatih pada
+himpunan latih acak $D$ yang bebas dari $\varepsilon$. Untuk setiap $x$ tetap,
+\[
+\mathbb{E}_{D,\varepsilon}\bigl[(y-\hat f(x))^2\bigr]
+=\sigma^2
++\bigl(\mathbb{E}_D\hat f(x)-f(x)\bigr)^2
++\operatorname{Var}_D\bigl(\hat f(x)\bigr).
+\]
+\end{teorema}
+
+\begin{proof}[Bukti]
+Tulis $y-\hat f(x)=\varepsilon+\bigl(f(x)-\mathbb{E}_D\hat f(x)\bigr)
++\bigl(\mathbb{E}_D\hat f(x)-\hat f(x)\bigr)$, yaitu tiga suku: derau yang tidak dapat
+dikurangi, bias, dan simpangan dari rata-rata. Kuadratkan dan ambil harapannya. Suku
+silang yang memuat $\varepsilon$ lenyap karena $\mathbb{E}[\varepsilon]=0$ dan
+$\varepsilon$ bebas dari $D$; suku silang antara bias dan simpangan lenyap karena
+$\mathbb{E}_D[\hat f(x)-\mathbb{E}_D\hat f(x)]=0$. Yang tersisa tepat tiga suku pada
+pernyataan teorema.
+\end{proof}
+
+Suku pertama tidak dapat dikurangi model apa pun; ia milik datanya, disebut galat tak
+tereduksikan, dan pada data pembuka bab nilainya sekitar $0{,}21$ karena labelnya acak.
+Suku kedua dan ketiga dapat diperdagangkan: menambah kapasitas menurunkan bias dan
+menaikkan variansi, mengurangi kapasitas melakukan sebaliknya. Regularisasi adalah nama
+untuk perdagangan itu.
+
+Contoh paling murah yang memuat kedua suku sekaligus adalah penaksir menyusut. Untuk
+mengukur $\mu$ dari $n$ pengamatan berderau $\sigma^2$, orang biasa memakai
+$\bar X_n$, yang tak bias. Kita boleh memakai $c\bar X_n$ untuk $c\in(0,1)$, dan
+penaksir itu berbias dengan sengaja. Galat kuadrat rata-ratanya
+\[
+\operatorname{MSE}(c)=(c-1)^2\mu^2+c^2\frac{\sigma^2}{n},
+\]
+diminimalkan di $c^\ast=\mu^2/(\mu^2+\sigma^2/n)$. Untuk $\mu=2$, $\sigma=1$, dan
+$n=25$ diperoleh $c^\ast=0{,}990099$: penaksir terbaik justru sedikit menyusut.
+
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\hline
+$c$ & bias$^2$ & variansi & MSE \\
+\hline
+0,70 & 0,360000 & 0,019600 & 0,379600 \\
+0,90 & 0,040000 & 0,032400 & 0,072400 \\
+0,99 & 0,000400 & 0,039204 & 0,039604 \\
+1,00 & 0,000000 & 0,040000 & 0,040000 \\
+1,10 & 0,040000 & 0,048400 & 0,088400 \\
+1,30 & 0,360000 & 0,067600 & 0,427600 \\
+\hline
+\end{tabular}
+\end{center}
+
+Tiga hal perlu dibaca dari tabel itu. Keuntungan menyusut kecil: MSE turun dari
+$0{,}040000$ ke $0{,}039604$, sekitar satu persen. Kerugian menyimpang ke arah yang
+salah jauh lebih besar: $c=1{,}3$ memberi $0{,}4276$, sedangkan $c=0{,}7$ hanya
+$0{,}3796$. Dan minimumnya landai, sehingga memilih $c$ yang sedikit keliru bukan
+bencana.
+
+Teorema itu tidak memberi rumus untuk $\hat f$ yang rumit seperti jaringan saraf.
+Dekomposisinya berlaku formal, tetapi kedua sukunya tidak dapat dihitung dari data saja;
+yang teramati hanyalah jumlahnya, yaitu galat validasi. Karena itu sisa bab ini bekerja
+dengan angka teramati, bukan dengan bias dan variansi yang sebenarnya.
+
+\section{Regularisasi L2 dan L1}
+\tingkat{menengah}
+
+Cara paling langsung menekan variansi adalah melarang bobot tumbuh besar. Kalimat
+sehari-harinya: kita menambahkan denda ke dalam sasaran, sehingga model harus membayar
+untuk setiap bobot besar, dan hanya mau membayar bila keuntungannya di data latih sepadan.
+
+\kamus{regularisasi}{regularization}{denda yang dibayar model untuk bobot besar, supaya
+ia tidak menghafal data latih}
+
+\begin{definisi}[Sasaran ternormalisasi]
+\index{regularisasi}
+Untuk sasaran asal $J(\mathbf{w})$ dan penalti $\Omega$, sasaran yang diminimalkan
+adalah $\tilde J(\mathbf{w})=J(\mathbf{w})+\lambda\Omega(\mathbf{w})$ dengan
+$\lambda\ge0$ sebagai hiperparameter. Untuk penalti L2, $\Omega=\frac12\|\mathbf{w}\|_2^2$;
+untuk penalti L1, $\Omega=\|\mathbf{w}\|_1=\sum_j|w_j|$.
+\end{definisi}
+
+Untuk L2, gradien sasarannya $\nabla J+\lambda\mathbf{w}$, jadi satu langkah penurunan
+gradien dengan laju $\eta$ berbentuk
+\[
+\mathbf{w}\leftarrow\mathbf{w}-\eta\bigl(\nabla J+\lambda\mathbf{w}\bigr)
+=(1-\eta\lambda)\mathbf{w}-\eta\nabla J .
+\]
+Faktor $(1-\eta\lambda)$ itulah asal nama \emph{weight decay}: pada setiap langkah,
+sebelum gradien dipakai, bobot digandakan dengan bilangan yang sedikit kurang dari satu.
+Kalau gradiennya nol, bobotnya meluruh menuju nol secara geometris dengan waktu paruh
+$\ln 2/(\eta\lambda)$ langkah.
+
+\begin{akibat}[Peluruhan bobot sama dengan penalti L2]
+\index{weight decay}
+Untuk laju $\eta$ dan penalti L2 dengan koefisien $\lambda$, penurunan gradien atas
+sasaran ternormalisasi identik dengan penurunan gradien atas sasaran asal yang diikuti
+penggandaan bobot dengan $1-\eta\lambda$. Dengan demikian $\lambda$ dan $\eta$ hanya
+muncul sebagai hasil kali $\eta\lambda$ pada langkah peluruhan, sehingga menaikkan laju
+dua kali dan menurunkan $\lambda$ dua kali memberi lintasan peluruhan yang sama.
+\end{akibat}
+
+Penalti L2 juga punya tafsiran Bayesian: ia setara prior Gaussian pada bobot, sehingga
+penyelesaiannya taksiran MAP, bukan kemungkinan maksimum. Itu menjelaskan mengapa L2
+percaya bobot kecil lebih mungkin, dan mengapa ia tidak pernah memaksa satu bobot menjadi
+nol.
+
+L1 berperilaku lain, dan seluruh bedanya terletak pada bentuk penaltinya di dekat nol.
+Kalimat sehari-harinya: penalti kuadratik menarik semakin lemah ketika bobotnya sudah
+kecil, sedangkan penalti nilai mutlak menarik dengan kekuatan tetap sampai bobotnya
+benar-benar nol.
+
+\begin{lemma}[Ambang lunak]
+\index{regularisasi}
+Untuk $a\in\mathbb{R}$ dan $t>0$, peminimum $u\mapsto\frac12(u-a)^2+t|u|$ adalah
+\[
+u^\ast=\operatorname{sign}(a)\max\{|a|-t,0\},
+\]
+sehingga $u^\ast=0$ tepat ketika $|a|\le t$.
+\end{lemma}
+
+Untuk $u>0$ fungsinya $\frac12(u-a)^2+tu$ dengan turunan $u-a+t$, jadi titik
+kritisnya $u=a-t$, sah hanya bila $a>t$. Untuk $u<0$ turunannya $u-a-t$ dengan titik
+kritis $u=a+t$, sah hanya bila $a<-t$. Pada $u=0$ subgradiennya selang $[-a-t,-a+t]$,
+yang memuat nol tepat ketika $|a|\le t$; dalam hal itu nol peminimum karena fungsinya
+konveks. Ketiga kasus bergabung menjadi rumus di atas.
+
+Lemma itu menjelaskan seluruh perilaku L1. Dengan pendekatan kuadratik di sekitar
+penyelesaian tanpa penalti $w^\ast$ dan kelengkungan $H$, sasarannya kira-kira
+$\frac H2(w-w^\ast)^2+\lambda|w|$, sehingga
+$w=\operatorname{sign}(w^\ast)\max\{|w^\ast|-\lambda/H,0\}$: setiap bobot di bawah
+$\lambda/H$ menjadi nol tepat, bukan sekadar kecil. Untuk L2 penyelesaiannya
+$w=w^\ast/(1+\lambda/H)$, yang tidak pernah nol kecuali $w^\ast$ sendiri nol.
+
+\begin{proposisi}[Mengapa L1 menghasilkan nol sejati]
+\index{regularisasi}
+Misalkan $J$ dapat diturunkan dan konveks di sekitar nol. Titik $\mathbf{w}=\mathbf{0}$
+adalah peminimum $J(\mathbf{w})+\lambda\|\mathbf{w}\|_1$ jika dan hanya jika
+$|\partial J/\partial w_j|\le\lambda$ untuk setiap $j$. Untuk penalti L2, syarat yang
+sama adalah $\partial J/\partial w_j=0$ untuk setiap $j$.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Subgradien $\|\cdot\|_1$ di nol adalah kotak $[-1,1]^d$, jadi kondisi
+$0\in\nabla J(\mathbf{0})+\lambda[-1,1]^d$ setara dengan $|(\nabla J)_j|\le\lambda$
+untuk semua $j$; untuk fungsi konveks, kondisi itu perlu dan cukup. Untuk penalti L2,
+gradiennya $\nabla J+\lambda\mathbf{w}$ yang di $\mathbf{0}$ sama dengan $\nabla J$, jadi
+syaratnya $\nabla J(\mathbf{0})=\mathbf{0}$.
+\end{proof}
+
+Akibat praktisnya penting untuk pembacaan hasil. L1 memberi daerah datar selebar
+$2\lambda$ di sekitar nol, sehingga bobot yang "hampir tidak berguna" dimatikan
+sepenuhnya; L2 hanya mengecilkannya. Karena itu L1 dipakai sebagai pemilih ciri, dan
+karena itu pula jumlah bobot nol pada L1 bukan ukuran kepentingan yang halus: ia
+melompat, tidak bergeser perlahan.
+
+Sekarang angkanya. Pengklasifikasi logistik yang sama, data yang sama, dua puluh satu
+ciri pada enam puluh contoh latih, semuanya dihitung dengan skrip pada bagian lab.
+
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\hline
+$\lambda$ & $\max_j|w_j|$ & galat latih & galat validasi \\
+\hline
+0       & 406,204 & 0,0000 & 0,3262 \\
+0,001   &   3,056 & 0,1000 & 0,2927 \\
+0,003   &   1,814 & 0,1000 & 0,2688 \\
+0,010   &   1,018 & 0,1167 & 0,2475 \\
+0,030   &   0,631 & 0,1167 & 0,2433 \\
+0,100   &   0,399 & 0,1500 & 0,2406 \\
+0,300   &   0,268 & 0,2333 & 0,2452 \\
+1,000   &   0,142 & 0,2500 & 0,2695 \\
+3,000   &   0,062 & 0,3333 & 0,3205 \\
+10,000  &   0,022 & 0,3333 & 0,3395 \\
+100,000 &   0,003 & 0,3333 & 0,3395 \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=12.2cm, height=5.6cm,
+  xmin=-0.4, xmax=10.4, ymin=0, ymax=0.40,
+  axis lines=left,
+  xtick={0,3,5,7,10},
+  xticklabels={$0$,$10^{-2}$,$0{,}1$,$1$,$100$},
+  ytick={0,0.1,0.2,0.3,0.4},
+  yticklabels={$0$,$0{,}10$,$0{,}20$,$0{,}30$,$0{,}40$},
+  tick label style={font=\scriptsize},
+  xlabel={kekuatan regularisasi $\lambda$ (kapasitas menurun ke kanan)},
+  ylabel={galat},
+  xlabel style={font=\small},
+  ylabel style={font=\small},
+  legend style={font=\scriptsize,draw=none,at={(0.03,0.97)},anchor=north west},
+]
+\addplot[very thick,layerindigo,mark=*,mark size=1.5pt] coordinates {
+  (0,0.0000) (1,0.1000) (2,0.1000) (3,0.1167) (4,0.1167) (5,0.1500)
+  (6,0.2333) (7,0.2500) (8,0.3333) (9,0.3333) (10,0.3333)};
+\addlegendentry{galat latih}
+\addplot[very thick,accent,mark=square*,mark size=1.5pt] coordinates {
+  (0,0.3262) (1,0.2927) (2,0.2688) (3,0.2475) (4,0.2433) (5,0.2406)
+  (6,0.2452) (7,0.2695) (8,0.3205) (9,0.3395) (10,0.3395)};
+\addlegendentry{galat validasi}
+\addplot[only marks,mark=o,mark size=3.4pt,accent] coordinates {(5,0.2406)};
+\draw[densely dashed,layergrey] (axis cs:5,0)--(axis cs:5,0.2406);
+\node[accent,font=\scriptsize,anchor=north] at (axis cs:4.55,0.238)
+  {minimum $0{,}2406$};
+\end{axis}
+\end{tikzpicture}
+\caption{Galat latih dan galat validasi terhadap kekuatan regularisasi $\lambda$; arah ke
+kanan berarti kapasitas menurun, sebab bobot ditahan makin ketat. Kesebelas titik adalah
+baris pada tabel sebelumnya. Galat latih naik monoton dari $0{,}0000$ ke $0{,}3333$,
+sedangkan galat validasi membentuk lembah: $0{,}3262$ pada $\lambda=0$, minimum
+$0{,}2406$ pada $\lambda=0{,}1$, lalu $0{,}3395$ pada $\lambda=10$ ke atas. Dasar
+lembahnya lebar, dari $0{,}2433$ pada $\lambda=0{,}03$ ke $0{,}2452$ pada $\lambda=0{,}3$.}
+\label{fig:lembah-kapasitas}
+\end{figure}
+
+Gambar~\ref{fig:lembah-kapasitas} memplot kolom ketiga dan keempat tabel itu sebagai
+satu lembah. Bacalah tabel itu sebagai tiga daerah, bukan sebelas baris. Tanpa
+regularisasi galat latihnya nol dan galat validasinya $0{,}3262$, dengan bobot sampai
+ratusan karena tidak ada yang menahannya. Di daerah $\lambda$ antara $0{,}001$ dan
+$0{,}1$, galat latih naik ke $0{,}1500$ sementara galat validasi turun ke $0{,}2406$.
+Di daerah $\lambda\ge3$ keduanya buruk: $0{,}3333$ dan $0{,}3395$.
+
+Baris terakhir pantas ditekankan. Dengan $\lambda=10$ galat validasinya $0{,}3395$,
+\emph{lebih buruk} daripada $0{,}3262$ milik model tanpa regularisasi. Jadi
+regularisasi bukan obat yang selalu menolong; ia menolong pada dosis tertentu dan merusak
+di luar itu. Pada $\lambda=10$ model itu praktis menebak selalu kelas mayoritas, yang
+galatnya $0{,}3419$: bobotnya begitu kecil sehingga skornya hampir seluruhnya ditentukan
+bias.
+
+Penalti L1 memberi gambaran serupa dengan bentuk berbeda. Pada $\lambda=0{,}05$ galat
+validasinya $0{,}2334$ dengan sebelas dari dua puluh satu bobot hidup; pada
+$\lambda=0{,}2$ tinggal satu bobot dengan galat $0{,}3395$. Cacah bobot hidup tidak turun
+monoton: $\lambda=0{,}005$ menyisakan sebelas, $\lambda=0{,}01$ menyisakan empat belas.
+Angka itu stabil terhadap empat kali lipat iterasi, jadi ia bukan kegagalan pengoptimum;
+lintasan L1 untuk loss logistik memang tidak menjamin cacah nol yang monoton, dan itu
+alasan tambahan untuk tidak membacanya sebagai ukuran kepentingan.
+
+Perbandingan terakhir: L1 mencapai $0{,}2334$ dan L2 $0{,}2406$. Selisih $0{,}0072$
+lebih kecil daripada goyangan antarpartisi, sekitar $0{,}02$, sehingga data ini tidak
+cukup untuk menyimpulkan L1 lebih baik; yang dapat disimpulkan hanyalah bahwa keduanya
+memperbaiki model tanpa regularisasi.
+
+\begin{untukanak}
+Bayangkan sebuah kelas yang harus menebak berat badan temannya. Gurunya memberi dua
+cara. Cara pertama: setiap tebakan yang terlalu jauh dari jawaban dikenai denda yang
+makin besar makin jauh. Cara kedua: setiap tebakan yang tidak persis sama dengan
+jawaban dikenai denda tetap, tidak peduli bedanya sedikit atau banyak.
+
+Cara pertama membuat semua tebakan bergeser sedikit ke arah tengah, tetapi tidak ada
+yang menjadi nol. Cara kedua membuat tebakan yang sudah cukup dekat langsung dibulatkan
+menjadi nol, karena dendanya tetap dan tidak sepadan dengan perbaikan yang mungkin
+didapat. Itulah bedanya dua denda yang tampak mirip: yang satu mengecilkan, yang lain
+mematikan.
+
+Pertanyaannya: kalau kita punya dua puluh satu ciri dan hanya enam puluh contoh, denda
+seperti apa yang membuat model berhenti menghafal? Jawabannya bukan "denda besar",
+sebab denda yang terlalu besar mematikan semuanya, termasuk yang benar. Di bab ini kita
+akan tahu mengapa ada dosis, mengapa dosis itu harus dicari, dan mengapa dosis yang
+dicari pada data yang salah akan menipu kita dengan rapi.
+\end{untukanak}
+
+\section{Berhenti lebih awal, dropout, dan augmentasi}
+\tingkat{menengah}
+
+Tiga cara lain menekan variansi tanpa menyentuh rumus sasaran. Kalimat sehari-harinya:
+kita dapat berhenti belajar sebelum kebetulan mulai dihafal, kita dapat mematikan
+sebagian ingatan secara acak, dan kita dapat memperbanyak contoh dengan mengubah contoh
+yang ada.
+
+Berhenti lebih awal adalah bentuk regularisasi yang paling murah, sebab ia tidak
+menambah satu baris pun pada sasaran: ia hanya menghentikan lintasan. Selama latihan,
+galat latih hampir selalu turun, tetapi galat validasi turun lalu naik. Titik terendah
+galat validasi itulah yang diambil, dan jumlah langkah menjadi hiperparameter yang
+dicari.
+
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\hline
+epoch & galat latih & galat validasi & $\max_j|w_j|$ \\
+\hline
+1    & 0,1333 & 0,2481 & 0,15 \\
+5    & 0,1333 & 0,2429 & 0,38 \\
+10   & 0,1333 & 0,2432 & 0,48 \\
+50   & 0,1167 & 0,2454 & 0,77 \\
+200  & 0,1167 & 0,2541 & 1,38 \\
+800  & 0,1000 & 0,2879 & 2,85 \\
+2400 & 0,0833 & 0,3109 & 4,81 \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=11.8cm, height=5.6cm,
+  xmode=log,
+  xmin=1, xmax=3000, ymin=0.05, ymax=0.35,
+  axis lines=left,
+  xtick={1,10,100,1000},
+  xticklabels={$1$,$10$,$100$,$1000$},
+  ytick={0.10,0.15,0.20,0.25,0.30},
+  yticklabels={$0{,}10$,$0{,}15$,$0{,}20$,$0{,}25$,$0{,}30$},
+  tick label style={font=\scriptsize},
+  xlabel={epoch pelatihan (skala log)},
+  ylabel={galat},
+  xlabel style={font=\small},
+  ylabel style={font=\small},
+  legend style={font=\scriptsize,draw=none,at={(0.03,0.97)},anchor=north west},
+]
+\addplot[very thick,layerteal,mark=*,mark size=1.5pt] coordinates {
+  (1,0.1333) (5,0.1333) (10,0.1333) (50,0.1167) (200,0.1167) (800,0.1000)
+  (2400,0.0833)};
+\addlegendentry{galat latih}
+\addplot[very thick,accent,mark=square*,mark size=1.5pt] coordinates {
+  (1,0.2481) (5,0.2429) (10,0.2432) (50,0.2454) (200,0.2541) (800,0.2879)
+  (2400,0.3109)};
+\addlegendentry{galat validasi}
+\draw[densely dashed,layergrey] (axis cs:8,0.05)--(axis cs:8,0.2427);
+\addplot[only marks,mark=o,mark size=3.4pt,accent] coordinates {(8,0.2427)};
+\node[accent,font=\scriptsize,anchor=north west] at (axis cs:8.6,0.2325)
+  {epoch 8: $0{,}2427$};
+\end{axis}
+\end{tikzpicture}
+\caption{Kedua galat sepanjang satu lintasan pelatihan, sumbu mendatar skala log. Galat
+latih turun tanpa pernah naik, dari $0{,}1333$ pada epoch 1 ke $0{,}0833$ pada epoch
+2400. Galat validasi turun sampai $0{,}2427$ pada epoch 8 lalu naik ke $0{,}3109$. Garis
+putus-putus menandai titik henti terbaik: berhenti di situ memberi galat $0{,}0682$ lebih
+rendah daripada melatih sampai epoch 2400, dan kurvanya mulai berpisah tepat sesudah
+titik itu.}
+\label{fig:dua-kurva}
+\end{figure}
+
+Gambar~\ref{fig:dua-kurva} menggambar kedua kolom itu. Galat latih turun sepanjang
+lintasan, dari $0{,}1333$ ke $0{,}0833$, tanpa pernah naik, sedangkan galat validasi
+turun sampai epoch 8 dengan nilai terbaik $0{,}2427$ lalu naik sampai $0{,}3109$ pada
+epoch 2400. Kolom terakhir menjelaskan mengapa: yang tumbuh sepanjang latihan adalah
+besarnya bobot, dan itulah variansi yang sedang kita bayar.
+
+Berhenti lebih awal bukan sekadar taktik. Untuk sasaran kuadratik dan laju kecil, berhenti
+pada langkah $\tau$ hampir setara dengan penalti L2 berkoefisien sekitar
+$1/(\tau\eta)$; itu perkiraan, bukan identitas tepat. Karena itu jumlah langkah adalah
+hiperparameter kapasitas, bukan urusan "melatih sampai selesai".
+
+\begin{resep}
+\begin{enumerate}
+  \item Pisahkan tiga himpunan sebelum satu langkah latihan pun dijalankan: latih,
+        validasi, uji. Himpunan uji disegel.
+  \item Latih pada himpunan latih saja; setiap beberapa epoch hitung galat pada
+        himpunan validasi, dan catat pasangan (epoch, galat validasi, galat latih).
+  \item Ambil epoch dengan galat validasi terkecil, lalu kembalikan bobot ke titik itu;
+        jangan memakai bobot epoch terakhir.
+  \item Baru sekarang buka himpunan uji, hitung galatnya satu kali, dan laporkan
+        bersama epoch pilihan serta lebar kurva validasinya.
+\end{enumerate}
+Peringatan urutan: langkah 1 harus selesai sebelum langkah 2, dan langkah 4 tidak boleh
+dipakai menggeser pilihan pada langkah 3. Bila himpunan uji dilihat sewaktu memilih
+epoch, ia bukan lagi uji melainkan validasi kedua, dan angkanya berhenti menjadi
+taksiran yang jujur.
+\end{resep}
+
+Dropout mengambil jalan lain: selama latihan setiap unit dimatikan secara acak dengan
+peluang $1-p$, dan yang hidup dibagi $p$ supaya harapannya tidak bergeser. Kalimat
+sehari-harinya: setiap langkah sebagian anggota tim tidak masuk, sehingga tidak ada
+anggota yang boleh diandalkan sendirian.
+
+\begin{lemma}[Harapan dan variansi topeng dropout]
+\index{dropout}
+Misalkan $m=B/p$ dengan $B\sim\mathrm{Bernoulli}(p)$ dan $0<p\le1$. Maka
+$\mathbb{E}[m]=1$ dan $\operatorname{Var}(m)=(1-p)/p$. Untuk unit dengan masukan
+$z_1,\dots,z_k$ dan topeng bebas $m_1,\dots,m_k$, keluarannya
+$s=\sum_j m_jw_jz_j$ memenuhi $\mathbb{E}[s]=\sum_jw_jz_j$ dan
+$\operatorname{Var}(s)=\frac{1-p}{p}\sum_j(w_jz_j)^2$.
+\end{lemma}
+
+\begin{proof}[Bukti]
+$\mathbb{E}[m]=p/p=1$ dan $\operatorname{Var}(m)=\mathbb{E}[m^2]-1=p/p^2-1=(1-p)/p$.
+Untuk $s$, kelinearan harapan memberi suku pertama, dan kebebasan topeng memberi
+variansi jumlah, yaitu $\sum_j(w_jz_j)^2\operatorname{Var}(m_j)$.
+\end{proof}
+
+Rumus variansi itu menjelaskan dua hal yang sering dilupakan. Derau dropout sebanding
+dengan jumlah kuadrat kontribusi, jadi unit dengan bobot besar menerima derau relatif
+lebih besar, dan dropout searah dengan penalti L2. Dan derau itu hilang sama sekali saat
+pengujian, sehingga model yang dipakai berbeda dari model yang dilatih; pada jaringan
+sangat kecil harga itu bisa melebihi manfaatnya.
+
+Augmentasi data memperbanyak contoh dengan mengubah contoh yang ada, misalnya menggeser
+atau menambahkan derau kecil, asalkan labelnya tidak berubah. Untuk model linear,
+hubungannya dengan L2 dapat dihitung tepat.
+
+\begin{proposisi}[Derau Gauss pada masukan sama dengan penalti L2]
+\index{augmentasi data}
+Misalkan $\hat y=\mathbf{w}^{\top}\mathbf{x}$ dan $\boldsymbol{\delta}\sim
+N(\mathbf{0},\sigma^2I)$ ditambahkan pada masukan. Maka
+\[
+\mathbb{E}_{\boldsymbol{\delta}}\bigl[(\mathbf{w}^{\top}(\mathbf{x}+\boldsymbol{\delta})-y)^2\bigr]
+=(\mathbf{w}^{\top}\mathbf{x}-y)^2+\sigma^2\|\mathbf{w}\|_2^2 .
+\]
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Jabarkan: suku linearnya $2(\mathbf{w}^{\top}\mathbf{x}-y)\,
+\mathbb{E}[\mathbf{w}^{\top}\boldsymbol{\delta}]=0$, dan suku kuadratnya
+$\mathbb{E}[(\mathbf{w}^{\top}\boldsymbol{\delta})^2]
+=\mathbf{w}^{\top}\mathbb{E}[\boldsymbol{\delta}\boldsymbol{\delta}^{\top}]\mathbf{w}
+=\sigma^2\|\mathbf{w}\|_2^2$.
+\end{proof}
+
+Jadi menambahkan derau Gauss kecil pada masukan sama dengan menambahkan penalti L2
+dengan $\lambda=\sigma^2$: keduanya satu gagasan yang ditulis dua kali. Pemeriksaan
+angkanya, untuk $\mathbf{w}=(1,2)$, $\mathbf{x}=(1,0)$, $y=3$, dan $\sigma=0{,}1$:
+sasaran asalnya $4$, ramalan identitasnya $4+0{,}01\cdot5=4{,}05$, dan simulasi satu juta
+derau memberi $4{,}049107$. Selisih $0{,}0009$ itu sebanding galat acak simulasi, bukan
+kesalahan rumus.
+
+Peringatan untuk bidang keamanan: augmentasi hanya sah bila label benar-benar invarian
+terhadap perubahan yang dilakukan. Menambahkan derau kecil pada ciri lalu lintas boleh,
+tetapi membalik urutan paket atau menggeser waktu kedatangan dapat mengubah serangan
+menjadi bukan serangan. Augmentasi yang salah label bukan regularisasi, melainkan
+kebohongan yang akan tetap tampak baik selama data validasinya diubah dengan cara sama.
+
+\section{SGD, momentum, dan Adam}
+\tingkat{lanjut}
+
+Sampai di sini kita memperlakukan "latihan" sebagai satu kotak. Isi kotak itu menentukan
+seberapa cepat galat turun dan, pada anggaran langkah terbatas, seberapa rendah galat yang
+tercapai. Kalimat sehari-harinya: arah yang benar belum cukup; yang menentukan adalah
+bagaimana langkah diambil dan seberapa besar.
+
+Penurun gradien stokastik mengganti gradien penuh oleh gradien atas satu minibatch
+berukuran $b$. Taksiran itu tak bias, dan variansinya mengecil sebanding $1/b$:
+$\operatorname{Var}(\hat{\mathbf{g}}_b)=\sigma_g^2/b$. Jadi minibatch besar mengurangi
+goyangan, tetapi tidak mengubah arah rata-ratanya. Yang mengubah arah adalah momentum
+dan Adam.
+
+\begin{definisi}[Momentum dan Adam]
+\index{momentum}
+\index{adam}
+Momentum menyimpan rata-rata gradien bergerak:
+$\mathbf{v}_t=\beta\mathbf{v}_{t-1}+\mathbf{g}_t$ dan
+$\mathbf{w}_t=\mathbf{w}_{t-1}-\eta\mathbf{v}_t$, dengan $0\le\beta<1$. Adam menyimpan
+dua momen, $\mathbf{m}_t=\beta_1\mathbf{m}_{t-1}+(1-\beta_1)\mathbf{g}_t$ dan
+$\mathbf{v}_t=\beta_2\mathbf{v}_{t-1}+(1-\beta_2)\mathbf{g}_t^2$ (kuadrat per
+koordinat), lalu memakai koreksi bias dan pembaruan
+$\mathbf{w}_t=\mathbf{w}_{t-1}-\eta\,\hat{\mathbf{m}}_t/(\sqrt{\hat{\mathbf{v}}_t}+\epsilon)$
+dengan $\hat{\mathbf{m}}_t=\mathbf{m}_t/(1-\beta_1^t)$ dan
+$\hat{\mathbf{v}}_t=\mathbf{v}_t/(1-\beta_2^t)$.
+\end{definisi}
+
+Koreksi bias itu bukan hiasan: tanpa koreksi $\mathbf{m}_1=(1-\beta_1)\mathbf{g}_1$
+sangat kecil, sehingga langkah pertama hampir nol. Pembagian oleh $\sqrt{\hat{\mathbf{v}}}$
+lebih penting lagi untuk masalah berskala buruk: ia membuat besar langkah tiap koordinat
+kurang lebih $\eta$, tidak peduli gradiennya besar atau kecil. Momentum hanya meratakan
+arah sepanjang waktu.
+
+Angka pada kuadratik berikut memperlihatkan bedanya. Ambil
+$f(\mathbf{w})=\frac12\mathbf{w}^{\top}H\mathbf{w}$ dengan $H=\operatorname{diag}(1,10^4)$
+dan $\mathbf{w}_0=(1,0)$; bilangan kondisi $H$ adalah $10^4$, yang berarti kurvanya
+sempit di satu arah dan sangat landai di arah lain. Kita hitung langkah sampai
+$f\le10^{-8}f(\mathbf{w}_0)$.
+
+\begin{center}
+\small
+\begin{tabular}{lrl}
+\hline
+metode & laju & langkah sampai $10^{-8}$ \\
+\hline
+penurun gradien & $10^{-4}$ & 92099 \\
+momentum ($\beta=0{,}9$) & $10^{-4}$ & 9132 \\
+Adam & $0{,}1$ & 82 \\
+\hline
+\end{tabular}
+\end{center}
+
+Penurun gradien memerlukan $92099$ langkah karena laju terbesarnya dibatasi kelengkungan
+terbesar, sedangkan arah yang landai hanya bergerak dengan laju itu. Momentum memotong
+satu digit, sesuai perkiraan bahwa percepatan mengubah ketergantungan pada bilangan
+kondisi $\kappa$ menjadi sekitar $\sqrt\kappa$. Adam memotong tiga digit, sebab pembagian
+per koordinat membuat arah yang landai tidak lagi dihukum oleh arah yang curam. Itu bukan
+janji umum: pada masalah berskala baik keunggulan Adam menyusut.
+
+Pada masalah logistik di bab ini, dengan minibatch delapan dan sasaran galat latih
+$0{,}40$, median lima biji acak memberi SGD laju $0{,}05$ seratus langkah, sedangkan
+Adam laju $0{,}1$ hanya sepuluh. Kesimpulannya harus hati-hati: keunggulannya sebanding
+satu digit dan sebagian berasal dari laju yang lebih besar, bukan dari arah yang lebih
+baik.
+
+Laju pembelajaran biasanya tidak tetap. Dua jadwal yang lazim adalah peluruhan tangga,
+yaitu laju dibagi sepuluh pada epoch tertentu, dan peluruhan kosinus
+$\eta_t=\eta_{\min}+\frac12(\eta_0-\eta_{\min})(1+\cos(\pi t/T))$: langkah besar di awal
+supaya cepat mendekat, langkah kecil di akhir supaya tidak melompat di lembah. Dengan
+$3000$ langkah minibatch dan $\lambda=0{,}1$, laju tetap $0{,}2$ memberi galat latih
+median $0{,}3866$, sedangkan kosinus dari $0{,}5$ ke $0{,}01$ memberi $0{,}3549$.
+
+\section{Validasi silang, pemilihan hiperparameter, dan kebocoran}
+\tingkat{lanjut}
+
+Semua angka validasi di bab ini berasal dari himpunan yang tidak dipakai melatih. Itu
+sudah benar, tetapi belum cukup: begitu kita memilih $\lambda$ dengan mata yang melihat
+galat validasi, galat validasi itu berhenti menjadi taksiran yang tak bias bagi galat
+populasi. Kalimat sehari-harinya: kalau kita memilih soal ujian berdasarkan nilai yang
+kita dapat, nilai itu tidak lagi mengukur kemampuan kita.
+
+\kamus{validasi silang}{cross validation}{memutar peran data bergiliran, sehingga setiap
+contoh pernah menjadi ujian bagi model yang tidak melihatnya}
+
+\begin{definisi}[Validasi silang $k$ lipatan]
+\index{validasi silang}
+Data latih dipecah menjadi $k$ lipatan yang saling lepas dan berukuran serupa. Untuk
+setiap $j$, model dilatih pada $k-1$ lipatan dan diuji pada lipatan $j$; galat validasi
+silang adalah rata-rata galat pada $k$ lipatan itu, dan hiperparameter yang dipilih
+adalah yang meminimumkannya. Untuk $k=n$ prosedur ini disebut
+\emph{leave-one-out}.
+\end{definisi}
+
+Validasi silang menjawab satu kelemahan pemisahan tunggal: pada $n=60$ himpunan
+validasi berisi dua belas contoh, dan galat pada dua belas contoh bergoyang dengan
+simpangan baku sekitar $0{,}12$. Dengan lima lipatan setiap contoh pernah diuji, tetapi
+goyangannya tidak hilang.
+
+\begin{center}
+\small
+\begin{tabular}{rrr}
+\hline
+$\lambda$ & galat CV (rata-rata 5 partisi) & simpangan antarpartisi \\
+\hline
+0     & 0,3233 & 0,1245 \\
+0,003 & 0,2400 & 0,0253 \\
+0,030 & 0,2467 & 0,0217 \\
+0,100 & 0,2467 & 0,0274 \\
+1     & 0,2967 & 0,0298 \\
+\hline
+\end{tabular}
+\end{center}
+
+Baris pertama menunjukkan dua hal sekaligus: tanpa regularisasi galat CV paling buruk
+dan paling tidak stabil, dengan simpangan $0{,}1245$, empat kali lipat baris lainnya.
+Baris kedua sampai keempat hampir tidak terbedakan: $0{,}2400$, $0{,}2467$, dan
+$0{,}2467$, dengan simpangan sekitar $0{,}025$, dan pada lima partisi berbeda pemenangnya
+berganti-ganti. Kurva CV ini datar di sekitar minimumnya, sehingga memilih nilai
+persisnya adalah ilusi ketelitian.
+
+Akibatnya nyata: CV memilih $\lambda=0{,}003$ dengan galat validasi $0{,}2688$,
+sedangkan $\lambda=0{,}1$ yang tidak terpilih memberi $0{,}2406$; selisih $0{,}0282$ itu
+tidak jauh dari satu simpangan baku kurva CV. Pelajarannya bukan bahwa validasi silang
+rusak, melainkan bahwa dengan enam puluh contoh, pemilihan hiperparameter membawa
+ketidakpastian sebesar efek yang diukur. Melaporkan "$\lambda$ terbaik $0{,}003$" tanpa
+menyebut lebar kurvanya adalah kebohongan yang paling halus dalam bab
+ini.
+
+\begin{tangan}
+Bahan: sepuluh kartu, pensil, kertas. Tulis satu bilangan dua angka pada tiap kartu,
+kocok, lalu bentangkan tujuh kartu menghadap atas. Susun ``aturan'' dalam bentuk daftar:
+posisi satu bernilai sekian, posisi dua bernilai sekian, sampai posisi tujuh.
+
+Tutup satu kartu dengan telapak tangan dan tebak. Karena daftarmu memuat kartu itu,
+tebakanmu tepat. Ulangi untuk ketujuh posisi: tujuh dari tujuh benar, dan itulah nilai
+latihanmu.
+
+Sekarang kumpulkan sepuluh kartu, kocok, bentangkan tujuh kartu baru, dan pakai daftar
+yang sama. Tutup satu kartu, tebak, buka. Yang harus terlihat: daftarmu tidak memuat
+kartu baru, jadi tebakanmu hanya untung-untungan. Ulangi sepuluh kali dengan susunan
+baru dan catat berapa kali tepat; itulah nilai ujianmu. Terakhir tulis aturan kedua yang
+memakai satu sifat saja, misalnya ``kartu di kiri tidak lebih besar dari kartu di
+kanannya'', lalu bandingkan kedua nilai itu.
+\end{tangan}
+
+Ada sumber kesalahan yang lebih besar daripada goyangan itu dan tidak terlihat pada angka
+mana pun: kebocoran, yaitu masuknya informasi data uji ke dalam proses latihan. Bentuk
+paling umumnya adalah standardisasi ciri memakai rata-rata dan simpangan baku seluruh data
+sebelum pemisahan dilakukan.
+
+Angkanya, dengan pergeseran covariate buatan: bila validasi digeser $0{,}5$,
+standardisasi dengan statistik latih saja memberi $0{,}3765$, sedangkan statistik
+gabungan memberi $0{,}3361$; pada geseran $1{,}0$ angkanya $0{,}5387$ lawan $0{,}3819$.
+Statistik gabungan selalu tampak lebih baik, dan justru itu masalahnya: ia memakai
+informasi letak data uji yang tidak tersedia di lapangan. Tanpa pergeseran keduanya sama,
+$0{,}2452$ lawan $0{,}2463$, tanda bahwa selisih tadi berasal dari kebocoran.
+
+Protokol yang jujur berlapis: pisahkan latih, validasi, dan uji sejak awal; hitung
+semua besaran, termasuk rata-rata, simpangan baku, ambang keputusan, dan pemilihan ciri,
+di dalam lipatan latih saja; pilih hiperparameter pada validasi atau lewat validasi
+silang di dalam data latih; sentuh himpunan uji satu kali, lalu laporkan apa adanya.
+
+Hubungan kapasitas dengan jumlah data dapat dibuat kuantitatif. Untuk kelas hipotesis
+berhingga, jurang generalisasi terkendali oleh akar logaritma cacah hipotesis dibagi
+cacah contoh.
+
+\begin{teorema}[Batas seragam untuk kelas berhingga]
+\index{kapasitas}
+Misalkan $\mathcal{H}$ berhingga dengan $|\mathcal{H}|=m$, galatnya 0-1, dan $n$ contoh
+diambil bebas dari $\mathcal{D}$. Dengan peluang sekurang-kurangnya $1-\delta$ terhadap
+pengambilan contoh, berlaku serentak untuk semua $h\in\mathcal{H}$
+\[
+\bigl|R(h)-\hat R_n(h)\bigr|\le\sqrt{\frac{\ln m+\ln(2/\delta)}{2n}} .
+\]
+\end{teorema}
+
+\begin{proof}[Bukti]
+Untuk satu $h$ tetap, $\hat R_n(h)$ adalah rata-rata $n$ peubah Bernoulli berskala
+$[0,1]$, sehingga ketaksamaan Hoeffding memberi
+$\mathbb{P}(|R(h)-\hat R_n(h)|>t)\le2e^{-2nt^2}$. Gabungkan atas semua $h$ dengan
+ketaksamaan union: peluang ada satu $h$ yang melampaui $t$ paling besar
+$2m\,e^{-2nt^2}$. Menetapkan ungkapan itu sama dengan $\delta$ memberi
+$t=\sqrt{(\ln m+\ln(2/\delta))/(2n)}$, dan pelengkapnya adalah pernyataan teorema.
+\end{proof}
+
+Untuk kelas yang "menghafal", yaitu model yang memberi satu label pada setiap pola biner
+atas $d$ ciri, $m=2^d$. Dengan $d=21$ dan $\delta=0{,}05$ batasnya
+$\sqrt{(21\ln2+\ln40)/(2n)}$, yaitu $0{,}3899$ pada $n=60$ dan $0{,}0617$ pada
+$n=2400$. Jurang terukurnya $0{,}1338$ dan $0{,}0097$ pada $n$ yang sama, jadi batasnya
+berlaku tetapi longgar; kelonggaran itu bukan cacat, sebab batas itu harus berlaku untuk
+setiap distribusi dan setiap algoritma.
+
+Yang penting bukan angkanya, melainkan bentuknya. Jurang mengecil sebanding
+$1/\sqrt n$, sedangkan cacah hipotesis masuk lewat logaritma. Melipatgandakan data empat
+kali hanya memangkas jurang menjadi separuh, dan menambah kapasitas sepuluh kali lipat
+hanya menaikkan batas sebesar akar penambahan logaritmanya. Inilah alasan jujur mengapa
+model besar masih berguna: selama jurangnya dikendalikan regularisasi, kapasitas yang
+naik tidak otomatis berarti jurang yang naik.
+
+\section{Contoh hitung: ridge tertutup pada empat titik}
+\tingkat{menengah}
+
+Semua rumus di atas dapat diperiksa tangan pada contoh kecil: empat titik dengan satu
+ciri, $\mathbf{x}=(1,2,3,4)$ dan $\mathbf{y}=(2,4,6,9)$, model tanpa intersep
+$\hat y=wx$, dan sasaran $\frac12\sum_i(y_i-wx_i)^2+\frac{\lambda}{2}w^2$. Turunannya
+nol memberi
+\[
+w(\lambda)=\frac{\sum_ix_iy_i}{\sum_ix_i^2+\lambda}=\frac{64}{30+\lambda},
+\]
+sebab $\sum x_i^2=30$ dan $\sum x_iy_i=2+8+18+36=64$.
+
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\hline
+$\lambda$ & $w$ & SSE latih & $|w\cdot5-10|$ \\
+\hline
+0   & 2,133333 & 0,466667 & 0,666667 \\
+1   & 2,064516 & 0,608741 & 0,322581 \\
+2   & 2,000000 & 1,000000 & 0,000000 \\
+5   & 1,828571 & 3,253061 & 0,857143 \\
+10  & 1,600000 & 9,000000 & 2,000000 \\
+30  & 1,066667 & 34,600000 & 4,666667 \\
+100 & 0,492308 & 81,255621 & 7,538462 \\
+\hline
+\end{tabular}
+\end{center}
+
+Gambar~\ref{fig:lintasan-bobot} memplot kedua lintasan bobot terhadap $\lambda$ pada
+data ini: L2 mengecil tanpa henti, L1 berhenti tepat di nol. Kolom terakhir memakai satu
+titik uji di $x=5$ dengan nilai sebenarnya $10$, yang tidak ikut menentukan $w$. Di
+situlah kurvanya berbentuk U dan minimumnya jatuh tepat di $\lambda=2$: di situ $w=2$,
+sehingga ramalan di $x=5$ adalah $10$ dan galatnya nol. Tanpa regularisasi,
+$w=64/30=2{,}1333$ lebih memikat pada data latih (SSE $0{,}466667$ lawan $1{,}000000$)
+tetapi meramal $10{,}667$, meleset $0{,}667$. Inilah perdagangan bias-variansi dalam
+bentuk paling telanjang: SSE latih naik dua kali, galat uji menjadi nol.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=11.8cm, height=5.4cm,
+  xmode=log,
+  xmin=0.5, xmax=300, ymin=-0.12, ymax=2.45,
+  axis lines=left,
+  xtick={1,2,10,64,100},
+  xticklabels={$1$,$2$,$10$,$64$,$100$},
+  ytick={0,0.5,1.0,1.5,2.0},
+  yticklabels={$0$,$0{,}5$,$1{,}0$,$1{,}5$,$2{,}0$},
+  tick label style={font=\scriptsize},
+  xlabel={kekuatan regularisasi $\lambda$ (skala log)},
+  ylabel={bobot $w$},
+  xlabel style={font=\small},
+  ylabel style={font=\small},
+  legend style={font=\scriptsize,draw=none,at={(0.97,0.97)},anchor=north east},
+]
+\addplot[domain=0.5:300,samples=200,very thick,layerindigo] {64/(30+x)};
+\addlegendentry{L2: $64/(30+\lambda)$}
+\addplot[domain=0.5:63.9,samples=200,very thick,layerorange] {(64-x)/30};
+\addlegendentry{L1: $\max\{(64-\lambda)/30,\,0\}$}
+\addplot[domain=64:300,samples=2,very thick,layerorange] {0};
+\draw[densely dashed,layergrey] (axis cs:2,-0.12)--(axis cs:2,2.20);
+\draw[densely dashed,layergrey] (axis cs:64,-0.12)--(axis cs:64,2.20);
+\addplot[only marks,mark=*,mark size=1.8pt,layerindigo] coordinates {(2,2.0000) (64,0.6809)};
+\addplot[only marks,mark=square*,mark size=1.8pt,layerorange] coordinates {(2,2.0667)};
+\addplot[only marks,mark=o,mark size=3.4pt,layerorange] coordinates {(64,0)};
+\node[font=\scriptsize,anchor=south] at (axis cs:2,2.24) {$\lambda=2$};
+\node[font=\scriptsize,anchor=south] at (axis cs:64,2.24) {$\lambda=64$};
+\node[font=\scriptsize,anchor=south west] at (axis cs:70,0.06) {L1 tepat nol};
+\end{axis}
+\end{tikzpicture}
+\caption{Lintasan bobot terhadap kekuatan regularisasi pada contoh hitung empat titik,
+dengan $\sum x_i^2=30$ dan $\sum x_iy_i=64$. Penalti L2 memberi
+$w=64/(30+\lambda)$, yang mengecil tetapi tidak pernah menyentuh nol. Penalti L1 memberi
+$w=\max\{(64-\lambda)/30,\,0\}$, yang mencapai nol tepat pada $\lambda=64$. Pada
+$\lambda=2$ keduanya hampir sama, $2{,}0000$ lawan $2{,}0667$; pada $\lambda=64$ L2 masih
+$0{,}6809$ sedangkan L1 sudah $0{,}0000$. Garis putus-putus menandai kedua nilai
+$\lambda$ yang dibandingkan.}
+\label{fig:lintasan-bobot}
+\end{figure}
+
+Perhatikan dinding kanannya. Pada $\lambda=100$, $w$ tinggal $0{,}4923$, SSE latih
+meledak menjadi $81{,}255621$, dan galat uji $7{,}538462$, lebih buruk daripada model
+yang tidak belajar apa pun. Contoh ini juga menunjukkan mengapa mencari $\lambda$ pada
+data latih menyesatkan: kurva SSE latih monoton naik, jadi ia selalu memilih
+$\lambda=0$.
+
+\begin{tantangan}
+Sebuah model melaporkan galat latih $0{,}0000$ pada $60$ contoh dan galat uji
+$0{,}4100$. Rekannya mengusulkan tiga perubahan: (i) melatih lebih lama, (ii) menambah
+ciri sampai derajat tujuh, (iii) menaikkan $\lambda$ dari $0$ ke $0{,}1$. Untuk setiap
+usulan, ramalkan tanda perubahan galat latih dan galat uji, lalu sebutkan mana yang
+tidak mungkin menolong beserta alasannya.
+
+Petunjuk 1: tanyakan lebih dulu ke arah mana kapasitas bergerak pada tiap usulan.
+
+Petunjuk 2: dua dari tiga usulan memperbesar kapasitas, dan model ini sudah berada di
+galat latih nol, sehingga memperbesar kapasitas hanya memperlebar jurang. Yang menolong
+adalah yang mengecilkannya, dan itu harus menaikkan galat latih.
+
+Kalau mentok, kembali ke Definisi underfitting dan overfitting pada bagian pertama.
+\end{tantangan}
+
+\kertas{Periksa kolom kedua tanpa kalkulator: $64/32=2$ tepat, $64/31=2{,}064516$, dan
+$64/40=1{,}6$. Lalu hitung sendiri SSE pada $\lambda=2$: sisaannya $(0,0,0,1)$, jadi
+SSE $=1$. Terakhir jawab: berapa $\lambda$ yang membuat $w=1{,}28$, dan berapa ramalan
+di $x=5$ ketika itu? Petunjuk: selesaikan $64/(30+\lambda)=1{,}28$.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Seluruh angka pada bab ini berasal dari satu skrip numpy tanpa pustaka pembelajaran
+mesin. Datanya sengaja kecil supaya dapat diperiksa ulang dalam hitungan menit: dua ciri
+mentah, dua puluh satu ciri polinomial sampai derajat lima, enam puluh contoh latih, dan
+dua puluh ribu contoh validasi dari distribusi yang sama. Labelnya tidak deterministik,
+sehingga ada galat tak tereduksikan sekitar $0{,}21$ yang tidak dapat dilampaui model apa
+pun.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+def data(n, rng):
+    x = rng.uniform(-1, 1, size=(n, 2))
+    p = 1/(1 + np.exp(-4.0*(0.9 - x[:,0]**2 - x[:,1]**2)))
+    return x, (rng.random(n) < p).astype(float)
+
+def poly(x, deg=5):
+    return np.column_stack([x[:,0]**i * x[:,1]**j
+                            for i in range(deg+1) for j in range(deg+1-i)])
+
+def sig(z):
+    return 1/(1 + np.exp(-np.clip(z, -400, 400)))
+
+def soft(t, l):
+    return np.sign(t)*np.maximum(np.abs(t) - l, 0.0)
+
+def er(Z, y, w, b):
+    return float(np.mean((sig(Z@w + b) > 0.5) != y))
+
+def fit(Z, y, lam, iters=30000, lr=0.05):
+    n, d = Z.shape
+    w = np.zeros(d); b = 0.0
+    mw = np.zeros(d); vw = np.zeros(d); mb = 0.0; vb = 0.0
+    for t in range(1, iters+1):
+        p = sig(Z@w + b); g = (p - y)/n
+        gw = Z.T@g + lam*w; gb = g.sum()
+        mw = 0.9*mw + 0.1*gw; vw = 0.999*vw + 0.001*gw*gw
+        mb = 0.9*mb + 0.1*gb; vb = 0.999*vb + 0.001*gb*gb
+        w -= lr*(mw/(1-0.9**t))/(np.sqrt(vw/(1-0.999**t)) + 1e-8)
+        b -= lr*(mb/(1-0.9**t))/(np.sqrt(vb/(1-0.999**t)) + 1e-8)
+    return w, b
+
+def fit_l1(Z, y, lam, iters=150000):
+    n, d = Z.shape
+    w = np.zeros(d); b = 0.0
+    st = 0.5/(0.25*np.linalg.eigvalsh(Z.T@Z/n).max())
+    for _ in range(iters):
+        p = sig(Z@w + b); g = (p - y)/n
+        w = soft(w - st*(Z.T@g + lam*w), st*lam); b -= st*g.sum()
+    return w, b
+\end{verbatim}
+\end{lab}
+
+Bagian pertama menghitung galat untuk sebelas nilai $\lambda$; bagian kedua mengulanginya
+dengan penalti L1 lewat penurunan gradien proksimal, yaitu langkah gradien yang diikuti
+ambang lunak dari lemma tadi; bagian ketiga berhenti lebih awal; bagian keempat dan
+kelima membandingkan pengoptimum; bagian keenam sampai kedelapan memeriksa validasi
+silang, kebocoran, dan kapasitas. Keluaran sebenarnya, dipotong hanya pada bagian yang
+berulang:
+
+\begin{verbatim}
+d=21  n_latih=60  n_validasi=20000
+==1 L2: lam  |w|max  latih  validasi
+  0.0000 406.204  0.0000  0.3262
+  0.0010   3.056  0.1000  0.2927
+  0.0030   1.814  0.1000  0.2688
+  0.0100   1.018  0.1167  0.2475
+  0.0300   0.631  0.1167  0.2433
+  0.1000   0.399  0.1500  0.2406
+  0.3000   0.268  0.2333  0.2452
+  1.0000   0.142  0.2500  0.2695
+  3.0000   0.062  0.3333  0.3205
+ 10.0000   0.022  0.3333  0.3395
+100.0000   0.003  0.3333  0.3395
+==2 L1: lam  nol/total  latih  validasi
+  0.0020 16/21  0.1167  0.2630
+  0.0050 11/21  0.1167  0.2455
+  0.0100 14/21  0.1167  0.2412
+  0.0200 14/21  0.1500  0.2369
+  0.0500 11/21  0.1833  0.2334
+  0.1000  7/21  0.2667  0.2492
+  0.2000  1/21  0.3333  0.3395
+==3 early stopping: epoch  latih  validasi  |w|max
+ep=   1  0.1333  0.2481  0.15
+ep=   5  0.1333  0.2429  0.38
+ep=  10  0.1333  0.2432  0.48
+ep=  50  0.1167  0.2454  0.77
+ep= 200  0.1167  0.2541  1.38
+ep= 800  0.1000  0.2879  2.85
+ep=2400  0.0833  0.3109  4.81
+terbaik 0.2427 pada epoch 8
+==4 kuadratik diag(1,1e4): langkah ke galat 1e-8
+GD=1e-4  92099 | momentum  9132 | Adam=0.1  82
+==5 logistik minibatch: langkah ke galat latih 0.40 (median 5 seed)
+sgd  lr=0.05 [100, 100, 90, 90, 100] median=100
+sgd  lr=0.2  [30, 50, 40, 40, 20] median=40
+adam lr=0.03 [30, 20, 20, 20, 30] median=20
+adam lr=0.1  [20, 10, 20, 10, 10] median=10
+==6 CV 5 partisi x 5 lipatan: lam  galat CV (rata2 +- sd antarpartisi)
+ 0.000  0.3233 +- 0.1245
+ 0.003  0.2400 +- 0.0253
+ 0.030  0.2467 +- 0.0217
+ 0.100  0.2467 +- 0.0274
+ 1.000  0.2967 +- 0.0298
+==7 standardisasi: geser  statistik latih  statistik gabungan
+0.0  0.2452  0.2463
+0.5  0.3765  0.3361
+1.0  0.5387  0.3819
+==8 kapasitas vs data (d=21, lam=0, himpunan bersarang)
+n=   60 latih=0.1667 validasi=0.3005 selisih=+0.1338 batas=0.3899
+n=  150 latih=0.2133 validasi=0.2407 selisih=+0.0274 batas=0.2466
+n=  600 latih=0.2067 validasi=0.2260 selisih=+0.0193 batas=0.1233
+n= 2400 latih=0.2058 validasi=0.2155 selisih=+0.0097 batas=0.0617
+\end{verbatim}
+
+Tiga hal perlu dibaca dari keluaran itu, dan ketiganya mengecewakan harapan biasa.
+
+Pertama, galat latih hampir tidak berguna sebagai petunjuk: ia bergerak berlawanan arah
+dengan galat validasi. Kurva validasinya juga tidak simetris. Dari $\lambda=0$ ke
+$0{,}1$ galatnya turun $0{,}086$; dari $0{,}1$ ke $10$ ia naik $0{,}099$ sampai melewati
+titik awalnya. Bila ragu antara dua nilai, yang lebih kecil lebih aman.
+
+Kedua, pemilihan lewat validasi silang tidak otomatis benar. CV memilih
+$\lambda=0{,}003$, sedangkan validasi memilih $0{,}1$; selisih galat CV keduanya
+$0{,}0006$, jauh di bawah simpangan antarpartisi $0{,}025$, padahal di data validasi
+keduanya berbeda $0{,}0282$.
+
+Ketiga, batas teoretis longgar tetapi arahnya benar. Eksperimen kapasitas di sini
+melatih model dengan anggaran enam puluh ribu langkah pada himpunan bersarang, jadi galat
+latihnya tidak nol. Pada $n=60$ batasnya $0{,}3899$ sedangkan jurangnya $0{,}1338$; pada
+$n=2400$ batasnya $0{,}0617$ sedangkan jurangnya $0{,}0097$. Rasionya sekitar tiga,
+sehingga batas itu berguna untuk membandingkan setelan, bukan meramal angka.
+
+\begin{untukdosen}
+Urutan mengajar yang saya sarankan: mulai dari angka pembuka bab, enam puluh contoh
+dengan galat latih nol dan galat validasi $0{,}3262$, lalu tanyakan apakah model itu
+"belajar". Jawaban kelas biasanya membelah dua, dan perpecahan itu bahan kuliah terbaik.
+Sesudah itu definisi formal, dan biarkan dekomposisi bias-variansi diturunkan di papan
+dalam lima baris. Regularisasi L1 sebaiknya masuk lewat lemma ambang lunak, bukan lewat
+gambar bola L1, sebab lemma itu dapat diperiksa mahasiswa sendiri.
+
+Dua miskonsepsi yang paling sering muncul. Mahasiswa menganggap galat latih rendah sebagai
+bukti model bagus, lalu terkejut ketika galat validasinya tinggi; gejala lain, mereka
+menyarankan "melatih lebih lama" sebagai obat, padahal pada tabel berhenti lebih awal
+justru itulah yang merusak. Dan mereka menganggap regularisasi selalu menolong, lalu
+memasang $\lambda$ besar dengan keyakinan "lebih aman". Tabel $\lambda=10$ dengan galat
+$0{,}3395$ adalah obat untuk keduanya.
+
+Aktivitas papan tulis yang berhasil: minta kelas menebak, sebelum dihitung, di mana
+minimum kurva validasi berada, lalu hitung bersama tiga baris saja; tebakan biasanya
+meleset ke $\lambda$ yang terlalu kecil. Tanda kelas siap lanjut: mereka dapat menjelaskan
+mengapa memilih $\lambda$ memakai data validasi membuat angka itu optimistis, dan dapat
+menyebutkan satu kebocoran yang tidak terlihat pada angka.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Galat latih dan galat populasi dihitung dengan cara sama pada himpunan berbeda;
+        galat latih $0{,}0000$ dengan galat validasi $0{,}3262$ menandakan hafalan.
+  \item Galat populasi terdekomposisi menjadi derau tak tereduksi, bias kuadrat, dan
+        variansi; regularisasi menukar bias dengan variansi, dan perdagangan itu
+        menguntungkan hanya selama penurunan variansi lebih besar daripada kenaikan bias.
+  \item Penalti L2 menambah $\lambda\mathbf{w}$ pada gradien, setara mengalikan bobot
+        dengan $1-\eta\lambda$ tiap langkah; L1 memakai ambang lunak sehingga bobot di
+        bawah $\lambda/H$ menjadi nol tepat. Keduanya punya dosis: $\lambda=0{,}1$
+        memberi $0{,}2406$, sedangkan $\lambda=10$ memberi $0{,}3395$, lebih buruk
+        daripada tanpa regularisasi.
+  \item Berhenti lebih awal adalah regularisasi lewat jumlah langkah: $0{,}2427$ pada
+        epoch 8 lawan $0{,}3109$ pada epoch 2400. Dropout menambahkan derau bervariansi
+        $(1-p)/p$ per unit, dan augmentasi derau Gauss $\sigma^2$ setara penalti L2
+        berskala $\sigma^2$.
+  \item Pengoptimum berbeda pada masalah berskala buruk: pada kuadratik berbilangan
+        kondisi $10^4$, penurun gradien perlu $92099$ langkah, momentum $9132$, Adam
+        $82$; jadwal kosinus menurunkan galat latih dari $0{,}3866$ ke $0{,}3549$.
+  \item Validasi silang mengurangi goyangan tanpa menghapusnya: kurva CV datar dengan
+        simpangan $0{,}025$, dan pilihannya meleset $0{,}0282$. Kebocoran standardisasi
+        membuat angka tampak lebih baik ($0{,}3361$ lawan $0{,}3765$) tanpa benar-benar
+        lebih baik, dan jurang generalisasi menyusut sebanding $1/\sqrt n$: dari
+        $0{,}1338$ pada $n=60$ ke $0{,}0097$ pada $n=2400$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Nilai klaim ini: "Karena galat latih model kami nol, model itu sudah cukup baik."
+        Benar, salah, atau belum cukup bukti? Sebutkan bagian yang keliru dan satu angka
+        tambahan yang Anda perlukan.
+  \item Buktikan dekomposisi bias-variansi untuk $y=f(x)+\varepsilon$ dengan
+        $\operatorname{Var}(\varepsilon)=\sigma^2$: tuliskan ketiga suku, tunjukkan kedua
+        suku silang lenyap, dan sebutkan di mana kebebasan $D$ dari $\varepsilon$
+        dipakai.
+  \item Turunkan $w(\lambda)=64/(30+\lambda)$ untuk data pada contoh hitung, lalu
+        buktikan $w$ turun monoton terhadap $\lambda$ tetapi tidak pernah nol. Bandingkan
+        dengan penalti L1 pada masalah satu dimensi yang sama, dan tentukan $\lambda$
+        yang membuat $w=0$ tepat.
+  \item Hitung galat validasi untuk $c=0{,}95$ dan $c=1{,}05$ pada contoh penaksir
+        menyusut dengan $\mu=2$, $\sigma=1$, $n=25$, lalu bandingkan dengan $c=1$.
+        Jelaskan mengapa dua simpangan sama besar tidak memberi kerugian sama besar.
+  \item Sebuah laporan menulis: "Kami memilih $\lambda$ terbaik lewat validasi silang,
+        jadi angka validasi silang itu adalah perkiraan galat di lapangan." Perbaiki
+        kalimat itu, dan sebutkan dua prosedur tambahan yang diperlukan.
+  \item Buktikan lemma ambang lunak untuk $a<0$ secara lengkap, lalu jelaskan mengapa
+        hasilnya simetris terhadap tanda $a$. Petunjuk: kerjakan kasus $u<0$ dan $u=0$
+        terpisah.
+  \item Hitung langkah peluruhan bobot yang diperlukan agar bobot menjadi seperempat
+        nilai awalnya bila $\eta=0{,}1$ dan $\lambda=0{,}02$, memakai waktu paruh
+        $\ln2/(\eta\lambda)$. Periksa dengan simulasi numpy untuk gradien nol.
+  \item Pada data bab ini, $\lambda=0{,}1$ memberi galat latih $0{,}1500$ dan galat
+        validasi $0{,}2406$. Hitung jurangnya, bandingkan dengan jurang pada $\lambda=0$
+        dan $\lambda=10$, lalu jelaskan mengapa jurang kecil tidak cukup untuk
+        menyimpulkan sebuah model lebih baik.
+  \item Turunkan batas seragam $\sqrt{(\ln m+\ln(2/\delta))/(2n)}$ dari ketaksamaan
+        Hoeffding dan union bound, lalu hitung untuk $d=10$, $n=200$, dan
+        $\delta=0{,}01$. Berapa kali data harus dilipatgandakan agar batasnya separuh?
+\end{enumerate}
+
+Petunjuk untuk tiga butir tersulit. Butir 3: sasaran satu dimensinya
+$\frac12\sum_i(y_i-wx_i)^2+\lambda|w|$; pada $w=0$ subgradiennya memuat nol bila
+$\lambda\ge|\sum_ix_iy_i|=64$, jadi $w=0$ tepat pada $\lambda=64$. Butir 6: pada $u=0$
+subgradiennya selang $[-a-t,\,-a+t]$, yang memuat nol bila $|a|\le t$. Butir 9: dengan
+$m=2^{10}$ dan $\delta=0{,}01$ batasnya $\sqrt{(10\ln2+\ln200)/400}=0{,}1749$;
+separuhnya menuntut empat kali data.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang terbukti di bab ini: dekomposisi bias-variansi beserta syaratnya; kesetaraan
+langkah peluruhan bobot dengan penalti L2; bentuk tertutup peminimum
+$\frac H2(w-w^\ast)^2+\lambda|w|$ dan syarat subgradien yang membuat L1 menghasilkan nol
+sejati; kesetaraan augmentasi derau Gauss dengan penalti L2 untuk model linear; rumus
+harapan dan variansi topeng dropout; serta batas seragam untuk kelas hipotesis
+berhingga. Yang hanya populer: bahwa regularisasi selalu menolong; bahwa Adam selalu
+lebih cepat; bahwa berhenti lebih awal "sama dengan" L2 (itu aproksimasi untuk sasaran
+kuadratik dengan laju kecil); bahwa cacah nol L1 mengukur kepentingan ciri.
+
+Sumber primer: Goodfellow, Bengio, dan Courville, \emph{Deep Learning}, Bab 5
+(kapasitas, bias-variansi), Bab 7 (penalti L1 dan L2, augmentasi, derau, berhenti lebih
+awal, dropout), Bab 8 (SGD, momentum, Adam, jadwal laju, pemilihan hiperparameter).
+Wasserman, \emph{All of Statistics}, Bab 13 dan Bab 20. Batas seragam adalah akibat
+langsung ketaksamaan Hoeffding dan union bound.
+
+Batas keberlakuan: seluruh angka dari satu himpunan sintetis dengan pemisahan tunggal
+$60/20000$, sehingga tiap galat validasi membawa ketidakpastian orde $0{,}01$ sampai
+$0{,}02$. Karena itu perbandingan L1 dan L2 di sini bukan rekomendasi. Batas seragam hanya
+untuk kelas berhingga dan galat 0-1.
+
+Pertanyaan terbuka: seberapa besar kebocoran normalisasi batch, yang menghitung
+statistik dari minibatch sehingga mencampur informasi antarcontoh; bagaimana memilih
+$\lambda$ ketika biaya kesalahan tidak simetris; dan apakah kurva CV yang datar dapat
+diubah menjadi interval yang sah, bukan sekadar simpangan antarpartisi.
+\end{untukpeneliti}
+
+\peta{Bab 26 pada Goodfellow, Bengio, dan Courville, \emph{Deep Learning}: Bab 5
+(kapasitas, overfitting dan underfitting, dekomposisi bias-variansi), Bab 7 (penalti L1
+dan L2, weight decay, augmentasi data, derau sebagai regularisasi, berhenti lebih awal,
+dropout), Bab 8 (SGD, momentum, Adam, jadwal laju, pemilihan hiperparameter). Pada
+Wasserman, \emph{All of Statistics}: Bab 13 (pemilihan model dan validasi silang), Bab 20
+(bias-variansi pada penghalusan). Turunan balik dan pelatihan jaringan dibahas di Bab 23;
+pembacaan metrik evaluasi yang jujur, termasuk kebocoran dan pemisahan data, dilanjutkan
+di Bab 25; optimasi konveks yang mendasari penalti dan subgradien ada di Bab 21.}

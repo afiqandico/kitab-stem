@@ -1,0 +1,1103 @@
+\chapter{The Language of Mathematics and the Art of Proof}
+
+In a classroom, a student writes on the board: ``$n^{2}+n+41$ is prime for every
+integer $n \geq 0$''. He then checks them one at a time. For $n=0$ he obtains
+$41$; for $n=1$ he obtains $43$; for $n=2$ he obtains $47$. He continues up to
+$n=39$, obtains $1601$, and $1601$ is indeed prime. Forty values, forty
+failures that never came. At $n=40$ the claim breaks:
+$40^{2}+40+41 = 1681 = 41^{2}$. One extra line cancels the whole preceding page.
+
+That event is not an arithmetic accident but a grammatical mistake. ``For every
+$n \geq 0$'' speaks about infinitely many numbers, whereas a list touches only
+finitely many; no rule of logic moves truth from the finite to the infinite. This
+chapter therefore offers a way of speaking such that checking is not needed.
+
+The need is not a luxury. In Chapter~29 we will conclude that a
+classifier can be encircled by shifting one input by $\varepsilon$,
+and that conclusion holds for all inputs. In Chapter~27 a good accuracy report on
+thousands of test data proves nothing about tomorrow's data. This chapter prepares
+the apparatus for both.
+
+\begin{untukanak}
+On the shore of a lake lived a flock of geese. A child came every morning for
+almost a year and counted the geese he saw: white, all of them, for two hundred
+and seventy mornings. So he wrote in his notebook: all geese on this lake are white.
+
+His grandfather asked how many geese the child had never seen. The child admitted he
+did not know, and his grandfather said that the notebook told about the geese already
+seen, not about all the geese on the lake.
+
+This story is not about geese but about the difference between ``I have checked
+everything'' and ``it holds for everything''. The first is only as strong as our memory. The second does not depend on who does the checking. One black goose
+suffices to bring down a notebook of any thickness, whereas a thousand white geese
+are never enough to set it up.
+
+The black goose of this chapter is called forty. At that number the formula that looks tidy
+suddenly yields a number that can be split. In this chapter we will learn why one
+example brings down a claim, why many examples do not establish it, and how the gap
+is closed without inspecting the last goose.
+\end{untukanak}
+
+\section{Statements, connectives, and truth tables}
+\tingkat{basic}
+
+A sentence can be judged only after we know what it promises. ``Seven is a
+prime number'' promises something that can be checked, and that promise is true. ``Close
+the window'' promises nothing. ``$x+1=3$'' cannot yet be judged, because its value
+depends on $x$. The three look the same to spelling, but only the first
+counts as mathematical material.
+
+\begin{definisi}[Statement]
+\index{statement}
+A \emph{statement} is a sentence that is either true or false, but not
+both at once.
+\end{definisi}
+
+A single statement becomes useful once it is combined. Each connective has one meaning
+that is stipulated, not inferred from habits of speech.
+
+\kamus{logical connective}{penghubung logika}{like a button on a calculator: two
+lamps in, one lamp out, and the relation between the lamps is fixed at the factory,
+not guessed by its user.}
+
+With the picture of that button in mind, we stipulate the meaning of the five connectives officially.
+
+\begin{definisi}[Logical connectives]
+Let $P$ and $Q$ be statements.
+
+We use the following five connectives.
+\begin{itemize}
+  \item $\neg P$ (\emph{negation}, \emph{not}): true exactly when $P$ is false.
+  \item $P \wedge Q$ (\emph{conjunction}, \emph{and}): true exactly when both are true.
+  \item $P \vee Q$ (\emph{disjunction}, \emph{or}): true exactly when at least
+        one is true; the word ``or'' here is inclusive.
+  \item $P \Rightarrow Q$ (\emph{implication}, \emph{if--then}): false exactly when
+        $P$ is true and $Q$ is false; true in the other three cases.
+  \item $P \Leftrightarrow Q$ (\emph{biconditional}, \emph{iff}): true exactly when
+        $P$ and $Q$ have the same value.
+\end{itemize}
+\end{definisi}
+
+All the content of that definition can be compressed into a single table: the rows are all combinations
+of values, the columns are the value of each connective.
+
+{\centering
+\begin{tabular}{cc|ccccc}
+\hline
+$P$ & $Q$ & $\neg P$ & $P \wedge Q$ & $P \vee Q$ & $P \Rightarrow Q$ & $P \Leftrightarrow Q$ \\
+\hline
+T & T & F & T & T & T & T \\
+T & F & F & F & T & F & F \\
+F & T & T & F & T & T & F \\
+F & F & T & F & F & T & T \\
+\hline
+\end{tabular}\par}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small]
+  \fill[layerjade!16] (0,0) rectangle (3,1.8);
+  \fill[accent!16] (3,0) rectangle (6,1.8);
+  \fill[layerjade!16] (0,-1.8) rectangle (3,0);
+  \fill[layerjade!16] (3,-1.8) rectangle (6,0);
+  \draw[layergrey!70,thick] (0,-1.8) grid[xstep=3,ystep=1.8] (6,1.8);
+  \draw[accent,very thick] (3,0) rectangle (6,1.8);
+  \node at (1.5,0.9) {T};
+  \node at (4.5,0.9) {F};
+  \node at (1.5,-0.9) {T};
+  \node at (4.5,-0.9) {T};
+  \node[above,font=\footnotesize] at (1.5,1.8) {$Q$ true};
+  \node[above,font=\footnotesize] at (4.5,1.8) {$Q$ false};
+  \node[left,font=\footnotesize] at (0,0.9) {$P$ true};
+  \node[left,font=\footnotesize] at (0,-0.9) {$P$ false};
+  \node[below,font=\footnotesize,text=accent] at (4.5,-1.8) {the only false cell};
+\end{tikzpicture}
+\caption{The truth grid of $P \Rightarrow Q$: rows hold the value of $P$, columns hold the value of $Q$.
+Three cells hold T and one cell holds F, namely when $P$ is true while $Q$ is false.
+Anyone who wants to bring the implication down need only point at the cell framed in thick lines.}
+\label{fig:kisi-implikasi}
+\end{figure}
+
+The third and fourth rows are the ones that most often surprise. In the fourth row,
+$P$ is false and $Q$ is false, and the implication is judged true. In the third row, $P$ is false
+and $Q$ is true, and the implication is true as well. So the only way to bring down
+$P \Rightarrow Q$ is to exhibit $P$ true while $Q$ is false; the grid in
+Figure~\ref{fig:kisi-implikasi} contains that cell as the only false cell.
+
+That stipulation is not a matter of style. Consider ``if $n$ is divisible by $4$, then $n$
+is even'', which must hold for every integer $n$, including $n=3$. There the
+antecedent is false; if the implication were judged false, the statement that is plainly true would
+collapse because of one irrelevant number. An implication records a relation of values, not
+cause and effect.
+
+\kamus{implication}{implikasi}{like the promise ``if it rains, the road is wet'': the promise is
+broken only when rain falls and the road stays dry; when there is no rain, the one who made the
+promise has done nothing wrong.}
+
+Two compound statements can have the same value in every case; such an equality
+has a name of its own.
+
+\begin{definisi}[Tautology and equivalence]
+\index{tautology}
+A compound statement is called a \emph{tautology} if it is true under every assignment
+of values to its constituent statements. Two compound statements $A$ and $B$ are called
+\emph{logically equivalent}, written $A \equiv B$, if $A \Leftrightarrow B$ is a tautology.
+\end{definisi}
+
+For two constituent statements there are $2^{2}=4$ assignments of values; for three constituents there are
+$2^{3}=8$. An equivalence that involves only two or three statements can therefore be
+proved by checking every row, and that check is complete. This is the only place in this chapter where
+exhaustive checking is accepted as proof, because the set of cases is finite and
+has been counted.
+
+\begin{proposisi}
+For every statement $P$ and $Q$ we have $P \Rightarrow Q \equiv \neg P \vee Q$.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} We compare the column $P \Rightarrow Q$ with the column $\neg P \vee Q$
+in the four rows of the truth table. In the first row both are true. In the second row $\neg P$ is false and
+$Q$ is false, so both are false. In the third and fourth rows $\neg P$ is true,
+so both are true. The four rows give the same value, hence the two statements are
+equivalent.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Two derived equivalences are used throughout this book. The first lets us reverse
+the direction of the talk without changing the value.
+
+\begin{akibat}[Contraposition]
+\index{contraposition}
+For every statement $P$ and $Q$ we have
+$P \Rightarrow Q \equiv \neg Q \Rightarrow \neg P$.
+\end{akibat}
+\par\smallskip\noindent\textit{Proof.} By the preceding proposition, both sides equal $\neg P \vee Q$ and
+$\neg(\neg Q) \vee \neg P$. Since $\neg(\neg Q) \equiv Q$ and a disjunction pays no
+attention to order, the two forms are identical.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+What is \emph{not} equivalent is the converse, namely $Q \Rightarrow P$. In the third row of
+the table, $Q \Rightarrow P$ is true while $P \Rightarrow Q$ is false. Swapping antecedent
+for consequent is the most frequent mistake, and it is often invisible because the sentence
+still reads smoothly.
+
+\begin{proposisi}
+For every statement $P$ and $Q$ we have
+$\neg(P \Rightarrow Q) \equiv P \wedge \neg Q$.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} By the definition of negation and the first proposition,
+$\neg(P \Rightarrow Q) \equiv \neg(\neg P \vee Q)$. De Morgan's law, proved in
+Chapter~2, gives $\neg(\neg P \vee Q) \equiv \neg(\neg P) \wedge \neg Q$, and
+$\neg(\neg P) \equiv P$. Hence $\neg(P \Rightarrow Q) \equiv P \wedge \neg Q$.
+A reader who has not yet accepted De Morgan's law can check the four rows of the table
+directly.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+\begin{tangan}
+Prepare eight small cards: four bearing T, four bearing F. Lay out four rows,
+each row with one card for $P$ and one for $Q$: T-T, T-F, F-T, F-F. To the right of each
+row place a third card that you write yourself: T if you judge ``if $P$ then $Q$'' to be
+true, F if false.
+
+Work without looking at the table, then compare. Only one row gets the F card, namely the
+row whose $P$ is T and whose $Q$ is F. Slide that card up and down; it remains
+the only one. Now swap the P and Q cards in the T-F row so that it reads F-T, then evaluate
+again: the card changes from F to T. That one-card move is the converse.
+\end{tangan}
+\section{Quantifiers and how to negate them}
+\tingkat{basic}
+
+Most mathematical sentences speak about many objects, and that multiplicity is
+marked by quantifiers. There are two quantifiers, and both read order as part of the meaning.
+
+\kamus{quantifier}{kuantor}{like two kinds of announcement at school: ``all pupils
+must bring a book'' and ``some pupil brings a book''; the two sound similar
+but demand very different proofs.}
+
+We write down their meaning officially.
+
+\begin{definisi}[Universal and existential quantifiers]
+\index{quantifier}
+Let $P(x)$ be a statement that depends on $x$ inside the set $A$.
+\begin{itemize}
+  \item $(\forall x \in A)\,P(x)$ means $P(x)$ is true for every $x \in A$.
+  \item $(\exists x \in A)\,P(x)$ means there is at least one $x \in A$
+        with $P(x)$ true.
+\end{itemize}
+The first statement is false if there is one $x \in A$ with $P(x)$ false; one such
+object is called a \emph{counterexample}.
+\end{definisi}
+
+The existential quantifier demands at least one, not exactly one; adding a demand
+that is not written in the definition is the most frequent source of error.
+
+The order of two quantifiers of different kinds may not be swapped. Inside $\mathbb{R}$,
+the statement
+\[
+  (\forall x)(\exists y)\; y > x
+\]
+is true, whereas
+\[
+  (\exists y)(\forall x)\; y > x
+\]
+is false. The proofs of both are short.
+
+\begin{proposisi}
+Inside $\mathbb{R}$ we have $(\forall x)(\exists y)\, y > x$, but we do not have
+$(\exists y)(\forall x)\, y > x$.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} For the first part, take any $x \in \mathbb{R}$
+and choose $y = x+1$. Then $y > x$, so $y$ is a witness for that $x$.
+Since $x$ was arbitrary, every $x$ has a witness; the witness may differ for different
+$x$.
+
+For the second part, suppose there is $y_{0} \in \mathbb{R}$ with $y_{0} > x$ for
+every $x \in \mathbb{R}$. Take $x = y_{0}+1$, which is also a real number. Then
+$y_{0} > y_{0}+1$, that is $0 > 1$, which is impossible. So no such $y_{0}$
+exists.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+\index{negation}Negation works from the outside in: every quantifier changes kind, and the negation travels inward
+until it sits on the innermost statement. For compound statements, De Morgan's laws
+move the negation past conjunctions and disjunctions.
+
+{\centering
+\begin{tabular}{ll}
+\hline
+Statement & Its negation \\
+\hline
+$(\forall x \in A)\,P(x)$ & $(\exists x \in A)\,\neg P(x)$ \\
+$(\exists x \in A)\,P(x)$ & $(\forall x \in A)\,\neg P(x)$ \\
+$P \wedge Q$ & $\neg P \vee \neg Q$ \\
+$P \vee Q$ & $\neg P \wedge \neg Q$ \\
+$P \Rightarrow Q$ & $P \wedge \neg Q$ \\
+\hline
+\end{tabular}\par}
+
+The last row is the one most often violated. Denying ``if it rains then the road
+is wet'' is not ``if it rains then the road is dry'', but ``it rains and the road is not
+wet''. The same mistake appears when people deny a definition: the verb inside it is
+negated, the quantifier is left intact.
+
+\begin{proposisi}
+For every statement $P(x)$ and $Q(x)$ we have
+\[
+  \neg(\forall x)\bigl(P(x) \Rightarrow Q(x)\bigr)
+  \;\equiv\; (\exists x)\bigl(P(x) \wedge \neg Q(x)\bigr).
+\]
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} A universal quantifier is negated into an existential
+quantifier over the negation of the body:
+\[
+  \neg(\forall x)R(x) \;\equiv\; (\exists x)\neg R(x).
+\]
+The body $R(x)$ here is $P(x) \Rightarrow Q(x)$, whose negation is $P(x) \wedge
+\neg Q(x)$ by the proposition of the previous part. So the negation has the form
+$(\exists x)(P(x) \wedge \neg Q(x))$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+That form sets a clear task when one wants to reject a quantified statement: exhibit
+one object that satisfies the antecedent and fails the consequent.
+
+The next two negations are used repeatedly; the first is the material of Chapter~4.
+
+\begin{contoh}[Negation of the definition of a limit]
+The definition of a limit reads: the sequence $(a_{n})$ tends to $L$ if
+\[
+  (\forall \varepsilon > 0)(\exists N \in \mathbb{N})(\forall n \geq N)\;
+  |a_{n} - L| < \varepsilon .
+\]
+Negating from the outside in gives
+\[
+  (\exists \varepsilon > 0)(\forall N \in \mathbb{N})(\exists n \geq N)\;
+  |a_{n} - L| \geq \varepsilon .
+\]
+The reading of the second sentence: there is one tolerance $\varepsilon$ that no
+$N$ can repair, because there is always a term after $N$ that deviates by at least
+$\varepsilon$. To prove that $(a_{n})$ does not tend to $L$, we must find
+that $\varepsilon$, then for every $N$ find $n \geq N$ that violates it; $n$ may
+depend on $N$.
+\end{contoh}
+
+The second negation concerns the existence of primes. Euclid proved that for
+every natural number $n$ there is a prime larger than $n$:
+\[
+  (\forall n \in \mathbb{N})(\exists p)\bigl(p \text{ prime} \wedge p > n\bigr).
+\]
+Its negation is
+\[
+  (\exists n \in \mathbb{N})(\forall p)\bigl(p \text{ prime} \Rightarrow p \leq n\bigr),
+\]
+that is: there is one bound $n$ such that all primes do not exceed $n$. Denying
+Euclid's claim demands such a bound, not merely failing to find a large prime.
+
+\begin{untukanak}
+Picture a class with thirty pupils. The teacher writes on the board: ``all pupils
+bring a pencil.'' To prove that sentence true, the teacher must check thirty desks; to
+prove it false, one pupil without a pencil is enough.
+
+Now the teacher writes another sentence: ``some pupil brings a pencil.'' This time
+the situation is reversed. One pupil with a pencil is already enough to prove
+that sentence. But to prove it false, the teacher must check thirty desks
+and make sure there is not a single pencil.
+
+The two sentences only swap a word at the front, but the work of checking them swaps
+entirely. Mathematicians are careful with ``all'' and ``some'' because both
+count how many things must be checked.
+
+There is one more trap. If some pupil brings two pencils, is ``some pupil brings
+a pencil'' still true? Of course it is true: that sentence demands at least one,
+not exactly one. In this chapter we will learn why a demand that is not written may not
+be added on one's own.
+\end{untukanak}
+
+\section{Reading a definition literally}
+\tingkat{intermediate}
+
+A mathematical definition is not a short explanation of a word; it is a contract that
+holds in both directions. If a number is called odd when it has the form $2k+1$ for
+some integer $k$, we are bound to two things: every number of the form $2k+1$
+must be called odd, and every number called odd must have the form $2k+1$.
+
+To read a definition means to read a single sentence of the form ``$x$ is called $B$ if and only
+if $C(x)$'', even though the words ``only if'' are rarely written; the phrase ``is called'' already
+contains both directions. The first direction grants permission to use the name $B$, the second grants permission
+to use the condition $C(x)$, and reversing either one wrecks the whole argument.
+
+\kamus{necessary condition}{syarat perlu}{like the condition for entering a building: without a membership
+card we may not enter, but having a membership card does not yet mean we are already
+seated inside.}
+
+Compare two statements about an integer $n$: ``if $6$ divides $n$ then $3$
+divides $n$'' is true, whereas ``if $3$ divides $n$ then $6$ divides $n$'' is false,
+with counterexample $n=3$. So ``$3$ divides $n$'' is a necessary condition for ``$6$ divides
+$n$'', but not a sufficient one. A good definition names both, since only
+in that way can the name and the condition be exchanged.
+
+\begin{bacakeras}
+Read it aloud as a dialogue for two voices, alternating, with one breath at every full stop.
+
+First voice: ``If it rains, the road is wet.''
+Second voice: ``The road is wet. So it rains.''
+First voice: ``Not necessarily. The road is wet when it is hosed down, too.''
+Second voice: ``Still wet. Still raining.''
+First voice: ``What I promised was one direction only. Rain first, then wet. The reverse direction was never promised.''
+
+Repeat that dialogue once more, faster, until the ear catches the difference. The first
+sentence puts the rain in front; the second moves the rain to the back. The sound turns
+around, the promise does not.
+
+The line to repeat three times out loud: ``if it rains then it is wet, not if
+it is wet then it rains.''
+\end{bacakeras}
+
+Now consider the definition used most often in this book.
+
+\begin{definisi}[Prime number]
+\index{prime number}
+An integer $p$ is called \emph{prime} if $p \geq 2$ and the only positive divisors
+of $p$ are $1$ and $p$ itself.
+\end{definisi}
+
+In everyday words: a prime is larger than one and cannot be split
+into a product of two smaller numbers; the two clauses are tested separately.
+
+\begin{proposisi}
+The number $1$ is not prime.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} The definition demands $p \geq 2$. For $p = 1$
+that condition fails, so $1$ does not satisfy the definition, whatever we can
+say about its divisors. Note that $1$ in fact passes the second clause:
+the only positive divisors of $1$ are indeed $1$ and $1$ itself. So what sets it aside
+is the first clause, not the second.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+This kind of event explains why a definition must be read to the last clause.
+A reader who skips the first clause will conclude that $1$ is prime, and
+the uniqueness of the factorization $12 = 2^{2}\cdot 3$ in Chapter~28 will be lost, because $12$ may
+also be written $1 \cdot 2^{2} \cdot 3$.
+
+A definition also determines how to deny membership. To show that a
+number is not prime, we must find a positive divisor that is neither $1$ nor
+the number itself. Here is one example that often escapes a quick check.
+
+\begin{proposisi}
+The number $91$ is not prime. More generally, the statement ``every odd number
+that is not divisible by $3$ and not divisible by $5$ is prime'' is false.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} In fact $91 = 7 \cdot 13$, and both factors
+lie between $1$ and $91$, so $91$ has a positive divisor other than $1$ and
+itself. The number $91$ is odd, is not divisible by $3$ because $9+1 = 10$ is not a multiple
+of $3$, and is not divisible by $5$ because its last digit is neither $0$ nor $5$. So $91$
+is a counterexample to that general statement. For comparison, $97$ is indeed prime; among the integers $2$ and $99$ there are
+exactly $25$ primes, a count produced by the program in the lab section.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+\begin{definisi}[Perfect square]
+An integer $n$ is called a \emph{perfect square} if there is an integer $k$
+with $n = k^{2}$.
+\end{definisi}
+
+By this definition, $0$ is a perfect square, because $0 = 0^{2}$, and so is $1$,
+because $1 = 1^{2}$. Meanwhile $2$ is not a perfect square, and that statement needs
+a proof, not an admission that we failed to find $k$.
+
+\begin{proposisi}
+The number $2$ is not a perfect square.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} Suppose $2 = k^{2}$ for some $k \in
+\mathbb{Z}$. Since $k^{2} = 2 > 0$, we have $k \neq 0$. If $|k| = 1$ then
+$k^{2} = 1 \neq 2$. If $|k| \geq 2$ then $k^{2} \geq 4 > 2$. Since $|k|$ is a
+positive integer, only those two possibilities remain, and both fail. Hence there is no
+such $k$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+\index{counterexample}A habit worth keeping: every time you meet a
+definition, ask three questions. What are its clauses? Which objects satisfy
+all of them? Which objects are often thought to satisfy them although they fail one clause?
+The third question produces counterexamples, and a counterexample can be neither
+argued with nor debated.
+
+\section{Four patterns of proof}
+\tingkat{intermediate}
+
+A proof is a transport of truth: from statements we have already accepted to the
+statement we want to accept, through steps that can each be checked.
+The four patterns below cover most needs, and
+Figure~\ref{fig:peta-tiga-bukti} maps the first three routes. The fifth common pattern,
+proof by cases, is merely the first pattern applied to cases that exclude one another.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small,>=Stealth,
+  jalur/.style={draw,rounded corners=2pt,align=center,inner sep=5pt,text width=4.6cm},
+  ujung/.style={draw,rounded corners=2pt,align=center,inner sep=4pt,text width=2.2cm}]
+  \node[jalur,fill=layerorange!12] (klaim) at (0,0) {claim: $P \Rightarrow Q$};
+  \node[jalur,fill=layerteal!12] (lgs) at (6.1,2.4)
+    {\textbf{direct}\\ unpack $P$, compute, out comes $Q$};
+  \node[jalur,fill=layerindigo!10] (ktp) at (6.1,0)
+    {\textbf{contraposition}\\ prove $\neg Q \Rightarrow \neg P$; the value is the same};
+  \node[jalur,fill=layerplum!10] (ktr) at (6.1,-2.4)
+    {\textbf{contradiction}\\ suppose $P$ true and $Q$ false, derive a clash};
+  \node[ujung,fill=layergrey!10] (selesai) at (11.6,0)
+    {no assignment\\brings it\\down};
+  \draw[->,thick] (klaim.east) -- (lgs.west);
+  \draw[->,thick] (klaim.east) -- (ktp.west);
+  \draw[->,thick] (klaim.east) -- (ktr.west);
+  \draw[->,thick] (lgs.east) -- (selesai.north west);
+  \draw[->,thick] (ktp.east) -- (selesai.west);
+  \draw[->,thick] (ktr.east) -- (selesai.south west);
+\end{tikzpicture}
+\caption{Road map of three forms of proof for an implication. All routes start from the same claim
+and end at the fact that no assignment of values makes $P$ true while
+$Q$ is false. A proof by contraposition is valid because $P \Rightarrow Q \equiv \neg Q \Rightarrow \neg P$.
+The fourth form, a constructive proof with a witness, does not enter this map because it proves
+a statement of the form $\exists$, not an implication.}
+\label{fig:peta-tiga-bukti}
+\end{figure}
+
+\paragraph{Pattern one: direct proof.} We start from the hypothesis, unpack it
+by definition, then compute until the conclusion appears. The next example is chosen
+because its conclusion is stronger than the one people usually prove.
+
+\begin{teorema}
+For every odd integer $n$, the number $n^{2}-1$ is divisible by $8$.
+\end{teorema}
+\par\smallskip\noindent\textit{Proof.} Since $n$ is odd, $n = 2k+1$ for some
+$k \in \mathbb{Z}$. Then
+\[
+  n^{2} - 1 = (2k+1)^{2} - 1 = 4k^{2} + 4k = 4k(k+1).
+\]
+Among two consecutive integers $k$ and $k+1$, exactly one is even,
+so $k(k+1) = 2m$ for some $m \in \mathbb{Z}$. Substitution gives
+$n^{2}-1 = 4 \cdot 2m = 8m$, which means $n^{2}-1$ is divisible by $8$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+An immediate consequence: the square of an odd number always leaves remainder $1$ when divided by $8$. For
+$n = 1,3,5,7,9,11$ we obtain in turn $n^{2}-1 = 0, 8, 24, 48, 80, 120$, and
+all six are divisible by $8$. That check is not a proof, but it makes sure that
+the proof above contains no typo.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small,>=Stealth,
+  tahap/.style={draw,rounded corners=2pt,align=left,inner sep=5pt,text width=6.6cm},
+  nama/.style={font=\footnotesize\itshape,text=layergrey,align=right,text width=2.4cm}]
+  \node[tahap,fill=layerteal!10] (asumsi) at (0,0)
+    {$n$ is odd, so $n = 2k+1$ for some $k \in \mathbb{Z}$};
+  \node[nama] at (-4.9,0) {assumption (given)};
+  \node[tahap,fill=layerorange!10] (langkah) at (0,-2.1)
+    {$n^{2}-1 = 4k^{2}+4k = 4k(k+1) = 8m$};
+  \node[nama] at (-4.9,-2.1) {step (computed)};
+  \node[tahap,fill=layerjade!10] (kesimpulan) at (0,-4.2)
+    {$8$ divides $n^{2}-1$};
+  \node[nama] at (-4.9,-4.2) {conclusion (required)};
+  \draw[->,thick] (asumsi.south) -- (langkah.north);
+  \draw[->,thick] (langkah.south) -- (kesimpulan.north);
+\end{tikzpicture}
+\caption{Anatomy of one direct proof of the statement ``if $n$ is odd then $8$ divides
+$n^{2}-1$''. The top box is the only one that may be used without reason; the middle box holds
+its reason, namely the definition of an odd number and algebra; the bottom box is what is required.
+The arrows may only run downward.}
+\label{fig:anatomi-bukti}
+\end{figure}
+
+Figure~\ref{fig:anatomi-bukti} names the three parts of that proof: assumption, step,
+conclusion.
+
+\paragraph{Pattern two: proof by contraposition.} We prove $\neg Q \Rightarrow \neg P$
+instead of $P \Rightarrow Q$. By the corollary in the first section the two are equivalent,
+so this is valid. The pattern is chosen when the negation of the conclusion is easier to hold than
+its hypothesis.
+
+\begin{proposisi}
+For every integer $n$, if $5n+3$ is even then $n$ is odd.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} The contrapositive reads: if $n$ is even then
+$5n+3$ is odd. Let $n = 2k$. Then $5n+3 = 10k+3 = 2(5k+1)+1$, which has the form two
+times an integer plus one, hence is odd. Since the contrapositive is proved, the
+original implication is proved.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+A direct proof would demand dividing $5n+3 = 2m$ by $5$; not impossible,
+but longer. The pattern of contraposition is chosen because it saves work.
+
+Before the third pattern, we need one lemma about parity. This lemma will be used twice:
+once here, once in the proof that the square root of two is irrational.
+
+\begin{lemma}
+\index{parity lemma}
+For every integer $n$, if $n^{2}$ is even then $n$ is even.
+\end{lemma}
+\par\smallskip\noindent\textit{Proof.} We prove the contrapositive: if $n$ is odd
+then $n^{2}$ is odd. By the first theorem of this section, for odd $n$ we have
+$n^{2} = 8m+1$ for some $m$, so $n^{2}$ leaves remainder $1$ when divided by $2$, that is,
+is odd.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+\paragraph{Pattern three: proof by contradiction.} We suppose the conclusion false, then derive two statements that cannot be true
+together. This pattern is used when the object being denied has no convenient form
+to compute with, for instance when what is denied is the existence of something.
+
+\begin{teorema}
+\index{square root of two}
+There is no rational number $r$ with $r^{2} = 2$.
+\end{teorema}
+\par\smallskip\noindent\textit{Proof.} Suppose there is $r \in \mathbb{Q}$ with
+$r^{2} = 2$. Every rational number can be written as $p/q$ with $p,q$ integers,
+$q \neq 0$, and $p,q$ having no common factor other than $1$; we
+remove that common factor by dividing both, so a form without a common
+factor can always be reached.
+
+From $p^{2}/q^{2} = 2$ we obtain $p^{2} = 2q^{2}$, so $p^{2}$ is even. By
+the lemma above, $p$ is even; write $p = 2m$ with $m \in \mathbb{Z}$. Substitution gives
+$4m^{2} = 2q^{2}$, that is $q^{2} = 2m^{2}$, so $q^{2}$ is even and, once again
+by the lemma, $q$ is even. Now $p$ and $q$ are both even, so both are divisible by
+$2$, contradicting the choice of $p/q$ without a common factor. The supposition is false,
+hence there is no rational $r$ with $r^{2} = 2$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+The contradiction is not between $r^{2}=2$ and ordinary arithmetic, but between ``$p,q$
+both even'' and the opening promise ``$p,q$ without a common factor''. That is why the step
+of removing common factors is not decoration; it is part of the hypothesis that is later violated.
+
+\paragraph{Pattern four: constructive proof with a witness.} To prove a statement
+of the form $\exists$, we point at one object and check that the object satisfies
+the condition. The object pointed at is called a \emph{witness}.
+
+\begin{teorema}
+For every natural number $n$ there are $n$ consecutive integers that are all
+not prime.
+\end{teorema}
+\par\smallskip\noindent\textit{Proof.} Take $N = (n+1)!$ and consider the $n$ numbers
+\[
+  N+2,\; N+3,\; \dots,\; N+(n+1).
+\]
+For every $k$ with $2 \leq k \leq n+1$, the number $k$ divides $(n+1)!$ because $k$
+is one of its factors, so $k$ also divides $N+k$. Moreover
+$N+k > k > 1$, so $N+k$ has a positive divisor $k$ that is neither $1$ nor
+itself. By the definition, $N+k$ is not prime. We have pointed at the $n$ numbers
+required, and there is no need to look for the smallest ones.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+For $n = 5$ that proof points at $6! = 720$, then $722, 723, 724, 725, 726$. All five
+indeed split: $722 = 2 \cdot 19^{2}$, $723 = 3 \cdot 241$, $724 = 2^{2} \cdot 181$,
+$725 = 5^{2} \cdot 29$, and $726 = 2 \cdot 3 \cdot 11^{2}$. The number $721 = 7 \cdot 103$ splits as well, but it is not on our list.
+
+A constructive proof does not promise the smallest or the fastest witness; what is judged is only
+whether the object pointed at satisfies the condition. Denying a statement of the form $\exists$
+demands showing that no object satisfies it, and that is where a contradiction
+is needed.
+
+\begin{resep}
+Four standard steps to prove ``if $P$ then $Q$''.
+\begin{enumerate}
+  \item Write $P$ and $Q$ by their definitions, one line each.
+  \item Open with ``suppose $P$ is true''. Only $P$ may be supposed; $Q$ may not
+        yet be used.
+  \item Derive $Q$ by substitution and algebra, one step per line, and name
+        the definitions used.
+  \item Close with a sentence that states $Q$ exactly as it appears in step 1.
+\end{enumerate}
+A warning about order: step 2 may not be swapped with step 3. Scratch work from the conclusion
+backward is allowed, but the proof submitted must run from $P$ to $Q$; otherwise
+what is proved is the converse.
+\end{resep}
+\section{Induction and strong induction}
+\tingkat{intermediate}
+
+Induction is a proof pattern for statements that come in a row, one for each natural
+number. We set the first card upright and make sure that every card that falls knocks down
+the next card; after both, no card may remain standing.
+
+\kamus{induction}{induksi}{like a row of dominoes: it is enough to make sure the first card falls
+and that every card knocks down the card in front of it, and then the whole row falls without needing
+to be pushed one by one.}
+
+We take the principle of induction as a basic property of $\mathbb{N} = \{1,2,3,\dots\}$, equivalent
+to the statement that every non-empty subset of $\mathbb{N}$ has a
+least member; nothing is proved circularly, we merely choose a starting point as in Chapter~3.
+
+\begin{catatan}[Principle of induction]
+Let $P(n)$ be a statement about natural numbers. If $P(1)$ is true and, for every
+$k \in \mathbb{N}$, the truth of $P(k)$ forces the truth of $P(k+1)$, then $P(n)$ is true
+for every $n \in \mathbb{N}$.
+\end{catatan}
+
+With that principle, we prove the formula that was already guessed in the opening of this section.
+
+\begin{teorema}
+For every natural number $n$ we have
+\[
+  1 + 3 + 5 + \cdots + (2n-1) = n^{2}.
+\]
+\end{teorema}
+\par\smallskip\noindent\textit{Proof.} Base: for $n = 1$ the left side equals $1$ and
+the right side equals $1^{2} = 1$. Step: suppose the formula is true for $n = k$, that is
+$1+3+\cdots+(2k-1) = k^{2}$. The next term is $2(k+1)-1 = 2k+1$, so
+\[
+  1+3+\cdots+(2k-1)+(2k+1) = k^{2} + 2k + 1 = (k+1)^{2}.
+\]
+Hence the formula is true for $k+1$. By the principle of induction, the formula is true for every
+$n \in \mathbb{N}$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+The second example has the form of an inequality. From $2^{k} \geq k+1$ and the condition $k \geq 0$
+we obtain $2^{k+1} = 2 \cdot 2^{k} \geq 2(k+1) \geq k+2$, so with base $n = 0$
+we have $2^{n} \geq n+1$ for every $n \geq 0$; the hypothesis and the side condition are used
+at once.
+
+Ordinary induction demands one step back. Sometimes the conclusion for $n$ follows only from
+many earlier values at once, and there ordinary induction is not enough.
+
+\begin{catatan}[Principle of strong induction]
+If for every $n \in \mathbb{N}$ the truth of $P(1), P(2), \dots, P(n-1)$ forces
+the truth of $P(n)$, then $P(n)$ is true for every $n \in \mathbb{N}$.
+\end{catatan}
+
+\kamus{strong induction}{induksi kuat}{like building a tower of blocks: to
+place the tenth block we may use every block beneath it, not only
+the ninth block.}
+
+With that permission we can prove something ordinary induction cannot reach.
+
+\begin{teorema}
+Every integer $n \geq 2$ can be written as a product of prime
+numbers.
+\end{teorema}
+\par\smallskip\noindent\textit{Proof.} We use strong induction on $n$. For $n = 2$:
+the number $2$ is itself prime, so it is a product with one factor. Now take
+$n \geq 3$ and suppose the statement true for all integers $m$ with
+$2 \leq m < n$. If $n$ is prime, we are done. If $n$ is not prime, by the definition there is a
+positive divisor $a$ with $a \neq 1$ and $a \neq n$; write $n = ab$ with
+$b = n/a$. Since $a \neq 1$ and $a \neq n$, we have $2 \leq a \leq n-1$, and likewise
+$2 \leq b \leq n-1$. The induction hypothesis applies to $a$ and to $b$, so both are
+products of primes, and the product of both is $n$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+The strong induction hypothesis is used twice, on $a$ and on $b$. That is where ordinary induction
+is awkward: both may be much smaller than $n-1$, so the statement for
+$n-1$ alone does not cover them.
+
+That theorem closes the promise of the previous section: a list of primes is never complete.
+
+\begin{akibat}[Infinitely many primes]
+\index{infinitely many primes}
+For every finite list of primes $p_{1}, p_{2}, \dots, p_{k}$ there is
+a prime that is not on that list.
+\end{akibat}
+\par\smallskip\noindent\textit{Proof.} Let $N = p_{1}p_{2}\cdots p_{k} + 1$. Since
+$N \geq 2$, the previous theorem gives that $N$ is a product of primes;
+take one prime factor $q$ of $N$. Suppose $q$ is on the list, say
+$q = p_{i}$. Then $q$ divides the product $p_{1}\cdots p_{k}$, and since $q$ also
+divides $N$, the number $q$ divides the difference $N - p_{1}\cdots p_{k} = 1$. No
+prime divides $1$, so the supposition is false. Hence $q$ is not on
+the list.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+That proof does not prove that $N$ is prime, only that $N$ has a prime factor outside the
+list: for $2,3,5,7$ we obtain $N = 211$, which happens to be prime, for $2,3,5,7,11,13$
+we obtain $N = 30031 = 59 \cdot 509$. The proof is constructive; ``suppose there were only
+finitely many primes'' is merely its rhetorical wrapping.
+
+\begin{untukanak}
+Picture a row of a thousand boxes, and we want to prove that every box contains
+a marble. We do not need to open a thousand boxes. It is enough to open the first box, then prove
+one thing: if a box contains a marble, the box beside it contains a marble too.
+If both things are true, a thousand boxes are checked without being opened one by one.
+
+This is induction, and it feels like magic. The key lies in the second promise: if the relation
+between boxes leaks in even one place, the whole row collapses.
+
+Now picture the first box turning out empty. The relation between boxes remains true, but
+it does not help, because there is nothing first to fall. This is the mistake that
+happens most often.
+
+In this chapter we will learn why the two steps may not be swapped, and why
+checking many boxes is no substitute for either of them.
+\end{untukanak}
+
+\section{When a proof fails}
+\tingkat{advanced}
+
+Back to the blackboard from the opening of the chapter. The first forty values are prime, and at
+$n = 40$ the pattern breaks:
+\[
+  40^{2} + 40 + 41 = 1600 + 40 + 41 = 1681 = 41^{2}.
+\]
+That failure is no coincidence, and its shape can be explained without a computer. For
+every integer $p \geq 2$, the substitution $n = p-1$ gives
+\[
+  (p-1)^{2} + (p-1) + p = p^{2} - 2p + 1 + p - 1 + p = p^{2},
+\]
+whereas the substitution $n = p$ gives $p^{2} + p + p = p(p+2)$. So every number
+$p \geq 2$ produces two points of failure, namely $n = p-1$ and $n = p$. With $p = 41$
+both produce $1681 = 41^{2}$ and $1763 = 41 \cdot 43$.
+
+The same pattern appears in smaller polynomials. For $n^{2}+n+11$ the first point of failure
+is $n = 10$, which gives $121 = 11^{2}$; for $n^{2}+n+17$ the first point of failure
+is $n = 16$, which gives $289 = 17^{2}$; for $n^{2}+n+29$ the failure comes at $n = 2$,
+because $35 = 5 \cdot 7$ is not prime. The larger the number in the constant position,
+the longer the clean initial stretch; that is the whole secret of the reputation of $41$.
+
+That failure yields three lessons that are often confused.
+
+The first lesson is asymmetric. One counterexample brings down a statement
+of the form ``for all'', whereas forty successful examples prove nothing
+about the forty-first value. A computer check is therefore a tool for finding conjectures,
+not a tool for proving.
+
+The second lesson concerns the location of the defect. The first defect that most often escapes notice appears
+in an induction proof. Consider the following false claim: for every $n \geq 1$
+we have $1+3+\cdots+(2n-1) = n^{2}+1$. Its induction step, when inspected, turns out to be
+valid:
+\[
+  \bigl(n^{2}+1\bigr) + (2n+1) = n^{2} + 2n + 2 = (n+1)^{2} + 1 .
+\]
+So from the truth of the formula at $n$ the truth at $n+1$ does indeed flow. What fails
+is the base: for $n = 1$ the left side equals $1$ while the right side equals $2$.
+The induction step moves truth, it does not create it.
+
+The third lesson concerns the limits of checking. The usual divisibility test: $m > 1$ is prime if
+it is not divisible by any prime smaller than $\sqrt{m}$. For $m = 1681$ we get $\sqrt{1681} = 41$, and the primes
+smaller than $41$ are $2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37$; not
+one of them divides $1681$. By that rule $1681$ passes as prime. The error lies
+in the word ``smaller'': the correct rule uses ``smaller than or equal to'',
+because $1681 = 41 \cdot 41$ and the divisor is exactly the size of the root. One loose inequality sign
+produces one false prime, precisely at $n = 40$.
+
+Three other defects recur in longer writing. The defect of circular reasoning:
+``since $n^{2}+n+41$ is prime for all $n$, it is also prime for $n = 40$'' uses
+what must be proved as its reason. The defect of dividing by zero: from $a = b$ people
+conclude $a+b = b$ after dividing by $a-b$, although $a-b = 0$. The defect of swapping
+direction: from $P \Rightarrow Q$ and $Q$ people conclude $P$; in the truth table,
+the third row is where that error hides.
+
+All four defects share one root: a step is used outside its condition.
+A useful habit is not to memorize patterns but to check the condition of every step:
+in a contradiction the supposition must be the negation of the conclusion, in induction there is a base and a
+step, in a division the divisor is not zero.
+
+\begin{tantangan}
+Claim: for every integer $k \geq 0$, the number $2^{2^{k}}+1$ is prime. For
+$k = 0,1,2,3,4$ the values are $3$, $5$, $17$, $257$, $65537$, and all five are indeed prime.
+Find the smallest $k$ that brings the claim down, then exhibit a divisor; the claim is
+false, and the error can be shown without a computer.
+
+Hint 1: five values are not a proof. Check $k = 5$; the number is $4294967297$, and its smallest
+divisor is far smaller than its square root.
+
+Hint 2: that divisor has the form $5 \cdot 2^{7}+1 = 641$, and
+$4294967297 = 641 \cdot 6700417$.
+
+If you get stuck, go back to the section ``When a proof fails''.
+\end{tantangan}
+
+\section{Worked examples}
+\tingkat{intermediate}
+
+The three computations below support this chapter and can be repeated on paper. The first is
+the sum of the first odd numbers, term by term from $n = 1$.
+
+{\centering
+\begin{tabular}{cccc}
+\hline
+$n$ & terms & sum & $n^{2}$ \\
+\hline
+$1$ & $1$ & $1$ & $1$ \\
+$2$ & $1+3$ & $4$ & $4$ \\
+$3$ & $1+3+5$ & $9$ & $9$ \\
+$4$ & $1+3+5+7$ & $16$ & $16$ \\
+$5$ & $1+3+5+7+9$ & $25$ & $25$ \\
+$6$ & $1+3+5+7+9+11$ & $36$ & $36$ \\
+\hline
+\end{tabular}\par}
+
+The continuation: $36+13 = 49 = 7^{2}$, then $49+15 = 64$, $64+17 = 81$, $81+19 = 100$.
+The difference of two consecutive squares is indeed $(n+1)^{2}-n^{2} = 2n+1$, and that is where induction
+takes its stand.
+
+The second is a primality test on $n^{2}+n+41$, only at the interesting values.
+
+{\centering
+\begin{tabular}{ccc}
+\hline
+$n$ & $n^{2}+n+41$ & remark \\
+\hline
+$0$ & $41$ & prime \\
+$1$ & $43$ & prime \\
+$39$ & $1601$ & prime \\
+$40$ & $1681 = 41^{2}$ & not prime \\
+$41$ & $1763 = 41 \cdot 43$ & not prime \\
+\hline
+\end{tabular}\par}
+
+An exhaustive check for $n = 0$ up to $n = 40$ gives $40$ prime values out of $41$;
+the only one that fails is $n = 40$, and $\sqrt{1681} = 41$ exactly, so the decisive
+divisor sits right at the boundary of the check.
+
+The third is the contraposition check on the truth table, written out in full.
+
+{\centering
+\begin{tabular}{cc|cc|c}
+\hline
+$P$ & $Q$ & $P \Rightarrow Q$ & $\neg Q \Rightarrow \neg P$ & equal \\
+\hline
+T & T & T & T & yes \\
+T & F & F & F & yes \\
+F & T & T & T & yes \\
+F & F & T & T & yes \\
+\hline
+\end{tabular}\par}
+
+The four rows give equality: the contrapositive pattern is not a rhetorical trick but a replacement
+of form that does not change the value. The column $Q \Rightarrow P$ would differ in the third row,
+and that difference is what makes the converse unusable.
+
+\kertas{Compute $1+3+\cdots+(2n-1)$ for $n = 11$ and $n = 12$ by starting from
+$100 = 10^{2}$, that is by adding the next two odd numbers one at a time. Then
+compute $n^{2}+n+17$ for $n = 16$ and check by division whether $289$ equals
+$17^{2}$. Finally, find the first point of failure of $n^{2}+n+11$ by testing
+$n = 0, 1, 2, \dots$ and explain why that point can be predicted from the shape of
+its polynomial.}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+The following script uses only the Python standard library and can be rerun without
+any installation; every output line is genuine output.
+
+\begin{lab}
+\begin{verbatim}
+from itertools import product
+
+def prime(n):
+    if n < 2:
+        return False
+    d = 2
+    while d * d <= n:
+        if n % d == 0:
+            return False
+        d += 1
+    return True
+
+pairs = product([False, True], repeat=2)
+print("contraposition:", all((not P or Q) == (Q or not P)
+                            for P, Q in pairs))
+
+D = range(1, 11)
+print("y>x:", sum(y > x for x in D for y in D), "of 100")
+print("x without a witness:", [x for x in D if all(y <= x for y in D)])
+
+values = [(n, n*n + n + 41) for n in range(41)]
+print("prime:", sum(prime(v) for _, v in values), "of 41")
+print("failed:", [(n, v, int(v**0.5)) for n, v in values if not prime(v)])
+print("41*41, 41*43:", 41*41, 41*43)
+
+residues = {(n*n - 1) % 8 for n in range(1, 40, 2)}
+print("residues mod 8:", residues)
+
+step = all(n*n + 1 + 2*n + 1 == (n+1)**2 + 1 for n in range(1, 500))
+print("false step:", step)
+\end{verbatim}
+\end{lab}
+
+The output obtained:
+
+\begin{verbatim}
+contraposition: True
+y>x: 45 of 100
+x without a witness: [10]
+prime: 40 of 41
+failed: [(40, 1681, 41)]
+41*41, 41*43: 1681 1763
+residues mod 8: {0}
+false step: True
+\end{verbatim}
+
+The first line checks all four rows of the table at once. The second and third lines compute
+what is awkward to do on paper: out of a hundred pairs $(x,y)$ in
+$\{1,\dots,10\}$, $45$ satisfy $y > x$, and the only $x$ without a witness is $10$;
+that is the failure of $(\forall x)(\exists y)$ on a finite set.
+
+The fourth and fifth lines give $40$ primes out of $41$ values, failing only at
+$(40,1681,41)$; that last $41$ is $\sqrt{1681}$ truncated. The sixth line
+confirms $1681 = 41^{2}$ and $1763 = 41 \cdot 43$. The seventh states that every odd
+$n$ below $40$ gives residue $0$ modulo $8$, in agreement with the theorem of the first pattern. The last
+line is a warning: the induction step of that false claim is valid for the first five hundred values,
+so a numerical check does not find its defect.
+
+\begin{untukdosen}
+A teaching order that has worked: start from $n = 40$ and $1681$, not from the
+definitions. After the students are annoyed that forty checks were in vain, then
+enter the truth table, with emphasis on the third and fourth rows. Continue to
+the negation of quantifiers through the definition of the limit of a sequence, then to literal definitions with the example
+$91 = 7 \cdot 13$; close with induction, a failing base, and the lab.
+
+Two misconceptions are most frequent. First, an implication is read as cause and effect, so a row
+with a false antecedent is judged false and a vacuous case proof is rejected. Second, induction
+is thought finished once the step is proved, and strong induction is thought to be ordinary induction
+repeated; as a result the base is not checked and the hypothesis is used without naming
+its range.
+
+Blackboard activity: split the class into two groups. The first group writes a quantified claim,
+the second group writes its negation, then each names one object that
+refutes the other side's claim. The game stops when a negation can no longer be refuted.
+
+Students are ready to go on if they can negate the definition of a limit without opening their notes
+and can explain why the base in induction may not be skipped.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item A statement is true or false; $P \Rightarrow Q$ is false only when $P$ is
+        true and $Q$ is false.
+  \item $P \Rightarrow Q \equiv \neg Q \Rightarrow \neg P$, but the converse is not
+        equivalent; $\neg(P \Rightarrow Q) \equiv P \wedge \neg Q$.
+  \item Negation works from the outside in: every quantifier changes kind, so
+        denying ``for all'' means pointing at one counterexample.
+  \item A definition holds in both directions: the name may be used only if every clause
+        is satisfied, and every clause is used to check it.
+  \item Four proof patterns: direct, contraposition, contradiction, constructive. Choose
+        the shortest, not the most magnificent.
+  \item Induction demands a base and a step; strong induction demands all earlier
+        values. A step without a base proves nothing.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Write the negation of the following statement, then turn the result into a
+        plain sentence that states what must be shown in order to
+        refute it: ``for every $\varepsilon > 0$ there is a natural number $N$
+        such that for every $n \geq N$ we have $|a_{n} - L| < \varepsilon$''.
+
+  \item Write the negation of ``every prime larger than $2$ is
+        odd'', then name one object that refutes the original statement.
+        Do the same for ``there is a natural number $n$ such that
+        $n^{2}+n+41$ is not prime''.
+
+  \item Prove that for every integer $n$, the number $n^{2}+n$ is always
+        even. Do it in two ways: by cases on parity, and by contraposition.
+
+  \item Prove by induction that for every natural number $n$ we have
+        \[
+          1^{2} + 2^{2} + \cdots + n^{2} = \frac{n(n+1)(2n+1)}{6}.
+        \]
+        Check the formula for $n = 1, 2, 3$ before writing the proof.
+
+  \item Prove by strong induction that every natural number $n$ can be written
+        in the form $n = 2^{k}m$ with $k \geq 0$ an integer and $m$ an odd
+        number. Show where the strong induction hypothesis is used.
+
+  \item Judge the following claims: true, false, or not enough evidence.
+        \begin{enumerate}
+          \item If $P(1)$ is true and $P(k) \Rightarrow P(k+1)$ for every
+                $k \in \mathbb{N}$, then $P(n)$ is true for every $n \in
+                \mathbb{N}$.
+          \item If $P(n)$ is true for $n = 1, 2, \dots, 10^{6}$, then $P(n)$ is true
+                for every $n \in \mathbb{N}$.
+          \item If $n^{2}+n+41$ is prime for $n = 0, 1, \dots, 39$, then the claim
+                is true for every $n \geq 0$.
+          \item If $3$ divides $n$, then $6$ divides $n$.
+        \end{enumerate}
+        For every item that is false, give one concrete counterexample.
+
+  \item Using Python, count how many primes occur among $n^{2}+n+41$ for
+        $n = 0$ up to $n = 100$, then determine all $n$ in that range whose
+        value is not prime. Check whether each point of failure has the form
+        $n = p-1$ or $n = p$ for some prime $p$.
+
+  \item For $n = 1$ up to $n = 12$, compute $2^{n}$ and $n^{2}$, then determine
+        the smallest natural number $n_{0}$ such that $2^{n} > n^{2}$ holds for every
+        $n \geq n_{0}$. Prove that claim by induction, with base $n_{0}$.
+
+  \item Prove that the statement ``there is an integer $n > 1$ with
+        $n^{2}-1$ prime'' is false. First state the factorization of $n^{2}-1$
+        for $n > 1$, then explain why the factors cannot equal $1$.
+
+  \item Show that the statement ``if $n^{2}$ is divisible by $4$ then $n$ is divisible
+        by $4$'' is false, then repair the conclusion into a true claim and
+        prove it.
+\end{enumerate}
+
+\par\smallskip\noindent\textit{Hints for the three hardest items.} Item 5: separate the
+case of odd $n$, which is settled at once with $k=0$ and $m=n$, from the case of even $n$,
+which uses the induction hypothesis on $n/2$. Item 7: also compute $\sqrt{n^{2}+n+41}$
+for every point of failure, and compare it with the smallest divisor. Item 9: $n^{2}-1 = (n-1)(n+1)$; for $n > 1$ both factors lie between $1$
+and $n^{2}-1$.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is genuinely proved in this chapter is three classical facts that survive without a computer:
+the irrationality of $\sqrt{2}$ by a parity proof, the infinitude of primes through
+Euclid's construction, and the uniqueness of the form of every natural number as a product of primes.
+What is merely popularized is the story that $41$ is ``almost'' a prime formula; what happens
+is only a long initial stretch, and its length can be predicted from $n^{2}+n+p$.
+
+Primary sources: Abbott, \emph{Understanding Analysis}, Chapter~1 Section~1.1 (irrationality
+of $\sqrt{2}$) and Section~1.2 (introduction, including induction); Avigad and Massot,
+\emph{Mathematics in Lean}, Chapter~3 (logic) and Chapter~5 Sections~5.1 and 5.2
+(irrational roots, induction and recursion); Euclid, \emph{Elements}, Book~IX
+Proposition~20 for infinitely many primes.
+
+Open questions: there is no polynomial of positive degree with integer coefficients
+that is prime for all $n \geq 0$ (a one-line proof: $f(0)$ divides
+$f(t\,f(0))$), but how long a prime stretch a polynomial of high degree can reach
+is still being studied, and the distribution of primes is tied to the Riemann hypothesis,
+which remains unproved.
+
+Limits of applicability: all results in this chapter are elementary and do not depend on the choice of set
+axioms. Formal verification in Lean (Chapter~28) checks the validity of every deductive step,
+but it does not check whether the formal statement proved is the one its author
+intended.
+\end{untukpeneliti}
+
+\peta{Chapter 1 of \emph{Understanding Analysis} (Abbott), in particular Section 1.1 on the
+irrationality of $\sqrt{2}$ and Section 1.2 on the introduction; Chapter 3 (logic), Chapter 5
+Sections 5.1 and 5.2 (irrational roots as well as induction and recursion) of
+\emph{Mathematics in Lean} (Avigad and Massot); and Book IX Proposition 20 of
+\emph{Elements} (Euclid) for infinitely many primes.}

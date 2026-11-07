@@ -1,0 +1,1086 @@
+\chapter{Vector Spaces and Subspaces}
+
+The following table holds three records of network traffic; each row is one record, each column
+one feature (incoming packets, outgoing packets, duration, failed connections). Read from top to
+bottom, the columns are
+\[
+  \mathbf{c}_{1}=(1,2,3),\quad \mathbf{c}_{2}=(2,4,6),\quad
+  \mathbf{c}_{3}=(0,1,2),\quad \mathbf{c}_{4}=(1,3,5),
+\]
+while the rows are $\mathbf{r}_{1}=(1,2,0,1)$, $\mathbf{r}_{2}=(2,4,1,3)$, and
+$\mathbf{r}_{3}=(3,6,2,5)$.
+
+How many columns actually carry new information? Counting the nonzero columns gives four, and
+that count is wrong: the second column is twice the first, the fourth is the sum of the first
+and the third. The table holds only two independent directions of data. The sentence ``can be
+recomputed'' acquires meaning only once we can measure how few vectors build it up.
+
+Chapters 1 through 5 prepared the language of sets, the axioms of the real numbers, and then
+limits of sequences and series; all of them work with closeness. The problem above contains no
+closeness at all: its entries are exact, and the question is purely algebraic. Which sets are
+closed under both operations, and how few vectors build them. One habit from Chapter 5 stays in
+use: here every combination involves finitely many terms.
+
+There is a second question that demands the same tool. A linear scorer assigns the score
+$s(\mathbf{x})=\mathbf{w}\cdot\mathbf{x}$ with $\mathbf{w}=(1,1,1)$. A direction
+$\boldsymbol{\delta}$ that does not change the score satisfies
+$\mathbf{w}\cdot\boldsymbol{\delta}=0$, which is a plane; every perturbation splits into a part
+that changes the score and a part that does not. Is that split unique? Yes, and the property is
+called a direct sum.
+
+\begin{untukanak}
+Picture a box of poster paint holding four cans: red, yellow, blue, and orange. We may mix the
+contents of the cans in any proportion, and the mixture may itself be used to mix again. Orange
+can be made from red and yellow. So the orange can adds not a single capability that the box did
+not already have; it only takes up space.
+
+The nagging question: how few cans must remain so that every color we can make stays a color we
+can make? The answer is not the same as the number of cans left after we throw one away, and the
+order of removal must not change that number. That is no accident, and proving it is not as
+simple as it looks.
+
+There is a stranger question. Suppose two people mix according to different recipes, and the
+results are exactly the same. Are the recipes the same? Sometimes yes, sometimes no. In this
+chapter we will learn why that number has a name of its own, why it does not depend on the order
+of removal, and why two different mixtures sometimes yield the same color.
+\end{untukanak}
+
+\section{The vector space axioms and their examples}
+\tingkat{basic}
+
+A vector space is a set whose members may be added and may be enlarged or shrunk by a number,
+with the result always staying inside that set, and with the same rules of computation as for
+ordinary pairs of numbers.
+
+\begin{definisi}[Vector space]
+\index{vector space}
+A nonempty set $V$ together with an addition $V\times V\to V$ and a scalar multiplication
+$\mathbb{R}\times V\to V$ is called a \emph{vector space over $\mathbb{R}$} if for all
+$\mathbf{u},\mathbf{v},\mathbf{w}\in V$ and all $a,b\in\mathbb{R}$ the following hold:
+\begin{enumerate}
+  \item $\mathbf{u}+\mathbf{v}=\mathbf{v}+\mathbf{u}$;
+  \item $(\mathbf{u}+\mathbf{v})+\mathbf{w}=\mathbf{u}+(\mathbf{v}+\mathbf{w})$;
+  \item there is $\mathbf{0}\in V$ with $\mathbf{v}+\mathbf{0}=\mathbf{v}$ for every
+        $\mathbf{v}$;
+  \item there is $-\mathbf{v}\in V$ with $\mathbf{v}+(-\mathbf{v})=\mathbf{0}$;
+  \item $a(\mathbf{u}+\mathbf{v})=a\mathbf{u}+a\mathbf{v}$;
+  \item $(a+b)\mathbf{v}=a\mathbf{v}+b\mathbf{v}$;
+  \item $a(b\mathbf{v})=(ab)\mathbf{v}$;
+  \item $1\mathbf{v}=\mathbf{v}$.
+\end{enumerate}
+\end{definisi}
+
+Both operations carry the closure requirement inside their type: the result always lies in $V$,
+so this definition contains no separate closure axiom. The eight axioms are not independent of
+one another either, and we do not chase the shortest list; what we need are their small
+consequences, all derived without looking at the shape of the members of $V$.
+
+\begin{lemma}
+In any vector space, the zero vector is unique, the additive inverse of every vector is unique,
+$0\mathbf{v}=\mathbf{0}$, $(-1)\mathbf{v}=-\mathbf{v}$, and $c\mathbf{v}=\mathbf{0}$ implies
+$c=0$ or $\mathbf{v}=\mathbf{0}$.
+\end{lemma}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+For uniqueness of zero, suppose $\mathbf{0}$ and $\mathbf{0}'$ are both neutral. Then
+$\mathbf{0}=\mathbf{0}+\mathbf{0}'=\mathbf{0}'$. For uniqueness of inverses, suppose
+$\mathbf{v}+\mathbf{a}=\mathbf{0}$ and $\mathbf{v}+\mathbf{b}=\mathbf{0}$. Then
+\[
+  \mathbf{a}=\mathbf{a}+\mathbf{0}=\mathbf{a}+(\mathbf{v}+\mathbf{b})
+  =(\mathbf{a}+\mathbf{v})+\mathbf{b}=\mathbf{0}+\mathbf{b}=\mathbf{b}.
+\]
+Next $0\mathbf{v}=(0+0)\mathbf{v}=0\mathbf{v}+0\mathbf{v}$. Adding $-(0\mathbf{v})$ to both
+sides gives $\mathbf{0}=0\mathbf{v}$. From there
+$\mathbf{v}+(-1)\mathbf{v}=1\mathbf{v}+(-1)\mathbf{v}=(1-1)\mathbf{v}=0\mathbf{v}=\mathbf{0}$,
+so $(-1)\mathbf{v}$ is an inverse of $\mathbf{v}$, and since inverses are unique,
+$(-1)\mathbf{v}=-\mathbf{v}$. Finally, if $c\mathbf{v}=\mathbf{0}$ and $c\neq 0$, then
+\[
+  \mathbf{v}=1\mathbf{v}=(c^{-1}c)\mathbf{v}=c^{-1}(c\mathbf{v})=c^{-1}\mathbf{0}=\mathbf{0}.
+\]
+\hfill$\square$\par\medskip
+
+The following four examples suffice for this entire book.
+
+\emph{(i) Coordinate space.} $\mathbb{R}^{n}$ with addition and scalar multiplication coordinate
+by coordinate. Here $\mathbf{0}=(0,\dots,0)$, and the eight axioms reduce to the field properties
+of the real numbers already discussed in Chapter 3.
+
+\emph{(ii) Matrix space.} $M_{2\times3}(\mathbb{R})$, the set of $2\times3$ matrices with real
+entries, with operations entry by entry and the zero matrix as $\mathbf{0}$. Nothing changes if
+$2\times3$ is replaced by $m\times n$.
+
+\emph{(iii) Polynomial space.} $P_{3}$ is the set of polynomials with real coefficients of degree
+at most $3$, together with the zero polynomial, with operations term by term. A trap worth
+noting: polynomials of degree \emph{exactly} $3$ do not form a vector space, since $x^{3}$ and
+$-x^{3}+x$ both have degree three but their sum $x$ has degree one. The words ``at most'' are not
+decoration.
+
+\emph{(iv) Function space.} The set of all functions $\mathbb{R}\to\mathbb{R}$, written
+$\mathbb{R}^{\mathbb{R}}$, with $(f+g)(x)=f(x)+g(x)$ and $(af)(x)=af(x)$. The zero function is
+$\mathbf{0}$, and the vector space axioms are inherited from $\mathbb{R}$ at each point $x$.
+
+Example (iv) yields a subtler example. The set $C[0,1]$ of continuous functions on $[0,1]$ is a
+vector space, because sums and scalar multiples of continuous functions remain continuous. So is
+the set of convergent real sequences, using the limit-of-sums property from Chapter 4. Both are
+parts of a larger space, and parts of that kind we now define.
+
+Back to $\mathbb{R}^{2}$, where both operations are visible directly.
+Figure~\ref{fig:ch06-dua-operasi} uses $\mathbf{u}=(2,1)$ and $\mathbf{v}=(1,2)$: the sum
+$\mathbf{u}+\mathbf{v}=(3,3)$ is reached along two orders, and $2\mathbf{u}$ as well as
+$-\mathbf{u}$ stay collinear with $\mathbf{u}$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.85,>=Stealth,font=\small]
+  \draw[->,layergrey] (-2.8,0) -- (5.0,0) node[below] {$x$};
+  \draw[->,layergrey] (0,-1.8) -- (0,4.2) node[left] {$y$};
+  \draw[dashed,layergrey] (2,1) -- (3,3);
+  \draw[dashed,layergrey] (1,2) -- (3,3);
+  \draw[->,thick,accent] (0,0) -- (2,1) node[below right] {$\mathbf{u}$};
+  \draw[->,thick,layerindigo] (0,0) -- (1,2) node[above left] {$\mathbf{v}$};
+  \draw[->,thick,layerteal] (0,0) -- (3,3) node[right] {$\mathbf{u}+\mathbf{v}$};
+  \draw[->,layerorange] (0,0) -- (4,2) node[right] {$2\mathbf{u}$};
+  \draw[->,layerbrown] (0,0) -- (-2,-1) node[left] {$-\mathbf{u}$};
+  \fill[ink] (0,0) circle (1.2pt);
+  \node[below left] at (0,0) {$\mathbf{0}$};
+\end{tikzpicture}
+\caption{The two operations in $\mathbb{R}^{2}$. The thick arrows show $\mathbf{u}=(2,1)$ and
+$\mathbf{v}=(1,2)$; the dashed lines complete the parallelogram, so that
+$\mathbf{u}+\mathbf{v}=(3,3)$ is reached along two identical orders. The thin arrows show
+$2\mathbf{u}=(4,2)$ and $-\mathbf{u}=(-2,-1)$, both staying on one line with
+$\mathbf{u}$.}
+\label{fig:ch06-dua-operasi}
+\end{figure}
+
+\kamus{vector space}{ruang vektor}{a mixing box: its contents may be added and scaled, and the result never leaves the box.}
+\begin{bacakeras}
+Eight axioms, read as a checklist. Two voices, alternating; the second voice always answers in
+three words.
+
+First voice: Swap the places. Second voice: The result is the same.
+First voice: Move the brackets. Second voice: The result is the same.
+First voice: There is a zero vector. Second voice: It adds nothing.
+First voice: There is an opposite vector. Second voice: Back to zero.
+First voice: A scalar spreads over two terms. Second voice: Left and right agree.
+First voice: Two scalars add up. Second voice: One vector carries it.
+First voice: Two scalars multiply. Second voice: One multiplication only.
+First voice: The scalar one. Second voice: Silent, unchanged.
+
+The last two lines sound almost alike although they differ: one adds proportions, the other
+multiplies proportions. That is where the most frequent arithmetic error is born.
+
+Say it once more, slowly, in a single breath: swap the places, move the brackets, there is a
+zero, there is an opposite, it spreads, it adds up, it multiplies, it is silent.
+\end{bacakeras}
+
+
+\section{Subspaces and the subspace test}
+\tingkat{basic}
+
+A subspace is a part of a vector space that still behaves as a vector space even when we use only
+the members of that part.
+
+\begin{definisi}[Subspace]
+\index{subspace}
+A set $W\subseteq V$ is called a \emph{subspace} of $V$ if $W$ is a vector space with the same
+operations as on $V$.
+\end{definisi}
+
+That definition demands eight axioms, and checking eight things every time is too expensive. Six
+of them are free: commutativity, associativity, distributivity hold in $W$ because they hold in
+$V$. Three things remain, and they are the content of the next theorem.
+
+If $W$ is nonempty and closed under both operations, then $W$ is automatically a subspace.
+
+\begin{teorema}[Subspace test]
+\index{subspace test}
+Let $V$ be a vector space and $W\subseteq V$ with $W\neq\varnothing$. Then $W$ is a subspace of
+$V$ if and only if $W$ is closed under addition and scalar multiplication.
+\end{teorema}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+If $W$ is a subspace, the result of both operations on members of $W$ must be a member of $W$, so
+both closures hold. Conversely, suppose $W$ is nonempty and closed under both operations. Take
+$\mathbf{w}\in W$. By scalar closure, $\mathbf{0}=0\mathbf{w}\in W$, so $W$ contains the neutral
+element. Also $-\mathbf{w}=(-1)\mathbf{w}\in W$, so every member of $W$ has its inverse inside
+$W$. The remaining axioms hold because they hold in $V$ and the operations on $W$ are merely the
+restrictions of the operations on $V$.
+\hfill$\square$\par\medskip
+
+In practice we check three things: $\mathbf{0}\in W$ and the two closures. All three are
+necessary; the next three examples show that failure of one condition cannot be covered up by
+another.
+\begin{resep}
+\begin{enumerate}
+  \item Write the membership condition of $W$ as an equation, not as a picture or a name.
+  \item Substitute $\mathbf{v}=\mathbf{0}$ into that condition. If it fails, stop: not a subspace.
+  \item Take arbitrary $\mathbf{u},\mathbf{v}\in W$, check $\mathbf{u}+\mathbf{v}$ using the same
+        condition, not using numerical examples.
+  \item Take arbitrary $c\in\mathbb{R}$ and $\mathbf{u}\in W$, check $c\mathbf{u}$; include
+        $c<0$ and $0<c<1$.
+\end{enumerate}
+A warning about order: do not swap step 2 with steps 3 and 4. A set that does not contain
+$\mathbf{0}$ need not be tested for closure, but stopping after step 2 is also wrong: containing
+$\mathbf{0}$ is not enough, as the following examples show.
+\end{resep}
+
+
+\emph{A line not through the origin.} $W=\{(x,y)\in\mathbb{R}^{2}:x+y=1\}$ does not contain
+$\mathbf{0}$, so it is not a subspace; it is also closed under neither addition nor scalar
+multiplication, since $(1,0)+(0,1)$ and $2(1,0)$ both leave $W$.
+
+\emph{The union of two axes.} $W=\{(x,0)\}\cup\{(0,y)\}$ contains $\mathbf{0}$ and is closed
+under scalar multiplication, but $(1,0)+(0,1)=(1,1)$ leaves $W$.
+
+\emph{The first quadrant.} $W=\{(x,y):x\ge 0,\ y\ge 0\}$ is closed under addition, but
+$(-1)(1,1)=(-1,-1)$ leaves $W$.
+
+All three examples fail a different condition; Figure~\ref{fig:ch06-garis} shows the simplest
+pair, a line through the origin and a line that misses it.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.72,>=Stealth,font=\small]
+  \draw[->,layergrey] (-1.6,0) -- (3.2,0) node[below] {$x$};
+  \draw[->,layergrey] (0,-1.6) -- (0,3.2) node[left] {$y$};
+  \draw[very thick,layerteal] (-1.4,-1.4) -- (2.8,2.8);
+  \fill[ink] (0,0) circle (1.3pt) node[below left] {$\mathbf{0}$};
+  \fill[accent] (2,2) circle (1.5pt) node[above right] {$(2,2)$};
+  \node at (0.8,-2.4) {\emph{a line through the origin}};
+  \begin{scope}[xshift=7cm]
+    \draw[->,layergrey] (-1.6,0) -- (3.2,0) node[below] {$x$};
+    \draw[->,layergrey] (0,-1.6) -- (0,3.2) node[left] {$y$};
+    \draw[very thick,accent] (-0.8,1.8) -- (2.4,-1.4);
+    \fill[accent] (1,0) circle (1.5pt) node[below right] {$(1,0)$};
+    \fill[accent] (0,1) circle (1.5pt) node[above left] {$(0,1)$};
+    \draw[ink,thick] (0,0) circle (3pt);
+    \node[below left] at (0,0) {$\mathbf{0}$};
+    \node at (0.8,-2.4) {\emph{a line without the origin}};
+  \end{scope}
+\end{tikzpicture}
+\caption{Two sets in $\mathbb{R}^{2}$. Left: $\{(x,y):y=x\}$ contains $\mathbf{0}$ and
+$(2,2)$, so it is closed under both operations. Right: $\{(x,y):x+y=1\}$ contains $(1,0)$ and
+$(0,1)$, but the origin is marked with an empty circle because it is not included; a single
+missing point is enough to disqualify a subspace.}
+\label{fig:ch06-garis}
+\end{figure}
+
+
+
+Conversely, the next two classes of examples always pass.
+
+\emph{Null space.} For an $m\times n$ matrix $A$, the set
+$\{\mathbf{x}:A\mathbf{x}=\mathbf{0}\}$ is a subspace, since $A\mathbf{0}=\mathbf{0}$,
+$A(\mathbf{x}+\mathbf{y})=A\mathbf{x}+A\mathbf{y}=\mathbf{0}$, and
+$A(c\mathbf{x})=cA\mathbf{x}=\mathbf{0}$. That set is called the null space or kernel of $A$,
+written $\ker A$, and is discussed further in Chapter 7.
+
+\emph{Polynomials vanishing at one point.} The set
+$\{p\in P_{3}:p(1)=0\}$ is a subspace of $P_{3}$, because evaluation at the point $1$ is linear:
+$(p+q)(1)=p(1)+q(1)$ and $(cp)(1)=c\,p(1)$.
+
+Both examples preserve the solution set of a homogeneous equation. That is no accident.
+\begin{tantangan}
+The first-quadrant example fails because of one negative scalar. Find a set
+$W\subseteq\mathbb{R}^{2}$ that contains $\mathbf{0}$, is closed under addition, is not closed
+under scalar multiplication, and is neither the union of two axes, nor a quadrant, nor a set with
+integer coordinates.
+
+Hint 1: do not regulate the direction of the arrows; regulate which numbers may appear in the sum
+of the two coordinates.
+
+Hint 2: require $x+y$ to be an integer. Then $(1,0)+(0,1)=(1,1)$ stays inside, whereas
+$\tfrac{1}{2}(1,0)$ leaves.
+
+If you get stuck, go back to the section ``Subspaces and the subspace test'' and compare with the
+line example $x+y=1$; the only difference is the right-hand side of the equation.
+\end{tantangan}
+
+
+\kamus{subspace}{subruang}{a corridor inside a building: we may walk back and forth in that corridor, but we never leave it.}
+
+\begin{untukanak}
+Picture two straight corridors in a building that meet at a single point, like the letter X. Each
+corridor, if we walk inside it, is still a corridor: we can go forward, backward, and stop
+anywhere without leaving it. The same holds if we walk twice as far along the same corridor; we
+are still in that corridor.
+
+Now consider the union of the two corridors. Take one step in the first corridor, then one step in
+the second. The place where we stop lies in neither corridor. So the union of two corridors is not
+a corridor, even though each corridor is a corridor. This is the thing most often forgotten about
+the word ``closed'': what is tested is not the members one by one, but the result of mixing them.
+
+The nagging question: if three corridors meet at one point, is their union a corridor? Sometimes
+yes, when all three are the same corridor. In this chapter we will learn why ``closed under
+mixing'' is far stronger than ``contains the meeting point'', and why a single example of a step
+that leaves is enough to disqualify everything.
+\end{untukanak}
+
+\section{Linear combinations and span}
+\tingkat{intermediate}
+
+A linear combination is the result of mixing several vectors in certain proportions. The span, in
+turn, is the set of all those mixtures, for every conceivable proportion.
+
+\begin{definisi}[Linear combination and span]
+\index{linear combination}
+\index{span}
+A vector $\mathbf{v}$ is a \emph{linear combination} of
+$\mathbf{v}_{1},\dots,\mathbf{v}_{k}$ if there are scalars $c_{1},\dots,c_{k}$ with
+$\mathbf{v}=c_{1}\mathbf{v}_{1}+\dots+c_{k}\mathbf{v}_{k}$. The \emph{span} of a set
+$S\subseteq V$, written $\operatorname{span}(S)$, is the set of all finite linear combinations
+of members of $S$. For $S=\varnothing$ we stipulate
+$\operatorname{span}(S)=\{\mathbf{0}\}$.
+\end{definisi}
+
+A span is always a subspace, and it is the smallest subspace containing $S$. The first statement
+says the span deserves to be called a space; the second, that no other space is more economical.
+
+\begin{lemma}
+For every $S\subseteq V$, $\operatorname{span}(S)$ is a subspace of $V$, and every subspace
+containing $S$ also contains $\operatorname{span}(S)$.
+\end{lemma}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+For $S=\varnothing$ the statement is true because $\{\mathbf{0}\}$ is a subspace. For $S$
+nonempty, take $\mathbf{u}=\sum a_{i}\mathbf{s}_{i}$ and $\mathbf{v}=\sum b_{j}\mathbf{t}_{j}$,
+two finite linear combinations of members of $S$. Then
+$\mathbf{u}+\mathbf{v}=\sum a_{i}\mathbf{s}_{i}+\sum b_{j}\mathbf{t}_{j}$ and
+$c\mathbf{u}=\sum (ca_{i})\mathbf{s}_{i}$ are also finite linear combinations of members of $S$,
+so the span is closed under both operations; it also contains $\mathbf{0}=0\mathbf{s}$ for any
+$\mathbf{s}\in S$. If $W$ is a subspace and $S\subseteq W$, then every $\mathbf{s}\in S$ lies in
+$W$, and closure of $W$ forces every finite linear combination of members of $S$ to lie in $W$
+as well.
+\hfill$\square$\par\medskip
+
+Therefore $\operatorname{span}(S)$ is the intersection of all subspaces containing $S$, and
+adding a vector already inside the span changes nothing:
+$\operatorname{span}(\operatorname{span}(S))=\operatorname{span}(S)$.
+
+If $\mathbf{b}$ lies in the span of the columns of $A$, then the system $A\mathbf{x}=\mathbf{b}$
+has a solution.
+
+\begin{proposisi}
+Let $A$ be an $m\times n$ matrix with columns $\mathbf{a}_{1},\dots,\mathbf{a}_{n}$ and let
+$\mathbf{b}\in\mathbb{R}^{m}$. The system $A\mathbf{x}=\mathbf{b}$ is consistent if and only if
+$\mathbf{b}\in\operatorname{span}(\mathbf{a}_{1},\dots,\mathbf{a}_{n})$.
+\end{proposisi}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+Writing $A\mathbf{x}=\mathbf{b}$ coordinate by coordinate is the same as writing
+$x_{1}\mathbf{a}_{1}+\dots+x_{n}\mathbf{a}_{n}=\mathbf{b}$. So a solution $\mathbf{x}$ exists
+exactly when $\mathbf{b}$ is a linear combination of the columns of $A$ with coefficients
+$x_{1},\dots,x_{n}$.
+\hfill$\square$\par\medskip
+
+The set $\operatorname{span}(\mathbf{a}_{1},\dots,\mathbf{a}_{n})$ is called the \emph{column
+space} of $A$, and it is a subspace of $\mathbb{R}^{m}$ by the lemma above. For the opening
+table, that column space is built by four columns, and two of them are redundant.
+
+As a small example, in $\mathbb{R}^{3}$ consider $\mathbf{s}_{1}=(1,0,1)$ and
+$\mathbf{s}_{2}=(0,1,1)$. Every linear combination has the form $(a,b,a+b)$, so the span is the
+plane $z=x+y$. The vector $(1,2,4)$ lies outside that plane because $4\neq 1+2$, whereas
+$(1,2,3)$ lies inside it with $a=1$, $b=2$.
+
+\begin{tangan}
+Materials: two pencils of equal length and one flat table. Mark a point on the table with a
+fingertip; call it the origin.
+
+Place the first pencil with its tail at the origin. Place the second pencil with its tail at the
+tip of the first, at a right angle to it. Now slide the second pencil without rotating it until
+its tail is back at the origin. Its tip moves to another place, and that place is the sum of the
+two pencils: two orders of addition stop at the same point.
+
+Now the scalars. Reverse one pencil, and its direction becomes negative. Join two identical
+pencils from the origin, and the length doubles. What the reader must see: all those tips stay on
+one straight line, however far the pencils are joined. One pencil covers only one line on the
+table; two nonparallel pencils cover the entire table surface. That is the difference between a
+line and a plane, and no third pencil adds a new surface.
+\end{tangan}
+
+
+
+\section{Linear independence and dependence}
+\tingkat{intermediate}
+
+A set of vectors is called linearly independent if not one of its members can be mixed from the
+other members. It is linearly dependent if some member is redundant.
+
+\begin{definisi}[Linear independence and dependence]
+\index{linear independence}
+A set $\{\mathbf{v}_{1},\dots,\mathbf{v}_{k}\}\subseteq V$ is \emph{linearly independent} if the
+only choice of scalars satisfying
+$c_{1}\mathbf{v}_{1}+\dots+c_{k}\mathbf{v}_{k}=\mathbf{0}$ is
+$c_{1}=\dots=c_{k}=0$. If some other choice exists, the set is \emph{linearly dependent}.
+\end{definisi}
+
+Two small conventions: the empty set is linearly independent because there are no coefficients to
+check, and $\{\mathbf{0}\}$ is linearly dependent because $1\cdot\mathbf{0}=\mathbf{0}$ is a
+nontrivial relation.
+
+In a linearly dependent set there is always one vector that lies in the span of the preceding
+vectors.
+
+\begin{lemma}[Dependence]
+Let $\mathbf{v}_{1}\neq\mathbf{0}$ and $S=\{\mathbf{v}_{1},\dots,\mathbf{v}_{k}\}$.
+The set $S$ is linearly dependent if and only if there is an index $j\ge 2$ with
+$\mathbf{v}_{j}\in\operatorname{span}(\mathbf{v}_{1},\dots,\mathbf{v}_{j-1})$.
+\end{lemma}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+If $\mathbf{v}_{j}=\sum_{i<j}c_{i}\mathbf{v}_{i}$, then
+$\sum_{i<j}c_{i}\mathbf{v}_{i}-\mathbf{v}_{j}=\mathbf{0}$ is a nontrivial relation, because the
+coefficient of $\mathbf{v}_{j}$ is $-1$; so $S$ is dependent. Conversely, if $S$ is dependent then
+there is a nontrivial relation $\sum_{i=1}^{k}c_{i}\mathbf{v}_{i}=\mathbf{0}$. Choose the largest
+$j$ with $c_{j}\neq 0$. Since $\mathbf{v}_{1}\neq\mathbf{0}$, the index $j$ is not $1$, so
+$j\ge 2$ and
+\[
+  \mathbf{v}_{j}=-\frac{1}{c_{j}}\sum_{i<j}c_{i}\mathbf{v}_{i}
+  \in\operatorname{span}(\mathbf{v}_{1},\dots,\mathbf{v}_{j-1}).
+\]
+\hfill$\square$\par\medskip
+
+Three consequences we use constantly: a set containing $\mathbf{0}$ is always dependent; two
+vectors are dependent exactly when one is a multiple of the other; and every subset of a linearly
+independent set is also linearly independent.
+
+As an example, consider $\mathbf{v}_{1}=(1,2,-1)$, $\mathbf{v}_{2}=(0,1,3)$, and
+$\mathbf{v}_{3}=(2,5,1)$ in $\mathbb{R}^{3}$. Since
+$2\mathbf{v}_{1}+\mathbf{v}_{2}=(2,5,1)=\mathbf{v}_{3}$, the relation
+$2\mathbf{v}_{1}+\mathbf{v}_{2}-\mathbf{v}_{3}=\mathbf{0}$ is nontrivial and the three are
+dependent. Not one of those vectors is zero, and no two are multiples; the dependence appears only
+at three vectors.
+
+Figure~\ref{fig:ch06-bidang} places the two side by side: the span of two vectors as a plane, and
+three vectors one of which already lies in the span of the other two.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.8,>=Stealth,font=\small]
+  \begin{scope}[x={(1cm,0cm)}, y={(0.40cm,0.28cm)}, z={(0cm,1cm)}]
+    \fill[layerteal!10] (0,0,0) -- (2.4,0,2.4) -- (2.4,1.8,4.2) -- (0,1.8,2.4) -- cycle;
+    \draw[layerteal] (0,0,0) -- (2.4,0,2.4) -- (2.4,1.8,4.2) -- (0,1.8,2.4) -- cycle;
+    \draw[->,layergrey] (0,0,0) -- (3.0,0,0) node[below] {$x$};
+    \draw[->,layergrey] (0,0,0) -- (0,2.2,0) node[right] {$y$};
+    \draw[->,layergrey] (0,0,0) -- (0,0,2.6) node[left] {$z$};
+    \draw[->,thick,accent] (0,0,0) -- (1,0,1)
+      node[above left,font=\scriptsize,inner sep=1pt] {$\mathbf{s}_{1}$};
+    \draw[->,thick,layerindigo] (0,0,0) -- (0,1,1)
+      node[right,font=\scriptsize,inner sep=1pt] {$\mathbf{s}_{2}$};
+    \fill[layerjade] (1,2,3) circle (1.6pt);
+    \node[right,font=\scriptsize] at (1,2,3) {$(1,2,3)$};
+    \draw[ink] (1,2,4) circle (2pt);
+    \node[right,font=\scriptsize] at (1,2,4) {$(1,2,4)$};
+  \end{scope}
+  \begin{scope}[xshift=6.4cm]
+    \draw[->,layergrey] (-0.4,0) -- (3.2,0) node[below] {$x$};
+    \draw[->,layergrey] (0,-0.4) -- (0,2.6) node[left] {$y$};
+    \draw[dashed,layergrey] (0,0) -- (2,1);
+    \draw[dashed,layergrey] (2,1) -- (2.4,2);
+    \draw[->,thick,accent] (0,0) -- (1,0.5) node[below right] {$\mathbf{v}_{1}$};
+    \draw[->,thick,layerindigo] (0,0) -- (0.4,1) node[above left] {$\mathbf{v}_{2}$};
+    \draw[->,very thick,layerorange] (0,0) -- (2.4,2) node[right] {$\mathbf{v}_{3}$};
+    \fill[ink] (0,0) circle (1.2pt);
+  \end{scope}
+\end{tikzpicture}
+\caption{Left: $\operatorname{span}\{(1,0,1),(0,1,1)\}$ is the plane $z=x+y$; the point
+$(1,2,3)$ lies inside it, the point $(1,2,4)$ outside it. Right: a two-dimensional sketch of
+$\mathbf{v}_{1}=(1,2,-1)$ and $\mathbf{v}_{2}=(0,1,3)$ with
+$\mathbf{v}_{3}=2\mathbf{v}_{1}+\mathbf{v}_{2}=(2,5,1)$; the dashed lines show
+$2\mathbf{v}_{1}$ plus $\mathbf{v}_{2}$ landing exactly at the tip of $\mathbf{v}_{3}$, so that
+the three are dependent.}
+\label{fig:ch06-bidang}
+\end{figure}
+
+
+
+In $\mathbb{R}^{2}$ any three vectors are always dependent, without computing anything.
+
+\begin{proposisi}
+Every set of three vectors in $\mathbb{R}^{2}$ is linearly dependent.
+\end{proposisi}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+Let $S=\{\mathbf{u},\mathbf{v},\mathbf{w}\}\subseteq\mathbb{R}^{2}$. If two of them are multiples,
+$S$ is dependent. If not, $\mathbf{u}$ and $\mathbf{v}$ are linearly independent. Take
+$\mathbf{w}=(w_{1},w_{2})$ and look for $a,b$ with
+$a\mathbf{u}+b\mathbf{v}=\mathbf{w}$. Writing out the components gives two linear equations in
+$a$ and $b$, and since $\mathbf{u}$, $\mathbf{v}$ are not multiples, that system has a unique
+solution. Hence $\mathbf{w}\in\operatorname{span}(\mathbf{u},\mathbf{v})$.
+\hfill$\square$\par\medskip
+
+In $\mathbb{R}^{3}$ a similar statement holds for four vectors, but the method above would become
+a long case check; we need a uniform argument.
+
+To test independence computationally, arrange the vectors as the columns of a matrix and then
+solve $A\mathbf{c}=\mathbf{0}$; the set is linearly independent exactly when that system has only
+the trivial solution. The determinant offers a shortcut in $\mathbb{R}^{3}$, but that tool is only
+built in Chapter 8.
+
+\section{Basis and dimension}
+\tingkat{advanced}
+
+A basis is a list of vectors that is enough to build the whole space and contains not one
+redundant vector. The words ``enough'' and ``no redundancy'' are exactly the two conditions we
+already have.
+
+\begin{definisi}[Basis and dimension]
+\index{basis}
+A set $B\subseteq V$ is called a \emph{basis} of $V$ if $B$ is linearly independent and
+$\operatorname{span}(B)=V$. If $V$ has a finite basis, $V$ is called
+\emph{finite-dimensional}; if not, $V$ is infinite-dimensional.
+\end{definisi}
+
+The definition of dimension cannot yet be written, because it depends on a fact not yet proved:
+two bases of the same space always have the same size.
+
+First step: a representation in a basis is always unique.
+
+\begin{lemma}[Uniqueness of coordinates]
+If $B=\{\mathbf{b}_{1},\dots,\mathbf{b}_{n}\}$ is a basis of $V$, then every $\mathbf{v}\in V$
+can be written uniquely as $\mathbf{v}=a_{1}\mathbf{b}_{1}+\dots+a_{n}\mathbf{b}_{n}$.
+\end{lemma}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+Existence of the representation comes from $\operatorname{span}(B)=V$. Suppose there are two
+representations with coefficients $a_{i}$ and $a_{i}'$. Subtracting them gives
+$\sum_{i}(a_{i}-a_{i}')\mathbf{b}_{i}=\mathbf{0}$. Because $B$ is linearly independent, all those
+difference coefficients are zero, so $a_{i}=a_{i}'$ for every $i$.
+\hfill$\square$\par\medskip
+
+The numbers $a_{1},\dots,a_{n}$ are called the coordinates of $\mathbf{v}$ with respect to $B$;
+change of basis is the subject of Chapter 7, and here we only need uniqueness.
+
+Second step: one vector can be exchanged for another without destroying the spanning property.
+Replacing one vector in a spanning set by a combination that contains it does not reduce what can
+be built.
+
+\begin{lemma}[Exchange]
+\index{exchange lemma}
+Let $\mathbf{u}=\sum_{\mathbf{s}\in S}a_{\mathbf{s}}\mathbf{s}$ be a finite sum with
+$a_{\mathbf{s}_{0}}\neq 0$ for some $\mathbf{s}_{0}\in S$. If $S\cup\{\mathbf{u}\}$
+spans $V$, then $(S\setminus\{\mathbf{s}_{0}\})\cup\{\mathbf{u}\}$ also spans $V$.
+\end{lemma}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+From that relation,
+$\mathbf{s}_{0}=a_{\mathbf{s}_{0}}^{-1}\bigl(\mathbf{u}-\sum_{\mathbf{s}\neq\mathbf{s}_{0}}a_{\mathbf{s}}\mathbf{s}\bigr)$,
+so $\mathbf{s}_{0}$ is a linear combination of members of the smaller set
+$T=(S\setminus\{\mathbf{s}_{0}\})\cup\{\mathbf{u}\}$. Every member of $S\cup\{\mathbf{u}\}$
+therefore lies in $\operatorname{span}(T)$, so
+$\operatorname{span}(S\cup\{\mathbf{u}\})\subseteq\operatorname{span}(T)$. The reverse inclusion
+is clear because $T\subseteq S\cup\{\mathbf{u}\}$. Hence both spans equal $V$.
+\hfill$\square$\par\medskip
+
+The third step is the heart of this chapter.
+
+If a space can be built by $n$ vectors, then it is impossible to find $n+1$ linearly independent
+vectors inside it.
+
+\begin{teorema}[Exchange]
+\index{exchange theorem}
+If $V$ is spanned by $n$ vectors and $\mathbf{w}_{1},\dots,\mathbf{w}_{m}$ are linearly
+independent in $V$, then $m\le n$.
+\end{teorema}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+Let $S_{0}=\{\mathbf{v}_{1},\dots,\mathbf{v}_{n}\}$ span $V$. For $j=1$:
+$\mathbf{w}_{1}\neq\mathbf{0}$ is a linear combination of members of $S_{0}$ with at least one
+nonzero coefficient, so the exchange lemma gives $T_{1}\subseteq S_{0}$ of size $n-1$ with
+$\{\mathbf{w}_{1}\}\cup T_{1}$ spanning.
+
+Suppose $\{\mathbf{w}_{1},\dots,\mathbf{w}_{j}\}\cup T_{j}$ spans with $|T_{j}|=n-j$. The vector
+$\mathbf{w}_{j+1}$ is a linear combination of that set. If all coefficients on $T_{j}$ are zero,
+then $\mathbf{w}_{j+1}$ becomes a linear combination of $\mathbf{w}_{1},\dots,\mathbf{w}_{j}$,
+which is impossible because that set is linearly independent. So some member of $T_{j}$ has a
+nonzero coefficient, and the exchange lemma gives $T_{j+1}$ of size $n-j-1$ that still spans
+together with $\mathbf{w}_{1},\dots,\mathbf{w}_{j+1}$.
+
+After $m$ steps we obtain a spanning set of size $n-m$; the size of a set cannot be negative, so
+$m\le n$.
+\hfill$\square$\par\medskip
+
+Now the size of a space can be written: the number of vectors in its most economical list, and
+that number does not depend on the list chosen.
+
+Two bases of a finite-dimensional space always have the same number of elements.
+
+\begin{akibat}
+If $V$ is finite-dimensional with a basis $B_{1}$ of size $n$ and a basis $B_{2}$ of size $m$,
+then $n=m$.
+\end{akibat}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+$B_{1}$ spans and $B_{2}$ is linearly independent, so the exchange theorem gives $m\le n$.
+Conversely $B_{2}$ spans and $B_{1}$ is linearly independent, hence $n\le m$.
+\hfill$\square$\par\medskip
+
+The number of vectors in that most economical list is important enough to deserve a name of its
+own.
+
+\begin{definisi}[Dimension]
+\index{dimension}
+For finite-dimensional $V$, $\dim V$ is the number of members of any basis of $V$. The null space
+$\{\mathbf{0}\}$ is stipulated to have dimension $0$.
+\end{definisi}
+
+The size of a subspace never exceeds the size of its space; a list whose length matches the
+dimension is immediately a basis; and a linearly independent list can always be completed to full
+length.
+
+\begin{akibat}
+Let $\dim V=n$. (a) Every linearly independent set of $n$ vectors is a basis.
+(b) Every spanning set of $n$ vectors is a basis. (c) Every linearly independent set
+can be extended to a basis. (d) If $U$ is a subspace of $V$, then $\dim U\le\dim V$, and
+equality holds only when $U=V$.
+\end{akibat}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+For (a), a linearly independent set of size $n$ that does not span can be enlarged by one vector
+outside its span, and the result is still linearly independent; so there are $n+1$ linearly
+independent vectors, and the exchange theorem forbids that. For (b), a spanning set of size $n$
+that is dependent can lose one vector through the dependence lemma and still span with $n-1$
+vectors; again this contradicts exchange. For (c), add a vector outside the span as long as one
+exists; the process stops after at most $n$ steps, and when it stops the span is already all of
+$V$. For (d), a basis of $U$ is a linearly independent set in $V$, so its size is at most $n$; if
+its size is $n$, part (a) makes it a basis of $V$, hence $U=V$.
+\hfill$\square$\par\medskip
+
+Thus $\dim\mathbb{R}^{n}=n$, $\dim P_{n}=n+1$ with basis $1,x,\dots,x^{n}$,
+$\dim M_{m\times n}(\mathbb{R})=mn$ with basis the matrices having exactly one entry equal to $1$,
+and $\dim\{\mathbf{0}\}=0$. For function spaces such as $\mathbb{R}^{\mathbb{R}}$ there is no
+finite basis; the proof requires the axiom of choice and lies outside the scope of this book.
+
+\kamus{basis}{basis}{the most economical list of paint cans: enough to make every color, and not one can in it can be thrown away.}
+
+\kamus{dimension}{dimensi}{the number of cans in that most economical list; the number belongs to the space, not to the list we happen to choose.}
+
+\section{Direct sums and complementary subspaces}
+\tingkat{advanced}
+
+The sum of two subspaces is the set of all results of adding one member of each subspace.
+
+\begin{definisi}[Sum of subspaces]
+\index{sum of subspaces}
+For subspaces $U,W\subseteq V$, the \emph{sum} $U+W$ is
+$\{\mathbf{u}+\mathbf{w}:\mathbf{u}\in U,\ \mathbf{w}\in W\}$.
+\end{definisi}
+
+It differs from the union, which is almost never a subspace, as the two-axes example shows.
+
+The sum is itself a subspace, and no smaller subspace contains both.
+
+\begin{proposisi}
+For subspaces $U,W\subseteq V$, the set $U+W$ is a subspace of $V$, and it is contained in every
+subspace that contains $U\cup W$.
+\end{proposisi}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+The set $U+W$ contains $\mathbf{0}=\mathbf{0}+\mathbf{0}$. If
+$\mathbf{u}_{1}+\mathbf{w}_{1}$ and $\mathbf{u}_{2}+\mathbf{w}_{2}$ are two of its members, their
+sum $(\mathbf{u}_{1}+\mathbf{u}_{2})+(\mathbf{w}_{1}+\mathbf{w}_{2})$ has its first term in $U$
+and its second in $W$, and $c(\mathbf{u}_{1}+\mathbf{w}_{1})=c\mathbf{u}_{1}+c\mathbf{w}_{1}$ is
+of the same form; so $U+W$ is a subspace. If $Z$ is a subspace containing $U$ and $W$, then $Z$
+contains every $\mathbf{u}+\mathbf{w}$ because it is closed under addition, so $U+W\subseteq Z$.
+\hfill$\square$\par\medskip
+
+The size of a sum is not the sum of the sizes, because the part that overlaps is counted twice.
+
+$\dim(U+W)$ equals $\dim U$ plus $\dim W$ minus the dimension of the intersection.
+
+\begin{teorema}[Dimension of a sum]
+\index{dimension of a sum}
+If $U$ and $W$ are subspaces of a finite-dimensional space $V$, then
+\[
+  \dim(U+W)=\dim U+\dim W-\dim(U\cap W).
+\]
+\end{teorema}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+The intersection $U\cap W$ is a subspace, so it is finite-dimensional. Take a basis
+$\{\mathbf{z}_{1},\dots,\mathbf{z}_{m}\}$ of $U\cap W$. Since it is linearly independent in $U$,
+that set is extended to a basis of $U$ by adding $\mathbf{u}_{1},\dots,
+\mathbf{u}_{j}$, so that $\dim U=m+j$; in the same way, adding
+$\mathbf{w}_{1},\dots,\mathbf{w}_{k}$ yields a basis of $W$, so that $\dim W=m+k$.
+
+Claim: $\{\mathbf{z}_{1},\dots,\mathbf{z}_{m},\mathbf{u}_{1},\dots,\mathbf{u}_{j},
+\mathbf{w}_{1},\dots,\mathbf{w}_{k}\}$ is a basis of $U+W$. The set contains a basis of $U$ and a
+basis of $W$, so its span contains $U+W$; the reverse inclusion is clear. For independence,
+suppose
+\[
+  \sum_{i}a_{i}\mathbf{z}_{i}+\sum_{r}b_{r}\mathbf{u}_{r}
+  +\sum_{s}c_{s}\mathbf{w}_{s}=\mathbf{0}.
+\]
+Then $\sum_{s}c_{s}\mathbf{w}_{s}=-\sum_{i}a_{i}\mathbf{z}_{i}-\sum_{r}b_{r}\mathbf{u}_{r}$
+lies in $U$ and at the same time in $W$; so it is a member of $U\cap W$ and can be written
+$\sum_{i}d_{i}\mathbf{z}_{i}$. Then $\sum_{s}c_{s}\mathbf{w}_{s}-\sum_{i}d_{i}\mathbf{z}_{i}
+=\mathbf{0}$ is a linear relation in the basis of $W$, so all $c_{s}$ and $d_{i}$ are zero; the
+original equation shrinks to a linear relation in the basis of $U$, so that $a_{i}$ and $b_{r}$
+are also zero.
+
+Hence $\dim(U+W)=m+j+k=(m+j)+(m+k)-m=\dim U+\dim W-\dim(U\cap W)$.
+\hfill$\square$\par\medskip
+
+Now the second question from the opening of the chapter: when is the decomposition into two terms
+unique?
+
+The sum $U+W$ is called a \emph{direct sum}, written $U\oplus W$, if every member of
+$U+W$ can be written as $\mathbf{u}+\mathbf{w}$ in exactly one way.
+
+\begin{definisi}[Direct sum]
+\index{direct sum}
+If every $\mathbf{x}\in U+W$ has exactly one representation
+$\mathbf{x}=\mathbf{u}+\mathbf{w}$ with $\mathbf{u}\in U$ and $\mathbf{w}\in W$, then
+$U+W$ is called a direct sum and is written $U\oplus W$.
+\end{definisi}
+
+Uniqueness of all representations can be checked by looking only at the representation of zero.
+
+$U+W$ is a direct sum exactly when $U\cap W=\{\mathbf{0}\}$.
+
+\begin{teorema}[Criterion for a direct sum]
+Let $U$ and $W$ be subspaces of $V$. Then $U+W=U\oplus W$ if and only if
+$U\cap W=\{\mathbf{0}\}$.
+\end{teorema}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+Suppose $U+W$ is a direct sum and take $\mathbf{x}\in U\cap W$. Then
+$\mathbf{0}=\mathbf{x}+(-\mathbf{x})$ with $\mathbf{x}\in U$ and $-\mathbf{x}\in W$, and also
+$\mathbf{0}=\mathbf{0}+\mathbf{0}$. Uniqueness gives $\mathbf{x}=\mathbf{0}$.
+
+Conversely, suppose $U\cap W=\{\mathbf{0}\}$. Take $\mathbf{x}\in U+W$ with two representations
+$\mathbf{x}=\mathbf{u}_{1}+\mathbf{w}_{1}=\mathbf{u}_{2}+\mathbf{w}_{2}$. Then
+$\mathbf{u}_{1}-\mathbf{u}_{2}=\mathbf{w}_{2}-\mathbf{w}_{1}$ lies in $U$ and in $W$, so it equals
+$\mathbf{0}$. Consequently $\mathbf{u}_{1}=\mathbf{u}_{2}$ and $\mathbf{w}_{1}=\mathbf{w}_{2}$.
+\hfill$\square$\par\medskip
+
+For two subspaces that criterion is enough. For three subspaces or more, checking pairwise
+intersections is not enough, and the next example shows why.
+
+In $\mathbb{R}^{3}$ take $V_{1}=\operatorname{span}\{(1,0,0)\}$,
+$V_{2}=\operatorname{span}\{(0,1,0)\}$, and $V_{3}=\operatorname{span}\{(1,1,0)\}$. Every
+pairwise intersection contains only $\mathbf{0}$, but $V_{1}+V_{2}+V_{3}$ is not a direct sum:
+$(1,1,0)$ can be written $(1,0,0)+(0,1,0)+\mathbf{0}$ and also $\mathbf{0}+\mathbf{0}+(1,1,0)$.
+Even zero has two representations, namely $\mathbf{0}+\mathbf{0}+\mathbf{0}$ and
+$(1,0,0)+(0,1,0)+(-1,-1,0)$.
+
+For many terms, the criterion returns to the definition:
+$\mathbf{0}=\mathbf{v}_{1}+\dots+\mathbf{v}_{k}$ with $\mathbf{v}_{i}\in V_{i}$ is possible only
+when all the $\mathbf{v}_{i}$ are zero.
+
+Finally, every subspace can be paired with another subspace so that the two decompose the whole
+space.
+
+\begin{teorema}[Complement]
+\index{complement}
+If $V$ is finite-dimensional and $U$ is a subspace of $V$, then there is a subspace
+$W\subseteq V$ with $V=U\oplus W$. In that case $\dim V=\dim U+\dim W$.
+\end{teorema}
+
+\par\medskip\noindent\textbf{Proof.}\ 
+If $U=\{\mathbf{0}\}$, take $W=V$. If not, take a basis
+$\{\mathbf{u}_{1},\dots,\mathbf{u}_{m}\}$ of $U$ and extend it to a basis
+$\{\mathbf{u}_{1},\dots,\mathbf{u}_{m},\mathbf{w}_{1},\dots,\mathbf{w}_{k}\}$ of $V$;
+this extension is possible by consequence (c) in the previous section. Set
+$W=\operatorname{span}\{\mathbf{w}_{1},\dots,\mathbf{w}_{k}\}$.
+
+Every $\mathbf{x}\in V$ is a linear combination of the entire basis, and separating the
+$\mathbf{u}$ terms from the $\mathbf{w}$ terms exhibits it as a member of $U+W$. For the
+intersection, take $\mathbf{x}\in U\cap W$. Then
+$\mathbf{x}=\sum a_{i}\mathbf{u}_{i}=\sum b_{s}\mathbf{w}_{s}$, so that
+$\sum a_{i}\mathbf{u}_{i}-\sum b_{s}\mathbf{w}_{s}=\mathbf{0}$. This is a linear relation in the
+basis of $V$, so all its coefficients are zero, in particular $\mathbf{x}=\mathbf{0}$. By the
+criterion above, $V=U\oplus W$, and from the dimension-of-a-sum theorem,
+$\dim V=\dim U+\dim W$.
+
+The complement is not unique. In $\mathbb{R}^{2}$ with $U$ the $x$-axis, every line through the
+origin other than the $x$-axis is a complement of $U$; what is unique is not the choice but the
+dimension. In Chapter 10, orthogonal complements make that decomposition the shortest one as well.
+
+Now the opening question can be answered. For $\mathbf{w}=(1,1,1)$, let
+$U=\{\boldsymbol{\delta}:\mathbf{w}\cdot\boldsymbol{\delta}=0\}$ and
+$W=\operatorname{span}\{\mathbf{w}\}$. Their intersection is only $\{\mathbf{0}\}$, since
+$\mathbf{w}\cdot(t\mathbf{w})=3t$ is zero only when $t=0$; with $\dim U=2$ and
+$\dim W=1$ we obtain $U\oplus W=\mathbb{R}^{3}$. Every perturbation splits uniquely into a part
+that does not change the score, namely a member of $U$, and a part that changes it, a member of
+$W$.
+
+\kamus{direct sum}{jumlah langsung}{two corridors that meet only at the origin, so that every place in the building is reachable by one route that cannot be disputed.}
+
+\section{Worked examples}
+\tingkat{intermediate}
+
+The following four computations use the entire content of the chapter; all of them are rechecked
+with Python in the lab section.
+
+\subsection*{(a) Rank and a basis of the column space}
+
+Back to the opening table. Row elimination: $R_{2}\leftarrow R_{2}-2R_{1}$ turns the second row
+into $(0,0,1,1)$, and $R_{3}\leftarrow R_{3}-3R_{1}$ turns the third row into
+$(0,0,2,2)$. Then $R_{3}\leftarrow R_{3}-2R_{2}$ eliminates the third row, so that what remains
+is $\mathbf{r}_{1}=(1,2,0,1)$ and $(0,0,1,1)$.
+
+That form is already reduced echelon, with pivot columns $1$ and $3$. Hence
+$\operatorname{rank}A=2$ and its column space has dimension $2$ with basis
+$\{\mathbf{c}_{1},\mathbf{c}_{3}\}=\{(1,2,3),(0,1,2)\}$.
+
+A direct check against the discarded columns:
+\[
+  \mathbf{c}_{2}=(2,4,6)=2\mathbf{c}_{1},
+  \qquad
+  \mathbf{c}_{4}=(1,3,5)=\mathbf{c}_{1}+\mathbf{c}_{3}.
+\]
+Both are exact, with no rounding. This is the answer ``two'' to the opening question: the pivot
+columns give a linearly independent set that spans the column space, and a column without a pivot
+is a combination of the pivot columns to its left.
+
+The null space of $A$ is also readable from the reduced form. From $x_{1}+2x_{2}+x_{4}=0$ and
+$x_{3}+x_{4}=0$ we obtain $x_{1}=-2x_{2}-x_{4}$ and $x_{3}=-x_{4}$, so that
+\[
+  \mathbf{x}=x_{2}\,(-2,1,0,0)+x_{4}\,(-1,0,-1,1),
+\]
+written as row vectors for brevity. Hence $\dim\ker A=2$, and
+$\operatorname{rank}A+\dim\ker A=2+2=4$ equals the number of columns; the general statement is
+rank-nullity, proved in Chapter 7.
+
+\subsection*{(b) Three dependent vectors}
+
+Consider $\mathbf{v}_{1}=(1,2,-1)$, $\mathbf{v}_{2}=(0,1,3)$, $\mathbf{v}_{3}=(2,5,1)$ as
+the columns of $V$. Cofactor expansion along the first row:
+\[
+  \det V=1(1\cdot1-3\cdot5)+0+2\bigl(2\cdot3-1\cdot(-1)\bigr)=(1-15)+2(6+1)=0.
+\]
+A zero determinant means the columns are dependent; the relation is guessed and then checked:
+$2\mathbf{v}_{1}+\mathbf{v}_{2}=(2,5,1)=\mathbf{v}_{3}$, so
+$2\mathbf{v}_{1}+\mathbf{v}_{2}-\mathbf{v}_{3}=\mathbf{0}$ and $\operatorname{rank}V=2$.
+
+\subsection*{(c) Dimension of a polynomial space}
+
+$\dim P_{3}=4$, because $\{1,x,x^{2},x^{3}\}$ is a basis. The set
+$B=\{1,\ 1+x,\ 1+x+x^{2},\ 1+x+x^{2}+x^{3}\}$ is also a basis: its coordinate matrix with respect
+to the standard basis is upper triangular with diagonal $1$, so $B$ is linearly independent, and
+since its size is $4=\dim P_{3}$, consequence (a) makes it a basis.
+
+The coordinates of $p=2-x+3x^{3}$ with respect to $B$ are computed from the highest degree
+downward: $a_{4}=3$, then $a_{3}+a_{4}=0$ gives $a_{3}=-3$, $a_{2}+a_{3}+a_{4}=-1$ gives
+$a_{2}=-1$, and the constant term gives $a_{1}=3$. Hence
+$p=3-(1+x)-3(1+x+x^{2})+3(1+x+x^{2}+x^{3})$, which upon expansion gives $2-x+3x^{3}$.
+
+\subsection*{(d) Decomposition as a direct sum}
+
+Take $U=\{(x,y,z):x+y+z=0\}$ and $W=\operatorname{span}\{(1,1,1)\}$ in $\mathbb{R}^{3}$.
+A basis of $U$ is $\{(1,-1,0),(1,0,-1)\}$, so $\dim U=2$; with $\dim W=1$ and
+$U\cap W=\{\mathbf{0}\}$ we obtain $\mathbb{R}^{3}=U\oplus W$.
+
+Decompose $\mathbf{v}=(3,0,1)$ as $\mathbf{u}+t(1,1,1)$. The condition that the sum of the
+coordinates of $\mathbf{u}$ be zero gives $3+0+1-3t=0$, so $t=4/3$. Then
+\[
+  \mathbf{v}=\underbrace{\Bigl(\tfrac53,-\tfrac43,-\tfrac13\Bigr)}_{\in U}
+  +\underbrace{\Bigl(\tfrac43,\tfrac43,\tfrac43\Bigr)}_{\in W},
+\]
+and $\tfrac53-\tfrac43-\tfrac13=0$ confirms that the first term really lies in $U$. By the
+criterion theorem, there is no other decomposition.
+
+\kertas{Redo (a) without looking: carry out the elimination on $A$, mark the pivot columns, then
+write $\mathbf{c}_{2}$ and $\mathbf{c}_{4}$ as combinations of $\mathbf{c}_{1}$ and
+$\mathbf{c}_{3}$. Then compute $\dim\ker A$ from the reduced form and check that its sum with the
+rank equals the number of columns. Finally, for the matrix $V$ in (b), replace entry $(3,1)$ by
+$0$ and decide whether the columns are still dependent.}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+The following code runs as is with numpy. The function \texttt{rref} is written by hand so that the
+pivot columns are visible; its last line cleans up leftover rounding and negative zeros.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+np.set_printoptions(precision=3, suppress=True)
+
+def rref(M):
+    M = M.astype(float).copy()
+    r = 0
+    for c in range(M.shape[1]):
+        i = np.argmax(np.abs(M[r:, c])) + r
+        if abs(M[i, c]) < 1e-12:
+            continue
+        M[[r, i]] = M[[i, r]]
+        M[r] = M[r] / M[r, c]
+        for j in range(M.shape[0]):
+            if j != r:
+                M[j] = M[j] - M[j, c] * M[r]
+        r = r + 1
+        if r == M.shape[0]:
+            break
+    M[np.abs(M) < 1e-12] = 0.0
+    return M
+
+A = np.array([[1, 2, 0, 1],
+              [2, 4, 1, 3],
+              [3, 6, 2, 5]], float)
+print("RREF(A):"); print(rref(A))
+print("rank(A) =", np.linalg.matrix_rank(A))
+print("k2-2k1 =", A[:, 1] - 2 * A[:, 0])
+print("k4-k1-k3 =", A[:, 3] - A[:, 0] - A[:, 2])
+
+V = np.array([[1, 0, 2],
+              [2, 1, 5],
+              [-1, 3, 1]], float)
+print("det(V) =", np.linalg.det(V))
+print("2v1+v2-v3 =", 2 * V[:, 0] + V[:, 1] - V[:, 2])
+
+x = np.array([0., 1, 2, 3])
+M = np.vander(x, 4, increasing=True)
+print("det(M) =", np.linalg.det(M))
+print("rank(M) =", np.linalg.matrix_rank(M))
+
+B = np.array([[1, 1, 1, 1],
+              [0, 1, 1, 1],
+              [0, 0, 1, 1],
+              [0, 0, 0, 1]], float)
+p = np.array([2, -1, 0, 3], float)
+k = np.linalg.solve(B, p)
+print("koordinat p =", k)
+print("sisa =", B @ k - p)
+\end{verbatim}
+\end{lab}
+
+The printed output:
+\begin{verbatim}
+RREF(A):
+[[1. 2. 0. 1.]
+ [0. 0. 1. 1.]
+ [0. 0. 0. 0.]]
+rank(A) = 2
+k2-2k1 = [0. 0. 0.]
+k4-k1-k3 = [0. 0. 0.]
+det(V) = 0.0
+2v1+v2-v3 = [0. 0. 0.]
+det(M) = 12.0
+rank(M) = 4
+koordinat p = [ 3. -1. -3.  3.]
+sisa = [0. 0. 0. 0.]
+\end{verbatim}
+
+Four things are readable from that output. The pivot columns $1$ and $3$ as well as
+$\operatorname{rank}A=2$ agree with the hand computation. The differences
+$\mathbf{c}_{2}-2\mathbf{c}_{1}$ and $\mathbf{c}_{4}-\mathbf{c}_{1}-\mathbf{c}_{3}$ are exactly
+zero; on real data those differences are small but nonzero, and that is where the limits of
+applying rank numerically lie. $\det V=0$ confirms the dependence in (b), and the Vandermonde
+matrix of the points $0,1,2,3$ has determinant $12$ and rank $4$. The coordinates of $p$ are
+printed as $(3,-1,-3,3)$, matching the hand computation.
+
+\begin{untukdosen}
+Start from the opening table, not from the axioms: ask the students to guess how many columns are
+independent, then show that the guess ``four'' is wrong. The axioms come in after that, as an
+answer to a need. The subspace test and span in the second meeting, linear independence and basis
+in the third, direct sums in the fourth.
+
+Two typical misconceptions. First, testing a subspace only by ``does it contain zero'' and then
+stopping; the first quadrant contains zero and is closed under addition, but fails on negative
+multiples. Second, taking basis to mean standard basis, so that $(5,7)$ and $(4,3)$ are judged not
+to be a basis of $\mathbb{R}^{2}$; stress that being a basis is a property of the set.
+
+Class activity: each group writes three vectors in $\mathbb{R}^{3}$ and decides independence or
+dependence by elimination; another group changes one entry and asks for a new decision. Students
+are ready to move on when they can explain why three vectors in $\mathbb{R}^{2}$ are always
+dependent.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Vector space: a set with addition and scalar multiplication satisfying the eight
+        axioms; its members may be vectors, matrices, polynomials, or functions.
+  \item A subspace is checked with just three things: it contains $\mathbf{0}$ and is closed
+        under both operations.
+  \item $\operatorname{span}(S)$ is the smallest subspace containing $S$; $\mathbf{b}$ lies in
+        the column space of $A$ exactly when $A\mathbf{x}=\mathbf{b}$ is consistent.
+  \item Linear dependence: one member lies in the span of the preceding members; three vectors
+        in $\mathbb{R}^{2}$ are always dependent.
+  \item The exchange theorem traps $n+1$ linearly independent vectors in a space spanned by $n$
+        vectors, so that all bases have the same size and $\dim V$ is defined.
+  \item $\dim(U+W)=\dim U+\dim W-\dim(U\cap W)$; $U+W$ is direct exactly when
+        $U\cap W=\{\mathbf{0}\}$; every finite-dimensional subspace has a complement.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{basic}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Decide whether $W=\{(x,y,z)\in\mathbb{R}^{3}:x-2y+z=0\ \text{and}\ x+y=0\}$
+        is a subspace of $\mathbb{R}^{3}$. If so, find a basis and its dimension.
+  \item Prove that the set of all $2\times2$ matrices whose main diagonal entries are zero
+        is a subspace of $M_{2\times2}(\mathbb{R})$, then find a basis and its dimension.
+  \item Show that $S=\{1+x,\ 1+x^{2},\ 2+x+x^{2}\}$ is linearly dependent in $P_{2}$.
+        Find $\dim\operatorname{span}(S)$, then extend a largest linearly independent
+        subset of $S$ to a basis of $P_{2}$.
+  \item Prove: if $\{\mathbf{v}_{1},\mathbf{v}_{2},\mathbf{v}_{3}\}$ is linearly independent in
+        $V$, then $\{\mathbf{v}_{1}+\mathbf{v}_{2},\ \mathbf{v}_{2}+\mathbf{v}_{3},\
+        \mathbf{v}_{3}+\mathbf{v}_{1}\}$ is also linearly independent.
+  \item Compute $\dim(U\cap W)$ and $\dim(U+W)$ for the two subspaces
+        \begin{align*}
+          U &= \operatorname{span}\{(1,0,0),(0,1,0)\}, \\
+          W &= \operatorname{span}\{(1,1,0),(0,0,1)\}
+        \end{align*}
+        in $\mathbb{R}^{3}$. Check the dimension-of-a-sum formula, then compute them with numpy
+        as well.
+  \item For the $3\times4$ matrix with rows $(1,2,3,4)$, $(2,4,6,9)$, and $(0,1,1,1)$,
+        find the rank, one basis of the column space, and one basis of the null space.
+        Check with the function \texttt{matrix\_rank} from numpy and
+        \texttt{null\_space} from scipy.
+  \item Assess this claim: \emph{if $U_{1},U_{2},U_{3}$ are subspaces of $V$ and every pairwise
+        intersection equals $\{\mathbf{0}\}$, then
+        $U_{1}+U_{2}+U_{3}=U_{1}\oplus U_{2}\oplus U_{3}$.} State true, false, or not enough
+        evidence, and include a reason or a counterexample.
+  \item Prove that if $\dim V=n$ and $U$ is a subspace with $\dim U=n-1$, then there is a
+        vector $\mathbf{v}\in V$ such that $V=U\oplus\operatorname{span}\{\mathbf{v}\}$.
+  \item Find the dimension of the space of all polynomials of degree at most $4$ that vanish at
+        $x=0$ and $x=1$ simultaneously, then give one basis of it. Check your answer by
+        computing the rank of the $2\times5$ evaluation matrix at those two points.
+  \item Given $B=\{1,\ 1+x,\ 1+x+x^{2},\ 1+x+x^{2}+x^{3}\}$ a basis of $P_{3}$. Find the
+        coordinates of $q=4+2x-5x^{2}+x^{3}$ with respect to $B$, then check by solving the
+        linear system in numpy.
+\end{enumerate}
+
+\noindent\textbf{Hints for the three hardest items.} Item 4: suppose
+$\sum c_{i}(\dots)=\mathbf{0}$, collect the coefficient of each $\mathbf{v}_{i}$, then use the
+independence of $\{\mathbf{v}_{1},\mathbf{v}_{2},\mathbf{v}_{3}\}$. Item 8: take a basis of $U$,
+extend it by one vector, then use consequence (d). Item 9: a polynomial of degree at most
+$4$ that vanishes at $0$ and $1$ is divisible by $x(x-1)$; count the free parameters.
+\end{latihan}
+
+\begin{untukpeneliti}
+Three things are genuinely proved in this chapter, and all three hold over any field: the
+uniqueness of the size of a basis through the exchange theorem (Steinitz's result), the formula
+$\dim(U+W)=\dim U+\dim W-\dim(U\cap W)$, and the existence of a complement for every
+finite-dimensional subspace. The popular claim that ``rank equals the number of informative
+features'' is meaningful only if ``informative'' means linearly independent, and on real data that
+condition is never satisfied exactly.
+
+Primary sources: Anton, \emph{Elementary Linear Algebra} 11th edition, Chapter 4 sections
+4.1--4.5; Axler, \emph{Linear Algebra Done Right} 4th edition, sections 1B, 1C, 2A--2C; Hoffman and
+Kunze, \emph{Linear Algebra} 2nd edition, Chapter 2.
+
+Open question: how far does $\dim(U\cap W)$ shift as a result of perturbing the entries? Limits of
+validity: all results assume the vector space axioms; for infinite-dimensional spaces, the
+existence of a basis requires Zorn's lemma. A rank computed by a computer depends on a threshold.
+\end{untukpeneliti}
+
+\peta{This chapter follows Anton, \emph{Elementary Linear Algebra} 11th edition, Chapter 4
+(General Vector Spaces) section 4.1 (Real Vector Spaces) for the axioms and examples, 4.2
+(Subspaces) for the subspace test and span, 4.3 (Linear Independence) for independence and the
+dependence lemma, and 4.5 (Dimension) for the exchange theorem and its consequences; other
+editions number these differently. A more abstract counterpart is in Axler, \emph{Linear Algebra
+Done Right} 4th edition, Chapter 1 sections 1B and 1C (including sums and direct sums of
+subspaces) and Chapter 2 sections 2A, 2B, and 2C, where the exchange theorem appears as a
+comparison of the length of a linearly independent list with that of a spanning list. The
+treatment of coordinates, linear transformations, and rank-nullity is not in this chapter but in
+Chapter 7.}
+

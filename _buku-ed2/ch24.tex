@@ -1,0 +1,1127 @@
+\chapter{Pemrograman Linear dan Integer}
+
+Sebuah bengkel kayu menerima 24 lembar kayu lapis dan 6 jam mesin perakitan untuk hari
+itu. Satu rak buku memakai 6 lembar kayu lapis dan 1 jam perakitan. Satu bangku memakai
+4 lembar dan 2 jam. Rak memberi laba 5 satuan, bangku 4 satuan. Berapa banyak rak dan
+bangku yang sebaiknya dibuat?
+
+Naluri pertama memilih rak, sebab labanya per unit lebih tinggi. Naluri itu salah: satu rak
+menghabiskan kayu lapis sebanyak satu setengah bangku. Jawaban terbaik model bersambungnya
+3 rak dan 1,5 bangku, berlaba 21, dan setengah bangku tidak bisa dijual. Pembulatan ke bawah
+memberi 19; 4 rak tanpa bangku memberi 20. Jadi jawaban bulat terbaik bukan pembulatan
+jawaban pecahan terbaik, dan selisihnya kesalahan cara berpikir, bukan kesalahan hitung.
+
+Alat dari bab sebelumnya belum cukup. Bab 8 mengajari kita menyelesaikan
+$A\mathbf{x}=\mathbf{b}$, tetapi di sini persamaannya lebih sedikit daripada variabelnya,
+jadi ada tak berhingga jawaban dan kita harus memilih yang terbaik. Bab 23 memberi kondisi
+KKT, tetapi pada soal ini gradien sasaran konstan dan tidak pernah lenyap: jawabannya
+menempel di batas daerah layak, bukan di titik stasioner. Jaminan bab 21 bahwa optimum lokal
+juga global tidak menunjukkan di mana optimumnya, dan hilang begitu variabel dituntut
+bulat.
+
+Karena itu bab ini menempuh tiga langkah: menulis soal sebagai program linear dan
+mengenali bahwa jawabannya ada di sudut daerah layak; memberi harga pada setiap kendala
+lewat dualitas, sehingga keoptimalan dapat diperiksa tanpa menyisir seluruh daerah; lalu
+menghadapi tuntutan kebulatan, saat model bersambung memberi batas yang sah tetapi belum
+tentu tercapai.
+
+\begin{untukanak}
+Bayangkan kamu punya 24 lembar kertas warna dan 6 jam untuk membuat dua jenis hiasan
+kelas. Hiasan pertama memakai 6 lembar dan 1 jam, hiasan kedua memakai 4 lembar dan 2 jam.
+Hiasan pertama lebih banyak dipesan, jadi harganya lebih tinggi. Berapa banyak masing-masing
+yang sebaiknya kamu buat?
+
+Kalau kamu coba-coba, ada banyak campuran yang muat. Yang mengejutkan, campuran paling
+menguntungkan ternyata memakai setengah hiasan. Setengah hiasan tidak bisa dijual, dan di
+sinilah akal sehat mulai menipu: kalau kamu membulatkan ke bawah, hasilnya bukan yang
+terbaik. Ada campuran lain yang seluruhnya bulat dan justru lebih menguntungkan, padahal
+tidak kelihatan seperti pembulatan apa pun.
+
+Pertanyaan yang membuat penasaran begini. Kalau ada ribuan campuran yang mungkin, bagaimana
+kita tahu satu campuran itu yang terbaik tanpa mencoba semuanya? Dan kalau temanmu
+menawarkan satu lembar kertas tambahan, berapa harga wajar untuk lembar itu? Di bab ini
+kita akan tahu mengapa jawaban terbaik selalu ada di pojok daerah yang mungkin, mengapa
+setiap bahan punya harga yang bisa dihitung, dan mengapa jawaban pecahan harus dibulatkan
+dengan hati-hati, bukan dengan naluri.
+\end{untukanak}
+
+\section{Dari rencana produksi ke bentuk baku}
+\tingkat{dasar}
+
+Satu rencana produksi adalah sepasang bilangan: banyak rak dan banyak bangku. Rencana
+disebut layak bila pemakaian bahannya tidak melebihi persediaan. Untuk rak $x_{1}$ dan
+bangku $x_{2}$, syaratnya
+\[
+  6x_{1}+4x_{2}\le24,\qquad x_{1}+2x_{2}\le6,\qquad x_{1}\ge0,\quad x_{2}\ge0 .
+\]
+Tiap syarat memotong bidang dengan satu garis dan menyisakan satu sisi; irisannya segiempat
+dengan empat sudut. Labanya $5x_{1}+4x_{2}$, dan kita ingin angka itu sebesar mungkin.
+
+Pola soal semacam ini disebut program linear. Namanya tepat: semua yang terlibat berbentuk
+garis lurus, tidak ada lengkungan, tidak ada pangkat.
+
+\kamus{program linear}{linear program}{Soal mencari nilai terbaik dari sesuatu yang dihitung
+dengan penjumlahan berbobot, ketika semua aturannya berbentuk garis lurus.}
+
+\begin{definisi}[Program linear]
+Program linear adalah masalah memaksimumkan atau meminimumkan fungsi linear
+$\mathbf{c}^{\top}\mathbf{x}$ terhadap variabel $\mathbf{x}\in\mathbb{R}^{n}$ dengan
+kendala berbentuk ketaksamaan atau kesamaan linear. Himpunan titik yang memenuhi semua
+kendala disebut \emph{daerah layak}. Bila daerah layaknya kosong, program disebut
+\emph{tidak layak}; bila nilai sasarannya dapat dibuat sebesar apa pun, program disebut
+\emph{tak terbatas}.\index{program linear}
+\end{definisi}
+
+Perangkat lunak dan buku teks memakai satu pola tulisan yang seragam, dan pola itulah yang
+dipakai sepanjang bab ini.
+
+\begin{definisi}[Bentuk baku]
+Program linear dalam \emph{bentuk baku} adalah
+\[
+  \text{maksimumkan } \mathbf{c}^{\top}\mathbf{x}
+  \quad\text{dengan}\quad A\mathbf{x}=\mathbf{b},\qquad \mathbf{x}\ge\mathbf{0},
+\]
+dengan $A$ berukuran $m\times n$ berperingkat $m$, $\mathbf{b}\in\mathbb{R}^{m}$, dan
+$\mathbf{c}\in\mathbb{R}^{n}$. Setiap program linear dapat dibawa ke bentuk ini tanpa
+mengubah nilai optimumnya.\index{bentuk baku}
+\end{definisi}
+
+Empat terjemahan melakukan seluruh pekerjaan itu. Kendala
+$\mathbf{a}^{\top}\mathbf{x}\le b$ menjadi kesamaan dengan menambah variabel yang menampung
+sisa pemakaian; kendala $\mathbf{a}^{\top}\mathbf{x}\ge b$ dengan mengurangkannya. Variabel
+yang boleh bernilai negatif diganti selisih dua variabel tak negatif, dan memaksimumkan
+$\mathbf{c}^{\top}\mathbf{x}$ sama dengan meminimumkan $-\mathbf{c}^{\top}\mathbf{x}$.
+
+\kamus{variabel kendur}{slack variable}{Bilangan yang dicatat sebagai sisa pemakaian, supaya
+``tidak boleh lebih dari'' berubah menjadi ``sama dengan''.}
+
+Untuk bengkel tadi, bentuk bakunya memakai $s_{1}$ sebagai sisa kayu lapis dan $s_{2}$
+sebagai sisa jam perakitan:
+\[
+  \begin{array}{rcl}
+    6x_{1}+4x_{2}+s_{1} &=& 24,\\
+    x_{1}+2x_{2}+s_{2} &=& 6,
+  \end{array}
+  \qquad x_{1},x_{2},s_{1},s_{2}\ge0 .
+\]
+Di sini $m=2$ dan $n=4$, sehingga $A$ berukuran $2\times4$. Kedua variabel kendur itu bukan
+hiasan: nanti keduanya muncul sebagai kolom di tabel simpleks dan sebagai petunjuk kendala
+mana yang masih longgar.
+
+Bentuk baku juga menuntut $\mathbf{b}\ge\mathbf{0}$, dan itu selalu bisa diatur
+dengan mengalikan satu baris dengan $-1$. Yang tidak bisa diatur adalah peringkat: baris $A$
+yang bergantung linear harus dibuang lebih dulu, sebab kalau tidak, matriks basis yang dipilih
+bisa singular.
+
+\section{Geometri: mengapa jawaban ada di sudut}
+\tingkat{menengah}
+
+Empat sudut segiempat tadi adalah $(0;0)$, $(4;0)$, $(3;1{,}5)$, dan $(0;3)$, dengan laba
+$0$, $20$, $21$, dan $12$. Yang terbaik ada di sudut, dan itu bukan kebetulan: pada program
+linear nilai terbaik selalu dapat dicari di sudut, sebab itulah metode simpleks hanya
+berjalan dari sudut ke sudut.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=9.3cm,height=6.3cm,
+  xlabel={$x_{1}$ (rak)},ylabel={$x_{2}$ (bangku)},
+  xmin=-0.35,xmax=5.1,ymin=-0.35,ymax=3.9,
+  axis lines=left,xtick={0,1,2,3,4,5},ytick={0,1,2,3},
+  tick label style={font=\scriptsize},label style={font=\scriptsize}]
+\addplot[forget plot,fill=layerteal!10,draw=layerteal,thick]
+  coordinates {(0,0) (4,0) (3,1.5) (0,3)} \closedcycle;
+\addplot[forget plot,domain=0:2.4,densely dotted,thick,layerindigo] {3-1.25*x};
+\addplot[forget plot,domain=0:3.6,densely dotted,thick,layerindigo] {4.5-1.25*x};
+\addplot[forget plot,domain=0.2:4.2,thick,accent] {5.25-1.25*x};
+\addplot[forget plot,only marks,mark=*,mark size=1.7pt,draw=ink]
+  coordinates {(0,0) (4,0) (0,3)};
+\addplot[forget plot,only marks,mark=*,mark size=2.6pt,draw=accent]
+  coordinates {(3,1.5)};
+\node[font=\scriptsize,anchor=north west] at (axis cs:0,0) {$(0;0)$};
+\node[font=\scriptsize,anchor=north east] at (axis cs:4,0) {$(4;0)$};
+\node[font=\scriptsize,anchor=south west] at (axis cs:0,3) {$(0;3)$};
+\node[font=\scriptsize,anchor=west] at (axis cs:3.05,1.45) {$(3;1{,}5)$};
+\node[font=\scriptsize,anchor=west,layerindigo] at (axis cs:0.15,1.15) {$z=12$};
+\node[font=\scriptsize,anchor=west,layerindigo] at (axis cs:0.15,2.15) {$z=18$};
+\node[font=\scriptsize,anchor=west,accent] at (axis cs:0.15,3.45) {$z=21$};
+\draw[-{Stealth},thick,accent] (axis cs:2.3,2.75) -- (axis cs:3.25,3.35)
+  node[font=\scriptsize,above,accent,pos=0.9] {laba naik};
+\end{axis}
+\end{tikzpicture}
+\caption{Daerah layak bengkel dan tiga garis laba sama besar. Poligon punya empat verteks,
+$(0;0)$, $(4;0)$, $(3;1{,}5)$, $(0;3)$, bernilai $0$, $20$, $21$, $12$. Garis $z=12$ dan
+$z=18$ masih memotong daerah layak; garis $z=21$ hanya menyentuh verteks $(3;1{,}5)$,
+sehingga tidak ada titik layak yang bernilai lebih tinggi.}
+\label{fig:ch22-daerah-optimum}
+\end{figure}
+
+Gambar~\ref{fig:ch22-daerah-optimum} mempertajam kebetulan itu. Tiga garis di sana adalah
+garis laba sama besar, $5x_{1}+4x_{2}=12$, $18$, dan $21$. Garis laba yang lebih tinggi
+lebih jauh dari titik nol, dan menggesernya ke arah itu memindahkannya keluar daerah layak;
+garis $21$ hanya menyentuh verteks $(3;1{,}5)$.
+
+Sudut punya nama yang lebih tepat, dan namanya tidak mengacu pada gambar.
+
+\begin{definisi}[Verteks]
+Misalkan $P\subseteq\mathbb{R}^{n}$ himpunan konveks. Titik $\mathbf{x}\in P$ disebut
+\emph{verteks} atau \emph{titik ekstrem} bila tidak ada $\mathbf{y},\mathbf{z}\in P$ dengan
+$\mathbf{y}\ne\mathbf{z}$ dan $t\in(0,1)$ sehingga
+$\mathbf{x}=t\mathbf{y}+(1-t)\mathbf{z}$. Dengan kata lain, $\mathbf{x}$ bukan titik
+tengah ruas antara dua titik lain di $P$.\index{verteks}
+\end{definisi}
+
+Pada segiempat tadi, titik $(3;1{,}5)$ adalah verteks: setiap ruas di dalam segiempat yang
+melewatinya harus berakhir di titik itu sendiri. Sebaliknya $(2;1)$ bukan verteks, sebab ia
+titik tengah antara $(1;1)$ dan $(3;1)$.
+
+\kamus{verteks}{vertex}{Sudut daerah layak, yaitu titik yang tidak pernah menjadi titik
+tengah antara dua titik layak lain.}
+
+Langkah pertama pembuktian adalah mengubah penyangkalan menjadi arah yang bisa dipakai.
+
+\begin{lemma}[Titik bukan verteks memberi garis]
+Bila $\mathbf{x}\in P$ bukan verteks, maka ada $\mathbf{d}\ne\mathbf{0}$ sehingga
+$\mathbf{x}+\mathbf{d}\in P$ dan $\mathbf{x}-\mathbf{d}\in P$.
+\end{lemma}
+
+\begin{proof}
+Karena $\mathbf{x}$ bukan verteks, ada $\mathbf{y}\ne\mathbf{z}\in P$ dan $t\in(0,1)$
+dengan $\mathbf{x}=t\mathbf{y}+(1-t)\mathbf{z}$. Tetapkan
+$s=\tfrac12\min\{t,1-t\}>0$ dan $\mathbf{d}=s(\mathbf{y}-\mathbf{z})$. Maka
+$\mathbf{x}+\mathbf{d}=(t+s)\mathbf{y}+(1-t-s)\mathbf{z}$ dan
+$\mathbf{x}-\mathbf{d}=(t-s)\mathbf{y}+(1-t+s)\mathbf{z}$. Karena $0<t\pm s<1$, kedua
+titik itu kombinasi konveks $\mathbf{y}$ dan $\mathbf{z}$, jadi anggota $P$ sebab $P$
+konveks. Juga $\mathbf{d}\ne\mathbf{0}$, sebab $\mathbf{y}\ne\mathbf{z}$ dan $s>0$.
+\end{proof}
+
+Sekarang pernyataan yang menjadi alasan metode simpleks masuk akal. Kalimatnya dalam
+bahasa sehari-hari: kalau daerah layaknya terkurung dan sasarannya tidak tumbuh ke arah
+mana pun, maka puncak tertinggi ada di salah satu sudut, bukan di tengah bidang.
+
+\begin{teorema}[Optimum tercapai di verteks]
+Misalkan $P=\{\mathbf{x}:A\mathbf{x}\le\mathbf{b}\}$ tak kosong dan terbatas, dan misalkan
+$\mathbf{c}^{\top}\mathbf{x}$ terbatas di atas pada $P$. Maka ada verteks
+$\mathbf{x}^{*}$ dari $P$ dengan $\mathbf{c}^{\top}\mathbf{x}^{*}
+=\max_{\mathbf{x}\in P}\mathbf{c}^{\top}\mathbf{x}$.
+\index{optimum di verteks}
+\end{teorema}
+
+\begin{proof}
+Himpunan optimal $F=\{\mathbf{x}\in P:\mathbf{c}^{\top}\mathbf{x}=p^{*}\}$ tak kosong,
+tertutup, terbatas, dan konveks, jadi $F$ juga polytope. Tulis kendala $P$ sebagai
+$\mathbf{a}_{i}^{\top}\mathbf{x}\le b_{i}$, $i=1,\dots,k$. Pilih $\mathbf{x}^{*}\in F$
+yang memaksimumkan banyaknya kendala yang aktif, yaitu kendala dengan
+$\mathbf{a}_{i}^{\top}\mathbf{x}^{*}=b_{i}$.
+
+Andaikan $\mathbf{x}^{*}$ bukan verteks. Menurut lemma, ada $\mathbf{d}\ne\mathbf{0}$
+dengan $\mathbf{x}^{*}\pm\mathbf{d}\in F$. Setiap kendala yang aktif di
+$\mathbf{x}^{*}$ juga aktif di kedua titik itu, sehingga
+$\mathbf{a}_{i}^{\top}\mathbf{d}=0$ bagi semua $i$ aktif. Tinjau garis
+$\mathbf{x}^{*}+s\mathbf{d}$ untuk $s\in\mathbb{R}$. Irisannya dengan $P$ adalah selang
+tertutup $[s_{-},s_{+}]$ yang memuat $[-1,1]$, dan karena $P$ terbatas kedua ujungnya
+berhingga. Ujung $s_{+}$ ditentukan oleh kendala dengan $\mathbf{a}_{i}^{\top}\mathbf{d}>0$ yang
+paling cepat tercapai; kendala itu aktif di $s_{+}$ tetapi tidak di $\mathbf{x}^{*}$, jadi
+titik baru itu layak dan aktif di lebih banyak kendala. Nilainya tetap $p^{*}$ sebab
+$\mathbf{c}^{\top}(\mathbf{x}^{*}+s_{+}\mathbf{d})=p^{*}+s_{+}\mathbf{c}^{\top}
+\mathbf{d}=p^{*}$, dan $\mathbf{c}^{\top}\mathbf{d}=0$ karena kedua titik
+$\mathbf{x}^{*}\pm\mathbf{d}$ bernilai $p^{*}$. Titik baru itu anggota $F$ dengan lebih banyak kendala
+aktif, bertentangan dengan pilihan $\mathbf{x}^{*}$; maka $\mathbf{x}^{*}$ verteks.
+\end{proof}
+
+\begin{bacakeras}
+Dua suara, dibaca bergantian dengan teman. Ketuk meja sekali setiap kali kata ``puncak''
+diucapkan.
+
+``Di mana jawaban terbaik?'' ``Di puncak.''
+``Kenapa bukan di tengah?'' ``Karena di tengah ada tetangga di dua sisi.''
+``Kalau ada tetangga, kenapa salah?'' ``Karena masih ada arah untuk bergeser.''
+``Bergeser ke arah mana?'' ``Ke arah yang menanjak.''
+``Kalau tidak ada arah menanjak?'' ``Maka kita sudah berdiri di puncak.''
+
+Ulangi tiga baris tengah, makin pelan, dengan ketukan yang sama: di tengah ada tetangga, di
+tengah masih bisa bergeser, puncak tidak punya arah menanjak.
+
+Baris yang harus diulang pembaca, sekali, dengan suara jelas: jawaban terbaik ada di puncak,
+bukan di tengah, dan puncak dikenali dari tidak adanya arah yang menanjak.
+\end{bacakeras}
+
+Bukti itu memakai keterbatasan $P$. Bila $P$ tak terbatas tetapi sasarannya
+terbatas di atas, kesimpulannya masih benar; jalannya lewat dekomposisi $P$ menjadi selubung
+konveks verteks ditambah kerucut arah resesi, dan bukti lengkapnya ada pada
+\texttt{WSPrinted.pdf}, bagian struktur himpunan polihedral.
+
+Banyaknya verteks berhingga, tetapi tidak selalu sedikit. Dalam bentuk baku,
+verteks bersesuaian dengan pemilihan $m$ kolom $A$ yang bebas linear: kolom terpilih
+menentukan $\mathbf{x}_{B}=B^{-1}\mathbf{b}$, kolom lain nol, dan titik itu layak bila
+$\mathbf{x}_{B}\ge\mathbf{0}$. Calonnya sebanyak $\binom{n}{m}$, yang untuk $n=100$ dan
+$m=50$ melampaui $10^{29}$; memeriksa semuanya bukan rencana masuk akal. Di sinilah simpleks
+berperan: ia berjalan dari verteks ke verteks tetangga yang lebih baik.
+
+\begin{tangan}
+Bahan: lantai berpetak, dua utas tali atau selotip kertas, dan segenggam kancing.
+
+Bentangkan dua tali lurus sebagai dua batas; satu untuk kayu lapis, satu untuk jam
+perakitan. Berdirilah di petak pojok dan sebut petak itu titik nol: setiap petak ke kanan
+menambah satu rak, setiap petak ke depan menambah satu bangku.
+
+Berjalanlah menyusuri tali dan berhenti hanya di petak tempat dua tali bertemu. Letakkan
+kancing di situ, dan di situ saja. Yang harus terlihat: semua kancing menempel di tikungan
+pagar, tidak satu pun berdiri di tengah halaman. Sesudah itu hitung laba di setiap kancing
+dengan jari, lalu pindahkan satu kancing ke tikungan yang paling menguntungkan.
+
+Geser satu tali satu petak ke dalam, lalu ulangi: kancingnya berpindah, pemenangnya tetap
+kancing di tikungan.
+\end{tangan}
+
+\section{Metode simpleks: satu tabel, dua pivot}
+\tingkat{menengah}
+
+Gagasannya sederhana. Berdiri di satu verteks, periksa apakah ada arah sisi yang menaikkan
+laba; bila ada, berjalan ke verteks di ujungnya. Bila tidak, berhenti: tidak ada tetangga
+yang lebih baik, yang pada program linear berarti tidak ada titik lain yang lebih baik.
+
+Arah sisi itu ditentukan oleh \emph{biaya tereduksi}: seberapa banyak laba bertambah bila
+satu variabel yang sekarang nol dinaikkan satu satuan, dengan mengorbankan variabel basis
+secara optimal.
+
+\kamus{solusi layak basis}{basic feasible solution}{Titik yang diperoleh dengan menyetel
+sebagian variabel ke nol lalu menyelesaikan sisanya, dan kebetulan masih memenuhi semua
+batas; titik ini selalu verteks.}
+
+Untuk bengkel tadi, mulailah dari verteks $(0;0)$, yaitu $s_{1}=24$ dan $s_{2}=6$. Tabel
+pertamanya memuat baris laba $z$ dan satu baris untuk tiap kendala:
+\begin{center}
+\begin{tabular}{c|cccc|c}
+\hline
+basis & $x_{1}$ & $x_{2}$ & $s_{1}$ & $s_{2}$ & ruas kanan \\
+\hline
+$z$   & $-5$ & $-4$ & $0$ & $0$ & $0$ \\
+$s_{1}$ & $6$ & $4$ & $1$ & $0$ & $24$ \\
+$s_{2}$ & $1$ & $2$ & $0$ & $1$ & $6$ \\
+\hline
+\end{tabular}
+\end{center}
+Baris $z$ ditulis sebagai $z-5x_{1}-4x_{2}=0$; koefisien negatif berarti menaikkan variabel
+itu menaikkan $z$, jadi kolom dengan koefisien paling negatif masuk, di sini $x_{1}$ dengan
+$-5$.
+
+Uji nisbah menentukan siapa yang keluar: bagi ruas kanan dengan entri positif di kolom
+masuk, lalu ambil nisbah terkecil. $24/6=4$ dan $6/1=6$, jadi $s_{1}$ keluar dan pivotnya
+$6$. Membagi baris pivot dengan $6$ lalu menghapus kolom itu dari baris lain memberi
+\[
+  \begin{array}{rcl}
+    x_{1}+\tfrac{2}{3}x_{2}+\tfrac{1}{6}s_{1} &=& 4,\\
+    \tfrac{4}{3}x_{2}-\tfrac{1}{6}s_{1}+s_{2} &=& 2,\\
+    z-\tfrac{2}{3}x_{2}+\tfrac{5}{6}s_{1} &=& 20 .
+  \end{array}
+\]
+Titiknya kini $(4;0)$ berlaba $20$, dan masih ada koefisien negatif: $x_{2}$ dengan
+$-2/3$. Uji nisbah memberi $4/(2/3)=6$ dan $2/(4/3)=1{,}5$, jadi $s_{2}$ keluar dan
+pivotnya $4/3$. Sesudah satu putaran lagi,
+\[
+  \begin{array}{rcl}
+    x_{1}+\tfrac{1}{4}s_{1}-\tfrac{1}{2}s_{2} &=& 3,\\
+    x_{2}-\tfrac{1}{8}s_{1}+\tfrac{3}{4}s_{2} &=& \tfrac{3}{2},\\
+    z+\tfrac{3}{4}s_{1}+\tfrac{1}{2}s_{2} &=& 21 .
+  \end{array}
+\]
+Baris $z$ sekarang tidak punya koefisien negatif, jadi tidak ada arah yang menaikkan laba:
+$(3;1{,}5)$ optimal dengan laba $21$. Seluruh aritmetika di atas diperiksa ulang dengan pecahan eksak, supaya tidak ada
+pembulatan desimal yang menyelinap.
+
+Baris terakhir itu lebih dari sekadar tanda berhenti. Koefisien $s_{1}$ dan
+$s_{2}$ di sana, $3/4$ dan $1/2$, adalah harga dua bahan tadi. Angka itu muncul dari matriks
+basis, $\mathbf{y}^{\top}=\mathbf{c}_{B}^{\top}B^{-1}$, dan
+$\mathbf{b}^{\top}\mathbf{y}=24\cdot\tfrac34+6\cdot\tfrac12=21$, sama dengan laba.
+Kesamaan itu adalah dualitas, dan bagian berikutnya menjelaskan mengapa ia sendiri sudah
+merupakan bukti optimalitas.
+
+Dua catatan. Aturan koefisien paling negatif tidak menjamin berhenti, sebab ada contoh kecil
+dengan putaran tanpa akhir; aturan Bland yang memilih indeks terkecil menjamin berhenti.
+Perangkat lunak modern memakai simpleks dual atau metode titik dalam, tetapi melaporkan
+verteks dan harga yang sama.
+
+\section{Dualitas: harga untuk setiap kendala}
+\tingkat{lanjut}
+
+Setiap bahan yang terbatas punya harga tersembunyi. Satu lembar kayu lapis tambahan
+menaikkan laba, dan besar kenaikannya adalah harga lembar itu bagi bengkel. Harga itu tidak
+tertulis pada soal aslinya, tetapi bisa dihitung, dan dualitas adalah cara menghitungnya.
+
+Kalikan kendala kayu lapis dengan $y_{1}\ge0$ dan kendala jam dengan $y_{2}\ge0$, lalu
+jumlahkan. Hasilnya
+\[
+  (6y_{1}+y_{2})x_{1}+(4y_{1}+2y_{2})x_{2}\le24y_{1}+6y_{2}.
+\]
+Bila $6y_{1}+y_{2}\ge5$ dan $4y_{1}+2y_{2}\ge4$, ruas kiri paling sedikit
+$5x_{1}+4x_{2}$, yaitu laba. Jadi $24y_{1}+6y_{2}$ menjadi batas atas laba bagi setiap harga yang memenuhi dua syarat
+itu, dan batas terbaiknya dibuat sekecil mungkin.
+
+\begin{definisi}[Pasangan primal dan dual]
+Untuk program linear
+\[
+  \text{(P)}\quad \text{maksimumkan } \mathbf{c}^{\top}\mathbf{x}
+  \ \text{ dengan } A\mathbf{x}\le\mathbf{b},\ \mathbf{x}\ge\mathbf{0},
+\]
+\emph{program dualnya} adalah
+\[
+  \text{(D)}\quad \text{minimumkan } \mathbf{b}^{\top}\mathbf{y}
+  \ \text{ dengan } A^{\top}\mathbf{y}\ge\mathbf{c},\ \mathbf{y}\ge\mathbf{0}.
+\]
+Variabel $\mathbf{y}$ disebut \emph{variabel dual} atau \emph{harga bayangan}.
+\index{dualitas}\index{harga bayangan}
+\end{definisi}
+
+Untuk bengkel tadi, dualnya meminimumkan $24y_{1}+6y_{2}$ dengan kendala
+$6y_{1}+y_{2}\ge5$, $4y_{1}+2y_{2}\ge4$, dan $y_{1},y_{2}\ge0$. Penyelesaiannya
+$y_{1}=3/4$, $y_{2}=1/2$, bernilai $21$, sama dengan laba terbaik.
+
+Bahwa batas atas dari dual tidak pernah di bawah nilai primal adalah hal pertama yang perlu
+dipegang, dan buktinya tiga baris.
+
+\begin{teorema}[Dualitas lemah]
+Untuk setiap $\mathbf{x}$ layak (P) dan setiap $\mathbf{y}$ layak (D) berlaku
+$\mathbf{c}^{\top}\mathbf{x}\le\mathbf{b}^{\top}\mathbf{y}$.
+\index{dualitas lemah}
+\end{teorema}
+
+\begin{proof}
+Karena $\mathbf{y}\ge\mathbf{0}$ dan $\mathbf{b}-A\mathbf{x}\ge\mathbf{0}$, berlaku
+$\mathbf{b}^{\top}\mathbf{y}\ge\mathbf{y}^{\top}A\mathbf{x}$. Karena
+$\mathbf{x}\ge\mathbf{0}$ dan $A^{\top}\mathbf{y}-\mathbf{c}\ge\mathbf{0}$, berlaku
+$\mathbf{y}^{\top}A\mathbf{x}\ge\mathbf{c}^{\top}\mathbf{x}$. Rantai keduanya memberi
+hasil yang diminta.
+\end{proof}
+
+Akibat praktisnya besar: sepasang titik layak, satu primal dan satu dual, dengan nilai sama
+sudah membuktikan keduanya optimal tanpa memeriksa titik lain. Pada bengkel tadi,
+$(3;1{,}5)$ dan $(0{,}75;\,0{,}5)$ memberi nilai $21$, jadi $21$ tidak bisa diperbaiki
+maupun diturunkan.
+
+Yang tidak diberikan dualitas lemah adalah jaminan bahwa kedua nilai itu selalu bertemu.
+Jaminan itu isi teorema berikut.
+
+\begin{teorema}[Dualitas kuat]
+Bila (P) atau (D) mempunyai nilai optimum berhingga, maka keduanya mempunyai nilai optimum
+dan nilainya sama.
+\end{teorema}
+
+Buktinya tidak dikerjakan di sini. Jalannya ada dua: lewat lemma Farkas tentang sistem
+ketaksamaan linear, atau lewat kenyataan bahwa simpleks berhenti pada tabel tanpa koefisien
+negatif, dan tabel itu sekaligus memberi $\mathbf{y}$ layak dual bernilai sama. Bukti
+lengkapnya ada pada \texttt{WSPrinted.pdf} bagian dualitas program linear dan pada Boyd dan
+Vandenberghe bagian 5.2.
+
+Dari kesamaan itu lahir syarat yang dipakai untuk memeriksa hasil hitungan dengan cepat.
+Kalimat sehari-harinya: kendala yang masih longgar tidak perlu dibayar, dan variabel yang
+dipakai harus membayar harganya dengan pas.
+
+\begin{akibat}[Kelengkapan komplementer]
+Bila $\mathbf{x}$ dan $\mathbf{y}$ keduanya optimal, maka
+\[
+  y_{i}\bigl(b_{i}-\mathbf{a}_{i}^{\top}\mathbf{x}\bigr)=0 \ \text{ untuk setiap } i,
+  \qquad
+  x_{j}\bigl((A^{\top}\mathbf{y})_{j}-c_{j}\bigr)=0 \ \text{ untuk setiap } j .
+\]
+Sebaliknya, bila $\mathbf{x}$ layak (P), $\mathbf{y}$ layak (D), dan kedua kelompok
+kesamaan itu berlaku, maka keduanya optimal.
+\index{kelengkapan komplementer}
+\end{akibat}
+
+\begin{proof}
+Karena keduanya optimal, $\mathbf{c}^{\top}\mathbf{x}=\mathbf{b}^{\top}\mathbf{y}$, dan
+rantai pada bukti dualitas lemah menjadi rantai kesamaan. Setiap suku yang dijumlahkan di
+dalamnya tak negatif, jadi setiap suku nol; suku-suku itu tepat
+$y_{i}(b_{i}-\mathbf{a}_{i}^{\top}\mathbf{x})$ dan
+$x_{j}((A^{\top}\mathbf{y})_{j}-c_{j})$. Arah sebaliknya: bila semua suku nol, rantai yang
+sama memberi kesamaan nilai, dan menurut dualitas lemah nilai itu optimum kedua masalah.
+\end{proof}
+
+Sekarang harga bayangan itu sendiri. Bila ruas kanan diganggu, nilai optimum
+berubah, dan laju perubahannya adalah komponen $\mathbf{y}$. Menambah satu lembar kayu lapis
+menaikkan laba dari $21$ menjadi $21{,}75$; menambah satu jam perakitan menaikkannya menjadi
+$21{,}5$. Jadi selembar kayu lapis bernilai $0{,}75$ satuan laba, satu jam perakitan
+$0{,}5$.
+
+Harga itu tidak berlaku selamanya, dan batas berlakunya bisa dihitung. Selama susunan
+kendala aktif tidak berubah, $\mathbf{x}_{B}=B^{-1}\mathbf{b}$ linear dalam $\mathbf{b}$,
+sehingga nilainya juga linear. Untuk bengkel tadi,
+\[
+  B^{-1}=\begin{pmatrix}\tfrac14&-\tfrac12\\[2pt]-\tfrac18&\tfrac34\end{pmatrix},
+  \qquad
+  \mathbf{x}_{B}=\begin{pmatrix}\tfrac14b_{1}-\tfrac12b_{2}\\[2pt]
+  -\tfrac18b_{1}+\tfrac34b_{2}\end{pmatrix}.
+\]
+Dengan $b_{2}=6$ tetap, syarat $\mathbf{x}_{B}\ge\mathbf{0}$ memberi $b_{1}\in[12,36]$; di
+luar selang itu satu variabel basis menjadi negatif dan kemiringannya berganti. Dengan $b_{1}=24$ tetap, selangnya $b_{2}\in[4,12]$; harga bayangan karena itu selalu
+dilaporkan bersama selangnya, bukan sebagai angka telanjang.
+
+Satu peringatan berguna sejak awal: harga bayangan adalah gagasan model bersambung. Pada
+model integer, satu lembar kayu lapis tambahan bisa menaikkan laba sebesar $1$ atau tidak
+sama sekali, dan tidak ada harga tunggal yang merangkum keduanya.
+
+\section{Relaksasi LP: batas yang sah, pembulatan yang menipu}
+\tingkat{menengah}
+
+Kalau rak dan bangku boleh pecahan, soal tadi selesai: $3$ rak dan $1{,}5$ bangku.
+Kenyataannya tidak, dan hubungan antara soal bersambung dan soal bulat perlu dinyatakan
+dengan hati-hati.
+
+\begin{definisi}[Program integer, relaksasi, dan celah integralitas]
+\emph{Program integer} adalah program linear yang sebagian atau seluruh variabelnya
+dituntut bulat. Bila seluruh variabel dituntut bulat, ia disebut program integer murni.
+\emph{Relaksasi LP}-nya adalah program linear yang sama tanpa tuntutan kebulatan. Untuk
+masalah maksimisasi dengan nilai optimum $z^{*}_{\mathrm{LP}}$ dan $z^{*}_{\mathrm{IP}}$,
+\emph{celah integralitas} adalah $z^{*}_{\mathrm{LP}}-z^{*}_{\mathrm{IP}}$.
+\index{program integer}\index{relaksasi}\index{celah integralitas}
+\end{definisi}
+
+\kamus{celah integralitas}{integrality gap}{Jarak antara batas yang dijanjikan model
+bersambung dan jawaban bulat sebenarnya; jarak itu mengukur seberapa jauh model bersambung
+menyesatkan.}
+
+Alasan relaksasi berguna adalah satu kalimat: himpunan titik bulat yang layak adalah
+bagian dari himpunan titik bersambung yang layak, jadi memaksimumkan di himpunan yang lebih
+besar tidak mungkin memberi nilai yang lebih kecil.
+
+\begin{proposisi}[Relaksasi memberi batas yang sah]
+Untuk masalah maksimisasi, $z^{*}_{\mathrm{IP}}\le z^{*}_{\mathrm{LP}}$. Untuk masalah
+minimisasi, ketaksamaannya berbalik.
+\index{batas relaksasi}
+\end{proposisi}
+
+\begin{proof}
+Setiap titik bulat yang layak bagi program integer juga layak bagi relaksasinya, sebab
+relaksasi hanya menghapus syarat, tidak menambah syarat. Jadi daerah layak program integer
+termasuk di dalam daerah layak relaksasi. Maksimum atas himpunan yang lebih besar tidak
+lebih kecil daripada maksimum atas himpunan bagiannya.
+\end{proof}
+
+Batas itu sah, tetapi tidak selalu rapat, dan selisihnya bisa sangat menyesatkan bila
+dipakai untuk membulatkan. Ada dua cara pembulatan gagal, dan keduanya muncul pada contoh
+kecil kita.
+
+Cara pertama: hasil pembulatan tidak layak. Titik $(3;1{,}5)$ dibulatkan ke atas menjadi
+$(3;2)$. Labanya $23$, lebih tinggi daripada $21$, tetapi kayu lapisnya
+$6\cdot3+4\cdot2=26$ lembar, melebihi $24$: itu bukan rencana produksi, hanya deretan
+angka.
+
+Cara kedua, lebih halus: hasil pembulatan layak tetapi bukan yang terbaik. Pembulatan ke
+bawah memberi $(3;1)$ berlaba $19$, padahal $(4;0)$ berlaba $20$ dan seluruhnya layak.
+Membulatkan koordinat satu demi satu ke arah terdekat karena itu memberi jawaban lebih buruk
+daripada titik bulat lain yang jaraknya lebih jauh dari $(3;1{,}5)$.
+
+Kedua kegagalan itu akibat bentuk daerah layaknya. Himpunan titik bulat layak
+tidak konveks: $(3;1)$ dan $(4;0)$ anggotanya, tetapi titik tengahnya $(3{,}5;\,0{,}5)$
+bukan, sebab tidak bulat. Pada himpunan tak konveks, teorema optimum di verteks tidak
+berlaku: tidak ada verteks yang dijamin memuat jawaban, dan tidak ada tetangga yang bisa
+diandalkan.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=9.3cm,height=6.3cm,
+  xlabel={$x_{1}$ (rak)},ylabel={$x_{2}$ (bangku)},
+  xmin=-0.35,xmax=5.1,ymin=-0.35,ymax=3.9,
+  axis lines=left,xtick={0,1,2,3,4,5},ytick={0,1,2,3},
+  tick label style={font=\scriptsize},label style={font=\scriptsize}]
+\addplot[forget plot,fill=layerteal!8,draw=layerteal,thick]
+  coordinates {(0,0) (4,0) (3,1.5) (0,3)} \closedcycle;
+\addplot[forget plot,only marks,mark=*,mark size=1.5pt,draw=layerindigo]
+  coordinates {(0,0) (1,0) (2,0) (3,0) (4,0)
+               (0,1) (1,1) (2,1) (3,1)
+               (0,2) (1,2) (2,2) (0,3)};
+\addplot[forget plot,only marks,mark=square*,mark size=2.4pt,draw=layerjade]
+  coordinates {(4,0)};
+\addplot[forget plot,only marks,mark=*,mark size=1.5pt,draw=layerplum]
+  coordinates {(3,1)};
+\addplot[forget plot,only marks,mark=o,mark size=3pt,thick,accent]
+  coordinates {(3,1.5)};
+\draw[densely dashed,layergrey] (axis cs:3,1) -- (axis cs:3,2.35);
+\node[font=\scriptsize,anchor=west,layerjade] at (axis cs:4.1,-0.05) {$(4;0)$, $z=20$};
+\node[font=\scriptsize,anchor=east,layerplum] at (axis cs:2.9,0.85) {$(3;1)$, $z=19$};
+\node[font=\scriptsize,anchor=west,accent] at (axis cs:3.15,1.6) {$(3;1{,}5)$, $z=21$};
+\node[font=\scriptsize,anchor=north,layergrey] at (axis cs:3,-0.05) {};
+\end{axis}
+\end{tikzpicture}
+\caption{Kisi titik bulat versus titik relaksasi. Ada $13$ titik bulat layak, ditandai titik
+penuh. Relaksasi memberi $(3;1{,}5)$ bernilai $21$, yang berdiri di tengah antara $(3;1)$
+bernilai $19$ dan $(3;2)$ yang tidak layak sebab $6\cdot3+4\cdot2=26>24$. Jawaban bulat
+terbaik $(4;0)$ bernilai $20$ justru berjarak lebih jauh dari titik relaksasi.}
+\label{fig:ch22-kisi-relaksasi}
+\end{figure}
+
+Gambar~\ref{fig:ch22-kisi-relaksasi} memuat seluruhnya: tiga belas titik bulat layak, dan
+satu titik relaksasi yang berdiri di antara dua titik. Yang di antara itu bukan titik bulat,
+dan yang terdekat belum tentu yang terbaik.
+
+Pembulatan juga tidak punya arti tunggal di dimensi banyak. Dengan dua variabel,
+``titik bulat terdekat'' masih bisa dibayangkan; dengan seratus variabel, yang terdekat belum
+tentu layak, dan yang layak belum tentu terbaik. Praktiknya bukan membulatkan, melainkan
+memakai batas relaksasi untuk memangkas pencarian.
+
+\begin{tantangan}
+Maksimumkan $6x_{1}+5x_{2}$ dengan $2x_{1}+3x_{2}\le12$, $4x_{1}+x_{2}\le13$, dan
+$x_{1},x_{2}\ge0$ bulat. Relaksasinya memberi $(2{,}7;\,2{,}2)$ bernilai $27{,}2$.
+Pembulatan ke bilangan bulat terdekat, $(3;2)$, bernilai $28$: lebih tinggi daripada nilai
+relaksasi mana pun yang masih layak. Tunjukkan mengapa $28$ tidak boleh dipercaya, lalu
+tentukan jawaban bulat yang benar beserta nilainya.
+
+Petunjuk 1: periksa kelayakan, bukan hanya nilai. Angka yang lebih tinggi bisa datang dari
+titik yang bukan rencana.
+
+Petunjuk 2: jepit $x_{1}$. Bilangan bulat terbesar yang masih layak adalah $3$; untuk
+$x_{1}=3$, hitung batas $x_{2}$ dari kedua kendala dan ambil yang lebih kecil.
+
+Kalau mentok, kembali ke bagian Relaksasi LP: batas yang sah, pembulatan yang menipu.
+\end{tantangan}
+
+\section{Mengapa program integer lebih sulit}
+\tingkat{menengah}
+
+Sampai di sini pertanyaannya wajar: kalau relaksasi hanya menambah satu syarat, mengapa
+program integer tidak diselesaikan dengan menyelesaikan relaksasinya lalu membulatkan?
+Jawaban singkatnya, kesulitannya bukan pada mencari jawaban, melainkan pada memastikan
+bahwa jawaban itu yang terbaik.
+
+Tiga perbedaan menjelaskannya.
+
+Pertama, tidak ada sertifikat optimalitas yang sederhana. Pada program linear,
+sepasang $\mathbf{x}$ dan $\mathbf{y}$ bernilai sama adalah bukti selesai yang bisa diperiksa
+dalam waktu sebanding ukuran data. Pada program integer, harga dari relaksasi hanya memberi
+batas, bukan titik bulat yang mencapainya: dual dari relaksasi memberi batas bawah, bukan
+jawaban.
+
+Kedua, selisih antara batas dan jawaban bisa besar. Pada selimut verteks graf
+lengkap $n$ simpul, relaksasinya membolehkan $x_{v}=1/2$ untuk semua $v$ dengan nilai $n/2$,
+sedangkan jawaban bulatnya $n-1$; nisbahnya $2(n-1)/n$ mendekati $2$. Perhitungan lengkapnya
+ada pada Laboratorium komputasi dan pada Latihan 10.
+
+Ketiga, biaya komputasinya berbeda kelas, dan jumlah kandidatnya tumbuh eksponensial. Program
+linear selesai dalam waktu polinomial terhadap ukuran masukan; hasil Khachiyan lewat metode
+elipsoid dan Karmarkar lewat metode titik dalam adalah dua tonggaknya. Versi keputusan
+program integer, ``apakah ada titik bulat layak bernilai paling sedikit $K$'', termasuk
+NP-lengkap, dan daftar dua puluh satu masalah Karp memuat knapsack, yang sendirinya punya
+$2^{n}$ himpunan bagian. Tidak ada algoritme polinomial yang diketahui untuk program integer,
+dan bila ada, banyak hal lain akan runtuh bersamanya.
+
+\begin{untukanak}
+Pernahkah kamu memasang ubin di lantai? Kamu mengukur panjang ruangan, lalu membagi dengan
+ukuran ubin. Hasilnya jarang bilangan bulat. Kalau kamu bulatkan ke bawah, ada celah di
+ujung lantai. Kalau kamu bulatkan ke atas, kamu memotong ubin dan membuang sisanya. Dan
+kadang jawaban terbaik bukan salah satu dari keduanya, melainkan pola pemasangan yang sama
+sekali lain: mulai dari tengah, atau memakai ubin potongan di kedua sisi.
+
+Orang yang hanya melihat satu angka hasil pembagian tidak akan menemukan pola
+itu. Ia butuh dua batas: paling banyak berapa ubin terpakai, dan paling sedikit berapa.
+Dengan dua angka itu ia berhenti memikirkan pola yang jelas terlalu boros, dan memusatkan
+perhatian pada yang masih mungkin menang.
+
+Di bab ini kita akan tahu mengapa batas dari model bersambung selalu sah, mengapa
+pembulatan bisa memberi jawaban yang layak tetapi bukan yang terbaik, dan bagaimana
+komputer memakai batas itu untuk memangkas jutaan kemungkinan tanpa memeriksanya satu per
+satu.
+\end{untukanak}
+
+\section{Percabangan dan pembatasan}
+\tingkat{lanjut}
+
+Kalau jawaban relaksasi pecahan, kita tidak membulatkannya, melainkan memecah soalnya
+menjadi dua dan bertanya lagi dengan relaksasi pada setiap potongan. Setiap jawaban bulat
+memenuhi salah satu dari dua kemungkinan yang saling meniadakan, $x_{2}\le1$ atau
+$x_{2}\ge2$, jadi menyelesaikan keduanya sama dengan menyelesaikan soal aslinya.
+
+Alurnya empat langkah. Selesaikan relaksasi pada satu simpul. Bila hasilnya
+bulat, catat sebagai calon jawaban dan jangan lanjutkan simpul itu. Bila pecahan, pilih satu
+variabel yang pecah, $x_{j}=v$, lalu buat dua anak: $x_{j}\le\lfloor v\rfloor$ dan
+$x_{j}\ge\lceil v\rceil$. Sebelum memeriksa sebuah simpul, bandingkan batas relaksasinya
+dengan calon terbaik; bila tidak lebih baik, buang simpul itu beserta seluruh keturunannya.
+Berhenti bila tidak ada simpul tersisa.
+
+Aturan pembuangan itu sah, dan alasannya satu baris.
+
+\begin{proposisi}[Pemangkasan tidak membuang jawaban]
+Misalkan $z_{\mathrm{LP}}(N)$ adalah nilai relaksasi pada simpul $N$ dan $z_{\mathrm{best}}$
+calon terbaik yang sudah tercatat. Bila $z_{\mathrm{LP}}(N)\le z_{\mathrm{best}}$, maka
+tidak ada titik bulat layak di $N$ yang lebih baik daripada $z_{\mathrm{best}}$.
+\end{proposisi}
+
+\begin{proof}
+Setiap titik bulat layak di $N$ juga layak bagi relaksasi $N$, jadi nilainya paling banyak
+$z_{\mathrm{LP}}(N)$ menurut proposisi batas relaksasi. Bila
+$z_{\mathrm{LP}}(N)\le z_{\mathrm{best}}$, semua titik itu bernilai paling banyak
+$z_{\mathrm{best}}$, sehingga tidak ada yang perlu diperiksa.
+\end{proof}
+
+Pohon untuk bengkel tadi kecil, dan seluruhnya bisa ditulis sebagai tabel.
+\begin{center}
+\begin{tabular}{llcc}
+\hline
+simpul & tambahan kendala & $\mathbf{x}$ relaksasi & $z_{\mathrm{LP}}$ \\
+\hline
+akar & -- & $(3;\,1{,}5)$ & $21$ \\
+kiri & $x_{2}\le1$ & $(10/3;\,1)$ & $20{,}\overline{6}$ \\
+kanan & $x_{2}\ge2$ & $(2;\,2)$ & $18$ \\
+kiri-kiri & $x_{2}\le1,\ x_{1}\le3$ & $(3;\,1)$ & $19$ \\
+kiri-kanan & $x_{2}\le1,\ x_{1}\ge4$ & $(4;\,0)$ & $20$ \\
+\hline
+\end{tabular}
+\end{center}
+Akar memberi $21$ dengan $x_{2}$ pecah. Percabangan pada $x_{2}$ memberi dua anak: kiri
+$20{,}\overline{6}$ dengan $x_{1}=10/3$ masih pecah, kanan $18$ dan sudah bulat. Simpul kanan
+dicatat sebagai calon. Pada simpul kiri, percabangan pada $x_{1}$ memberi $(3;1)$ bernilai
+$19$ dan $(4;0)$ bernilai $20$; yang kedua memperbarui calon. Tidak ada simpul tersisa, dan
+jawabannya $20$.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[
+  simpul/.style={draw=layergrey,fill=layergrey!6,rounded corners=1.5pt,
+    inner sep=3pt,font=\scriptsize,align=center,text width=3.0cm},
+  pangkas/.style={draw=accent,fill=accent!7,rounded corners=1.5pt,
+    inner sep=3pt,font=\scriptsize,align=center,text width=3.0cm},
+  panah/.style={-{Stealth},thick,draw=layergrey}]
+\node[simpul] (akar) at (0,0) {akar\\ $z_{\mathrm{LP}}=21$\\ $(3;\,1{,}5)$};
+\node[simpul] (kiri) at (-3.6,-1.75) {$x_{2}\le1$\\ $z_{\mathrm{LP}}=20{,}\overline{6}$\\
+  $(10/3;\,1)$};
+\node[pangkas] (kanan) at (3.6,-1.75) {$x_{2}\ge2$\\ $z_{\mathrm{LP}}=18$\\ $(2;\,2)$ bulat};
+\node[pangkas] (kk) at (-5.1,-3.6) {$x_{1}\le3$\\ $z_{\mathrm{LP}}=19$\\ $(3;\,1)$ bulat};
+\node[simpul] (kn) at (-2.1,-3.6) {$x_{1}\ge4$\\ $z_{\mathrm{LP}}=20$\\ $(4;\,0)$ bulat};
+\draw[panah] (akar.south) -- (kiri.north);
+\draw[panah] (akar.south) -- (kanan.north);
+\draw[panah] (kiri.south) -- (kk.north);
+\draw[panah] (kiri.south) -- (kn.north);
+\node[font=\scriptsize,accent,anchor=north] at (3.6,-2.55) {dipangkas: $18<20$};
+\node[font=\scriptsize,accent,anchor=north] at (-5.1,-4.45) {dipangkas: $19<20$};
+\end{tikzpicture}
+\caption{Pohon percabangan dan pembatasan untuk bengkel: lima simpul. Akar memberi $z=21$
+dengan $x_{2}$ pecah. Cabang $x_{2}\ge2$ berakhir di $(2;\,2)$ bernilai $18$; cabang
+$x_{2}\le1$ bercabang lagi menjadi $(3;\,1)$ bernilai $19$ dan $(4;\,0)$ bernilai $20$.
+Kedua simpul berlabel bulat yang bernilai di bawah $20$ berbingkai merah: batasnya sudah
+tidak lebih baik daripada calon terbaik, jadi keduanya dipangkas tanpa diperiksa lagi.}
+\label{fig:ch22-pohon-percabangan}
+\end{figure}
+
+Gambar~\ref{fig:ch22-pohon-percabangan} menggambar pohon yang sama. Dua simpul di sana
+berbingkai merah, yaitu $(2;\,2)$ bernilai $18$ dan $(3;\,1)$ bernilai $19$: keduanya bulat,
+tetapi batasnya di bawah calon terbaik $20$, jadi keduanya dibuang.
+
+Simpul kanan yang bernilai $18$ tidak perlu diperiksa lebih jauh seandainya
+ia pecahan: batas $18$ sudah di bawah calon $20$, jadi seluruh cabangnya bisa dibuang. Pada
+contoh sekecil ini penghematannya tidak terasa; pada soal dengan ratusan variabel, aturan
+itulah yang membedakan selesai dalam semenit dan tidak selesai sama sekali, sebab tanpa
+batas yang baik percabangan dan pembatasan merosot menjadi $2^{n}$ simpul.
+
+Dua hal perlu jujur disebut. Waktu terburuknya tetap eksponensial, dan tidak ada
+jaminan pohonnya kecil. Pemilihan variabel bercabang dan urutan simpul juga sangat
+memengaruhi ukuran pohon; perangkat lunak memakai heuristik, misalnya variabel yang paling
+dekat setengah. Keduanya menjelaskan mengapa program integer bisa jauh lebih lambat daripada
+program linear berukuran sama.
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Sekarang seluruh angka dikerjakan sampai akhir, sehingga setiap klaim di atas bisa
+diperiksa ulang dengan tangan atau dengan Python.
+
+\begin{resep}
+Empat langkah menyelesaikan program linear dua variabel secara grafik:
+\begin{enumerate}
+  \item Ubah tiap kendala menjadi garis dengan mengganti tanda pertidaksamaan menjadi tanda
+        sama dengan, lalu gambar garisnya lewat dua titik potong sumbu.
+  \item Tentukan sisi yang layak dengan menguji satu titik, biasanya titik nol; arsir sisi
+        yang salah supaya daerah layak tetap bersih.
+  \item Potongkan setiap pasangan garis, buang titik potong yang tidak memenuhi seluruh
+        kendala, dan yang tinggal itulah verteks.
+  \item Hitung nilai sasaran di setiap verteks, lalu ambil yang terbesar untuk maksimisasi
+        atau terkecil untuk minimisasi.
+\end{enumerate}
+Peringatan urutan: langkah 3 tidak boleh dikerjakan sebelum langkah 2. Titik potong yang
+dihitung lebih dulu sering terletak di luar daerah layak dan nilainya justru lebih tinggi
+daripada jawaban sebenarnya; angka bagus yang muncul sebelum kelayakan diperiksa sulit
+dibuang.
+\end{resep}
+
+\emph{Pertama, program linear bengkel.} Daerah layaknya segiempat dengan empat verteks,
+dan keempatnya diperiksa:
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+verteks & kendala aktif & laba $5x_{1}+4x_{2}$ \\
+\hline
+$(0;\,0)$ & $x_{1}=0,\ x_{2}=0$ & $0$ \\
+$(4;\,0)$ & $6x_{1}+4x_{2}=24,\ x_{2}=0$ & $20$ \\
+$(3;\,1{,}5)$ & $6x_{1}+4x_{2}=24,\ x_{1}+2x_{2}=6$ & $21$ \\
+$(0;\,3)$ & $x_{1}+2x_{2}=6,\ x_{1}=0$ & $12$ \\
+\hline
+\end{tabular}
+\end{center}
+Titik $(3;1{,}5)$ dihitung dari kedua persamaan: $x_{1}=6-2x_{2}$ disubstitusi ke
+$6x_{1}+4x_{2}=24$ memberi $36-8x_{2}=24$, jadi $x_{2}=3/2$, $x_{1}=3$, dan labanya
+$15+6=21$.
+
+\emph{Kedua, dual dan dualitas kuat.} Dualnya meminimumkan $24y_{1}+6y_{2}$ dengan
+$6y_{1}+y_{2}\ge5$ dan $4y_{1}+2y_{2}\ge4$. Karena $x_{1},x_{2}>0$, kelengkapan
+komplementer menuntut kedua kendala dual aktif; menyelesaikan keduanya sebagai kesamaan
+memberi $y_{1}=3/4$ dan $y_{2}=1/2$. Nilainya $18+3=21$, sama dengan laba. Pemeriksaan silang:
+$6\cdot\tfrac34+\tfrac12=5$ dan $4\cdot\tfrac34+2\cdot\tfrac12=4$, tepat sama dengan ruas
+kanan, sehingga celahnya nol.
+
+\emph{Ketiga, harga bayangan dan batas berlakunya.} Mengganggu ruas kanan memberi
+tabel berikut, dengan $z$ dihitung ulang dari nol pada setiap baris.
+\begin{center}
+\begin{tabular}{lccc}
+\hline
+gangguan & $\mathbf{x}$ optimum & $z$ & perubahan \\
+\hline
+$b=(25;\,6)$ & $(3{,}25;\,1{,}375)$ & $21{,}75$ & $+0{,}75$ \\
+$b=(24;\,7)$ & $(2{,}5;\,2{,}25)$ & $21{,}50$ & $+0{,}50$ \\
+$b=(12;\,6)$ & $(0;\,3)$ & $12{,}00$ & $-9{,}00$ \\
+$b=(24;\,4)$ & $(4;\,0)$ & $20{,}00$ & $-1{,}00$ \\
+\hline
+\end{tabular}
+\end{center}
+Baris ketiga mengurangi kayu lapis menjadi $12$, dengan perubahan
+$-9=0{,}75\cdot(-12)$; baris keempat mengurangi $2$ jam, dengan perubahan
+$-1=0{,}5\cdot(-2)$. Keduanya masih di dalam selang $b_{1}\in[12,36]$ dan
+$b_{2}\in[4,12]$, jadi kelinierannya berlaku sampai ujung. Di luarnya kemiringan berganti:
+dengan $b_{1}=40$, relaksasinya memberi $(0;\,3)$ bernilai $12$, bukan
+$21+0{,}75\cdot16=33$.
+
+\emph{Keempat, program integer bengkel.} Enumerasi dua arah tadi memberi jawaban $20$ di
+$(4;0)$, sedangkan relaksasinya $21$ di $(3;1{,}5)$. Celahnya $1$, yaitu
+$1/21=4{,}76\%$ dari nilai relaksasi. Pembulatan ke bawah memberi $19$, jadi kehilangan
+$1$ satuan laba, atau $5\%$ dari jawaban sebenarnya, dan itu terjadi pada soal dengan dua
+variabel saja.
+
+\emph{Kelima, knapsack empat barang.} Empat barang dengan berat $5,4,3,2$ dan
+nilai $10,7,5,3$ dimuat ke wadah berkapasitas $8$. Kerapatan nilainya $2$, $1{,}75$,
+$1{,}667$, $1{,}5$, jadi aturan rakus mengambil barang pertama lalu $\tfrac34$ barang kedua:
+berat $5+3=8$, nilai $15{,}25$. Jawaban bulat terbaiknya barang pertama dan ketiga, berat $8$
+tepat penuh, nilai $15$. Celah integralitasnya $0{,}25$, hanya $1{,}64\%$ dari batas. Tetapi
+pembulatan ke bawah membuang barang kedua sepenuhnya dan menyisakan nilai $10$, yaitu
+$33{,}3\%$ di bawah jawaban sebenarnya: celah kecil tidak berarti pembulatan yang aman, sebab
+keduanya mengukur hal berbeda.
+
+\kertas{Untuk bengkel tadi, andaikan mesin perakitan hanya tersedia $5$ jam, bukan $6$.
+Hitung ulang verteksnya, tentukan laba optimum bersambung, lalu tentukan laba optimum
+bulatnya dengan enumerasi kecil. Sebelum menghitung, tulis dugaanmu: apakah celah
+integralitasnya membesar atau mengecil? Sesudah itu periksa harga bayangan jam perakitan
+pada $b_{2}=5$ dan bandingkan dengan $0{,}5$. Sebagai tambahan, cari $b_{2}$ tempat jawaban bulat terbaik berpindah dari $(4;0)$.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Dua blok berikut dijalankan dengan Python 3.14.4, numpy 2.5.2, dan scipy 1.18.0. Blok
+pertama menyelesaikan program linear, dualnya, dan gangguan ruas kanan. Blok kedua
+menyelesaikan pohon percabangan, knapsack, dan selimut verteks pada graf lengkap lima
+simpul. Keluaran disalin apa adanya.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from scipy.optimize import linprog
+
+np.set_printoptions(precision=6, suppress=True, linewidth=78)
+
+c = np.array([5., 4.])              # laba per rak, per bangku
+A = np.array([[6., 4.], [1., 2.]])  # kayu lapis, jam perakitan
+b = np.array([24., 6.])
+
+r = linprog(-c, A_ub=A, b_ub=b, bounds=[(0, None)]*2, method="highs")
+print("LP   x* =", r.x, "  z* =", -r.fun)
+print("sisa b - Ax =", b - A @ r.x)
+print("marginals (scipy):", r.ineqlin.marginals)
+
+rd = linprog(b, A_ub=-A.T, b_ub=-c, bounds=[(0, None)]*2, method="highs")
+print("dual y* =", rd.x, "  nilai dual =", rd.fun)
+print("celah dualitas =", rd.fun + r.fun)
+
+print("B^-1 =", np.linalg.inv(A), "  x_B =", np.linalg.inv(A) @ b)
+
+for nama, db in [("b=(25, 6)", (1., 0.)), ("b=(24, 7)", (0., 1.)),
+                 ("b=(12, 6)", (-12., 0.)), ("b=(24, 4)", (0., -2.))]:
+    rr = linprog(-c, A_ub=A, b_ub=b + np.array(db), bounds=[(0, None)]*2,
+                 method="highs")
+    print(f"{nama:<10} x = {np.round(rr.x, 6) + 0.0}  z = {-rr.fun:7.4f}"
+          f"  delta z = {-rr.fun + r.fun:+.4f}")
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+LP   x* = [3.  1.5]   z* = 21.0
+sisa b - Ax = [0. 0.]
+marginals (scipy): [-0.75 -0.5 ]
+dual y* = [0.75 0.5 ]   nilai dual = 21.0
+celah dualitas = 0.0
+B^-1 = [[ 0.25  -0.5  ]
+ [-0.125  0.75 ]]   x_B = [3.  1.5]
+b=(25, 6)  x = [3.25  1.375]  z = 21.7500  delta z = +0.7500
+b=(24, 7)  x = [2.5  2.25]  z = 21.5000  delta z = +0.5000
+b=(12, 6)  x = [0. 3.]  z = 12.0000  delta z = -9.0000
+b=(24, 4)  x = [4. 0.]  z = 20.0000  delta z = -1.0000
+\end{verbatim}
+\end{lab}
+
+\begin{lab}
+\begin{verbatim}
+import itertools
+import numpy as np
+from scipy.optimize import linprog, milp, LinearConstraint, Bounds
+
+c = np.array([5., 4.])
+A = np.array([[6., 4.], [1., 2.]])
+b = np.array([24., 6.])
+
+
+def lp_bengkel(tambahan_A=None, tambahan_b=None):
+    Aub = A if tambahan_A is None else np.vstack([A, tambahan_A])
+    bub = b if tambahan_b is None else np.concatenate([b, tambahan_b])
+    r = linprog(-c, A_ub=Aub, b_ub=bub, bounds=[(0, None)]*2, method="highs")
+    if r.status != 0:
+        return (None, "tidak layak")
+    return (-r.fun, np.round(r.x, 6) + 0.0)
+
+
+print("-- pohon percabangan dan pembatasan --")
+simpul = [("akar",        None, None),
+          ("x2<=1",       [[0., 1.]],  [1.]),
+          ("x2>=2",       [[0., -1.]], [-2.]),
+          ("x2<=1,x1<=3", [[0., 1.], [1., 0.]],  [1., 3.]),
+          ("x2<=1,x1>=4", [[0., 1.], [-1., 0.]], [1., -4.])]
+for nama, ta, tb in simpul:
+    z, x = lp_bengkel(None if ta is None else np.array(ta),
+                      None if tb is None else np.array(tb))
+    print(f"{nama:<14} z_LP = {z:8.4f}  x = {x}")
+
+rb = milp(-c, constraints=LinearConstraint(A, -np.inf, b),
+          integrality=[1, 1], bounds=Bounds(0, np.inf))
+print("IP optimum   z_IP =", -rb.fun, " x =", np.round(rb.x, 6) + 0.0,
+      " celah =", 21.0 + rb.fun)
+
+print("-- knapsack 4 barang, kapasitas 8 --")
+w = np.array([5., 4., 3., 2.])
+v = np.array([10., 7., 5., 3.])
+for mask in range(16):
+    S = [i + 1 for i in range(4) if mask >> i & 1]
+    bw, bv = w[[i - 1 for i in S]].sum(), v[[i - 1 for i in S]].sum()
+    print(f"{str(S):<12} berat {bw:4.0f}  nilai {bv:4.0f}"
+          f"  {'layak' if bw <= 8 else 'tidak layak'}")
+rk = milp(-v, constraints=LinearConstraint(w, -np.inf, 8.),
+          integrality=[1]*4, bounds=Bounds(0, 1))
+print("enumerasi/MILP  z_IP =", -rk.fun, " x =", np.round(rk.x, 6) + 0.0)
+rl = linprog(-v, A_ub=[w], b_ub=[8.], bounds=[(0, 1)]*4, method="highs")
+print("relaksasi       z_LP =", -rl.fun, " x =", np.round(rl.x, 6) + 0.0)
+print("celah integralitas =", -rl.fun + rk.fun)
+
+print("-- selimut verteks K5: LP vs IP --")
+n = 5
+E = list(itertools.combinations(range(n), 2))
+M = np.zeros((len(E), n))
+for k, (i, j) in enumerate(E):
+    M[k, i] = M[k, j] = 1.
+rv = linprog(np.ones(n), A_ub=-M, b_ub=-np.ones(len(E)),
+             bounds=[(0, 1)]*n, method="highs")
+rc = milp(np.ones(n), constraints=LinearConstraint(M, 1, np.inf),
+          integrality=[1]*n, bounds=Bounds(0, 1))
+print("LP =", rv.fun, " x =", np.round(rv.x, 6) + 0.0)
+print("IP =", rc.fun, " x =", np.round(rc.x, 6) + 0.0)
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+-- pohon percabangan dan pembatasan --
+akar           z_LP =  21.0000  x = [3.  1.5]
+x2<=1          z_LP =  20.6667  x = [3.333333 1.      ]
+x2>=2          z_LP =  18.0000  x = [2. 2.]
+x2<=1,x1<=3    z_LP =  19.0000  x = [3. 1.]
+x2<=1,x1>=4    z_LP =  20.0000  x = [4. 0.]
+IP optimum   z_IP = 20.0  x = [4. 0.]  celah = 1.0
+-- knapsack 4 barang, kapasitas 8 --
+[]           berat    0  nilai    0  layak
+[1]          berat    5  nilai   10  layak
+[2]          berat    4  nilai    7  layak
+[1, 2]       berat    9  nilai   17  tidak layak
+[3]          berat    3  nilai    5  layak
+[1, 3]       berat    8  nilai   15  layak
+[2, 3]       berat    7  nilai   12  layak
+[1, 2, 3]    berat   12  nilai   22  tidak layak
+[4]          berat    2  nilai    3  layak
+[1, 4]       berat    7  nilai   13  layak
+[2, 4]       berat    6  nilai   10  layak
+[1, 2, 4]    berat   11  nilai   20  tidak layak
+[3, 4]       berat    5  nilai    8  layak
+[1, 3, 4]    berat   10  nilai   18  tidak layak
+[2, 3, 4]    berat    9  nilai   15  tidak layak
+[1, 2, 3, 4] berat   14  nilai   25  tidak layak
+enumerasi/MILP  z_IP = 15.0  x = [1. 0. 1. 0.]
+relaksasi       z_LP = 15.25  x = [1.   0.75 0.   0.  ]
+celah integralitas = 0.25
+-- selimut verteks K5: LP vs IP --
+LP = 2.5  x = [0.5 0.5 0.5 0.5 0.5]
+IP = 4.0  x = [1. 1. 1. 1. 0.]
+\end{verbatim}
+\end{lab}
+
+Tiga hal perlu dibaca dari keluaran pertama. $\mathbf{x}^{*}$ yang dilaporkan
+$(3;\,1{,}5)$ dengan $z^{*}$ tepat $21$, tanpa sisa pada kedua kendala, sesuai kelengkapan
+komplementer. \texttt{scipy} melaporkan pengali $(-0{,}75,\,-0{,}5)$, negatif dari harga
+bayangan, sebab rutin meminimumkan $-\mathbf{c}^{\top}\mathbf{x}$; angka benarnya $0{,}75$
+dan $0{,}5$, dan cara memastikannya adalah menghitung ulang lewat $B^{-1}$. Celah dualitas
+keluar $0$ tepat, bukan $10^{-15}$, karena $21$ terwakili tepat dalam biner; pada data
+desimal, sisa orde $10^{-12}$ adalah hal biasa.
+
+Keluaran kedua cocok dengan hitungan tangan: lima simpul dengan nilai yang sama
+sampai empat desimal, jawaban bulat $20$ di $(4;\,0)$, relaksasi knapsack $15{,}25$, dan
+jawaban bulatnya $15$ dengan celah $0{,}25$. Enumerasi keenam belas himpunan bagian
+menegaskan $15$ yang terbaik: semua himpunan bernilai lebih tinggi melampaui kapasitas.
+
+Bagian terakhir keluaran kedua memeriksa klaim faktor dua tadi. Untuk graf
+lengkap lima simpul, relaksasinya $2{,}5$ sedangkan jawaban bulatnya $4$; nisbahnya $1{,}6$,
+dan untuk $n$ simpul nisbahnya $2(n-1)/n$ menuju $2$ dari bawah. Batas relaksasi di sini bisa
+meleset hampir dua kali.
+
+\begin{untukdosen}
+Urutan yang berhasil dipakai: mulai dari bengkel dan jawaban setengah bangku, lalu bentuk
+baku, lalu verteks, baru simpleks. Jangan mulai dari tabel. Mahasiswa yang melihat tabel
+lebih dulu menghafal langkah pivot tanpa tahu mengapa langkah itu boleh berhenti; yang sudah
+melihat jawaban ada di sudut akan menganggap pivot sebagai cara berpindah sudut, dan uji
+keoptimalan sebagai cara tahu tidak ada sudut yang lebih baik.
+
+Dua miskonsepsi khas. Pertama, ``verteks adalah semua perpotongan garis
+kendala''. Banyak perpotongan terletak di luar daerah layak, misalnya $(4;3)$ pada contoh
+kita, yang memotong kedua garis tetapi melanggar keduanya; memeriksa kelayakan setiap kandidat
+perlu dikerjakan di papan. Kedua, ``jawaban bulat adalah pembulatan jawaban pecahan''. Bengkel
+memberi $19$ melawan $20$, knapsack memberi $10$ melawan $15$; keduanya cukup untuk
+mematahkan dugaan itu.
+
+Aktivitas kelas: tulis tabel awal di papan, minta kelas memilih kolom masuk dan menghitung
+uji nisbah, lalu memprediksi laba sebelum pivot. Sesudah tabel akhir, tanyakan laba bila
+kayu lapis menjadi $25$ lembar; $21{,}75$ membuka jalan ke selang $[12,36]$.
+
+Tanda kesiapan lanjut: mahasiswa dapat menjelaskan mengapa metode simpleks tidak perlu
+memeriksa seluruh verteks, dan dapat menyebut satu alasan mengapa relaksasi tidak boleh
+dibulatkan.
+\end{untukdosen}
+
+\section{Ringkasan}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Program linear menuntut sasaran dan kendala berbentuk garis. Bentuk baku
+        $\max\mathbf{c}^{\top}\mathbf{x}$ dengan $A\mathbf{x}=\mathbf{b}$ dan
+        $\mathbf{x}\ge\mathbf{0}$ berlaku untuk semua kasus, dengan variabel kendur untuk
+        mengubah ketaksamaan menjadi kesamaan.
+  \item Bila daerah layak terbatas dan sasarannya terbatas di atas, nilai terbaik dicapai di
+        verteks. Pada bentuk baku, verteks sama dengan solusi layak basis, dan jumlahnya
+        $\binom{n}{m}$, sehingga memeriksa semuanya bukan rencana masuk akal.
+  \item Metode simpleks berjalan dari verteks ke verteks lewat kolom dengan biaya tereduksi
+        negatif dan uji nisbah, dan berhenti ketika tidak ada biaya tereduksi negatif; saat
+        itu baris $z$ sudah memuat harga dual.
+  \item Dualitas lemah berlaku tanpa syarat; dualitas kuat menyatakan kedua nilai sama bila
+        keduanya berhingga; kelengkapan komplementer menyatakan kendala yang longgar
+        berharga nol.
+  \item Harga bayangan $y_{i}$ adalah laju perubahan nilai optimum terhadap ruas kanan, dan
+        hanya berlaku selama susunan kendala aktif tidak berubah; pada bengkel $0{,}75$ per
+        lembar dan $0{,}5$ per jam, sah untuk $b_{1}\in[12,36]$ dan $b_{2}\in[4,12]$.
+  \item Relaksasi LP memberi batas yang sah, bukan jawaban. Pembulatan bisa memberi titik
+        tidak layak, seperti $(3;2)$, atau titik layak yang bukan terbaik, seperti $(3;1)$
+        bernilai $19$ melawan $20$.
+  \item Percabangan dan pembatasan memakai batas relaksasi untuk membuang cabang. Pohon
+        bengkel berisi lima simpul, jawaban bulatnya $20$ dengan celah $1$. Waktu terburuknya
+        tetap eksponensial, dan versi keputusannya NP-lengkap.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Sebuah toko kue memakai $10$ kg tepung dan $8$ jam oven. Kue A memakai $2$ kg dan
+        $1$ jam dengan laba $30$; kue B memakai $1$ kg dan $2$ jam dengan laba $20$.
+        Tuliskan program linearnya, gambar daerah layaknya, dan hitung laba di setiap
+        verteks. Lalu tentukan jawaban bulat terbaik dengan enumerasi, dan bandingkan
+        dengan hasil pembulatan ke bawah dari jawaban bersambung.
+
+  \item Buktikan bahwa himpunan $\{\mathbf{x}:A\mathbf{x}\le\mathbf{b}\}$ konveks, lalu
+        jelaskan mengapa bukti itu tidak berlaku untuk himpunan
+        $\{\mathbf{x}\in\mathbb{Z}^{n}:A\mathbf{x}\le\mathbf{b}\}$.
+
+  \item Ganti laba bengkel menjadi $x_{1}+2x_{2}$. Hitung nilainya di keempat verteks,
+        sebutkan verteks mana yang optimal, dan tunjukkan bahwa seluruh ruas di antara
+        dua verteks optimal juga optimal. Terangkan mengapa titik di tengah ruas itu bukan
+        verteks, lalu hubungkan hasilnya dengan harga bayangan kendala jam.
+
+  \item Selesaikan dengan tabel simpleks: maksimumkan $3x_{1}+2x_{2}$ dengan
+        $x_{1}+x_{2}\le4$, $x_{1}\le3$, $x_{2}\le3$, $x\ge0$. Tuliskan setiap tabel antara,
+        sebutkan kolom masuk dan alasannya, lalu bacakan harga dualnya dari tabel akhir.
+        (Petunjuk: dua pivot cukup; bandingkan hasil akhir dengan verteks yang diperoleh
+        dari perpotongan $x_{1}+x_{2}=4$ dan $x_{1}=3$.)
+
+  \item Tuliskan dual dari program pada latihan 1, selesaikan, dan periksa dualitas kuat
+        secara numerik. Jelaskan arti setiap harga bayangan dalam satu kalimat.
+
+  \item Nilai klaim ini: \emph{pembulatan ke bawah dari jawaban relaksasi selalu memberi
+        titik bulat yang layak.} Tentukan benar, salah, atau belum cukup bukti, dan
+        tunjukkan satu contoh penyangkal dengan angka.
+
+  \item Nilai klaim ini: \emph{harga bayangan yang positif berarti kendala itu pasti
+        menekan.} Tentukan benar, salah, atau belum cukup bukti, lalu jelaskan hubungan
+        yang sebenarnya antara harga bayangan dan kelengkapan komplementer.
+        (Petunjuk: periksa apa yang terjadi pada kendala dengan $y_{i}>0$ menurut
+        $y_{i}(b_{i}-\mathbf{a}_{i}^{\top}\mathbf{x})=0$.)
+
+  \item Untuk knapsack dengan berat $(5,4,3,2)$ dan nilai $(10,7,5,3)$ serta kapasitas
+        $8$, hitung relaksasi LP-nya dengan tangan memakai urutan kerapatan, lalu bandingkan
+        dengan hasil enumerasi. Hitung celah integralitasnya dan nyatakan sebagai persen
+        dari batas. (Petunjuk: urutkan menurut nilai per satuan berat, lalu isi wadah
+        sampai penuh; barang terakhir masuk sebagian.)
+
+  \item Ulangi latihan 8 dengan kapasitas $7$. Tentukan relaksasi, jawaban bulat, dan
+        celahnya, lalu jelaskan mengapa celahnya bisa berubah walaupun hanya satu angka
+        data yang berubah.
+
+  \item Pada selimut verteks graf lengkap $n$ simpul, buktikan bahwa relaksasi bernilai
+        $n/2$ dan jawaban bulatnya $n-1$, lalu hitung nisbah keduanya untuk $n=4,5,10$.
+        Jelaskan mengapa hasil itu menunjukkan bahwa pembulatan bukan cara umum untuk
+        menyelesaikan program integer.
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini: dualitas lemah untuk pasangan primal-dual dalam bentuk
+baku, tanpa syarat apa pun; arah balik kelengkapan komplementer sebagai uji keoptimalan;
+keoptimalan di verteks untuk daerah layak terbatas, dengan bukti lewat argumen kendala aktif;
+dan kesahan pemangkasan pada percabangan dan pembatasan. Yang dipinjam: dualitas kuat, yang bukti
+lazimnya lewat lemma Farkas atau lewat berhentinya simpleks; keduanya tercatat pada
+\texttt{WSPrinted.pdf} bagian dualitas program linear dan pada Boyd dan Vandenberghe
+bagian 5.2.
+
+Yang dipopulerkan melampaui buktinya cukup banyak, dan tiga perlu disebut.
+``Relaksasi LP sudah hampir benar'': faktor aproksimasi terburuknya bisa tumbuh tanpa batas
+pada kelas masalah tertentu, dan bahkan pada selimut verteks mencapai $2$. ``Harga bayangan
+adalah turunan nilai optimum'': itu benar hanya bila nilai optimum terdiferensialkan terhadap
+ruas kanan; pada titik kemerosotan, saat dua basis optimal berbagi verteks yang sama,
+turunannya tidak ada dan yang tersisa hanya subgradien. ``Cabang dan batas selalu cepat'':
+waktu terburuknya eksponensial, dan kelambatan pada instans tertentu bukan tanda implementasi
+yang buruk.
+
+Pertanyaan terbuka: seberapa kuat hierarki pemotongan Chvatal-Gomory untuk kelas polytope
+tertentu, dan apakah ada batas bawah superpolinomial untuk ukuran formulasi diperluas
+polytope traveling salesman; hasil Fiorini dan kawan-kawan pada 2012 menunjukkan batas
+eksponensial untuk kasus itu, sementara pencarian batas serupa untuk masalah lain
+berjalan. Batas keberlakuan bab ini: data rasional, aritmetika eksak
+untuk pembuktian, toleransi titik mengambang untuk praktik; seluruh pernyataan tentang harga
+bayangan berlaku pada model bersambung, bukan model integer.
+
+\peta{Bab ini mengikuti \emph{Introduction to Linear Optimization} pada berkas
+\texttt{WSPrinted.pdf}: bagian formulasi, geometri himpunan polihedral (verteks dan titik
+ekstrem), sistem ketaksamaan linear dan dualitas (kelengkapan komplementer, analisis
+sensitivitas), serta simpleks (solusi layak basis, biaya tereduksi, uji keoptimalan). Sisi
+program integer mengikuti Wolsey, \emph{Integer Programming}, bab 1 (formulasi) dan bab 2
+(optimalitas, relaksasi, batas), yang menempatkan relaksasi sebagai sumber batas dan
+percabangan sebagai cara memakainya. Sudut pandang konveks pada bagian kedua dan keempat
+adalah Boyd dan Vandenberghe, \emph{Convex Optimization}, bab 4 dan 5. Hubungan dengan bab
+lain: bentuk baku dan daerah layak melanjutkan Bab 21, penyelesaian sistem linear memakai
+Bab 8, dan celah integralitas dipakai lagi pada Bab 25.}
+
+\end{untukpeneliti}

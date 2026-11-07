@@ -1,0 +1,1263 @@
+\chapter[Adversarial Machine Learning]{Adversarial Machine Learning: Attacks and Defenses}
+
+In 2014 Goodfellow, Shlens, and Szegedy showed one picture of a panda. The GoogLeNet
+network called it a panda with confidence $57.7$ percent. They added a perturbation
+that the eye cannot see, of size $0.007$ on the scale $[0,1]$, which is about two
+units out of 255 gray levels. The same network then called that picture a gibbon with
+confidence $99.3$ percent. Nothing changed for a human. What changed was only the
+direction of the perturbation: every pixel was shifted a little, and the direction of
+that shift was chosen from the sign of the derivative of the error with respect to the
+pixel.
+
+Numbers like that are not an oddity of one model. In this chapter we compute for
+ourselves a small case that can be rechecked. A two-layer network with 64 inputs
+reaches accuracy $97.99$ percent on 597 test images of digits. With a perturbation
+budget $0.15$ per pixel, an iterative attack of 40 steps lowers that accuracy to
+$10.72$ percent; at the same budget, a random perturbation without a direction only
+lowers it to $95.48$ percent. So the direction that the gradient chooses is not
+decoration: it buys the attacker about eighty points of accuracy.
+
+Chapter 25 taught us to compute the derivative of the error with respect to the
+weights, and Chapter 27 taught us to measure accuracy honestly. Neither is enough.
+Accuracy is an average over one data distribution; security is a question about the
+worst point inside one allowed set. A high average and a bad worst point can live
+together, and that is what makes an ordinary evaluation report misleading. This
+chapter builds the vocabulary for that worst-case question, computes its first attack,
+then separates the defenses that raise the standard from those that only hide the
+gradient.
+
+\begin{untukanak}
+Imagine a building guard who recognizes people by small habits: how many buttons of
+the shirt are fastened, the bag in the left hand or the right, and hat or no hat. So
+far that method has worked. Everyone entitled to enter really does differ in those
+three things. Then someone comes who knows exactly how the guard sees. He undoes one
+button, moves the bag to the other hand, and puts on a hat. His face is the same, his
+name is the same, he is the same person. The guard still lets him in, because
+according to his notes a person with those three marks is the cleaning staff.
+
+The question that makes this story important is not ``how do we fool the guard'',
+but ``how do we know that the guard can be fooled''. If we test only with random
+people in random clothes, the guard will pass almost always. The error appears only
+when someone deliberately chooses those three marks. Testing with chance is not the
+same as testing with malice.
+
+A computer that recognizes images works like that guard, only with thousands of small
+features at once. In this chapter we will find out why a feature that looks trivial
+can be chosen deliberately, why a change that the eye cannot see can flip the answer,
+and how to tell a defense that is truly strong from a defense that only leaves the
+attacker confused.
+\end{untukanak}
+
+\section{Threat model: what the attacker may do}
+\tingkat{basic}
+
+The sentence ``the attacker changes the input a little'' cannot be tested before we
+agree on the meaning of ``a little''. Every robustness claim is always relative to
+that choice, so that choice is part of the claim, not a footnote.
+
+\kamus{threat model}{model ancaman}{The complete list of what the attacker may do:
+how large the perturbation is, what it knows, and what its goal is.}
+\index{threat model}
+
+\begin{definisi}[Adversarial example and threat model]
+Let $f:\mathbb{R}^{d}\to\{1,\dots,K\}$ be a classifier and
+$(\mathbf{x},y)$ a correctly classified example. An
+\emph{adversarial example} is $\mathbf{x}'=\mathbf{x}+\boldsymbol{\delta}$ with
+$f(\mathbf{x}')\neq y$ but $\boldsymbol{\delta}$ small according to an agreed
+measure. The threat model is determined by four things:
+\begin{enumerate}
+  \item the set of allowed perturbations
+        $S(\mathbf{x})=\{\mathbf{x}+\boldsymbol{\delta}:
+        \lVert\boldsymbol{\delta}\rVert\le\varepsilon\}$, where
+        $\lVert\cdot\rVert$ is usually the $\ell_\infty$ norm and $\varepsilon>0$
+        is the \emph{budget};
+  \item the knowledge of the attacker: full access to $f$ and its gradient
+        (\emph{white box}) or only to the output of $f$ (\emph{black box});
+  \item the goal: any misclassification (\emph{untargeted}) or a particular
+        class (\emph{targeted});
+  \item other constraints, for example the perturbation must still be a valid
+        object.
+\end{enumerate}
+The attack succeeds when there is a $\boldsymbol{\delta}\in S(\mathbf{x})$ that
+changes the label.
+\end{definisi}
+
+The $\ell_\infty$ norm is chosen because it bounds every coordinate separately:
+$\lVert\boldsymbol{\delta}\rVert_\infty\le\varepsilon$ means every pixel shifts by
+at most $\varepsilon$. For an 8-bit image with values $0$ to $255$, the budget
+$\varepsilon=1/255$ means every pixel may change by at most one level.
+The $\ell_2$ norm bounds the total length of the vector and allows one pixel to
+change a lot as long as the others barely change. The two answer different
+questions, and a robustness claim that does not name its norm cannot be compared
+with another claim.
+\index{infinity norm}
+\index{perturbation budget}
+
+The most honest measure of robustness is the distance to the nearest
+misclassification point,
+\[
+  r(\mathbf{x})=\inf\{\lVert\boldsymbol{\delta}\rVert:
+  f(\mathbf{x}+\boldsymbol{\delta})\neq y\}.
+\]
+This quantity does not depend on the algorithm of any attacker. Unfortunately $r$
+is hard to compute: finding it means maximizing a nonconvex function on a large
+set. For a network with ReLU units, $r$ can be computed exactly by turning the
+problem into a mixed-integer linear program, and its cost grows quickly with the
+number of units. That is why almost every report in this field names what a
+particular attacker managed to achieve, not the value of $r$. The gap between the
+two is the source of most conclusions that are too optimistic.
+
+One fact deserves to be recorded from the start. On tabular data, the
+$\ell_\infty$ ball contains impossible points: negative ages, non-integer packet
+counts, combinations of TCP flags that never appear in a real network. Examples
+like that fool the model but cannot be realized, so their success tells us nothing
+about the real risk. A budget that is too loose produces attacks that are
+spectacular and meaningless.
+
+\section{Why the sign of the gradient is enough}
+\tingkat{intermediate}
+
+Now we attack. Let the error of the model be expressed by a function
+$L(\mathbf{x},y)$, for example cross-entropy. We want to raise that error as much
+as possible while keeping every coordinate inside the box. For a linear function,
+the answer can be written in closed form.
+
+\kamus{fast gradient sign method}{metode tanda gradien}{A one-step attack that
+shifts every coordinate by the budget, with the direction following the sign of the
+derivative of the error.}
+\index{FGSM}
+
+\begin{lemma}[Maximum of a linear form on the $\ell_\infty$ ball]
+For $\mathbf{w}\in\mathbb{R}^{d}$ and $\varepsilon>0$,
+\[
+  \max_{\lVert\boldsymbol{\delta}\rVert_\infty\le\varepsilon}
+  \mathbf{w}^{\top}\boldsymbol{\delta}
+  =\varepsilon\lVert\mathbf{w}\rVert_1,
+\]
+and the maximum is attained at $\delta_j=\varepsilon\,\mathrm{sign}(w_j)$ for every
+coordinate with $w_j\neq0$.
+\end{lemma}
+
+\begin{proof}
+Write $\mathbf{w}^{\top}\boldsymbol{\delta}=\sum_j w_j\delta_j$. Because
+$|\delta_j|\le\varepsilon$,
+\[
+  \sum_j w_j\delta_j\le\sum_j|w_j|\,|\delta_j|\le\varepsilon\sum_j|w_j|.
+\]
+If $\delta_j=\varepsilon\,\mathrm{sign}(w_j)$, then $w_j\delta_j=\varepsilon|w_j|$
+for every $j$, so that bound is attained. Coordinates with $w_j=0$ do not
+affect the value, so their choice is free.
+\end{proof}
+
+For a smooth function, we use the first-order approximation of $L$ around
+$\mathbf{x}$ together with the lemma above. The result is the recipe that
+Goodfellow and colleagues call the \emph{fast gradient sign method}:
+\[
+  \mathbf{x}^{\mathrm{adv}}
+  =\mathbf{x}+\varepsilon\,\mathrm{sign}\bigl(\nabla_{\mathbf{x}}L(\mathbf{x},y)\bigr).
+\]
+In everyday language it goes like this. The gradient tells us in which direction
+the error rises fastest, but we may only walk a distance $\varepsilon$; only the
+sign of each component is used, while the size is fixed by the budget. That is why
+this method is called the sign attack. For a linear function, that step is exactly
+optimal; Figure~\ref{fig:batas} shows the result on a model with two features.
+
+\begin{figure}[htbp]
+\centering
+{\scriptsize
+\begin{tikzpicture}
+\node[at={(0.000cm,0.000cm)},inner sep=0pt,minimum size=0pt] (o) {};
+\node[at={(8.400cm,0.000cm)},inner sep=0pt,minimum size=0pt] (ex) {};
+\node[at={(0.000cm,8.400cm)},inner sep=0pt,minimum size=0pt] (ey) {};
+\draw[-latex,black!75] (o) -- (ex);
+\draw[-latex,black!75] (o) -- (ey);
+\node[anchor=north,at={(4.200cm,-1.120cm)}]{upper-half ink};
+\node[rotate=90,anchor=south,at={(-1.15cm,5.10cm)}]{lower-half ink};
+\node[anchor=north,at={(2.380cm,-0.280cm)}]{0.20};
+\node[anchor=north,at={(6.580cm,-0.280cm)}]{0.35};
+\node[anchor=east,at={(-0.224cm,2.660cm)}]{0.35};
+\node[anchor=east,at={(-0.224cm,6.860cm)}]{0.50};
+\node[at={(1.439cm,0.000cm)},inner sep=0pt,minimum size=0pt] (b0) {};
+\node[at={(8.400cm,7.224cm)},inner sep=0pt,minimum size=0pt] (b1) {};
+\draw[black,line width=1.2pt] (b0) -- (b1);
+\node[circle,fill=black!55,inner sep=1.35pt,at={(2.358cm,4.399cm)}]{};
+\node[circle,fill=black!55,inner sep=1.35pt,at={(3.014cm,5.602cm)}]{};
+\node[circle,fill=black!55,inner sep=1.35pt,at={(2.796cm,2.376cm)}]{};
+\node[circle,fill=black!55,inner sep=1.35pt,at={(3.178cm,5.274cm)}]{};
+\node[circle,fill=black!55,inner sep=1.35pt,at={(0.444cm,3.524cm)}]{};
+\node[circle,fill=black!55,inner sep=1.35pt,at={(1.975cm,4.290cm)}]{};
+\node[circle,draw=black!55,line width=0.5pt,inner sep=1.15pt,at={(5.585cm,2.649cm)}]{};
+\node[circle,draw=black!55,line width=0.5pt,inner sep=1.15pt,at={(5.749cm,2.868cm)}]{};
+\node[circle,draw=black!55,line width=0.5pt,inner sep=1.15pt,at={(5.147cm,1.391cm)}]{};
+\node[circle,draw=black!55,line width=0.5pt,inner sep=1.15pt,at={(3.780cm,0.844cm)}]{};
+\node[circle,draw=black!55,line width=0.5pt,inner sep=1.15pt,at={(6.678cm,3.032cm)}]{};
+\node[circle,draw=black!55,line width=0.5pt,inner sep=1.15pt,at={(5.803cm,2.868cm)}]{};
+\node[circle,draw=black,line width=1pt,inner sep=2.8pt,at={(2.303cm,7.079cm)}]{};
+\node[circle,fill=black,inner sep=0.9pt,at={(2.303cm,7.079cm)}]{};
+\node[rectangle,fill=accent,inner sep=2.3pt,at={(5.663cm,3.719cm)}]{};
+\node[at={(2.303cm,7.079cm)},inner sep=0pt,minimum size=0pt] (x0) {};
+\node[at={(5.663cm,3.719cm)},inner sep=0pt,minimum size=0pt] (xa) {};
+\draw[-latex,accent,line width=1.1pt] (x0) -- (xa);
+\node[anchor=south east,at={(2.135cm,7.443cm)}]{clean};
+\node[anchor=north west,at={(5.943cm,3.551cm)}]{adversarial};
+\node[anchor=east,at={(2.660cm,5.600cm)}]{class 6};
+\node[anchor=south west,at={(5.684cm,1.260cm)}]{class 0};
+\node[anchor=south east,at={(5.475cm,4.647cm)}]{boundary};
+\end{tikzpicture}}
+\caption{Decision boundary of a model with two features on the digits $0$ against
+$6$ ($236$ training data, $123$ test, accuracy $98.37$ percent). Thick circle: a
+clean example $(0.197;0.508)$ with score $+1.936$. Red square: the result of FGSM
+with $\varepsilon=0.12$ at $(0.317;0.388)$ with score $-0.208$. Its arrow is the
+perturbation $(0.12;-0.12)$, $\lVert\boldsymbol{\delta}\rVert_\infty=0.12$
+and $\lVert\boldsymbol{\delta}\rVert_2=0.1697$.}
+\label{fig:batas}
+\end{figure}
+
+\begin{teorema}[Linearization and the remainder]
+Let $L:\mathbb{R}^{d}\to\mathbb{R}$ be differentiable and let its gradient be
+$M$-Lipschitz on the segment between $\mathbf{x}$ and $\mathbf{x}+\boldsymbol{\delta}$.
+For every $\lVert\boldsymbol{\delta}\rVert_\infty\le\varepsilon$,
+\[
+  \left|L(\mathbf{x}+\boldsymbol{\delta})-L(\mathbf{x})
+  -\nabla L(\mathbf{x})^{\top}\boldsymbol{\delta}\right|
+  \le\frac{M}{2}\lVert\boldsymbol{\delta}\rVert_2^2
+  \le\frac{Md}{2}\varepsilon^2 .
+\]
+\end{teorema}
+
+\begin{proof}
+With the integral form of the mean value theorem,
+\[
+  L(\mathbf{x}+\boldsymbol{\delta})-L(\mathbf{x})
+  =\int_0^1\nabla L(\mathbf{x}+t\boldsymbol{\delta})^{\top}\boldsymbol{\delta}\,dt .
+\]
+Subtract $\nabla L(\mathbf{x})^{\top}\boldsymbol{\delta}
+=\int_0^1\nabla L(\mathbf{x})^{\top}\boldsymbol{\delta}\,dt$, then use the
+Cauchy--Schwarz inequality and the Lipschitz property:
+\[
+  \left|\int_0^1\bigl(\nabla L(\mathbf{x}+t\boldsymbol{\delta})
+  -\nabla L(\mathbf{x})\bigr)^{\top}\boldsymbol{\delta}\,dt\right|
+  \le\int_0^1 Mt\lVert\boldsymbol{\delta}\rVert_2^2\,dt
+  =\frac{M}{2}\lVert\boldsymbol{\delta}\rVert_2^2 .
+\]
+Because $\lVert\boldsymbol{\delta}\rVert_2^2\le d\,\varepsilon^2$, the second
+inequality follows.
+\end{proof}
+
+For a linear model, that remainder is zero and FGSM is not an approximation but the
+exact answer. Goodfellow and colleagues use the case of logistic regression to show
+this. There the sign of the gradient of the error with respect to the input is
+$-\mathrm{sign}(\mathbf{w})$ times the label, so that
+$\mathbf{w}^{\top}\mathrm{sign}(\mathbf{w})=\lVert\mathbf{w}\rVert_1$ and the margin
+of the model shrinks by exactly $\varepsilon\lVert\mathbf{w}\rVert_1$. That is why
+adversarial training on logistic regression can be written as a penalty
+$\zeta\bigl(y(\varepsilon\lVert\mathbf{w}\rVert_1-\mathbf{w}^{\top}\mathbf{x}-b)\bigr)$,
+that is a penalty resembling an $\ell_1$ regularizer that enters the margin, not the
+cost; this exact form is used in the worked example later.
+
+What needs to be stated honestly: the theorem above justifies the \emph{direction} of
+the step, not the \emph{distance} of the step. The remainder $Md\varepsilon^{2}/2$
+depends on the Lipschitz constant of the gradient, and for a ReLU network that
+constant can be very large. In our experiment, the predicted rise in the error from
+the linear term at $\varepsilon=0.15$ is $0.0008$ nats, whereas the rise that
+actually occurs is $4.862$ nats. So linearization does not explain the size of the
+damage; it only explains why the chosen direction makes sense.
+
+The other side of the story is stronger instead. A perturbation of the same size but
+with random signs only lowers accuracy from $97.99$ to $95.48$ percent, whereas FGSM
+lowers it to $14.91$ percent. So what is valuable is the pattern of signs, even
+though the error at the starting point is almost flat, so that the length of the
+gradient and its linear forecast are small.
+\index{input gradient}
+
+So the sign of the gradient is enough not because its linear term is large, but
+because the sign is more resistant to saturation of the error. The number $0.0008$
+against $4.862$ is a warning that linearity holds only as an argument about
+direction.
+
+\begin{bacakeras}
+Two voices, read alternately with a friend. Tap the table every time the word ``a
+little'' is said.
+
+``Shift it a little.'' ``How little?'' ``A fingertip. No more.''
+``Does the answer change?'' ``It changes completely. Not doubtful, not off target: changed.''
+``What do our eyes see?'' ``Nothing. Exactly the same picture.''
+``And if it is shifted that far in another direction?'' ``The answer becomes correct again.''
+``So what is doing the work?'' ``The direction. Not the size.''
+``Where does it learn the direction?'' ``It reads the slope, asks every pixel: up or
+down? Then all the answers are used at once.''
+``And if it misreads the slope?'' ``Nothing happens. The picture stays, the answer stays.''
+
+Repeat three times, faster and faster: what works is the direction, not the size.
+\end{bacakeras}
+
+\section{Iterative attacks and the min-max game}
+\tingkat{intermediate}
+
+One step is a compromise. If the gradient may be computed many times, we can climb
+further: a small step in the direction of the sign of the gradient, then pull back
+into the box.
+
+\begin{definisi}[Iterative attack]
+Let $\Pi$ be the projection onto $S(\mathbf{x})$. The \emph{projected gradient
+descent} attack (PGD) computes
+\[
+  \mathbf{x}_{t+1}=\Pi\Bigl(\mathbf{x}_t+\alpha\,
+  \mathrm{sign}\bigl(\nabla_{\mathbf{x}}L(\mathbf{x}_t,y)\bigr)\Bigr),
+  \qquad \mathbf{x}_0=\mathbf{x},
+\]
+with $\alpha>0$ the step size. If $\mathbf{x}_0$ is taken at random inside
+$S(\mathbf{x})$, the attack is called PGD with a \emph{random start}.
+\end{definisi}
+
+\begin{resep}
+Four steps to run a bounded iterative attack:
+\begin{enumerate}
+  \item Fix the norm, $\varepsilon$, $\alpha$, and the number of steps; record the
+        clean accuracy before a single perturbation is made.
+  \item Start from $\mathbf{x}$ or from a random point inside the ball, compute the
+        gradient of the error with respect to the input, then take only its sign.
+  \item Step: $\mathbf{x}_{t+1}=\mathbf{x}_t+\alpha\,\mathrm{sign}(\mathbf{g})$,
+        project onto the $\varepsilon$ ball, then onto $[0,1]$.
+  \item Repeat, then report the accuracy at several numbers of steps and several
+        $\varepsilon$; compare with FGSM, which uses $\alpha=\varepsilon$.
+\end{enumerate}
+Warning about order: the projection is always with respect to the original
+$\mathbf{x}$, not to the previous step point, and always after the gradient step.
+If the reference is swapped, the ball moves along and the perturbation exceeds the
+reported budget.
+\end{resep}
+
+The projection onto the $\ell_\infty$ box cut to $[0,1]^d$ has a very
+simple form: clip every coordinate, one by one.
+
+\begin{proposisi}[Projection onto the box]
+For $S=\{\mathbf{z}:\lVert\mathbf{z}-\mathbf{x}\rVert_\infty\le\varepsilon\}
+\cap[0,1]^{d}$,
+\[
+  \Pi(\mathbf{z})_j=\min\bigl\{\max\{z_j,\,x_j-\varepsilon,\,0\},\,
+  x_j+\varepsilon,\,1\bigr\}
+\]
+for every $j$.
+\end{proposisi}
+
+\begin{proof}
+The objective function $\lVert\mathbf{y}-\mathbf{z}\rVert_2^2$ separates per
+coordinate, and the allowed set also separates: every $y_j$ must lie in the interval
+$[\max\{0,x_j-\varepsilon\},\min\{1,x_j+\varepsilon\}]$. For one coordinate,
+minimizing $(y_j-z_j)^2$ on a closed interval means taking the nearest point, that
+is $z_j$ if it is inside the interval, and the nearest end of the interval if it is
+outside. That is exactly the clipping formula above.
+\end{proof}
+
+With a projection of this kind, PGD adds only two things compared with FGSM:
+repeated small steps and the pull back into the box. The increase in cost is
+proportional to the number of steps, because every step requires one backward pass.
+Figure~\ref{fig:langkah} shows three such steps on the same model.
+
+\begin{figure}[htbp]
+\centering
+{\scriptsize
+\begin{tikzpicture}
+\node[at={(0.000cm,0.000cm)},inner sep=0pt,minimum size=0pt] (p) {};
+\node[at={(8.400cm,0.000cm)},inner sep=0pt,minimum size=0pt] (px) {};
+\node[at={(0.000cm,8.400cm)},inner sep=0pt,minimum size=0pt] (py) {};
+\draw[-latex,black!75] (p) -- (px);
+\draw[-latex,black!75] (p) -- (py);
+\node[anchor=north,at={(4.200cm,-1.344cm)}]{upper-half ink};
+\node[rotate=90,anchor=south,at={(-1.05cm,4.20cm)}]{lower-half ink};
+\node[anchor=north,at={(1.848cm,-0.336cm)}]{0.20};
+\node[anchor=north,at={(6.888cm,-0.336cm)}]{0.35};
+\node[at={(2.661cm,0.000cm)},inner sep=0pt,minimum size=0pt] (c0) {};
+\node[at={(8.400cm,5.956cm)},inner sep=0pt,minimum size=0pt] (c1) {};
+\draw[black,line width=1.2pt] (c0) -- (c1);
+\node[at={(1.756cm,6.479cm)},inner sep=0pt,minimum size=0pt] (q0) {};
+\node[circle,fill=white,draw=accent,line width=0.9pt,inner sep=2.0pt,at={(1.756cm,6.479cm)}]{};
+\node[at={(3.100cm,5.135cm)},inner sep=0pt,minimum size=0pt] (q1) {};
+\node[circle,fill=white,draw=accent,line width=0.9pt,inner sep=2.0pt,at={(3.100cm,5.135cm)}]{};
+\node[at={(4.444cm,3.791cm)},inner sep=0pt,minimum size=0pt] (q2) {};
+\node[circle,fill=white,draw=accent,line width=0.9pt,inner sep=2.0pt,at={(4.444cm,3.791cm)}]{};
+\node[at={(5.788cm,2.447cm)},inner sep=0pt,minimum size=0pt] (q3) {};
+\node[circle,fill=white,draw=accent,line width=0.9pt,inner sep=2.0pt,at={(5.788cm,2.447cm)}]{};
+\draw[-latex,accent,line width=1.0pt,shorten >=5pt,shorten <=5pt] (q0) -- (q1);
+\draw[-latex,accent,line width=1.0pt,shorten >=5pt,shorten <=5pt] (q1) -- (q2);
+\draw[-latex,accent,line width=1.0pt,shorten >=5pt,shorten <=5pt] (q2) -- (q3);
+\node[anchor=south west,at={(1.891cm,6.613cm)}]{$\mathbf{x}_0$};
+\node[anchor=south west,at={(3.235cm,5.269cm)}]{$\mathbf{x}_1$};
+\node[anchor=south west,at={(4.579cm,3.925cm)}]{$\mathbf{x}_2$};
+\node[anchor=south west,at={(5.923cm,2.581cm)}]{$\mathbf{x}_3$};
+\node[anchor=south east,at={(5.616cm,3.444cm)}]{boundary};
+\end{tikzpicture}}
+\caption{Three sign-of-gradient steps from $\mathbf{x}_0$, each step
+$\alpha=0.04$. The $\lVert\boldsymbol{\delta}\rVert_\infty$ norm: $0.04$,
+$0.08$, $0.12$; the $\lVert\boldsymbol{\delta}\rVert_2$ norm: $0.0566$,
+$0.1131$, $0.1697$. The score of class $6$: $+1.936$, $+1.221$, $+0.506$,
+$-0.208$; the boundary is crossed at the third step.}
+\label{fig:langkah}
+\end{figure}
+
+There is one warning that is often missed. FGSM is PGD with one step and
+$\alpha=\varepsilon$, not PGD with one step and $\alpha=\varepsilon/10$.
+In our experiment, one step with $\alpha=\varepsilon/10$ only lowers
+accuracy to $94.64$ percent, whereas FGSM lowers it to $14.91$
+percent. So ``one step'' is not the name of one algorithm; it only means something
+once its step size is named. A fair comparison uses the same step size; the
+following table is computed at $\varepsilon=0.15$ with a random start.
+
+\begin{center}
+\begin{tabular}{rr}
+\hline
+steps & accuracy (\%) \\
+\hline
+1  & $94.64$ \\
+2  & $88.78$ \\
+5  & $66.67$ \\
+10 & $24.79$ \\
+20 & $11.22$ \\
+40 & $10.72$ \\
+\hline
+\end{tabular}
+\end{center}
+
+That curve falls sharply up to ten steps, then is almost flat; adding steps after
+that point rarely changes the conclusion, and that is why PGD is used as the default
+attacker. Madry and colleagues read it as a sign that the inner problem is easy
+enough to solve with first-order methods, even though in general it is nonconcave.
+
+\begin{tangan}
+Materials: ten cards, a marker, and a ruler. On each card write one number between
+zero and one, two digits after the decimal point. Make two cards whose numbers differ
+by only 0.01, for example 0.62 and 0.63.
+
+Extra rule: when two numbers differ by less than 0.02, the higher card in the pile
+wins. Place the two nearly tied cards in the top two positions, then call the topmost
+card the answer of the model.
+
+Now shift the card 0.62 up by one millimeter, until it passes the card 0.63. No
+number changes, no card is swapped. Look at the topmost card: the answer changes,
+because the tie-breaking rule now chooses the other card.
+
+What must be visible: the answer changes without a single number changing, because
+only the difference decides, and a thin difference can be flipped by a shift that the
+eye cannot see.
+\end{tangan}
+
+From the point of view of training, attack and defense are two sides of one problem.
+If the attacker maximizes the error inside the box, then the careful trainer
+minimizes that worst error:
+\[
+  \min_{\boldsymbol{\theta}}\;
+  \mathbb{E}_{(\mathbf{x},y)\sim\mathcal{D}}
+  \Bigl[\max_{\boldsymbol{\delta}\in S(\mathbf{x})}
+  L(\boldsymbol{\theta},\mathbf{x}+\boldsymbol{\delta},y)\Bigr].
+\]
+This formulation is a saddle problem: a maximum inside, a minimum outside. The inner
+term is the problem of the attacker, the outer term is the problem of ordinary
+training. This is \emph{adversarial training}. If the inner maximum is approximated
+with FGSM, we get cheap training; if it is approximated with PGD of several steps, we
+get training that is more expensive and usually more robust.
+\index{adversarial training}\index{PGD}
+
+What that formulation can and cannot promise must be separated. If the saddle value
+is really attained and its value is zero, no perturbation inside the box can fool the
+model, so we have a guarantee. But that saddle problem is not concave inside and not
+convex outside, so any algorithm only gives an approximation: a small saddle value is
+not necessarily attained, and the value that is obtained is not necessarily the
+saddle value. That is why adversarial training produces a model that is \emph{more
+resistant to the attacker used during training}, not a model that is proved resistant
+to all attackers.
+
+Our numbers show both sides. Model $D$, trained with FGSM at
+$\varepsilon=0.15$, loses $1.51$ points of clean accuracy: from $97.99$ to
+$96.48$ percent. In exchange, at $\varepsilon=0.15$ its accuracy under
+FGSM is $66.67$ percent and under PGD of 40 steps $62.65$ percent, whereas
+the ordinary model is left with $14.91$ and $10.72$ percent. The trade is real, but
+$62.65$ percent is also not security; it only means the attacker must work
+harder.
+
+\section{Transfer, black box, and targeted attacks}
+\tingkat{advanced}
+
+Up to here our attacker knows everything. In the real world it can often only send
+an input and look at the answer. What saves us when there is no gradient is not the
+secrecy of the model, but the fact that the direction of attack tends to carry over
+between models.
+
+\kamus{transferability}{transferabilitas}{The property of an adversarial example that
+is built for one model but also fools another model that was trained separately.}
+\index{transferability}
+
+This phenomenon was reported by Szegedy and colleagues in 2014: an example that fools
+one network often fools another network with a different architecture and different
+training data. Goodfellow and colleagues record its quantitative version on MNIST: an
+example built from an old model gives an error of $19.6$ percent on a model trained
+adversarially, whereas an example from the new model gives an error of $40.9$ percent
+on the old model. The same direction, a different strength.
+
+In our experiment, model $A$ (64 hidden units) and model $B$ (128 units) are trained
+on the same training data but with different initialization. At
+$\varepsilon=0.15$, PGD of 40 steps built on $A$ lowers the accuracy of $A$ itself to
+$10.72$ percent, and lowers the accuracy of $B$ to $23.79$ percent. FGSM built on
+$A$ gives $14.91$ on $A$ and $25.96$ on $B$. So the attack transfers, but
+it weakens: about half of its strength is lost when it crosses models.
+
+The most economical explanation is still the one of this chapter: at a small scale
+the two models learn functions that are almost linear, and a direction that raises
+the error on one linear function also raises it on another linear function whose
+normal is close by. That is why transfer works best for one-step attacks. Our numbers
+are consistent: the gap between white box and transfer is smaller for FGSM ($11$
+points) than for PGD of 40 steps ($13$ points).
+
+For a black-box attacker, transfer offers a cheap path: train a substitute model,
+attack that model, then send the result to the victim model. Another route is to
+estimate the gradient from differences of output over many queries, which is accurate
+but expensive and easy to detect. The black box is weaker because its information is
+less, not because its attacker is less clever.
+
+The goal of the attacker also changes the numbers drastically. An untargeted attack
+only has to make the label change; a targeted attack has to make the label become a
+particular class. At $\varepsilon=0.15$, our PGD of 40 steps reaches the target on
+$33.00$ percent of the examples, whereas the untargeted attack succeeds on
+$89.06$ percent of the examples (accuracy is left at $10.72$ percent). With
+$\varepsilon=0.30$, the target is reached on $99.50$ percent of the
+examples. That is why the number ``the attack succeeds 90 percent'' without a note on
+whether it is targeted cannot be compared with another number. For a defense
+evaluator, a targeted test is harder for the attacker, whereas an untargeted test is
+harder for the defender.
+
+\section{Defenses: what works and what only appears to work}
+\tingkat{advanced}
+
+The defender has three families of answers. The first changes the data: add
+adversarial examples to the training. The second changes the model: make its surface
+smoother, for example with quantized inputs or smoothed outputs. The third adds tools
+outside the model: detect strange inputs, or refuse answers that are not confident.
+Only the first family has a clear basis, namely the saddle formulation above; the
+second and third families often give good numbers for the wrong reason.
+
+The most frequently repeated mistake has a name.
+
+\begin{definisi}[Gradient obfuscation]
+A defense performs \emph{gradient obfuscation} when it makes the gradient that the
+attacker uses useless: missing, pointing the wrong way, or random. Such a defense
+lowers the success of gradient-based attacks without raising the distance to the
+decision boundary.
+\end{definisi}
+
+In everyday language: that guard does not become more observant, he starts using a
+form that the attacker cannot read. Athalye, Carlini, and Wagner distinguish three
+ways obfuscation happens. First, a \emph{shattered} gradient: an operation that is
+nondifferentiable or numerically unstable makes the gradient absent or wrong. Second,
+a \emph{random} gradient: a defense that adds randomness makes one sample of the
+gradient not the true gradient. Third, a gradient that \emph{explodes or vanishes}: a
+defense that evaluates the network many times in sequence, as in repeated
+quantization, behaves like a very deep network when it is differentiated.
+\index{obfuscated gradient}
+
+Why is obfuscation not a defense? Because it changes nothing that a persistent
+attacker sees. If the gradient is useless, the attacker uses a substitute gradient
+from a smoother model; if randomness is the obstacle, he averages the gradient over
+many samples; if the gradient explodes, he uses a finite-difference approximation.
+
+We build the small example ourselves. Take model $A$ and put input quantization in
+front of it: every pixel is rounded to a multiple of $1/8$. The derivative of rounding
+is zero almost everywhere, so an attacker who differentiates through that path gets a
+zero vector and does not move. The result looks convincing: clean accuracy
+$97.82$ percent, and after ``PGD of 40 steps'' its accuracy is $96.98$ percent. Almost
+no damage. But if the attacker uses the gradient of the model without quantization at
+the point that has already been quantized, its accuracy falls to $13.23$ percent, only
+a little higher than $10.72$ percent on the model without quantization. That defense
+does not close the road; it only closes the most naive road. The shape of the picture
+is in Figure~\ref{fig:kuantisasi-gradien}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.05,font=\scriptsize]
+  \fill[layerteal!8] (0,0.5) -- (4,2.9) -- (4,4) -- (0,4) -- cycle;
+  \fill[accent!6] (0,0) -- (4,0) -- (4,2.9) -- (0,0.5) -- cycle;
+  \draw[very thick,ink] (0,0.5)--(4,2.9);
+  \draw[->,layergrey] (-0.2,0)--(4.35,0) node[right]{$x_{1}$};
+  \draw[->,layergrey] (0,-0.2)--(0,4.35) node[above]{$x_{2}$};
+  \node[font=\scriptsize\bfseries] at (2,4.68) {original model};
+  \node[layerteal] at (0.78,3.55) {class $+1$};
+  \node[accent] at (3.05,0.8) {class $-1$};
+  \node[layergrey,rotate=31] at (2.75,2.95) {boundary};
+  \draw[-{Latex},very thick,accent] (1.2,2.6)--(1.92,1.4);
+  \node[accent,above left=-2pt] at (1.56,2.05) {$\boldsymbol{\delta}$};
+  \fill[ink] (1.2,2.6) circle (1.6pt);
+  \node[ink,above left=-2pt] at (1.2,2.6) {$\mathbf{x}$};
+  \draw[accent,thick,fill=accent!35] (1.92,1.4) ++(135:0.07) -- ++(-45:0.14)
+    -- ++(-135:0.14) -- ++(45:0.14) -- cycle;
+  \node[accent,below right=-2pt] at (1.92,1.4) {$\mathbf{x}+\boldsymbol{\delta}$};
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[scale=1.05,font=\scriptsize]
+  \fill[layerteal!8] (0,0.5) -- (4,2.9) -- (4,4) -- (0,4) -- cycle;
+  \fill[accent!6] (0,0) -- (4,0) -- (4,2.9) -- (0,0.5) -- cycle;
+  \foreach \g in {0.5,1,1.5,2,2.5,3,3.5}
+    {\draw[layergrey!30,very thin] (\g,0)--(\g,4);
+     \draw[layergrey!30,very thin] (0,\g)--(4,\g);}
+  \draw[very thick,ink] (0,0.5)--(4,2.9);
+  \draw[->,layergrey] (-0.2,0)--(4.35,0) node[right]{$x_{1}$};
+  \draw[->,layergrey] (0,-0.2)--(0,4.35) node[above]{$x_{2}$};
+  \node[font=\scriptsize\bfseries] at (2,4.68) {with rounding to $1/8$};
+  \fill[ink] (1.2,2.6) circle (1.6pt);
+  \node[ink,above left=-2pt] at (1.2,2.6) {$\mathbf{x}$};
+  \draw[layerplum,thick] (1.2,2.6) circle (0.13);
+  \node[layerplum,anchor=west] at (1.4,2.78) {$\nabla$ path $=\mathbf{0}$};
+  \draw[-{Latex},very thick,dashed,layerplum] (1.2,2.6)--(1.92,1.4);
+  \node[layerplum,anchor=east] at (1.44,1.72) {$\nabla$ substitute};
+  \draw[layerplum,thick,fill=layerplum!35] (1.92,1.4) ++(135:0.07)
+    -- ++(-45:0.14) -- ++(-135:0.14) -- ++(45:0.14) -- cycle;
+\end{tikzpicture}
+\caption{Input quantization on the same model. Left: the true gradient gives a
+direction $\boldsymbol{\delta}$ that takes $\mathbf{x}$ across to the other side of
+the boundary, so that its label changes. Right: rounding every feature to a multiple
+of $1/8$ makes the derivative of the path zero at almost all points, so the reported
+gradient arrow stops; the decision boundary itself does not shift, and the gradient
+of the model without rounding still takes it across. The square marks the point after
+the perturbation.}
+\label{fig:kuantisasi-gradien}
+\end{figure}
+
+Athalye and colleagues examined nine white-box defenses at ICLR 2018. Seven of them
+depend on gradient obfuscation, and adapted attacks succeeded in breaking six
+completely and one partially, under the threat model each of them claimed. This is not
+a small error in one paper; it is a recurring pattern. That is why there is a list of
+symptoms that can be used before trusting a robustness number. If a one-step attack is
+stronger than an iterative attack, something is wrong: an iterative attack should
+always be stronger in the white box. If a black-box attack is stronger than a white-box
+one, something is wrong: the black box is a smaller set of information. If an attack
+without a bound on the perturbation does not reach one hundred percent success,
+something is wrong. If a random search finds an adversarial example while the gradient
+attack does not, something is wrong. If enlarging the budget does not raise success,
+something is wrong.
+
+\begin{tantangan}
+A service refuses to answer when the absolute value of its score margin is below 0.50,
+and answers only when it is confident enough. In the linear example of the previous
+part, the clean margin is 1.500 and $\lVert\mathbf{d}\rVert_1=6$. An attack at
+$\varepsilon=0.25$ pushes the margin to zero, exactly at the threshold of reversal, so
+it is refused, and the service looks safe. Determine the smallest budget that keeps
+the attacker served, that is the one that switches the refusal off on the wrong side.
+Is that rule a defense or obfuscation?
+
+Hint 1: the refusal looks only at the size of the margin, not at its sign.
+
+Hint 2: solve $1.500-6\varepsilon=-0.500$.
+
+If you get stuck, go back to the section Worked example: a linear model you can compute
+by hand.
+\end{tantangan}
+
+What does a correct evaluation look like? It is not one number, but one protocol. Fix
+the threat model first: norm, $\varepsilon$, white box or black box, targeted or
+not. Use the strongest attacker you can afford, and adapt it to the defense: if the
+defense quantizes, attack through a substitute gradient; if it adds randomness,
+average over several samples; if it filters the input, attack that filter as well.
+Report the accuracy at several $\varepsilon$, not at one point, and check that the
+curve falls monotonically. Report more than one random seed and include transfer
+attacks from another model. Report the cost: the number of backward passes per
+example, the time, and the hardware. If you want to talk about guarantees, use
+certification, not testing; that is another path that is not discussed here.
+
+\begin{untukanak}
+Think about a multiple-choice exam that is graded by machine. The machine reads the
+answer from the position of the bubble that is filled in. If we test the machine only
+with answers that are filled in neatly, the machine will always be right. Then comes a
+student who knows how the machine reads: he fills one other bubble a little more
+thickly, and the machine reads it as a different answer. The paper is still the same
+paper, the writing is still the same writing.
+
+Now the interesting part. One school tries to fix that machine by scanning the paper
+twice and taking the answer that appears most often. The same student just fills two
+bubbles, and the machine can still be fooled. Another school adds a ruler so that the
+position of the bubbles shifts a little; the patient student just tries a few
+positions. All those additions make the cheating more troublesome, but they do not
+make the machine able to tell an honest answer.
+
+In this chapter we will find out why making things harder for the attacker is not the
+same as closing the hole, and how to test a fix so that we are not fooled by a fix
+that only appears to work.
+\end{untukanak}
+
+\section{Worked example: a linear model you can compute by hand}
+\tingkat{intermediate}
+
+Now we leave the networks and return to a model that can be computed without a
+computer: a linear classifier with two classes and four features. Every number in this
+part can be checked with a calculator.
+
+Let class $A$ use the weights $\mathbf{w}_A=(1;-2;0.5;1.5)$ and class $B$
+use $\mathbf{w}_B=(0;1;0.5;-0.5)$, without a bias. The example that is examined is
+$\mathbf{x}=(1;0.5;1;1)$. The scores of the two classes are
+\[
+  s_A=\mathbf{w}_A^{\top}\mathbf{x}=1-1+0.5+1.5=2.0,
+  \qquad
+  s_B=\mathbf{w}_B^{\top}\mathbf{x}=0+0.5+0.5-0.5=0.5 .
+\]
+Its margin is $m=s_A-s_B=1.5$, so the model is confident but not excessively so. The
+difference of the weights is $\mathbf{d}=\mathbf{w}_A-\mathbf{w}_B=(1;-3;0;2)$, with
+$\lVert\mathbf{d}\rVert_1=1+3+0+2=6$ and
+$\lVert\mathbf{d}\rVert_2=\sqrt{1+9+0+4}=\sqrt{14}\approx3.7417$.
+
+An untargeted attack has to lower the margin. By the lemma, the largest decrease
+is attained by $\boldsymbol{\delta}=-\varepsilon\,\mathrm{sign}(\mathbf{d})
+=\varepsilon(-1;1;0;-1)$, and the size of the decrease is
+$\varepsilon\lVert\mathbf{d}\rVert_1=6\varepsilon$. So the margin after the attack
+is $1.5-6\varepsilon$, and the label changes when
+\[
+  \varepsilon>\varepsilon^{*}=\frac{1.5}{6}=0.25 .
+\]
+At $\varepsilon=0.25$ the margin is exactly zero, so the two classes tie and
+$\arg\max$ chooses the first class; a clear reversal happens only a little above
+$0.25$. The following table contains the whole course of it, and every row can be
+checked by multiplying $\mathbf{d}$ by $\mathbf{x}+\boldsymbol{\delta}$.
+
+\begin{center}
+\begin{tabular}{rccc}
+\hline
+$\varepsilon$ & $s_A$ & $s_B$ & margin \\
+\hline
+$0$    & $2.000$ & $0.500$ & $+1.500$ \\
+$0.05$ & $1.775$ & $0.575$ & $+1.200$ \\
+$0.10$ & $1.550$ & $0.650$ & $+0.900$ \\
+$0.15$ & $1.325$ & $0.725$ & $+0.600$ \\
+$0.20$ & $1.100$ & $0.800$ & $+0.300$ \\
+$0.25$ & $0.875$ & $0.875$ & $0.000$ \\
+$0.30$ & $0.650$ & $0.950$ & $-0.300$ \\
+\hline
+\end{tabular}
+\end{center}
+
+If the attacker is bounded by the $\ell_2$ norm instead of $\ell_\infty$, the answer
+changes. The maximum of $\mathbf{d}^{\top}\boldsymbol{\delta}$ on the $\ell_2$ ball of
+radius $\varepsilon$ is $\varepsilon\lVert\mathbf{d}\rVert_2$, attained at
+$\boldsymbol{\delta}=\varepsilon\mathbf{d}/\lVert\mathbf{d}\rVert_2$. So
+$\varepsilon^{*}=1.5/\sqrt{14}\approx0.4009$. The $\ell_2$ budget that gives damage of
+the same size as $\varepsilon=0.25$ on $\ell_\infty$ is
+$0.4009$; both move the example to the same point, namely the point of intersection
+$\mathbf{x}-\varepsilon\,\mathrm{sign}(\mathbf{d})$. This is a small example of a
+general rule: the number $\varepsilon$ cannot be compared across norms.
+
+Now the part that is often asked: is PGD stronger on this model? Every PGD step adds a
+decrease of the margin of $\alpha\lVert\mathbf{d}\rVert_1
+=6\alpha$, but the whole trajectory stays inside the ball, so the total decrease never
+exceeds $6\varepsilon$. For a linear model, the worst point inside the ball really is
+the point that FGSM chooses, so iteration cannot beat it. Hand computation shows it:
+with $\varepsilon=0.10$ and 40 steps of
+$\alpha=0.01$, the final margin $0.900$ is exactly the same as the result of FGSM at
+$\varepsilon=0.10$.
+
+\kertas{Repeat the example above for $\mathbf{w}_A=(2;1;-1;0.5)$,
+$\mathbf{w}_B=(0;1;1;-0.5)$, and $\mathbf{x}=(1;1;0.5;1)$. Compute $s_A$, $s_B$,
+$\mathbf{d}$, $\lVert\mathbf{d}\rVert_1$, and $\varepsilon^{*}$ for the
+$\ell_\infty$ norm. Then compute $\varepsilon^{*}$ for the $\ell_2$ norm and explain
+why the two numbers differ. Check with a three-line Python snippet. After that decide,
+without running a program, whether PGD of 20 steps with
+$\alpha=\varepsilon/10$ can change the label when $\varepsilon$ is only half of
+$\varepsilon^{*}$.}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+This lab trains three small networks on handwritten digit data provided by the
+\texttt{scikit-learn} library: 1797 examples, 64 features, values $0$ to $16$ which we
+divide by $16$ so that they fall in $[0,1]$. Twelve hundred examples are used for
+training and 597 for test. Model $A$ has one hidden layer of 64 units, model $B$ 128
+units, and model $D$ is the same as $A$ but trained with FGSM at $\varepsilon=0.15$
+(the reason for using $D$ rather than $A$ is that the comparison of clean and robust
+accuracy should come from models of the same size).
+
+All the gradients are computed by hand with NumPy, without an automatic differentiation
+library, so that every step can be checked. The function \texttt{grad\_x} is the
+backward pass of Chapter 25 that stops at the input, not at the weights.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np, time
+from sklearn.datasets import load_digits
+
+X, y = load_digits(return_X_y=True)
+X = X / 16.0                        # 0..16 -> 0..1
+perm = np.random.default_rng(0).permutation(len(X))
+tr, te = perm[:1200], perm[1200:]
+Xtr, ytr, Xte, yte = X[tr], y[tr], X[te], y[te]
+K = 10
+Ytr, Yte = np.eye(K)[ytr], np.eye(K)[yte]
+
+def init(dims, seed):
+    r = np.random.default_rng(seed); W, b = [], []
+    for i in range(len(dims) - 1):
+        W.append(r.normal(0, np.sqrt(2.0 / dims[i]),
+                          (dims[i], dims[i + 1])))
+        b.append(np.zeros(dims[i + 1]))
+    return W, b
+
+def fwd(W, b, X):
+    acts, pre, h = [X], [], X
+    for i in range(len(W) - 1):
+        z = h @ W[i] + b[i]; pre.append(z)
+        h = np.maximum(z, 0); acts.append(h)
+    z = h @ W[-1] + b[-1]; pre.append(z)
+    z = z - z.max(1, keepdims=True); p = np.exp(z)
+    return p / p.sum(1, keepdims=True), acts, pre
+
+def loss_grad(W, b, X, Y):
+    p, acts, pre = fwd(W, b, X); n = len(X)
+    loss = -np.mean(np.sum(Y * np.log(p + 1e-12), 1))
+    d = p - Y; gW = [None] * len(W); gb = [None] * len(W)
+    for i in range(len(W) - 1, -1, -1):
+        gW[i] = acts[i].T @ d / n + 1e-4 * W[i]; gb[i] = d.mean(0)
+        if i > 0:
+            d = (d @ W[i].T) * (pre[i - 1] > 0)
+    return loss, gW, gb
+
+def grad_x(W, b, X, Y):             # gradient of the error wrt the input
+    p, acts, pre = fwd(W, b, X)
+    d = (p - Y) / len(X)
+    for i in range(len(W) - 1, 0, -1):
+        d = (d @ W[i].T) * (pre[i - 1] > 0)
+    return d @ W[0].T
+
+def train(dims, seed, Xa, Ya, epochs=350, lr=0.01, adv_eps=None):
+    W, b = init(dims, seed)
+    mW = [np.zeros_like(w) for w in W]
+    vW = [np.zeros_like(w) for w in W]
+    mb = [np.zeros_like(v) for v in b]
+    vb = [np.zeros_like(v) for v in b]
+    for t in range(1, epochs + 1):
+        if adv_eps is None:
+            Xb = Xa
+        else:
+            g = grad_x(W, b, Xa, Ya)
+            Xb = np.clip(Xa + adv_eps * np.sign(g), 0, 1)
+        _, gW, gb = loss_grad(W, b, Xb, Ya)
+        for i in range(len(W)):
+            mW[i] = 0.9 * mW[i] + 0.1 * gW[i]
+            vW[i] = 0.999 * vW[i] + 0.001 * gW[i] ** 2
+            mb[i] = 0.9 * mb[i] + 0.1 * gb[i]
+            vb[i] = 0.999 * vb[i] + 0.001 * gb[i] ** 2
+            mh = mW[i] / (1 - 0.9 ** t)
+            vh = vW[i] / (1 - 0.999 ** t)
+            W[i] -= lr * mh / (np.sqrt(vh) + 1e-8)
+            mh = mb[i] / (1 - 0.9 ** t)
+            vh = vb[i] / (1 - 0.999 ** t)
+            b[i] -= lr * mh / (np.sqrt(vh) + 1e-8)
+    return W, b
+
+def acc(W, b, X, y):
+    return float(np.mean(fwd(W, b, X)[0].argmax(1) == y))
+
+def fgsm(W, b, X, y, eps):
+    g = grad_x(W, b, X, np.eye(K)[y])
+    return np.clip(X + eps * np.sign(g), 0, 1)
+
+def pgd(W, b, X, y, eps, steps, Ylab=None, arah=1):
+    alpha = eps / 10
+    r = np.random.default_rng(1)
+    xa = np.clip(X + r.uniform(-eps, eps, X.shape), 0, 1)
+    Y = np.eye(K)[y] if Ylab is None else Ylab
+    for _ in range(steps):
+        g = arah * np.sign(grad_x(W, b, xa, Y))
+        xa = np.clip(np.clip(xa + alpha * g, X - eps, X + eps), 0, 1)
+    return xa
+\end{verbatim}
+\end{lab}
+
+The rest is calls and printing. We train $A$, $B$, and $D$, then sweep
+$\varepsilon$ from $0.02$ to $0.30$.
+
+\begin{verbatim}
+WA, bA = train([64, 64, 10], 1, Xtr, Ytr)
+WB, bB = train([64, 128, 10], 2, Xtr, Ytr)
+WD, bD = train([64, 64, 10], 3, Xtr, Ytr, epochs=120, adv_eps=0.15)
+
+print(f"clean test accuracy: A {acc(WA,bA,Xte,yte):.4f}"
+      f"  B {acc(WB,bB,Xte,yte):.4f}  D {acc(WD,bD,Xte,yte):.4f}")
+print(f"{'eps':>5} {'A clean':>9} {'A FGSM':>7} {'A PGD40':>8}"
+      f" {'D FGSM':>7} {'D PGD40':>8}")
+for eps in [0.02, 0.05, 0.10, 0.15, 0.20, 0.30]:
+    xf = fgsm(WA, bA, Xte, yte, eps)
+    xp = pgd(WA, bA, Xte, yte, eps, 40)
+    xd = fgsm(WD, bD, Xte, yte, eps)
+    xq = pgd(WD, bD, Xte, yte, eps, 40)
+    print(f"{eps:5.2f} {acc(WA,bA,Xte,yte):9.4f} {acc(WA,bA,xf,yte):7.4f}"
+          f" {acc(WA,bA,xp,yte):8.4f} {acc(WD,bD,xd,yte):7.4f}"
+          f" {acc(WD,bD,xq,yte):8.4f}")
+
+r = np.random.default_rng(7)
+rs = np.sign(r.normal(size=Xte.shape))          # control: random signs
+print("random signs eps=0.15:",
+      f"{acc(WA,bA,np.clip(Xte+0.15*rs,0,1),yte):.4f}")
+print("PGD steps, eps=0.15, alpha=eps/10, random start")
+for k in [1, 2, 5, 10, 20, 40]:
+    print(f"  {k:2d} steps:",
+          f"{acc(WA,bA,pgd(WA,bA,Xte,yte,0.15,k),yte):.4f}")
+print("  FGSM (1 step, alpha=eps):",
+      f"{acc(WA,bA,fgsm(WA,bA,Xte,yte,0.15),yte):.4f}")
+\end{verbatim}
+
+The actual output, as it stands, for the block above:
+
+\begin{verbatim}
+clean test accuracy: A 0.9799  B 0.9849  D 0.9648
+  eps  A clean  A FGSM  A PGD40  D FGSM  D PGD40
+ 0.02    0.9799  0.9548   0.9548  0.9497   0.9497
+ 0.05    0.9799  0.8476   0.8425  0.9162   0.9129
+ 0.10    0.9799  0.4992   0.4590  0.8241   0.8174
+ 0.15    0.9799  0.1491   0.1072  0.6667   0.6265
+ 0.20    0.9799  0.0184   0.0050  0.4858   0.3719
+ 0.30    0.9799  0.0000   0.0000  0.0687   0.0201
+random signs eps=0.15: 0.9548
+PGD steps, eps=0.15, alpha=eps/10, random start
+   1 steps: 0.9464
+   2 steps: 0.8878
+   5 steps: 0.6667
+  10 steps: 0.2479
+  20 steps: 0.1122
+  40 steps: 0.1072
+  FGSM (1 step, alpha=eps): 0.1491
+\end{verbatim}
+
+The first reading of that table: clean accuracy $97.99$ percent, and at
+$\varepsilon=0.15$ only $14.91$ percent is left.
+
+The second reading: the gap between FGSM and PGD widens in the middle, from zero at
+$0.02$ to $4.19$ points at $0.15$. At a small budget one step already touches the
+wall of the box; at a large budget several steps are needed to find a worse
+direction.
+
+The third reading, and the most important one for this chapter: the row of random
+signs. If a perturbation of size $\varepsilon=0.15$ is given with random signs on
+every pixel, accuracy only falls to $95.48$ percent. FGSM with the same size lowers it
+to $14.91$ percent. So the choice of signs by the gradient is worth about eighty
+points of accuracy: it is the direction that works, not the size.
+
+The fourth reading: at $\varepsilon=0.30$, $A$ is already at zero percent while $D$ is
+still at $6.87$ percent under FGSM and $2.01$ percent under PGD. Adversarial training
+does not make the model immune; it shifts the curve to the right.
+
+The next block measures two things that are not visible in the table: whether the
+gradient we compute really is the gradient, and how much it costs.
+
+\begin{verbatim}
+i0 = int(np.argmax(np.abs(grad_x(WA, bA, Xte, Yte)).sum(1)))
+x0, y0 = Xte[i0:i0 + 1], Yte[i0:i0 + 1]
+g0 = grad_x(WA, bA, x0, y0)
+L1 = lambda z: loss_grad(WA, bA, z, y0)[0]
+print(f"finite difference at sample i={i0}, h=1e-6")
+for j in np.argsort(-np.abs(g0[0]))[:3]:
+    e = np.zeros_like(x0); e[0, j] = 1e-6
+    fd = (L1(x0 + e) - L1(x0 - e)) / 2e-6
+    print(f"  j={j:2d} analytic {g0[0,j]:+.6e} finite-diff {fd:+.6e}"
+          f" error {abs(fd-g0[0,j])/abs(g0[0,j]):.0e}")
+g_all = grad_x(WA, bA, Xte, Yte)
+lin = 0.15 * np.abs(g_all).sum(1).mean()
+lc = loss_grad(WA, bA, Xte, Yte)[0]
+la = loss_grad(WA, bA, fgsm(WA, bA, Xte, yte, 0.15), Yte)[0]
+print(f"mean |g|_1 {np.abs(g_all).sum(1).mean():.4f};"
+      f" linear prediction {lin:.4f} nats; actual {la-lc:.3f} nats")
+
+t0 = time.perf_counter(); fgsm(WA, bA, Xte, yte, 0.15)
+t1 = time.perf_counter(); pgd(WA, bA, Xte, yte, 0.15, 40)
+t2 = time.perf_counter()
+print(f"time for 597 examples: FGSM {t1-t0:.4f} s  PGD40 {t2-t1:.4f} s")
+\end{verbatim}
+
+Its output:
+
+\begin{verbatim}
+finite difference at sample i=145, h=1e-6
+  j=53 analytic -6.391833e+00 finite-diff -6.391833e+00 error 2e-11
+  j=38 analytic +6.211518e+00 finite-diff +6.211518e+00 error 1e-10
+  j=13 analytic -6.175321e+00 finite-diff -6.175321e+00 error 8e-11
+mean |g|_1 0.0056; linear prediction 0.0008 nats; actual 4.862 nats
+time for 597 examples: FGSM 0.0006 s  PGD40 0.0302 s
+\end{verbatim}
+
+The first three lines confirm that our backward pass is correct: the analytic gradient
+and the finite difference with $h=10^{-6}$ agree to about ten digits, with relative
+errors $10^{-10}$ and $10^{-11}$. For a network that uses ReLU, agreement that smooth
+is reasonable: at the scale $10^{-6}$ no unit changes sign, so the function really is
+linear around that point. If these numbers differed a lot, what would be wrong is the
+backward-pass code, not the attack.
+
+The fourth line is the surprising part. The average $\lVert\nabla L\rVert_1$ is only
+$0.0056$, so the linear prediction for $\varepsilon=0.15$ is $0.0008$
+nats. The actual rise in the error is $4.862$ nats. So the linear term
+underestimates the damage by about four thousand times. This is not a sign that the
+gradient is wrong (the three lines above prove the opposite), but a sign that $L$ is
+strongly curved at the distance $0.15$: ReLU units change sign, and the first-order
+approximation loses its meaning. What remains useful is the sign, as the row of random
+signs showed.
+
+The last line is about time: for 597 examples, FGSM needs $0.6$ milliseconds and
+PGD of 40 steps $30$ milliseconds, about fifty times more expensive. This number
+depends on the machine and on vectorization, so what is worth remembering is its
+order of magnitude, not the exact number.
+
+Finally, a demonstration of gradient obfuscation. We add input quantization to
+multiples of $1/8$ in front of model $A$, then attack in two ways.
+
+\begin{verbatim}
+def q(z): return np.round(z * 8) / 8
+accq = lambda W, b, Z, yy: float(np.mean(fwd(W, b, q(Z))[0]
+                                        .argmax(1) == yy))
+def pgd_naif(W, b, Z, yy, eps, steps):
+    r = np.random.default_rng(1)
+    z = np.clip(Z + r.uniform(-eps, eps, Z.shape), 0, 1)
+    for _ in range(steps):          # gradient = zero, so it stands still
+        z = np.clip(np.clip(z, Z - eps, Z + eps), 0, 1)
+    return z
+def pgd_bpda(W, b, Z, yy, eps, steps):
+    r = np.random.default_rng(1)
+    z = np.clip(Z + r.uniform(-eps, eps, Z.shape), 0, 1)
+    for _ in range(steps):
+        g = np.sign(grad_x(W, b, q(z), np.eye(K)[yy]))
+        z = np.clip(np.clip(z + eps / 10 * g, Z - eps, Z + eps), 0, 1)
+    return z
+print("inputs quantized to multiples of 1/8")
+print(f"  clean {accq(WA,bA,Xte,yte):.4f}"
+      f"  PGD40 naive {accq(WA,bA,pgd_naif(WA,bA,Xte,yte,0.15,40),yte):.4f}"
+      f"  PGD40 BPDA"
+      f" {accq(WA,bA,pgd_bpda(WA,bA,Xte,yte,0.15,40),yte):.4f}")
+\end{verbatim}
+
+Its output:
+
+\begin{verbatim}
+inputs quantized to multiples of 1/8
+  clean 0.9782  PGD40 naive 0.9698  PGD40 BPDA 0.1323
+\end{verbatim}
+
+This is the most concise form of a false defense. Its clean number is only $0.17$
+points below the original model, and the naive attack does not move at all: if that
+were all that was reported, this defense would look almost perfect. The substitute
+gradient brings it down to $13.23$ percent, almost the same as $10.72$ percent on the
+model without quantization. What changes above all is the readability of its gradient.
+
+\section{Cost, limitations, and how to report}
+\tingkat{basic}
+
+The computational budget determines which attack is honestly used. FGSM requires one
+backward pass per example. PGD of $k$ steps requires $k$ passes. In our experiment, the
+cost of PGD of 40 steps is about fifty times that of FGSM, for a result that, at small
+$\varepsilon$, is almost the same. For the assessment of a defense, that cost is
+reasonable: a robustness number measured with a weak attack is meaningless. For
+training, that cost multiplies again: every epoch demands a new attack.
+
+Adversarial training also has an accuracy price. Model $D$ loses $1.51$ points of
+clean accuracy in exchange for a rise of about fifty points at $\varepsilon=0.15$.
+Madry and colleagues report that larger models give better robustness, which shows
+that robustness is not a free property of the architecture, but capacity that has to
+be paid for.
+
+There are three limitations before the numbers in this chapter are used.
+
+First, scale. Our data has only 64 features and 10 classes, with 597 test examples. On
+large images, a meaningful budget is much smaller than $0.15$; on ImageNet,
+Goodfellow and colleagues used $0.007$ and already flipped the classification. The
+number $\varepsilon$ cannot be moved between datasets, because its meaning depends on
+the scale of the features. On our data, the pixels are already quantized to multiples
+of $1/16$, so that $\varepsilon=0.05$ means less than one quantization step per
+pixel.
+
+Second, the coverage of attacks. What we run is only two families: FGSM and PGD with
+$\ell_\infty$. A model that resists both is not necessarily resistant to an
+$\ell_2$ attack, to an attack that changes a single pixel, or to an attack that sticks
+an object into the real world. Every robustness claim holds only for the family of
+attacks that was tested, and that is why the evaluation protocol in the previous part
+demands several kinds of attack at once.
+
+Third, there is no guarantee. All the numbers here are results of testing, not a
+proved lower bound. Model $D$, which reaches $62.65$ percent under PGD of 40 steps,
+may still be broken by a better attack; we do not know, because what was not found is
+not proof that it does not exist. For a stronger statement, certification is needed:
+for example with randomized smoothing or with formal verification on a small network.
+Both give a guarantee on a certain radius, at the price of far higher accuracy and
+computation cost, and both are outside the scope of this chapter.
+
+An honest way of reporting contains five things: the complete threat model (norm,
+$\varepsilon$, the knowledge of the attacker, targeted or not), the attacker used
+together with the number and size of its steps, the clean accuracy and the accuracy at
+several $\varepsilon$, the number of seeds and the spread of the results, and the
+computational cost. Without that, the number ``90 percent robust'' cannot be checked
+and cannot be compared. Chapter 27 has already taught us that metrics can deceive;
+here the metric deceives in a subtler way, because its denominator is right and only
+its numerator is chosen.
+
+\begin{untukdosen}
+The teaching order that has worked: start from the table of accuracy against
+$\varepsilon$, not from the definition. Students see $97.99$ and $14.91$ on the same
+model, then ask why. Only after that come the definition of the threat model, the
+lemma on the maximum of a linear form, and FGSM. Only after FGSM runs do we enter PGD
+and the saddle formulation. The reverse order, that is definitions first and then
+attacks, makes students memorize notation without ever seeing the damage.
+
+Two typical misconceptions. First, students think an adversarial attack is the same as
+adding noise, so they conclude that a model resistant to noise will be resistant to
+attacks. The row of random signs in the lab refutes that with one number: noise of
+size $\varepsilon=0.15$ only lowers accuracy to $95.48$ percent, whereas FGSM with the
+same size lowers it to $14.91$ percent. Second, they think one accuracy number under
+an attack is already evidence of robustness. The quantization demonstration in the lab
+shows the opposite: $96.98$ percent looks safe until someone uses a substitute
+gradient and gets $13.23$ percent.
+
+A cheap blackboard activity: write the four-feature linear example from the worked
+example part, then ask the class to compute $\varepsilon^{*}$ for $\ell_\infty$ and
+$\ell_2$. After that ask them to predict, without computing, whether adding PGD steps
+changes the result on that linear model. The correct answer, together with its reason,
+forces them to understand that iteration is useful only because $f$ is not linear.
+
+A sign of readiness to go on: students can explain why only the sign of the gradient
+is used, can compute $\varepsilon^{*}$ for a linear model, can name one symptom of
+gradient obfuscation, and can design one attack adapted to a defense that quantizes
+the input. If they demand numbers at several $\varepsilon$ before believing, they are
+ready to enter Chapter 30.
+\end{untukdosen}
+
+\section{Summary}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item A robustness claim is always relative to the threat model: the norm, the
+        budget $\varepsilon$, the knowledge of the attacker, and whether the goal is
+        targeted or not. Without that, two numbers cannot be compared.
+  \item FGSM shifts every coordinate by $\varepsilon$ following the sign of the
+        gradient of the error. On a linear model it is exact and optimal, because
+        $\max_{\lVert\boldsymbol{\delta}\rVert_\infty\le\varepsilon}
+        \mathbf{w}^{\top}\boldsymbol{\delta}=\varepsilon\lVert\mathbf{w}\rVert_1$.
+  \item Linearization justifies the direction, not the distance. In our experiment the
+        linear prediction is $0.0008$ nats, whereas the actual rise is $4.862$ nats;
+        what remains useful is the pattern of signs.
+  \item PGD adds iteration and projection onto the box. At $\varepsilon=0.15$
+        accuracy falls from $94.64$ percent (1 small step) to $10.72$ percent
+        (40 steps), and is flat after about twenty steps.
+  \item Adversarial training is an approximation of the saddle problem
+        $\min_\theta\mathbb{E}\max_\delta L$. It raises robustness at the price of
+        clean accuracy: our model loses $1.51$ points to rise from $10.72$
+        to $62.65$ percent.
+  \item Gradient obfuscation lowers the success of attacks without raising the distance
+        to the decision boundary. Our example: $96.98$ percent under the naive
+        attack, $13.23$ percent under the attack with a substitute gradient.
+  \item An honest evaluation uses the strongest attack that can be afforded, adapted
+        to the defense, at several $\varepsilon$ and several seeds, with the cost
+        reported.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Compute $\varepsilon^{*}$ for the linear model with
+        $\mathbf{w}_A=(1;-1;2)$, $\mathbf{w}_B=(0;1;1)$ and
+        $\mathbf{x}=(1;2;1)$ under the $\ell_\infty$ norm, then under the $\ell_2$ norm.
+        Check both answers with Python. (Hint: compute
+        $\mathbf{d}=\mathbf{w}_A-\mathbf{w}_B$ first, then compare
+        $\lVert\mathbf{d}\rVert_1$ with $\lVert\mathbf{d}\rVert_2$.)
+
+  \item Prove that $\max_{\lVert\boldsymbol{\delta}\rVert_2\le\varepsilon}
+        \mathbf{w}^{\top}\boldsymbol{\delta}=\varepsilon\lVert\mathbf{w}\rVert_2$,
+        and determine all $\boldsymbol{\delta}$ that attain the maximum. Explain
+        why the answer has a different form from the $\ell_\infty$ case.
+
+  \item Prove that on a linear classifier, PGD with any number of
+        steps never produces an error larger than FGSM
+        with the same $\varepsilon$. (Hint: the error is a linear function of
+        $\boldsymbol{\delta}$ on a convex set; the maximum of a linear function on a
+        compact convex set is attained at an extreme point. Show that an extreme point
+        of the $\ell_\infty$ ball has the form $\pm\varepsilon$ in every coordinate,
+        then compare with the FGSM point.)
+
+  \item Assess this claim: \emph{because a model reaches accuracy $98$ percent on
+        test data and stays at $95$ percent under random perturbation of size
+        $\varepsilon$, that model is resistant to adversarial attacks.} Decide true,
+        false, or not enough evidence, and name one number from this chapter that
+        supports your decision.
+
+  \item From the lab table, compute the success rate of the untargeted attack for
+        model $A$ at $\varepsilon=0.05$, $0.10$, and $0.15$, then for
+        model $D$ at the same budgets. State the results in percent and
+        explain why the gap between $A$ and $D$ narrows at large $\varepsilon$.
+
+  \item Show that the projection onto
+        $\{\mathbf{y}:\lVert\mathbf{y}-\mathbf{x}\rVert_\infty\le\varepsilon\}
+        \cap[0,1]^{d}$ may be done by clipping first to the $\varepsilon$ box and then
+        to $[0,1]$, or the other way round, and the result is the same.
+        (Hint: both sets are products of intervals, so it is enough to check
+        one coordinate.)
+
+  \item On model $D$, the clean accuracy is $96.48$ percent and the accuracy under PGD
+        of 40 steps at $\varepsilon=0.15$ is $62.65$ percent. On model $A$,
+        the numbers are $97.99$ and $10.72$. Compute the price of robustness in
+        points of clean accuracy per point of robustness gained, then explain why that
+        ratio is not a complete measure.
+
+  \item A defense rounds the probability output to $0$ or $1$
+        before the decision is taken, so that the gradient with respect to the input
+        becomes zero. Design one evaluation protocol to test its robustness claim, and
+        name which symptom from the list in this chapter is most easily seen if that
+        defense only obfuscates the gradient.
+
+  \item Given two models with clean accuracy $97.99$ and $98.49$ percent.
+        At $\varepsilon=0.15$, PGD of 40 steps built on the first model lowers
+        the accuracy of the first model to $10.72$ percent and of the second model to
+        $23.79$ percent. Compute the gap between the success of the white-box attack
+        and of the transfer attack, then explain why that gap is not evidence that the
+        second model is safer. (Hint: an attack built specifically for the second model
+        is also available; see row B in the lab output.)
+
+  \item Explain why a targeted attack is harder than an untargeted
+        attack, then use the numbers $33.00$ percent at $\varepsilon=0.15$ and
+        $99.50$ percent at $\varepsilon=0.30$ to show that the difficulty
+        depends on the budget, not only on the kind of attack.
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+What is proved in this chapter is little. The lemma on the maximum of a linear form is
+a one-line proof. The linearization inequality with remainder
+$M\lVert\boldsymbol{\delta}\rVert_2^2/2$ is the mean value theorem in integral form,
+valid for every differentiable function with a Lipschitz gradient. The exactness of
+FGSM on logistic regression is a result of Goodfellow, Shlens, and Szegedy (ICLR 2015),
+the section ``Adversarial Training of Linear Models versus Weight Decay''. The saddle
+formulation and the claim that PGD can be relied on come from Madry, Makelov, Schmidt,
+Tsipras, and Vladu (ICLR 2018), sections 2 and 3; the latter is an empirical claim,
+not a theorem, and its own authors call the inner problem nonconcave.
+
+What is more often popularized than proved is the claim that linearity explains
+adversarial examples. As an argument about direction it is useful; as an explanation of
+the size of the damage it fails in our experiment: a prediction of $0.0008$ nats
+against an actual $4.862$ nats, with a gradient that has been verified to $10^{-10}$.
+What works is the pattern of signs, and that is why FGSM beats random signs
+($14.91$ against $95.48$ percent). A second claim that is exaggerated: adversarial
+training gives robustness to the attacker and the budget used during training, at the
+price of clean accuracy, without a guarantee for other attacks.
+
+Limits of validity: 64 features, 597 test examples, one hidden layer, one seed, two
+families of $\ell_\infty$ attacks, without certification. The numbers here demonstrate
+a mechanism, not a ranking of robustness. Open questions: how large a radius can be
+certified without erasing the benefit in accuracy; why transfer works that well;
+and what threat model makes sense for real systems such as intrusion detectors, which
+is the subject of Chapter 30.
+\end{untukpeneliti}
+
+\peta{This chapter follows Goodfellow, Shlens, and Szegedy, \emph{Explaining and
+Harnessing Adversarial Examples} (ICLR 2015), sections 3 (``The Linear Explanation of
+Adversarial Examples''), 4 (``The Fast Gradient Sign Method''), and 5 (``Adversarial
+Training of Linear Models versus Weight Decay'') for the derivation of FGSM, its
+exactness on logistic regression, and the MNIST and CIFAR-10 numbers. The saddle
+formulation, the PGD algorithm, and the MNIST and CIFAR-10 robustness numbers come from
+Madry, Makelov, Schmidt, Tsipras, and Vladu, \emph{Towards Deep Learning Models
+Resistant to Adversarial Attacks} (ICLR 2018), sections 2, 3, and 4, including
+Algorithm 1. The discussion of gradient obfuscation follows Athalye, Carlini, and
+Wagner, \emph{Obfuscated Gradients Give a False Sense of Security} (ICML 2018),
+sections 2 to 4, including the three kinds of obfuscation and the five symptoms used
+here. The phenomenon of transferability was first reported by Szegedy and colleagues,
+\emph{Intriguing Properties of Neural Networks} (ICLR 2014). All the numbers in the
+tables, the lab, and the worked example are our own computation with Python 3.14,
+NumPy 2.5, and the \texttt{load\_digits} dataset from scikit-learn 1.9: Adam training
+for 350 epochs, a train-test split of 1200/597 with seed 0, and input gradients
+verified with finite differences.}

@@ -1,0 +1,1110 @@
+\chapter{Bahasa Matematika dan Seni Membuktikan}
+
+Di suatu kelas, seorang mahasiswa menulis di papan: ``$n^{2}+n+41$ prima untuk setiap
+bilangan bulat $n \geq 0$''. Ia lalu memeriksa satu per satu. Untuk $n=0$ diperoleh
+$41$; untuk $n=1$ diperoleh $43$; untuk $n=2$ diperoleh $47$. Ia melanjutkan sampai
+$n=39$, mendapat $1601$, dan $1601$ memang prima. Empat puluh nilai, empat puluh
+kegagalan yang tidak terjadi. Di $n=40$ klaim itu patah:
+$40^{2}+40+41 = 1681 = 41^{2}$. Satu baris tambahan membatalkan seluruh halaman
+sebelumnya.
+
+Kejadian itu bukan kecelakaan aritmetika, melainkan kesalahan tata bahasa. ``Untuk setiap
+$n \geq 0$'' berbicara tentang tak berhingga banyak bilangan, sedangkan daftar hanya
+menyentuh berhingga banyak bilangan; tidak ada aturan logika yang memindahkan kebenaran
+dari yang berhingga ke yang tak berhingga. Bab ini karena itu menawarkan cara berbicara
+sehingga pemeriksaan tidak perlu.
+
+Kebutuhan itu bukan kemewahan. Di Bab~29 kita akan menyimpulkan bahwa sebuah
+pengklasifikasi dapat dikelilingi dengan menggeser satu masukan sejauh $\varepsilon$,
+dan kesimpulan itu berlaku untuk semua masukan. Di Bab~27 laporan akurasi yang bagus pada
+ribuan data uji tidak membuktikan apa pun tentang data esok hari. Bab ini menyiapkan
+perangkat untuk keduanya.
+
+\begin{untukanak}
+Di tepi sebuah danau hiduplah sekawanan angsa. Seorang anak datang setiap pagi selama
+hampir setahun dan menghitung angsa yang dilihatnya: putih, semuanya, selama dua ratus
+tujuh puluh pagi. Ia pun menulis di buku catatannya: semua angsa di danau ini putih.
+
+Kakeknya bertanya berapa angsa yang belum pernah dilihat anak itu. Anak itu mengaku
+tidak tahu, dan kakeknya berkata bahwa catatan itu bercerita tentang angsa yang sudah
+dilihat, bukan tentang semua angsa di danau.
+
+Cerita ini bukan tentang angsa, melainkan tentang beda antara ``sudah kuperiksa
+semuanya'' dan ``berlaku untuk semuanya''. Yang pertama hanya sekuat ingatan kita. Yang kedua tidak bergantung pada siapa yang memeriksa. Angsa hitam
+cukup satu untuk meruntuhkan catatan setebal apa pun, sedangkan seribu angsa putih
+tidak pernah cukup untuk menegakkannya.
+
+Angsa hitam pada bab ini bernama empat puluh. Pada bilangan itu rumus yang tampak rapi
+mendadak menghasilkan bilangan yang bisa dipecah. Di bab ini kita akan tahu mengapa satu
+contoh meruntuhkan klaim, mengapa banyak contoh tidak menegakkannya, dan bagaimana celah
+itu ditutup tanpa memeriksa angsa terakhir.
+\end{untukanak}
+
+\section{Pernyataan, penghubung, dan tabel kebenaran}
+\tingkat{dasar}
+
+Kalimat baru bisa dinilai setelah kita tahu apa yang dijanjikannya. ``Tujuh adalah
+bilangan prima'' menjanjikan sesuatu yang bisa diperiksa, dan janji itu benar. ``Tutup
+jendelanya'' tidak menjanjikan apa pun. ``$x+1=3$'' belum bisa dinilai, karena nilainya
+bergantung pada $x$. Ketiganya berbentuk sama di mata ejaan, tetapi hanya yang pertama
+termasuk bahan matematika.
+
+\begin{definisi}[Pernyataan]
+\index{pernyataan}
+\emph{Pernyataan} adalah kalimat yang bernilai benar atau bernilai salah, tetapi tidak
+keduanya sekaligus.
+\end{definisi}
+
+Pernyataan tunggal menjadi berguna setelah digabung. Setiap penghubung punya satu arti
+yang ditetapkan, bukan disimpulkan dari kebiasaan berbahasa.
+
+\kamus{penghubung logika}{logical connective}{seperti tombol pada mesin hitung: dua
+lampu masuk, satu lampu keluar, dan hubungan antarlampu ditetapkan pabrik, bukan
+ditebak pemakainya.}
+
+Dengan gambar tombol itu di kepala, kita tetapkan arti kelima penghubung secara resmi.
+
+\begin{definisi}[Penghubung logika]
+Misalkan $P$ dan $Q$ pernyataan.
+
+Lima penghubung berikut kita pakai.
+\begin{itemize}
+  \item $\neg P$ (\emph{negasi}, \emph{not}): benar tepat ketika $P$ salah.
+  \item $P \wedge Q$ (\emph{konjungsi}, \emph{and}): benar tepat ketika keduanya benar.
+  \item $P \vee Q$ (\emph{disjungsi}, \emph{or}): benar tepat ketika paling sedikit
+        satu benar; kata ``atau'' di sini inklusif.
+  \item $P \Rightarrow Q$ (\emph{implikasi}, \emph{implication}): salah tepat ketika
+        $P$ benar dan $Q$ salah; benar pada tiga kemungkinan lainnya.
+  \item $P \Leftrightarrow Q$ (\emph{bikondisional}, \emph{iff}): benar tepat ketika
+        $P$ dan $Q$ bernilai sama.
+\end{itemize}
+\end{definisi}
+
+Seluruh isi definisi itu dapat dipadatkan menjadi satu tabel: barisnya semua kombinasi
+nilai, kolomnya nilai setiap penghubung.
+
+{\centering
+\begin{tabular}{cc|ccccc}
+\hline
+$P$ & $Q$ & $\neg P$ & $P \wedge Q$ & $P \vee Q$ & $P \Rightarrow Q$ & $P \Leftrightarrow Q$ \\
+\hline
+B & B & S & B & B & B & B \\
+B & S & S & S & B & S & S \\
+S & B & B & S & B & B & S \\
+S & S & B & S & S & B & B \\
+\hline
+\end{tabular}\par}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small]
+  \fill[layerjade!16] (0,0) rectangle (3,1.8);
+  \fill[accent!16] (3,0) rectangle (6,1.8);
+  \fill[layerjade!16] (0,-1.8) rectangle (3,0);
+  \fill[layerjade!16] (3,-1.8) rectangle (6,0);
+  \draw[layergrey!70,thick] (0,-1.8) grid[xstep=3,ystep=1.8] (6,1.8);
+  \draw[accent,very thick] (3,0) rectangle (6,1.8);
+  \node at (1.5,0.9) {B};
+  \node at (4.5,0.9) {S};
+  \node at (1.5,-0.9) {B};
+  \node at (4.5,-0.9) {B};
+  \node[above,font=\footnotesize] at (1.5,1.8) {$Q$ benar};
+  \node[above,font=\footnotesize] at (4.5,1.8) {$Q$ salah};
+  \node[left,font=\footnotesize] at (0,0.9) {$P$ benar};
+  \node[left,font=\footnotesize] at (0,-0.9) {$P$ salah};
+  \node[below,font=\footnotesize,text=accent] at (4.5,-1.8) {satu-satunya sel yang salah};
+\end{tikzpicture}
+\caption{Kisi kebenaran $P \Rightarrow Q$: baris berisi nilai $P$, kolom berisi nilai $Q$.
+Tiga sel bernilai B dan satu sel bernilai S, yaitu ketika $P$ benar sementara $Q$ salah.
+Siapa pun yang ingin menggugurkan implikasi cukup menunjuk sel yang dibingkai tebal.}
+\label{fig:kisi-implikasi}
+\end{figure}
+
+Baris ketiga dan keempat adalah yang paling sering mengejutkan. Pada baris keempat,
+$P$ salah dan $Q$ salah, dan implikasinya dinilai benar. Pada baris ketiga, $P$ salah
+dan $Q$ benar, dan implikasinya juga benar. Jadi satu-satunya cara menggugurkan
+$P \Rightarrow Q$ adalah menunjukkan $P$ benar sementara $Q$ salah; kisi pada
+Gambar~\ref{fig:kisi-implikasi} memuat sel itu sebagai satu-satunya sel yang salah.
+
+Ketetapan itu bukan pilihan gaya. Perhatikan ``jika $n$ habis dibagi $4$, maka $n$
+genap'', yang harus berlaku untuk setiap bilangan bulat $n$, termasuk $n=3$. Di situ
+antesedennya salah; kalau implikasi dinilai salah, pernyataan yang jelas benar tadi akan
+gugur karena satu bilangan yang tidak relevan. Implikasi mencatat hubungan nilai, bukan
+sebab-akibat.
+
+\kamus{implikasi}{implication}{seperti janji ``kalau hujan, jalan basah'': janji itu
+hanya dilanggar bila hujan turun dan jalan tetap kering; bila tidak hujan, si pemilik
+janji belum berbuat salah.}
+
+Dua pernyataan majemuk bisa bernilai sama pada semua kemungkinan; kesamaan semacam itu
+punya nama sendiri.
+
+\begin{definisi}[Tautologi dan kesetaraan]
+\index{tautologi}
+Pernyataan majemuk disebut \emph{tautologi} jika bernilai benar pada setiap penetapan
+nilai pernyataan-pernyataan penyusunnya. Dua pernyataan majemuk $A$ dan $B$ disebut
+\emph{setara secara logis}, ditulis $A \equiv B$, jika $A \Leftrightarrow B$ tautologi.
+\end{definisi}
+
+Untuk dua pernyataan penyusun ada $2^{2}=4$ penetapan nilai; untuk tiga penyusun ada
+$2^{3}=8$. Kesetaraan yang hanya melibatkan dua atau tiga pernyataan karena itu dapat
+dibuktikan dengan memeriksa seluruh baris, dan pemeriksaan itu lengkap. Inilah satu-satunya tempat dalam bab ini di mana
+pemeriksaan habis-habisan diterima sebagai bukti, sebab himpunan kasusnya berhingga dan
+sudah dihitung.
+
+\begin{proposisi}
+Untuk setiap pernyataan $P$ dan $Q$ berlaku $P \Rightarrow Q \equiv \neg P \vee Q$.
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Kita bandingkan kolom $P \Rightarrow Q$ dan kolom $\neg P \vee Q$ pada keempat baris
+tabel kebenaran. Pada baris pertama keduanya benar. Pada baris kedua $\neg P$ salah dan
+$Q$ salah, sehingga keduanya salah. Pada baris ketiga dan keempat $\neg P$ benar,
+sehingga keduanya benar. Keempat baris memberi nilai yang sama, jadi kedua pernyataan
+setara.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Dua kesetaraan turunan dipakai sepanjang buku ini. Yang pertama membolehkan kita membalik
+arah pembicaraan tanpa mengubah nilai.
+
+\begin{akibat}[Kontraposisi]
+\index{kontraposisi}
+Untuk setiap pernyataan $P$ dan $Q$ berlaku
+$P \Rightarrow Q \equiv \neg Q \Rightarrow \neg P$.
+\end{akibat}
+\par\smallskip\noindent\textit{Bukti.} Menurut proposisi sebelumnya, kedua ruas sama dengan $\neg P \vee Q$ dan
+$\neg(\neg Q) \vee \neg P$. Karena $\neg(\neg Q) \equiv Q$ dan disjungsi tidak
+memperhatikan urutan, kedua bentuk itu identik.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Yang \emph{tidak} setara adalah konversnya, yaitu $Q \Rightarrow P$. Pada baris ketiga
+tabel, $Q \Rightarrow P$ benar sementara $P \Rightarrow Q$ salah. Menukar anteseden
+dengan konsekuen adalah kesalahan tersering, dan sering tidak terlihat karena kalimatnya
+tetap enak dibaca.
+
+\begin{proposisi}
+Untuk setiap pernyataan $P$ dan $Q$ berlaku
+$\neg(P \Rightarrow Q) \equiv P \wedge \neg Q$.
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Menurut definisi negasi dan proposisi pertama,
+$\neg(P \Rightarrow Q) \equiv \neg(\neg P \vee Q)$. Hukum De Morgan yang dibuktikan di
+Bab~2 memberi $\neg(\neg P \vee Q) \equiv \neg(\neg P) \wedge \neg Q$, dan
+$\neg(\neg P) \equiv P$. Jadi $\neg(P \Rightarrow Q) \equiv P \wedge \neg Q$.
+Pembaca yang belum menerima hukum De Morgan dapat memeriksa keempat baris tabel secara
+langsung.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+\begin{tangan}
+Sediakan delapan kartu kecil: empat bertuliskan B, empat bertuliskan S. Susun empat baris,
+setiap baris satu kartu untuk $P$ dan satu untuk $Q$: B-B, B-S, S-B, S-S. Di kanan setiap
+baris letakkan kartu ketiga yang Anda tulis sendiri: B kalau ``jika $P$ maka $Q$'' Anda
+nilai benar, S kalau salah.
+
+Kerjakan tanpa melihat tabel, lalu bandingkan. Hanya satu baris mendapat kartu S, yaitu
+baris yang $P$-nya B dan $Q$-nya S. Geser kartu itu ke atas dan ke bawah; ia tetap
+satu-satunya. Sekarang tukar kartu P dan Q pada baris B-S sehingga menjadi S-B, lalu nilai
+ulang: kartunya berubah dari S menjadi B. Perpindahan satu kartu itulah konvers.
+\end{tangan}
+
+\section{Kuantor dan cara menegasikannya}
+\tingkat{dasar}
+
+Sebagian besar kalimat matematika berbicara tentang banyak objek, dan banyaknya itu
+ditandai kuantor. Ada dua kuantor, dan keduanya membaca urutan sebagai bagian dari arti.
+
+\kamus{kuantor}{quantifier}{seperti dua jenis pengumuman di sekolah: ``semua murid
+wajib membawa buku'' dan ``ada murid yang membawa buku''; keduanya terdengar mirip
+tetapi menuntut bukti yang sangat berbeda.}
+
+Kita tuliskan artinya secara resmi.
+
+\begin{definisi}[Kuantor universal dan eksistensial]
+\index{kuantor}
+Misalkan $P(x)$ pernyataan yang bergantung pada $x$ di dalam himpunan $A$.
+\begin{itemize}
+  \item $(\forall x \in A)\,P(x)$ berarti $P(x)$ benar untuk setiap $x \in A$.
+  \item $(\exists x \in A)\,P(x)$ berarti terdapat paling sedikit satu $x \in A$
+        dengan $P(x)$ benar.
+\end{itemize}
+Pernyataan pertama salah jika ada satu $x \in A$ dengan $P(x)$ salah; satu objek
+semacam itu disebut \emph{contoh penyangkal} (\emph{counterexample}).
+\end{definisi}
+
+Kuantor eksistensial menuntut paling sedikit satu, bukan tepat satu; menambahkan tuntutan
+yang tidak tercantum dalam definisi adalah sumber kesalahan tersering.
+
+Urutan dua kuantor yang berbeda jenis tidak boleh ditukar. Di dalam $\mathbb{R}$,
+pernyataan
+\[
+  (\forall x)(\exists y)\; y > x
+\]
+benar, sedangkan
+\[
+  (\exists y)(\forall x)\; y > x
+\]
+salah. Bukti keduanya pendek.
+
+\begin{proposisi}
+Di dalam $\mathbb{R}$ berlaku $(\forall x)(\exists y)\, y > x$, tetapi tidak berlaku
+$(\exists y)(\forall x)\, y > x$.
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Untuk bagian pertama, ambil $x \in \mathbb{R}$
+sebarang dan pilih $y = x+1$. Maka $y > x$, sehingga $y$ menjadi saksi bagi $x$ itu.
+Karena $x$ sebarang, setiap $x$ punya saksi; saksinya boleh berbeda untuk $x$ yang
+berbeda.
+
+Untuk bagian kedua, andaikan ada $y_{0} \in \mathbb{R}$ dengan $y_{0} > x$ untuk
+setiap $x \in \mathbb{R}$. Ambil $x = y_{0}+1$, yang juga bilangan real. Maka
+$y_{0} > y_{0}+1$, yaitu $0 > 1$, suatu hal yang tidak mungkin. Jadi tidak ada $y_{0}$
+semacam itu.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+\index{negasi}Negasi bekerja dari luar ke dalam: setiap kuantor berganti jenis, dan negasi berjalan masuk
+sampai menempel pada pernyataan terdalam. Untuk pernyataan majemuk, hukum De Morgan
+memindahkan negasi melewati konjungsi dan disjungsi.
+
+{\centering
+\begin{tabular}{ll}
+\hline
+Pernyataan & Negasinya \\
+\hline
+$(\forall x \in A)\,P(x)$ & $(\exists x \in A)\,\neg P(x)$ \\
+$(\exists x \in A)\,P(x)$ & $(\forall x \in A)\,\neg P(x)$ \\
+$P \wedge Q$ & $\neg P \vee \neg Q$ \\
+$P \vee Q$ & $\neg P \wedge \neg Q$ \\
+$P \Rightarrow Q$ & $P \wedge \neg Q$ \\
+\hline
+\end{tabular}\par}
+
+Baris terakhir itu yang paling sering dilanggar. Menyangkal ``jika hujan maka jalan
+basah'' bukan ``jika hujan maka jalan kering'', melainkan ``hujan dan jalan tidak basah''.
+Kesalahan yang sama muncul saat orang menyangkal definisi: kata kerja di dalamnya
+dinegasikan, kuantornya dibiarkan utuh.
+
+\begin{proposisi}
+Untuk setiap pernyataan $P(x)$ dan $Q(x)$ berlaku
+\[
+  \neg(\forall x)\bigl(P(x) \Rightarrow Q(x)\bigr)
+  \;\equiv\; (\exists x)\bigl(P(x) \wedge \neg Q(x)\bigr).
+\]
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Kuantor universal dinegasikan menjadi kuantor
+eksistensial atas negasi badan:
+\[
+  \neg(\forall x)R(x) \;\equiv\; (\exists x)\neg R(x).
+\]
+Badan $R(x)$ di sini adalah $P(x) \Rightarrow Q(x)$, yang negasinya $P(x) \wedge
+\neg Q(x)$ menurut proposisi bagian sebelumnya. Jadi negasinya berbentuk
+$(\exists x)(P(x) \wedge \neg Q(x))$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Bentuk itu memberi tugas yang jelas ketika hendak menolak pernyataan berkuantor: tunjukkan
+satu objek yang memenuhi anteseden dan gagal pada konsekuen.
+
+Dua negasi berikut dipakai berulang kali; yang pertama menjadi bahan Bab~4.
+
+\begin{contoh}[Negasi definisi limit]
+Definisi limit berbunyi: barisan $(a_{n})$ menuju $L$ jika
+\[
+  (\forall \varepsilon > 0)(\exists N \in \mathbb{N})(\forall n \geq N)\;
+  |a_{n} - L| < \varepsilon .
+\]
+Menegasikan dari luar ke dalam memberi
+\[
+  (\exists \varepsilon > 0)(\forall N \in \mathbb{N})(\exists n \geq N)\;
+  |a_{n} - L| \geq \varepsilon .
+\]
+Bacaan kalimat kedua: ada satu toleransi $\varepsilon$ yang tidak bisa diperbaiki oleh
+$N$ mana pun, karena selalu ada suku setelah $N$ yang menyimpang paling sedikit sejauh
+$\varepsilon$. Untuk membuktikan bahwa $(a_{n})$ tidak menuju $L$, kita harus menemukan
+$\varepsilon$ itu, lalu untuk setiap $N$ menemukan $n \geq N$ yang melanggar; $n$ boleh
+bergantung pada $N$.
+\end{contoh}
+
+Negasi kedua menyangkut keberadaan bilangan prima. Euklides membuktikan bahwa untuk
+setiap bilangan asli $n$ ada bilangan prima yang lebih besar daripada $n$:
+\[
+  (\forall n \in \mathbb{N})(\exists p)\bigl(p \text{ prima} \wedge p > n\bigr).
+\]
+Negasinya adalah
+\[
+  (\exists n \in \mathbb{N})(\forall p)\bigl(p \text{ prima} \Rightarrow p \leq n\bigr),
+\]
+yaitu: ada satu batas $n$ sehingga semua bilangan prima tidak melebihi $n$. Menyangkal
+klaim Euklides menuntut batas semacam itu, bukan sekadar gagal menemukan prima besar.
+
+\begin{untukanak}
+Bayangkan sebuah kelas dengan tiga puluh murid. Guru menulis di papan: ``semua murid
+membawa pensil.'' Untuk membuktikan kalimat itu benar, guru harus memeriksa ketiga puluh meja; untuk
+membuktikannya salah, cukup satu murid yang tidak membawa pensil.
+
+Sekarang guru menulis kalimat lain: ``ada murid yang membawa pensil.'' Kali ini
+keadaannya terbalik. Satu murid yang membawa pensil sudah cukup untuk membuktikan
+kalimat itu. Tetapi untuk membuktikannya salah, guru harus memeriksa ketiga puluh meja
+dan memastikan tidak ada satu pun pensil.
+
+Dua kalimat itu hanya bertukar kata di depan, tetapi pekerjaan memeriksanya bertukar
+seluruhnya. Ahli matematika berhati-hati dengan ``semua'' dan ``ada'' karena keduanya
+menghitung berapa banyak yang harus diperiksa.
+
+Ada satu jebakan lagi. Kalau ada murid yang membawa dua pensil, apakah ``ada murid yang
+membawa pensil'' masih benar? Tentu benar: kalimat itu menuntut paling sedikit satu,
+bukan tepat satu. Di bab ini kita akan tahu mengapa tuntutan yang tidak tertulis tidak
+boleh ditambahkan sendiri.
+\end{untukanak}
+
+\section{Membaca definisi secara harfiah}
+\tingkat{menengah}
+
+Definisi matematika bukan penjelasan singkat tentang sebuah kata; ia kontrak yang
+berlaku dua arah. Kalau sebuah bilangan disebut ganjil apabila berbentuk $2k+1$ untuk
+suatu bilangan bulat $k$, kita terikat pada dua hal: setiap bilangan berbentuk $2k+1$
+harus disebut ganjil, dan setiap bilangan yang disebut ganjil harus berbentuk $2k+1$.
+
+Membaca definisi berarti membaca satu kalimat berbentuk ``$x$ disebut $B$ jika dan hanya
+jika $C(x)$'', walaupun kata ``hanya jika'' jarang ditulis; frasa ``disebut'' sudah
+mengandung kedua arah. Arah pertama memberi izin memakai nama $B$, arah kedua memberi izin
+memakai syarat $C(x)$, dan membalik salah satunya merusak seluruh argumen.
+
+\kamus{syarat perlu}{necessary condition}{seperti syarat masuk gedung: tanpa kartu
+anggota kita tidak boleh masuk, tetapi punya kartu anggota belum berarti kita sudah
+duduk di dalam.}
+
+Bandingkan dua pernyataan tentang bilangan bulat $n$: ``jika $6$ membagi $n$ maka $3$
+membagi $n$'' benar, sedangkan ``jika $3$ membagi $n$ maka $6$ membagi $n$'' salah,
+dengan contoh penyangkal $n=3$. Jadi ``$3$ membagi $n$'' syarat perlu bagi ``$6$ membagi
+$n$'', tetapi bukan syarat cukup. Definisi yang baik menyebut keduanya, sebab hanya
+dengan begitu nama dan syaratnya dapat ditukar.
+
+\begin{bacakeras}
+Bacakan sebagai dialog dua suara, bergantian, dengan satu tarikan napas di setiap titik.
+
+Suara pertama: ``Kalau hujan, jalan basah.''
+Suara kedua: ``Jalan basah. Berarti hujan.''
+Suara pertama: ``Belum tentu. Jalan juga basah kalau disiram.''
+Suara kedua: ``Tetap basah. Tetap hujan.''
+Suara pertama: ``Yang kujanjikan hanya satu arah. Hujan dulu, baru basah. Arah balik tidak pernah kujanjikan.''
+
+Ulangi dialog itu sekali lagi, lebih cepat, sampai telinga menangkap bedanya. Kalimat
+pertama menaruh hujan di depan; kalimat kedua memindahkan hujan ke belakang. Bunyinya
+berputar, janjinya tidak.
+
+Baris yang harus diulang tiga kali dengan suara keras: ``jika hujan maka basah, bukan jika
+basah maka hujan.''
+\end{bacakeras}
+
+Sekarang perhatikan definisi yang paling banyak dipakai di buku ini.
+
+\begin{definisi}[Bilangan prima]
+\index{bilangan prima}
+Bilangan bulat $p$ disebut \emph{prima} jika $p \geq 2$ dan satu-satunya pembagi
+positif $p$ adalah $1$ dan $p$ sendiri.
+\end{definisi}
+
+Kalimat sehari-harinya: bilangan prima lebih besar daripada satu dan tidak dapat dipecah
+menjadi hasil kali dua bilangan yang lebih kecil; kedua klausanya diuji terpisah.
+
+\begin{proposisi}
+Bilangan $1$ bukan bilangan prima.
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Definisi menuntut $p \geq 2$. Untuk $p = 1$
+syarat itu gagal, sehingga $1$ tidak memenuhi definisi, apa pun yang dapat kita
+katakan tentang pembaginya. Perhatikan bahwa $1$ sebenarnya lolos pada klausa kedua:
+satu-satunya pembagi positif $1$ memang $1$ dan $1$ sendiri. Jadi yang menyingkirkannya
+adalah klausa pertama, bukan klausa kedua.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Kejadian semacam ini menjelaskan mengapa definisi perlu dibaca sampai klausa terakhir.
+Pembaca yang melewatkan klausa pertama akan menyimpulkan bahwa $1$ prima, dan
+ketunggalan faktorisasi $12 = 2^{2}\cdot 3$ di Bab~28 akan hilang, karena $12$ juga
+boleh ditulis $1 \cdot 2^{2} \cdot 3$.
+
+Definisi juga menentukan cara menyangkal keanggotaan. Untuk menunjukkan bahwa sebuah
+bilangan bukan prima, kita harus menemukan pembagi positif yang bukan $1$ dan bukan
+bilangan itu sendiri. Berikut satu contoh yang sering lolos dari pemeriksaan cepat.
+
+\begin{proposisi}
+Bilangan $91$ bukan bilangan prima. Lebih umum, pernyataan ``setiap bilangan ganjil
+yang tidak habis dibagi $3$ dan tidak habis dibagi $5$ adalah prima'' salah.
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Faktanya $91 = 7 \cdot 13$, dan kedua faktor itu
+berada di antara $1$ dan $91$, sehingga $91$ punya pembagi positif selain $1$ dan
+dirinya. Bilangan $91$ ganjil, tidak habis dibagi $3$ karena $9+1 = 10$ bukan kelipatan
+$3$, dan tidak habis dibagi $5$ karena angka terakhirnya bukan $0$ atau $5$. Jadi $91$
+adalah contoh penyangkal bagi pernyataan umum tadi. Sebagai pembanding, $97$ memang prima; di antara bilangan bulat $2$ dan $99$ terdapat
+tepat $25$ bilangan prima, hasil hitungan program pada bagian lab.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+\begin{definisi}[Kuadrat sempurna]
+Bilangan bulat $n$ disebut \emph{kuadrat sempurna} jika terdapat bilangan bulat $k$
+dengan $n = k^{2}$.
+\end{definisi}
+
+Menurut definisi ini, $0$ adalah kuadrat sempurna, karena $0 = 0^{2}$, dan $1$ juga,
+karena $1 = 1^{2}$. Sementara itu $2$ bukan kuadrat sempurna, dan pernyataan itu butuh
+bukti, bukan pengakuan bahwa kita tidak menemukan $k$.
+
+\begin{proposisi}
+Bilangan $2$ bukan kuadrat sempurna.
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Andaikan $2 = k^{2}$ untuk suatu $k \in
+\mathbb{Z}$. Karena $k^{2} = 2 > 0$, berlaku $k \neq 0$. Jika $|k| = 1$ maka
+$k^{2} = 1 \neq 2$. Jika $|k| \geq 2$ maka $k^{2} \geq 4 > 2$. Karena $|k|$ bilangan
+bulat positif, hanya dua kemungkinan itu yang tersisa, dan keduanya gagal. Jadi tidak
+ada $k$ semacam itu.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+\index{contoh penyangkal}Kebiasaan yang layak dipelihara: setiap kali bertemu
+definisi, ajukan tiga pertanyaan. Apa saja klausanya? Objek apa yang memenuhi
+seluruhnya? Objek apa yang sering dianggap memenuhi padahal gagal pada satu klausa?
+Pertanyaan ketiga menghasilkan contoh penyangkal, dan contoh penyangkal tidak dapat
+dibantah maupun diperdebatkan.
+
+\section{Empat pola bukti}
+\tingkat{menengah}
+
+Bukti adalah pengangkutan kebenaran: dari pernyataan yang sudah kita terima menuju
+pernyataan yang ingin kita terima, lewat langkah yang masing-masing dapat diperiksa.
+Empat pola di bawah ini menutup sebagian besar kebutuhan, dan
+Gambar~\ref{fig:peta-tiga-bukti} memetakan tiga jalur pertamanya. Pola kelima yang lazim,
+pembagian kasus, hanyalah pola pertama yang diterapkan pada kasus-kasus yang saling
+meniadakan.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small,>=Stealth,
+  jalur/.style={draw,rounded corners=2pt,align=center,inner sep=5pt,text width=4.6cm},
+  ujung/.style={draw,rounded corners=2pt,align=center,inner sep=4pt,text width=2.2cm}]
+  \node[jalur,fill=layerorange!12] (klaim) at (0,0) {klaim: $P \Rightarrow Q$};
+  \node[jalur,fill=layerteal!12] (lgs) at (6.1,2.4)
+    {\textbf{langsung}\\ uraikan $P$, hitung, muncullah $Q$};
+  \node[jalur,fill=layerindigo!10] (ktp) at (6.1,0)
+    {\textbf{kontraposisi}\\ buktikan $\neg Q \Rightarrow \neg P$; nilainya sama};
+  \node[jalur,fill=layerplum!10] (ktr) at (6.1,-2.4)
+    {\textbf{kontradiksi}\\ andaikan $P$ benar dan $Q$ salah, turunkan pertentangan};
+  \node[ujung,fill=layergrey!10] (selesai) at (11.6,0)
+    {tidak ada\\penetapan yang\\menggugurkan};
+  \draw[->,thick] (klaim.east) -- (lgs.west);
+  \draw[->,thick] (klaim.east) -- (ktp.west);
+  \draw[->,thick] (klaim.east) -- (ktr.west);
+  \draw[->,thick] (lgs.east) -- (selesai.north west);
+  \draw[->,thick] (ktp.east) -- (selesai.west);
+  \draw[->,thick] (ktr.east) -- (selesai.south west);
+\end{tikzpicture}
+\caption{Peta jalan tiga bentuk bukti implikasi. Semua jalur berangkat dari klaim yang sama
+dan berakhir pada kenyataan bahwa tidak ada penetapan nilai yang membuat $P$ benar sementara
+$Q$ salah. Bukti kontraposisi sah karena $P \Rightarrow Q \equiv \neg Q \Rightarrow \neg P$.
+Bentuk keempat, bukti konstruktif dengan saksi, tidak masuk peta ini karena ia membuktikan
+pernyataan berbentuk $\exists$, bukan implikasi.}
+\label{fig:peta-tiga-bukti}
+\end{figure}
+
+\paragraph{Pola pertama: bukti langsung.} Kita berangkat dari hipotesis, menguraikannya
+menurut definisi, lalu menghitung sampai kesimpulan muncul. Contoh berikut dipilih
+karena kesimpulannya lebih kuat daripada yang biasanya dibuktikan orang.
+
+\begin{teorema}
+Untuk setiap bilangan bulat ganjil $n$, bilangan $n^{2}-1$ habis dibagi $8$.
+\end{teorema}
+\par\smallskip\noindent\textit{Bukti.} Karena $n$ ganjil, $n = 2k+1$ untuk suatu
+$k \in \mathbb{Z}$. Maka
+\[
+  n^{2} - 1 = (2k+1)^{2} - 1 = 4k^{2} + 4k = 4k(k+1).
+\]
+Di antara dua bilangan bulat berurutan $k$ dan $k+1$, tepat satu di antaranya genap,
+sehingga $k(k+1) = 2m$ untuk suatu $m \in \mathbb{Z}$. Substitusi memberi
+$n^{2}-1 = 4 \cdot 2m = 8m$, yang berarti $n^{2}-1$ habis dibagi $8$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Akibat langsungnya, kuadrat bilangan ganjil selalu bersisa $1$ bila dibagi $8$. Untuk
+$n = 1,3,5,7,9,11$ berturut-turut diperoleh $n^{2}-1 = 0, 8, 24, 48, 80, 120$, dan
+keenamnya habis dibagi $8$. Pemeriksaan itu bukan bukti, tetapi ia memastikan bahwa
+bukti di atas tidak salah ketik.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small,>=Stealth,
+  tahap/.style={draw,rounded corners=2pt,align=left,inner sep=5pt,text width=6.6cm},
+  nama/.style={font=\footnotesize\itshape,text=layergrey,align=right,text width=2.4cm}]
+  \node[tahap,fill=layerteal!10] (asumsi) at (0,0)
+    {$n$ ganjil, jadi $n = 2k+1$ untuk suatu $k \in \mathbb{Z}$};
+  \node[nama] at (-4.9,0) {asumsi (diberikan)};
+  \node[tahap,fill=layerorange!10] (langkah) at (0,-2.1)
+    {$n^{2}-1 = 4k^{2}+4k = 4k(k+1) = 8m$};
+  \node[nama] at (-4.9,-2.1) {langkah (dihitung)};
+  \node[tahap,fill=layerjade!10] (kesimpulan) at (0,-4.2)
+    {$8$ membagi $n^{2}-1$};
+  \node[nama] at (-4.9,-4.2) {kesimpulan (diminta)};
+  \draw[->,thick] (asumsi.south) -- (langkah.north);
+  \draw[->,thick] (langkah.south) -- (kesimpulan.north);
+\end{tikzpicture}
+\caption{Anatomi satu bukti langsung untuk pernyataan ``jika $n$ ganjil maka $8$ membagi
+$n^{2}-1$''. Kotak atas satu-satunya yang boleh dipakai tanpa alasan; kotak tengah memuat
+alasannya, yaitu definisi bilangan ganjil dan aljabar; kotak bawah adalah yang diminta.
+Panahnya hanya boleh mengalir ke bawah.}
+\label{fig:anatomi-bukti}
+\end{figure}
+
+Gambar~\ref{fig:anatomi-bukti} memberi nama ketiga bagian bukti itu: asumsi, langkah,
+kesimpulan.
+
+\paragraph{Pola kedua: bukti kontraposisi.} Kita membuktikan $\neg Q \Rightarrow \neg P$
+sebagai ganti $P \Rightarrow Q$. Menurut akibat pada bagian pertama, keduanya setara,
+sehingga sah. Pola ini dipilih ketika negasi kesimpulan lebih mudah dipegang daripada
+hipotesisnya.
+
+\begin{proposisi}
+Untuk setiap bilangan bulat $n$, jika $5n+3$ genap maka $n$ ganjil.
+\end{proposisi}
+\par\smallskip\noindent\textit{Bukti.} Kontraposisinya berbunyi: jika $n$ genap maka
+$5n+3$ ganjil. Misalkan $n = 2k$. Maka $5n+3 = 10k+3 = 2(5k+1)+1$, yang berbentuk dua
+kali bilangan bulat ditambah satu, jadi ganjil. Karena kontraposisi terbukti,
+implikasi aslinya terbukti.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Membuktikan langsung akan menuntut pembagian oleh $5$ dari $5n+3 = 2m$; bukan mustahil,
+tetapi lebih panjang. Pola kontraposisi dipilih karena menghemat.
+
+Sebelum pola ketiga, kita butuh satu lemma tentang paritas. Lemma ini akan dipakai dua
+kali: sekali di sini, sekali pada bukti ketakrasionalan akar dua.
+
+\begin{lemma}
+\index{lemma paritas}
+Untuk setiap bilangan bulat $n$, jika $n^{2}$ genap maka $n$ genap.
+\end{lemma}
+\par\smallskip\noindent\textit{Bukti.} Kita buktikan kontraposisinya: jika $n$ ganjil
+maka $n^{2}$ ganjil. Menurut teorema pertama bagian ini, untuk $n$ ganjil berlaku
+$n^{2} = 8m+1$ untuk suatu $m$, sehingga $n^{2}$ bersisa $1$ bila dibagi $2$, yaitu
+ganjil.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+\paragraph{Pola ketiga: bukti kontradiksi.} Kita mengandaikan kesimpulan salah, lalu menurunkan dua pernyataan yang tidak dapat benar
+bersama. Pola ini dipakai ketika objek yang disangkal tidak punya bentuk yang nyaman
+dihitung, misalnya ketika yang disangkal adalah keberadaan sesuatu.
+
+\begin{teorema}
+\index{akar dua}
+Tidak ada bilangan rasional $r$ dengan $r^{2} = 2$.
+\end{teorema}
+\par\smallskip\noindent\textit{Bukti.} Andaikan ada $r \in \mathbb{Q}$ dengan
+$r^{2} = 2$. Setiap bilangan rasional dapat ditulis sebagai $p/q$ dengan $p,q$ bilangan
+bulat, $q \neq 0$, dan $p,q$ tidak memiliki faktor persekutuan selain $1$; kita
+membuang faktor persekutuan itu dengan membagi keduanya, sehingga bentuk tanpa faktor
+persekutuan selalu dapat dicapai.
+
+Dari $p^{2}/q^{2} = 2$ diperoleh $p^{2} = 2q^{2}$, sehingga $p^{2}$ genap. Menurut
+lemma di atas, $p$ genap; tulis $p = 2m$ dengan $m \in \mathbb{Z}$. Substitusi memberi
+$4m^{2} = 2q^{2}$, yaitu $q^{2} = 2m^{2}$, sehingga $q^{2}$ genap dan, sekali lagi
+menurut lemma, $q$ genap. Kini $p$ dan $q$ keduanya genap, jadi keduanya habis dibagi
+$2$, bertentangan dengan pilihan $p/q$ tanpa faktor persekutuan. Pengandaian salah,
+maka tidak ada $r$ rasional dengan $r^{2} = 2$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Kontradiksinya bukan antara $r^{2}=2$ dan aritmetika biasa, melainkan antara ``$p,q$
+keduanya genap'' dan janji awal ``$p,q$ tanpa faktor persekutuan''. Karena itu langkah
+membuang faktor persekutuan bukan hiasan; ia bagian dari hipotesis yang nanti dilanggar.
+
+\paragraph{Pola keempat: bukti konstruktif dengan saksi.} Untuk membuktikan pernyataan
+berbentuk $\exists$, kita menunjuk satu objek dan memeriksa bahwa objek itu memenuhi
+syarat. Objek yang ditunjuk disebut \emph{saksi} (\emph{witness}).
+
+\begin{teorema}
+Untuk setiap bilangan asli $n$ terdapat $n$ bilangan bulat berurutan yang semuanya
+bukan prima.
+\end{teorema}
+\par\smallskip\noindent\textit{Bukti.} Ambil $N = (n+1)!$ dan perhatikan $n$ bilangan
+\[
+  N+2,\; N+3,\; \dots,\; N+(n+1).
+\]
+Untuk setiap $k$ dengan $2 \leq k \leq n+1$, bilangan $k$ membagi $(n+1)!$ karena $k$
+adalah salah satu faktornya, sehingga $k$ juga membagi $N+k$. Selain itu
+$N+k > k > 1$, jadi $N+k$ memiliki pembagi positif $k$ yang bukan $1$ dan bukan
+dirinya sendiri. Menurut definisi, $N+k$ bukan prima. Kita telah menunjuk $n$ bilangan
+yang diminta, dan tidak perlu mencari yang terkecil.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Untuk $n = 5$ bukti itu menunjuk $6! = 720$, lalu $722, 723, 724, 725, 726$. Kelimanya
+memang terurai: $722 = 2 \cdot 19^{2}$, $723 = 3 \cdot 241$, $724 = 2^{2} \cdot 181$,
+$725 = 5^{2} \cdot 29$, dan $726 = 2 \cdot 3 \cdot 11^{2}$. Bilangan $721 = 7 \cdot 103$ juga terurai, tetapi ia tidak termasuk daftar kita.
+
+Bukti konstruktif tidak menjanjikan saksi terkecil atau tercepat; yang dinilai hanya
+apakah objek yang ditunjuk memenuhi syarat. Menyangkal pernyataan berbentuk $\exists$
+menuntut ditunjukkannya bahwa tidak satu pun objek memenuhi, dan di situlah kontradiksi
+dibutuhkan.
+
+\begin{resep}
+Empat langkah baku membuktikan ``jika $P$ maka $Q$''.
+\begin{enumerate}
+  \item Tulis $P$ dan $Q$ menurut definisinya, masing-masing satu baris.
+  \item Buka dengan ``andaikan $P$ benar''. Yang boleh diandaikan hanya $P$; $Q$ belum
+        boleh dipakai.
+  \item Turunkan $Q$ dengan substitusi dan aljabar, satu langkah per baris, dan sebut
+        definisi yang dipakai.
+  \item Tutup dengan kalimat yang menyebut $Q$ persis seperti bentuknya di langkah 1.
+\end{enumerate}
+Peringatan urutan: langkah 2 tidak boleh ditukar dengan langkah 3. Coretan dari kesimpulan
+ke belakang boleh, tetapi bukti yang diserahkan harus berjalan dari $P$ ke $Q$; kalau
+tidak, yang terbukti adalah konversnya.
+\end{resep}
+
+\section{Induksi dan induksi kuat}
+\tingkat{menengah}
+
+Induksi adalah pola bukti untuk pernyataan yang berderet, satu untuk setiap bilangan
+asli. Kita menegakkan kartu pertama dan memastikan setiap kartu yang jatuh menjatuhkan
+kartu berikutnya; setelah keduanya, tidak ada kartu yang boleh berdiri.
+
+\kamus{induksi}{induction}{seperti deretan domino: cukup pastikan kartu pertama jatuh
+dan setiap kartu menjatuhkan kartu di depannya, lalu seluruh deret jatuh tanpa perlu
+didorong satu per satu.}
+
+Prinsip induksi kita ambil sebagai sifat dasar $\mathbb{N} = \{1,2,3,\dots\}$, setara
+dengan pernyataan bahwa setiap himpunan bagian tak kosong dari $\mathbb{N}$ mempunyai
+anggota terkecil; tidak ada yang dibuktikan secara melingkar, kita hanya memilih titik
+berangkat seperti pada Bab~3.
+
+\begin{catatan}[Prinsip induksi]
+Misalkan $P(n)$ pernyataan tentang bilangan asli. Jika $P(1)$ benar dan, untuk setiap
+$k \in \mathbb{N}$, kebenaran $P(k)$ memaksa kebenaran $P(k+1)$, maka $P(n)$ benar
+untuk setiap $n \in \mathbb{N}$.
+\end{catatan}
+
+Dengan prinsip itu, kita buktikan rumus yang sudah ditebak pada pembuka bagian ini.
+
+\begin{teorema}
+Untuk setiap bilangan asli $n$ berlaku
+\[
+  1 + 3 + 5 + \cdots + (2n-1) = n^{2}.
+\]
+\end{teorema}
+\par\smallskip\noindent\textit{Bukti.} Basis: untuk $n = 1$ ruas kiri bernilai $1$ dan
+ruas kanan bernilai $1^{2} = 1$. Langkah: andaikan rumus benar untuk $n = k$, yaitu
+$1+3+\cdots+(2k-1) = k^{2}$. Suku berikutnya adalah $2(k+1)-1 = 2k+1$, sehingga
+\[
+  1+3+\cdots+(2k-1)+(2k+1) = k^{2} + 2k + 1 = (k+1)^{2}.
+\]
+Jadi rumus benar untuk $k+1$. Menurut prinsip induksi, rumus benar untuk setiap
+$n \in \mathbb{N}$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Contoh kedua berbentuk pertidaksamaan. Dari $2^{k} \geq k+1$ dan syarat $k \geq 0$
+diperoleh $2^{k+1} = 2 \cdot 2^{k} \geq 2(k+1) \geq k+2$, sehingga dengan basis $n = 0$
+berlaku $2^{n} \geq n+1$ untuk setiap $n \geq 0$; hipotesis dan syarat samping dipakai
+sekaligus.
+
+Induksi biasa menuntut satu langkah mundur. Kadang kesimpulan untuk $n$ hanya turun dari
+banyak nilai sebelumnya sekaligus, dan di situ induksi biasa tidak cukup.
+
+\begin{catatan}[Prinsip induksi kuat]
+Jika untuk setiap $n \in \mathbb{N}$ kebenaran $P(1), P(2), \dots, P(n-1)$ memaksa
+kebenaran $P(n)$, maka $P(n)$ benar untuk setiap $n \in \mathbb{N}$.
+\end{catatan}
+
+\kamus{induksi kuat}{strong induction}{seperti menyusun menara dari balok: untuk
+meletakkan balok kesepuluh, kita boleh memakai seluruh balok di bawahnya, bukan hanya
+balok kesembilan.}
+
+Dengan izin itu kita dapat membuktikan hal yang tidak terjangkau induksi biasa.
+
+\begin{teorema}
+Setiap bilangan bulat $n \geq 2$ dapat ditulis sebagai hasil kali bilangan-bilangan
+prima.
+\end{teorema}
+\par\smallskip\noindent\textit{Bukti.} Kita pakai induksi kuat pada $n$. Untuk $n = 2$:
+bilangan $2$ sendiri prima, jadi ia hasil kali dengan satu faktor. Sekarang ambil
+$n \geq 3$ dan andaikan pernyataan benar untuk semua bilangan bulat $m$ dengan
+$2 \leq m < n$. Jika $n$ prima, selesai. Jika $n$ bukan prima, menurut definisi terdapat
+pembagi positif $a$ dengan $a \neq 1$ dan $a \neq n$; tulis $n = ab$ dengan
+$b = n/a$. Karena $a \neq 1$ dan $a \neq n$, berlaku $2 \leq a \leq n-1$, dan begitu
+pula $2 \leq b \leq n-1$. Hipotesis induksi berlaku untuk $a$ maupun $b$, jadi keduanya
+hasil kali bilangan prima, dan hasil kali keduanya adalah $n$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Hipotesis induksi kuat dipakai dua kali, pada $a$ dan pada $b$. Di situlah induksi biasa
+tidak nyaman: keduanya bisa jauh lebih kecil daripada $n-1$, sehingga pernyataan untuk
+$n-1$ saja tidak menutupnya.
+
+Teorema itu menutup janji bagian sebelumnya: daftar prima tidak pernah lengkap.
+
+\begin{akibat}[Tak berhingga banyak bilangan prima]
+\index{prima tak berhingga}
+Untuk setiap daftar berhingga bilangan prima $p_{1}, p_{2}, \dots, p_{k}$ terdapat
+bilangan prima yang tidak ada di dalam daftar itu.
+\end{akibat}
+\par\smallskip\noindent\textit{Bukti.} Misalkan $N = p_{1}p_{2}\cdots p_{k} + 1$. Karena
+$N \geq 2$, teorema sebelumnya memberi bahwa $N$ adalah hasil kali bilangan prima;
+ambil satu faktor prima $q$ dari $N$. Andaikan $q$ termasuk daftar, misalnya
+$q = p_{i}$. Maka $q$ membagi hasil kali $p_{1}\cdots p_{k}$, dan karena $q$ juga
+membagi $N$, bilangan $q$ membagi selisih $N - p_{1}\cdots p_{k} = 1$. Tidak ada
+bilangan prima yang membagi $1$, jadi pengandaian itu salah. Maka $q$ tidak ada di
+dalam daftar.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Bukti itu tidak membuktikan bahwa $N$ prima, hanya bahwa $N$ punya faktor prima di luar
+daftar: untuk $2,3,5,7$ diperoleh $N = 211$ yang kebetulan prima, untuk $2,3,5,7,11,13$
+diperoleh $N = 30031 = 59 \cdot 509$. Bukti itu konstruktif; ``andaikan hanya ada
+berhingga banyak prima'' hanyalah pembungkus retorisnya.
+
+\begin{untukanak}
+Bayangkan deretan seribu kotak, dan kita ingin membuktikan setiap kotak berisi
+kelereng. Kita tidak perlu membuka seribu kotak. Cukup buka kotak pertama, lalu buktikan
+satu hal: kalau sebuah kotak berisi kelereng, kotak di sebelahnya juga berisi kelereng.
+Kalau dua hal itu benar, seribu kotak selesai diperiksa tanpa dibuka satu per satu.
+
+Inilah induksi, dan ia terasa seperti sulap. Kuncinya pada janji kedua: kalau hubungan
+antarkotak bocor di satu tempat saja, seluruh deretan roboh.
+
+Sekarang bayangkan kotak pertama ternyata kosong. Hubungan antarkotak tetap benar, tetapi
+tidak menolong, karena tidak ada yang pertama untuk dijatuhkan. Inilah kesalahan yang
+paling sering terjadi.
+
+Di bab ini kita akan tahu mengapa dua langkah itu tidak boleh ditukar, dan mengapa
+pemeriksaan pada banyak kotak bukan pengganti keduanya.
+\end{untukanak}
+
+\section{Ketika bukti gagal}
+\tingkat{lanjut}
+
+Kembali ke papan tulis pada pembuka bab. Empat puluh nilai pertama prima, dan pada
+$n = 40$ pola itu patah:
+\[
+  40^{2} + 40 + 41 = 1600 + 40 + 41 = 1681 = 41^{2}.
+\]
+Kegagalan itu bukan kebetulan, dan bentuknya dapat dijelaskan tanpa komputer. Untuk
+setiap bilangan bulat $p \geq 2$, substitusi $n = p-1$ memberi
+\[
+  (p-1)^{2} + (p-1) + p = p^{2} - 2p + 1 + p - 1 + p = p^{2},
+\]
+sedangkan substitusi $n = p$ memberi $p^{2} + p + p = p(p+2)$. Jadi setiap bilangan
+$p \geq 2$ menghasilkan dua titik gagal, yaitu $n = p-1$ dan $n = p$. Dengan $p = 41$
+keduanya menghasilkan $1681 = 41^{2}$ dan $1763 = 41 \cdot 43$.
+
+Pola yang sama muncul pada polinomial yang lebih kecil. Untuk $n^{2}+n+11$ titik gagal
+pertama $n = 10$, yang memberi $121 = 11^{2}$; untuk $n^{2}+n+17$ titik gagal pertama
+$n = 16$, yang memberi $289 = 17^{2}$; untuk $n^{2}+n+29$ kegagalan datang pada $n = 2$,
+karena $35 = 5 \cdot 7$ bukan prima. Semakin besar bilangan pada posisi konstanta,
+semakin panjang rentang awal yang bersih; itulah seluruh rahasia reputasi $41$.
+
+Kegagalan itu memberi tiga pelajaran yang sering tertukar.
+
+Pelajaran pertama bersifat asimetris. Satu contoh penyangkal menumbangkan pernyataan
+``untuk semua'', sedangkan empat puluh contoh yang berhasil tidak membuktikan apa pun
+tentang nilai keempat puluh satu. Pemeriksaan komputer karena itu alat menemukan dugaan,
+bukan alat membuktikan.
+
+Pelajaran kedua menyangkut letak cacat. Cacat pertama yang paling sering lolos muncul
+pada bukti induksi. Perhatikan klaim yang salah berikut: untuk setiap $n \geq 1$
+berlaku $1+3+\cdots+(2n-1) = n^{2}+1$. Langkah induksinya, bila diperiksa, ternyata
+sah:
+\[
+  \bigl(n^{2}+1\bigr) + (2n+1) = n^{2} + 2n + 2 = (n+1)^{2} + 1 .
+\]
+Jadi dari kebenaran rumus pada $n$ memang mengalir kebenaran pada $n+1$. Yang gagal
+adalah basis: untuk $n = 1$ ruas kiri bernilai $1$ sedangkan ruas kanan bernilai $2$.
+Langkah induksi memindahkan kebenaran, ia tidak menciptakannya.
+
+Pelajaran ketiga menyangkut batas pemeriksaan. Uji pembagian lazim: $m > 1$ prima bila
+tidak habis dibagi bilangan prima mana pun yang lebih kecil daripada $\sqrt{m}$. Untuk $m = 1681$ diperoleh $\sqrt{1681} = 41$, dan prima yang
+lebih kecil daripada $41$ adalah $2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37$; tidak
+satu pun membagi $1681$. Dengan aturan itu $1681$ lolos sebagai prima. Kesalahannya ada
+pada kata ``lebih kecil'': aturan yang benar memakai ``lebih kecil atau sama dengan'',
+karena $1681 = 41 \cdot 41$ dan pembaginya tepat sebesar akar. Satu tanda pertidaksamaan
+yang longgar menghasilkan satu prima palsu, tepat di $n = 40$.
+
+Tiga cacat lain berulang di tulisan yang lebih panjang. Cacat penalaran melingkar:
+``karena $n^{2}+n+41$ prima untuk semua $n$, maka prima juga untuk $n = 40$'' memakai
+yang harus dibuktikan sebagai alasan. Cacat membagi dengan nol: dari $a = b$ orang
+menyimpulkan $a+b = b$ setelah membagi dengan $a-b$, padahal $a-b = 0$. Cacat menukar
+arah: dari $P \Rightarrow Q$ dan $Q$ orang menyimpulkan $P$; pada tabel kebenaran,
+baris ketiga adalah tempat kesalahan itu bersembunyi.
+
+Keempat cacat itu berbagi satu akar: sebuah langkah dipakai di luar syaratnya.
+Kebiasaan yang berguna bukan menghafal pola, melainkan memeriksa syarat setiap langkah:
+pada kontradiksi pengandaiannya harus negasi kesimpulan, pada induksi ada basis dan
+langkah, pada pembagian pembaginya tidak nol.
+
+\begin{tantangan}
+Klaim: untuk setiap bilangan bulat $k \geq 0$, bilangan $2^{2^{k}}+1$ prima. Untuk
+$k = 0,1,2,3,4$ nilainya $3$, $5$, $17$, $257$, $65537$, dan kelimanya memang prima.
+Tentukan $k$ terkecil yang menggugurkan klaim itu, lalu tunjukkan pembaginya; klaim itu
+salah, dan kesalahannya dapat ditunjukkan tanpa komputer.
+
+Petunjuk 1: lima nilai bukan bukti. Periksa $k = 5$; bilangannya $4294967297$, dan pembagi
+terkecilnya jauh lebih kecil daripada akar kuadratnya.
+
+Petunjuk 2: pembagi itu berbentuk $5 \cdot 2^{7}+1 = 641$, dan
+$4294967297 = 641 \cdot 6700417$.
+
+Kalau mentok, kembali ke bagian ``Ketika bukti gagal''.
+\end{tantangan}
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Tiga perhitungan berikut menopang bab ini dan dapat diulang di kertas. Yang pertama
+jumlah bilangan ganjil pertama, suku demi suku dari $n = 1$.
+
+{\centering
+\begin{tabular}{cccc}
+\hline
+$n$ & suku-suku & jumlah & $n^{2}$ \\
+\hline
+$1$ & $1$ & $1$ & $1$ \\
+$2$ & $1+3$ & $4$ & $4$ \\
+$3$ & $1+3+5$ & $9$ & $9$ \\
+$4$ & $1+3+5+7$ & $16$ & $16$ \\
+$5$ & $1+3+5+7+9$ & $25$ & $25$ \\
+$6$ & $1+3+5+7+9+11$ & $36$ & $36$ \\
+\hline
+\end{tabular}\par}
+
+Lanjutannya: $36+13 = 49 = 7^{2}$, lalu $49+15 = 64$, $64+17 = 81$, $81+19 = 100$.
+Selisih dua kuadrat berurutan memang $(n+1)^{2}-n^{2} = 2n+1$, dan di situlah induksi
+berpijak.
+
+Yang kedua uji primalitas pada $n^{2}+n+41$, hanya pada nilai yang menarik.
+
+{\centering
+\begin{tabular}{ccc}
+\hline
+$n$ & $n^{2}+n+41$ & keterangan \\
+\hline
+$0$ & $41$ & prima \\
+$1$ & $43$ & prima \\
+$39$ & $1601$ & prima \\
+$40$ & $1681 = 41^{2}$ & bukan prima \\
+$41$ & $1763 = 41 \cdot 43$ & bukan prima \\
+\hline
+\end{tabular}\par}
+
+Pemeriksaan menyeluruh untuk $n = 0$ sampai $n = 40$ memberi $40$ nilai prima dari $41$;
+satu-satunya yang gagal adalah $n = 40$, dan $\sqrt{1681} = 41$ tepat, sehingga pembagi
+yang menentukan berada di batas pemeriksaan.
+
+Yang ketiga pemeriksaan kontraposisi pada tabel kebenaran, ditulis lengkap.
+
+{\centering
+\begin{tabular}{cc|cc|c}
+\hline
+$P$ & $Q$ & $P \Rightarrow Q$ & $\neg Q \Rightarrow \neg P$ & setara \\
+\hline
+B & B & B & B & ya \\
+B & S & S & S & ya \\
+S & B & B & B & ya \\
+S & S & B & B & ya \\
+\hline
+\end{tabular}\par}
+
+Keempat baris memberi kesamaan: pola kontraposisi bukan trik retoris melainkan penggantian
+bentuk yang tidak mengubah nilai. Kolom $Q \Rightarrow P$ akan berbeda pada baris ketiga,
+dan perbedaan itulah yang membuat konvers tidak boleh dipakai.
+
+\kertas{Hitung $1+3+\cdots+(2n-1)$ untuk $n = 11$ dan $n = 12$ dengan bertolak dari
+$100 = 10^{2}$, yaitu tambahkan dua bilangan ganjil berikutnya satu per satu. Lalu
+hitung $n^{2}+n+17$ untuk $n = 16$ dan periksa dengan pembagian apakah $289$ sama
+dengan $17^{2}$. Terakhir, cari titik gagal pertama $n^{2}+n+11$ dengan menguji
+$n = 0, 1, 2, \dots$ dan jelaskan mengapa titik itu dapat diramalkan dari bentuk
+polinomialnya.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Skrip berikut hanya memakai pustaka standar Python dan dapat dijalankan ulang tanpa
+pemasangan apa pun; setiap baris keluarannya adalah keluaran asli.
+
+\begin{lab}
+\begin{verbatim}
+from itertools import product
+
+def prima(n):
+    if n < 2:
+        return False
+    d = 2
+    while d * d <= n:
+        if n % d == 0:
+            return False
+        d += 1
+    return True
+
+pasang = product([False, True], repeat=2)
+print("kontraposisi:", all((not P or Q) == (Q or not P)
+                          for P, Q in pasang))
+
+D = range(1, 11)
+print("y>x:", sum(y > x for x in D for y in D), "dari 100")
+print("x tanpa saksi:", [x for x in D if all(y <= x for y in D)])
+
+nilai = [(n, n*n + n + 41) for n in range(41)]
+print("prima:", sum(prima(v) for _, v in nilai), "dari 41")
+print("gagal:", [(n, v, int(v**0.5)) for n, v in nilai if not prima(v)])
+print("41*41, 41*43:", 41*41, 41*43)
+
+sisa = {(n*n - 1) % 8 for n in range(1, 40, 2)}
+print("sisa mod 8:", sisa)
+
+langkah = all(n*n + 1 + 2*n + 1 == (n+1)**2 + 1 for n in range(1, 500))
+print("langkah palsu:", langkah)
+\end{verbatim}
+\end{lab}
+
+Keluaran yang diperoleh:
+
+\begin{verbatim}
+kontraposisi: True
+y>x: 45 dari 100
+x tanpa saksi: [10]
+prima: 40 dari 41
+gagal: [(40, 1681, 41)]
+41*41, 41*43: 1681 1763
+sisa mod 8: {0}
+langkah palsu: True
+\end{verbatim}
+
+Baris pertama memeriksa keempat baris tabel sekaligus. Baris kedua dan ketiga menghitung
+yang tidak nyaman dikerjakan di kertas: dari seratus pasangan $(x,y)$ pada
+$\{1,\dots,10\}$, $45$ memenuhi $y > x$, dan satu-satunya $x$ tanpa saksi adalah $10$;
+itulah kegagalan $(\forall x)(\exists y)$ pada himpunan berhingga.
+
+Baris keempat dan kelima memberi $40$ prima dari $41$ nilai, gagal hanya di
+$(40,1681,41)$; angka $41$ itu adalah $\sqrt{1681}$ yang dipotong. Baris keenam
+memastikan $1681 = 41^{2}$ dan $1763 = 41 \cdot 43$. Baris ketujuh menyatakan seluruh
+$n$ ganjil di bawah $40$ memberi sisa $0$ modulo $8$, sesuai teorema pola pertama. Baris
+terakhir peringatan: langkah induksi klaim yang salah itu sah untuk lima ratus nilai
+pertama, sehingga pemeriksaan numerik tidak menemukan cacatnya.
+
+\begin{untukdosen}
+Urutan mengajar yang berhasil dipakai: mulai dari $n = 40$ dan $1681$, bukan dari
+definisi. Setelah mahasiswa kesal karena empat puluh pemeriksaan ternyata sia-sia, baru
+masuk tabel kebenaran, dengan penekanan pada baris ketiga dan keempat. Lanjutkan ke
+negasi kuantor lewat definisi limit barisan, lalu ke definisi harfiah dengan contoh
+$91 = 7 \cdot 13$; tutup dengan induksi, kegagalan basis, dan lab.
+
+Dua miskonsepsi tersering. Pertama, implikasi dibaca sebagai sebab-akibat, sehingga baris
+dengan anteseden salah dinilai salah dan bukti berkasus hampa ditolak. Kedua, induksi
+dianggap selesai setelah langkah terbukti, dan induksi kuat dianggap induksi biasa yang
+diulang; akibatnya basis tidak diperiksa dan hipotesis dipakai tanpa menyebut
+rentangnya.
+
+Aktivitas papan tulis: bagi kelas menjadi dua kelompok. Kelompok pertama menulis klaim
+berkuantor, kelompok kedua menulis negasinya, lalu masing-masing menyebut satu objek yang
+menyangkal klaim lawan. Permainan berhenti ketika sebuah negasi tidak dapat disangkal.
+
+Mahasiswa siap lanjut apabila dapat menegasikan definisi limit tanpa membuka catatan
+dan dapat menjelaskan mengapa basis pada induksi tidak boleh dilewati.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Pernyataan bernilai benar atau salah; $P \Rightarrow Q$ hanya salah ketika $P$
+        benar dan $Q$ salah.
+  \item $P \Rightarrow Q \equiv \neg Q \Rightarrow \neg P$, tetapi konversnya tidak
+        setara; $\neg(P \Rightarrow Q) \equiv P \wedge \neg Q$.
+  \item Negasi berjalan dari luar ke dalam: setiap kuantor berganti jenis, sehingga
+        menyangkal ``untuk semua'' berarti menunjuk satu contoh penyangkal.
+  \item Definisi berlaku dua arah: nama hanya boleh dipakai bila seluruh klausa
+        terpenuhi, dan seluruh klausa dipakai untuk memeriksanya.
+  \item Empat pola bukti: langsung, kontraposisi, kontradiksi, konstruktif. Pilih
+        yang paling pendek, bukan yang paling megah.
+  \item Induksi menuntut basis dan langkah; induksi kuat menuntut seluruh nilai
+        sebelumnya. Langkah tanpa basis tidak membuktikan apa pun.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Tulis negasi dari pernyataan berikut, lalu terjemahkan hasilnya menjadi
+        kalimat Indonesia yang menyatakan apa yang harus ditunjukkan untuk
+        menyanggahnya: ``untuk setiap $\varepsilon > 0$ terdapat bilangan asli $N$
+        sehingga untuk setiap $n \geq N$ berlaku $|a_{n} - L| < \varepsilon$''.
+
+  \item Tulis negasi dari ``setiap bilangan prima lebih besar daripada $2$ adalah
+        ganjil'', lalu sebutkan satu objek yang menyangkal pernyataan aslinya.
+        Kerjakan hal yang sama untuk ``terdapat bilangan asli $n$ sehingga
+        $n^{2}+n+41$ tidak prima''.
+
+  \item Buktikan bahwa untuk setiap bilangan bulat $n$, bilangan $n^{2}+n$ selalu
+        genap. Kerjakan dengan dua cara: pembagian kasus paritas, dan kontraposisi.
+
+  \item Buktikan dengan induksi bahwa untuk setiap bilangan asli $n$ berlaku
+        \[
+          1^{2} + 2^{2} + \cdots + n^{2} = \frac{n(n+1)(2n+1)}{6}.
+        \]
+        Periksa rumus itu untuk $n = 1, 2, 3$ sebelum menyusun buktinya.
+
+  \item Buktikan dengan induksi kuat bahwa setiap bilangan asli $n$ dapat ditulis
+        dalam bentuk $n = 2^{k}m$ dengan $k \geq 0$ bilangan bulat dan $m$ bilangan
+        ganjil. Tunjukkan di bagian mana hipotesis induksi kuat dipakai.
+
+  \item Nilai klaim berikut: benar, salah, atau belum cukup bukti.
+        \begin{enumerate}
+          \item Jika $P(1)$ benar dan $P(k) \Rightarrow P(k+1)$ untuk setiap
+                $k \in \mathbb{N}$, maka $P(n)$ benar untuk setiap $n \in
+                \mathbb{N}$.
+          \item Jika $P(n)$ benar untuk $n = 1, 2, \dots, 10^{6}$, maka $P(n)$ benar
+                untuk setiap $n \in \mathbb{N}$.
+          \item Jika $n^{2}+n+41$ prima untuk $n = 0, 1, \dots, 39$, maka klaim itu
+                benar untuk setiap $n \geq 0$.
+          \item Jika $3$ membagi $n$, maka $6$ membagi $n$.
+        \end{enumerate}
+        Untuk setiap butir yang salah, berikan satu contoh penyangkal konkret.
+
+  \item Hitung dengan Python banyaknya bilangan prima di antara $n^{2}+n+41$ untuk
+        $n = 0$ sampai $n = 100$, lalu tentukan semua $n$ pada rentang itu yang
+        membuat nilainya bukan prima. Periksa apakah setiap titik gagal itu berbentuk
+        $n = p-1$ atau $n = p$ untuk suatu bilangan prima $p$.
+
+  \item Untuk $n = 1$ sampai $n = 12$, hitung $2^{n}$ dan $n^{2}$, lalu tentukan
+        bilangan asli terkecil $n_{0}$ sehingga $2^{n} > n^{2}$ berlaku untuk setiap
+        $n \geq n_{0}$. Buktikan klaim itu dengan induksi, dengan basis $n_{0}$.
+
+  \item Buktikan bahwa pernyataan ``terdapat bilangan bulat $n > 1$ dengan
+        $n^{2}-1$ prima'' salah. Sebutkan lebih dulu bentuk faktorisasi $n^{2}-1$
+        untuk $n > 1$, lalu jelaskan mengapa faktor-faktornya tidak mungkin sama
+        dengan $1$.
+
+  \item Tunjukkan bahwa pernyataan ``jika $n^{2}$ habis dibagi $4$ maka $n$ habis
+        dibagi $4$'' salah, lalu perbaiki kesimpulannya menjadi klaim yang benar dan
+        buktikan.
+\end{enumerate}
+
+\par\smallskip\noindent\textit{Petunjuk untuk tiga butir tersulit.} Butir 5: pisahkan
+kasus $n$ ganjil, yang langsung selesai dengan $k=0$ dan $m=n$, dari kasus $n$ genap,
+yang memakai hipotesis induksi pada $n/2$. Butir 7: hitung juga $\sqrt{n^{2}+n+41}$
+untuk setiap titik gagal, dan bandingkan dengan pembagi terkecilnya. Butir 9: $n^{2}-1 = (n-1)(n+1)$; untuk $n > 1$ kedua faktor itu terletak di antara $1$
+dan $n^{2}-1$.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini tiga hal klasik yang bertahan tanpa komputer:
+ketakrasionalan $\sqrt{2}$ dengan bukti paritas, tak berhingga banyak prima lewat
+konstruksi Euklides, dan ketunggalan bentuk setiap bilangan asli sebagai hasil kali prima.
+Yang hanya dipopulerkan adalah cerita bahwa $41$ ``hampir'' rumus prima; yang terjadi
+hanyalah rentang awal yang panjang, dan panjangnya dapat diramalkan dari $n^{2}+n+p$.
+
+Sumber primer: Abbott, \emph{Understanding Analysis}, Bab~1 Bagian~1.1 (irasionalitas
+$\sqrt{2}$) dan Bagian~1.2 (pendahuluan, termasuk induksi); Avigad dan Massot,
+\emph{Mathematics in Lean}, Bab~3 (logika) serta Bab~5 Bagian~5.1 dan 5.2
+(akar irasional, induksi dan rekursi); Euklides, \emph{Elements}, Buku~IX
+Proposisi~20 untuk tak berhingga prima.
+
+Pertanyaan yang masih terbuka: tidak ada polinomial berderajat positif dengan koefisien
+bulat yang bernilai prima untuk semua $n \geq 0$ (bukti satu baris: $f(0)$ membagi
+$f(t\,f(0))$), tetapi seberapa panjang rentang prima yang dapat dicapai polinomial
+berderajat tinggi masih dipelajari, dan distribusi prima terikat pada hipotesis Riemann
+yang belum terbukti.
+
+Batas keberlakuan: semua hasil bab ini elementer dan tidak bergantung pada pilihan aksioma
+himpunan. Verifikasi formal di Lean (Bab~28) memeriksa keabsahan setiap langkah deduktif,
+tetapi tidak memeriksa apakah pernyataan formal yang dibuktikan memang yang dimaksud
+penulisnya.
+\end{untukpeneliti}
+
+\peta{Bab 1 pada \emph{Understanding Analysis} (Abbott), khususnya Bagian 1.1 tentang
+irasionalitas $\sqrt{2}$ dan Bagian 1.2 tentang pendahuluan; Bab 3 (logika), Bab 5
+Bagian 5.1 dan 5.2 (akar irasional serta induksi dan rekursi) pada
+\emph{Mathematics in Lean} (Avigad dan Massot); dan Buku IX Proposisi 20
+\emph{Elements} (Euklides) untuk tak berhingga banyak bilangan prima.}

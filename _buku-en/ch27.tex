@@ -1,0 +1,1104 @@
+\chapter{Honest Model Evaluation}
+
+A short report lands on a security analyst's desk. It holds one table: a new intrusion detector,
+tested on network traffic captured from a campus network over a month, reaches an accuracy of
+$99$ percent. That number is framed in bold type and closed by a single sentence:
+``ready to deploy''.
+
+The data contains one attack for every thousand connections. On the same collection, a three-line
+program that always answers ``clean'' obtains an accuracy of $99.9$ percent: it reads no feature at
+all and never raises a false accusation. The detector trained for hours loses, and its report
+contains not one number that leaks that defeat.
+
+What is wrong is the summary: a single number stands in for four numbers with different roles, on
+data whose composition is never stated. Chapter 26 explained why test error differs from training
+error; this chapter closes three gaps: which metrics are honest about what they ignore, how much
+those numbers wobble, and whether the test data is truly unseen by the procedure that chose the
+model.
+
+\begin{untukanak}
+Imagine a metal detector at a school gate. Every morning it beeps. Yesterday it beeped a thousand
+times, and the guard searched a thousand bags. Only sixty of those bags really carried a forbidden
+object. The other nine hundred and forty students had to open their bags for no reason.
+
+Now an inspector from the district office arrives and asks: what percentage of the device's answers
+were right? The guard answers with pride: ninety-nine percent. He is not lying; out of a hundred
+thousand bags, the device was wrong on only a thousand. But that answer does not answer the
+question that upsets the students: they are upset not because the device is often wrong, but
+because almost every time it beeps, it is wrong.
+
+The two questions sound alike and their answers are far apart: one asks about all the bags, the
+other about the bags that were beeped. In this chapter we will learn why one device can excel at
+the first question and collapse on the second, why a number of a hundred percent is sometimes not
+good news, and why an honest report always carries more than one number.
+\end{untukanak}
+
+\section{Four numbers that are not symmetric}
+\tingkat{basic}
+
+A binary classifier, however sophisticated its interior, leaves the same trace: four numbers. What
+separates one evaluation report from another is whether all four are reported. In everyday
+language: every decision has two ways to be right and two ways to be wrong, and closing off one of
+them is the same as hiding.
+
+\kamus{confusion matrix}{matriks konfusi}{a four-column ledger that records every decision, right
+or wrong, together with the direction of the error}
+
+\begin{definisi}[Confusion matrix]
+\index{confusion matrix}
+Suppose every example has a true label $y\in\{0,1\}$ and a prediction
+$\hat y\in\{0,1\}$, with $1$ meaning positive (attack, disease, harmful message).
+The four numbers
+\begin{align}
+\mathrm{TP}&=\#\{y=1,\ \hat y=1\}, & \mathrm{FP}&=\#\{y=0,\ \hat y=1\},
+\nonumber\\
+\mathrm{FN}&=\#\{y=1,\ \hat y=0\}, & \mathrm{TN}&=\#\{y=0,\ \hat y=0\}
+\nonumber
+\end{align}
+together with their arrangement are called the \emph{confusion matrix}. The total number of
+examples is $n=\mathrm{TP}+\mathrm{FP}+\mathrm{FN}+\mathrm{TN}$.
+\end{definisi}
+
+From those four numbers we derive metrics that answer different questions. Precision asks: when the
+model says positive, how likely is it to be right. Recall asks: of all the positive cases, what
+fraction was caught.
+
+\begin{definisi}[Precision, recall, specificity]
+\index{precision}
+\index{recall}
+With $\mathrm{TP}+\mathrm{FP}>0$ and $\mathrm{TP}+\mathrm{FN}>0$,
+\[
+\operatorname{prec}=\frac{\mathrm{TP}}{\mathrm{TP}+\mathrm{FP}},\qquad
+\operatorname{rec}=\frac{\mathrm{TP}}{\mathrm{TP}+\mathrm{FN}},\qquad
+\operatorname{spec}=\frac{\mathrm{TN}}{\mathrm{TN}+\mathrm{FP}} .
+\]
+Accuracy is $(\mathrm{TP}+\mathrm{TN})/n$, and $F_1$ is
+$2\,\mathrm{TP}/(2\,\mathrm{TP}+\mathrm{FP}+\mathrm{FN})$.
+\end{definisi}
+
+Let us use one worked example: a detector is tested on $1000$ labeled connections, $100$ of them
+attacks. It flags $62$ attacks correctly, misses $38$, and accuses $17$ clean connections of being
+attacks.
+
+\begin{center}
+\small
+\begin{tabular}{l|rr|r}
+\hline
+ & predicted positive & predicted negative & total \\
+\hline
+actually positive & $\mathrm{TP}=62$ & $\mathrm{FN}=38$ & 100 \\
+actually negative & $\mathrm{FP}=17$ & $\mathrm{TN}=883$ & 900 \\
+\hline
+total & 79 & 921 & 1000 \\
+\hline
+\end{tabular}
+\end{center}
+
+Its precision is $62/79=0.784810$: about four out of five alarms point to an attack. Its recall is
+$62/100=0.620000$: almost four out of ten attacks go unseen. Its specificity is
+$883/900=0.981111$. Its accuracy is $945/1000=0.945000$, and $F_1=124/179=0.692737$. All five
+numbers are true about the same model, and not one of them may be used on its own. A check with
+\texttt{sklearn.metrics} gives the same five numbers to six decimal places.
+
+Figure~\ref{fig:konfusi-jujur} puts the four numbers in their places, together with the row and
+column totals; every number in the rest of the chapter must be traceable to one of the cells of
+that figure.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[every node/.style={font=\footnotesize}]
+  % two correct cells (green) and two wrong cells (red)
+  \fill[layerjade!14] (4.40,2.00) rectangle (6.70,2.90);
+  \fill[layerjade!14] (6.70,1.10) rectangle (9.00,2.00);
+  \fill[accent!8]     (6.70,2.00) rectangle (9.00,2.90);
+  \fill[accent!8]     (4.40,1.10) rectangle (6.70,2.00);
+  \draw[ink,thick] (4.40,0.55) rectangle (10.30,2.90);
+  \draw[ink] (6.70,0.55) -- (6.70,2.90);
+  \draw[ink] (9.00,0.55) -- (9.00,2.90);
+  \draw[ink] (4.40,2.00) -- (10.30,2.00);
+  \draw[ink] (4.40,1.10) -- (10.30,1.10);
+  \draw[ink!35] (4.40,0.55) -- (10.30,0.55);
+  % cell contents
+  \node at (5.55,2.45) {$\mathrm{TP}=62$};
+  \node at (7.85,2.45) {$\mathrm{FN}=38$};
+  \node at (5.55,1.55) {$\mathrm{FP}=17$};
+  \node at (7.85,1.55) {$\mathrm{TN}=883$};
+  % column headers
+  \node at (5.55,3.14) {predicted positive};
+  \node at (7.85,3.14) {predicted negative};
+  \node at (9.65,3.14) {total};
+  % row headers
+  \node[anchor=east] at (4.24,2.45) {actually positive $(100)$};
+  \node[anchor=east] at (4.24,1.55) {actually negative $(900)$};
+  \node[anchor=east] at (4.24,0.82) {total};
+  % totals
+  \node at (5.55,0.82) {$79$};
+  \node at (7.85,0.82) {$921$};
+  \node at (9.65,2.45) {$100$};
+  \node at (9.65,1.55) {$900$};
+  \node at (9.65,0.82) {$1000$};
+  \node[anchor=north,font=\scriptsize,align=center,text width=11.4cm] at (7.00,0.30)
+    {accuracy $=(62+883)/1000=0.945$;\quad precision $=62/79$;\quad recall $=62/100$};
+\end{tikzpicture}
+\caption{The confusion matrix of the worked example on $1000$ connections: $62$ attacks caught,
+$38$ missed, $17$ false alarms, and $883$ clean connections correctly rejected. The rows sum to
+$100$ positive and $900$ negative, the columns to $79$ predicted positive and $921$ predicted
+negative, and everything to $1000$. The two green cells are the two ways to be right, the two red
+cells the two ways to be wrong. Accuracy $0.945$ adds the two green cells and therefore cannot
+distinguish the $62$ that were caught from the $38$ that were missed.}
+\label{fig:konfusi-jujur}
+\end{figure}
+
+The roles of the four numbers are not symmetric. Precision answers the operator's question: when
+the alarm sounds, how likely is a real attack. Recall answers the policy designer's question: of
+all attacks, what fraction is caught. Both depend on the threshold, so a metric without a
+threshold is not a complete statement: the same model gives precision $0.25$ with recall $0.45$,
+or precision $0.013$ with recall $0.86$.
+
+$F_1$ tries to compress precision and recall into a single number, and that is exactly where it is
+easiest to misuse.
+
+\begin{proposisi}
+\index{f1}
+$F_1$ is the harmonic mean of precision $P$ and recall $R$, that is $F_1=2PR/(P+R)$,
+so that $F_1\le(P+R)/2$ with equality holding exactly when $P=R$.
+\end{proposisi}
+
+\begin{proof}[Proof]
+Write $a=\mathrm{TP}$, $b=\mathrm{FP}$, $c=\mathrm{FN}$. Then $P=a/(a+b)$,
+$R=a/(a+c)$, and
+\[
+\frac{2PR}{P+R}
+=\frac{2a^2\big/\bigl((a+b)(a+c)\bigr)}{a(2a+b+c)\big/\bigl((a+b)(a+c)\bigr)}
+=\frac{2a}{2a+b+c}=F_1 .
+\]
+The harmonic--arithmetic inequality $4PR\le(P+R)^2$ is equivalent to $(P-R)^2\ge0$, and equality
+occurs only when $P=R$.
+\end{proof}
+
+The harmonic property pulls the value down toward the smaller component: precision $0.9$ with
+recall $0.2$ gives $F_1\approx0.327$, not $0.55$; in our example $F_1=0.6927$, slightly below the
+midpoint $0.7024$.
+
+Three defects of the summary must be named one by one, because the remedies differ. Precision is
+blind to attacks that slip through: a model that flags every connection obtains precision $0.1$,
+namely its own prevalence, but recall $1$. $F_1$ ignores $\mathrm{TN}$ entirely: two models with
+the same precision and recall but ten times as many false alarms report an identical $F_1$, even
+though their operating costs are far apart. $F_1$ also weighs both components as equal, even though
+one missed attack is usually far more expensive than one false alarm.
+
+\begin{tantangan}
+A report carries only three numbers: ``accuracy $0.9720$ on $5000$ test connections; precision
+$0.000$; model ready to deploy''. Determine the whole confusion matrix that is consistent with
+that report, explain why its recall is zero and not some other number, then find the largest
+prevalence that is still possible.
+
+Hint 1: accuracy only adds the two diagonal cells, so $5000(1-0.9720)=140$ errors are free to be
+split between the two remaining cells.
+
+Hint 2: precision $0.000$ means $\mathrm{TP}=0$, so $\mathrm{FN}$ equals the number of positive
+examples and $\mathrm{FP}$ is the rest. But precision with $\mathrm{TP}=\mathrm{FP}=0$ is $0/0$,
+not $0$; the figure $0.000$ in that report therefore demands at least one false alarm.
+
+If you get stuck, go back to the section Deceptive accuracy on unbalanced data in this chapter.
+\end{tantangan}
+
+\section{Deceptive accuracy on unbalanced data}
+\tingkat{basic}
+
+Accuracy is the most often reported and the easiest to deceive: it counts all errors at the same
+price on a collection whose composition is never stated. In everyday language: accuracy is a report
+card computed as if the two groups were balanced.
+
+\index{balanced accuracy}
+\begin{definisi}[Balanced accuracy]
+Let $\pi$ be the prevalence of the positive class. \emph{Balanced accuracy} is
+$(\operatorname{rec}+\operatorname{spec})/2$, that is the average of the correct rates on the two
+classes. This quantity does not change when the numbers of positive and negative examples are
+changed without changing those two rates.
+\end{definisi}
+
+Ordinary accuracy has no such property, and the consequence can be written exactly.
+
+\begin{proposisi}
+A classifier that always answers negative obtains accuracy $1-\pi$. Hence a model whose accuracy
+is below $1-\pi$ loses to a baseline that learns nothing, and a report that states an accuracy
+without stating $\pi$ cannot be judged.
+\end{proposisi}
+
+\begin{proof}[Proof]
+Of $n$ examples, $\pi n$ are labeled positive and all of them are wrong, while $(1-\pi)n$ are
+labeled negative and all of them are right. The accuracy is $(1-\pi)n/n=1-\pi$. Any other model
+with smaller accuracy therefore makes more errors than that baseline.
+\end{proof}
+
+\begin{bacakeras}
+Two voices, read alternately with a friend. Tap the table every time the word ``zero'' is spoken.
+
+``A hundred cards. How many red?'' ``Ten.'' ``How many white?'' ``Ninety.'' ``What does the machine
+answer?'' ``White. All white.'' ``How many does it get right?'' ``Ninety.'' ``So its accuracy?''
+``Ninety percent.'' ``And the red ones?'' ``Zero. Not a single one.'' ``Was that number lying?''
+``No. It answered only one question.'' ``Which question?'' ``How many of everything there is did I
+guess right.'' ``Which question went unanswered?'' ``Of the truly dangerous ones, how many did I
+find.''
+
+Repeat the three middle lines, faster and faster, with the same taps: what is counted is
+everything, what is lost goes unmentioned, what is lost goes unmentioned.
+
+The second voice closes softly: the small class drowns easily inside the average of the large
+class, and that average never names who drowned.
+
+The line the reader must repeat, once, in a clear voice: accuracy adds up what is right, not what
+matters, so on an unbalanced class ninety percent can mean zero.
+\end{bacakeras}
+
+In our worked example $\pi=0.1$, so the baseline is $0.9$ and the model with $0.945$ really is
+better. Now change only the prevalence, without changing the quality of the model, and watch what
+happens to the same number.
+
+\begin{contoh}[One attack for every thousand connections]
+Take $100\,000$ connections with $100$ attacks. Scores on clean connections are normally
+distributed with mean $0$ and standard deviation $1$; scores on attacks with mean $2.6$ and
+standard deviation $1$. The threshold is set at $2.3263$, the $0.99$ quantile of the negative score
+distribution, so by design about one percent of clean connections will be flagged. One run with a
+fixed seed gives:
+\[
+\mathrm{TP}=62,\quad \mathrm{FP}=1013,\quad \mathrm{FN}=38,\quad \mathrm{TN}=98\,887 .
+\]
+Its accuracy is $(62+98\,887)/100\,000=0.989490$. The baseline is
+$99\,900/100\,000=0.999000$. Its precision is $62/1075=0.057674$, its recall
+$62/100=0.620000$, and its balanced accuracy $0.804930$.
+\end{contoh}
+
+That number $0.9895$, rounded, becomes ``$99$ percent''. It is not merely uninformative: it is
+lower than the baseline by $0.009510$, nearly a full percentage point. The model makes ten times
+as many errors as the program that always answers ``clean'', $1051$ against $100$, and all of them
+are false alarms, $1013$ of them, or about $16.3$ per attack caught.
+
+Here rounding adds damage: $0.9895$ and $0.9990$ both become ``$99$ percent'', even though they
+are separated by the whole difference that matters. A good report therefore writes three or four
+decimal places, states $n$, and states the prevalence; without all three, the reader does not know
+whether $99$ percent is an achievement or a failure.
+
+Should accuracy then not be used at all? It is legitimate when the two errors cost the same, when
+the prevalence is near one half, and when the threshold is fixed. Outside that it must be
+accompanied by precision and recall, or replaced by balanced accuracy: $0.8049$ is more honest than
+$0.9895$, because the minority class is caught only $62$ percent of the time.
+
+\begin{tangan}
+Materials: $100$ cards, $90$ white-faced and $10$ red-faced, a marker, and one sheet of tally paper
+with two columns.
+
+Write ``clean'' on the ninety white cards and ``attack'' on the ten red ones. Shuffle, then deal
+them into ten piles. First rule: every pile is answered ``clean'' without turning over a single
+card. Record the correct answers, then turn all the cards over: ninety right, ten red ones through.
+Write on the board: accuracy ninety percent, recall zero percent.
+
+Now the second rule. Put a dot in the corner of six red cards, and without telling the player, put
+the same dot in the corner of four white cards. Answer ``attack'' only when that dot is visible.
+Count again: six red caught, four red through, four white accused, eighty-six white right.
+
+What must become visible: accuracy moves only from ninety to ninety-two percent, while recall jumps
+from zero to sixty percent. The number that changes most is precisely the number missing from the
+first report.
+\end{tangan}
+
+\section{The ROC curve, AUC, and prevalence}
+\tingkat{intermediate}
+
+Every threshold gives one point on two different rates; choosing a threshold without looking at all
+the possibilities is guessing. In everyday language: we sweep the threshold from loose to strict,
+then draw the trail the model leaves behind.
+
+\kamus{receiver operating characteristic}{kurva roc}{the trail a model leaves when its threshold is
+swept from loose to strict, drawn on two rates that do not depend on prevalence}
+
+\begin{definisi}[ROC curve and AUC]
+\index{roc curve}
+\index{auc}
+For a threshold $t$, the true positive rate and the false positive rate are
+\[
+\mathrm{TPR}(t)=P(S>t\mid y=1),\qquad \mathrm{FPR}(t)=P(S>t\mid y=0),
+\]
+with $S$ the model score. The ROC curve is the set of points $(\mathrm{FPR}(t),\mathrm{TPR}(t))$
+for all $t$. The area under that curve is called the AUC, and for finite data it is computed as the
+trapezoid area between the points actually observed.
+\end{definisi}
+
+The AUC has a far simpler meaning than its name, and that meaning is what made it popular.
+
+\begin{proposisi}
+For data without tied scores, the AUC equals the probability that the score of one randomly drawn
+positive example exceeds the score of one randomly drawn negative example. When there are tied
+scores, each tied pair counts as one half.
+\end{proposisi}
+
+\begin{proof}[Proof]
+Sort all scores from large to small and sweep the threshold downward. Each time the threshold
+passes one positive example, $\mathrm{TPR}$ rises by $1/n_+$ at the height of $\mathrm{FPR}$ at
+that moment, namely the fraction of negative examples already passed. Each time the threshold
+passes a negative example, $\mathrm{FPR}$ rises at constant $\mathrm{TPR}$ and adds no area. The
+total area is therefore
+\[
+\mathrm{AUC}=\frac1{n_+}\sum_{i:\ y_i=1}\mathrm{FPR}_i
+=\frac{1}{n_+n_-}\#\{(i,j):\ y_i=1,\ y_j=0,\ S_i>S_j\},
+\]
+which is the probability claimed, and that last term is what the Mann--Whitney statistic computes.
+Tied scores add no area, so each such pair contributes one half.
+\end{proof}
+
+The AUC does not see prevalence: if every negative example is duplicated ten times, the ordering of
+scores does not change and the AUC stays. How to compute it on paper is shown in the Worked
+examples section.
+
+Now the part that makes the ROC curve dangerous: sweep the threshold in a one-in-a-thousand
+simulation.
+
+\begin{center}
+\small
+\begin{tabular}{rrrrr}
+\hline
+threshold & recall & FPR & precision & accuracy \\
+\hline
+3.0000 & 0.450 & 0.00132 & 0.254 & 0.99813 \\
+2.8000 & 0.510 & 0.00263 & 0.162 & 0.99688 \\
+2.6000 & 0.550 & 0.00467 & 0.105 & 0.99488 \\
+2.3263 & 0.620 & 0.01014 & 0.058 & 0.98949 \\
+2.0000 & 0.740 & 0.02269 & 0.032 & 0.97707 \\
+1.5000 & 0.860 & 0.06729 & 0.013 & 0.93264 \\
+\hline
+\end{tabular}
+\end{center}
+
+On the ROC curve those rows move from $(0.001;0.45)$ to $(0.067;0.86)$: a trail that rises steeply
+near the vertical axis, exactly what every practitioner wants to see. Its AUC is $0.966448$. But
+the precision column says something else. Even at the strictest threshold, where only $132$ clean
+connections are flagged, the precision is $0.254$: three out of four alarms are still wrong. When
+recall is raised to $0.86$, the precision is $0.013$.
+
+Figure~\ref{fig:presisi-recall-ambang} draws the six rows of that table on one threshold axis:
+recall climbs while precision falls, and no point gives both at once.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.78\linewidth, height=6.2cm,
+  x dir=reverse, xmin=1.45, xmax=3.05,
+  ymin=0.35, ymax=0.95, ytick={0.4,0.5,0.6,0.7,0.8,0.9},
+  xlabel={threshold $t$ (to the right: the threshold is loosened)}, ylabel={recall},
+  axis y line*=left, axis x line*=bottom,
+  tick label style={font=\footnotesize}, label style={font=\footnotesize},
+  grid=major, grid style={layergrey!15},
+]
+\addplot[accent,thick,mark=*,mark size=1.8pt] coordinates {
+  (3.0,0.450) (2.8,0.510) (2.6,0.550) (2.3263,0.620) (2.0,0.740) (1.5,0.860)};
+\node[accent,font=\footnotesize,anchor=south west] at (axis cs:2.62,0.665) {recall};
+\end{axis}
+\begin{axis}[
+  width=0.78\linewidth, height=6.2cm,
+  x dir=reverse, xmin=1.45, xmax=3.05,
+  ymin=0, ymax=0.30, ytick={0,0.1,0.2,0.3},
+  axis y line*=right, axis x line*=none, ylabel={precision (right scale)},
+  tick label style={font=\footnotesize}, label style={font=\footnotesize},
+]
+\addplot[layerteal,thick,mark=square*,mark size=1.6pt] coordinates {
+  (3.0,0.254) (2.8,0.162) (2.6,0.105) (2.3263,0.058) (2.0,0.032) (1.5,0.013)};
+\node[layerteal,font=\footnotesize,anchor=north east] at (axis cs:2.78,0.232) {precision};
+\end{axis}
+\end{tikzpicture}
+\caption{Precision and recall at the six thresholds of the previous table, drawn on one threshold
+axis that is turned so that to the right the threshold is loosened. Recall climbs from $0.450$ at
+$t=3.0$ to $0.860$ at $t=1.5$, while precision falls from $0.254$ to $0.013$: the two curves move in
+opposite directions and there is not one point that gives both at once. The precision scale is on
+the right, $0$ to $0.30$; at $t=2.3263$, the threshold used in the simulation, precision $0.058$ with
+recall $0.620$.}
+\label{fig:presisi-recall-ambang}
+\end{figure}
+
+The two readings do not contradict each other: they measure different things.
+
+\begin{proposisi}
+The ROC curve and the AUC depend only on the conditional score distributions $S\mid y=1$ and
+$S\mid y=0$, so they do not change when the prevalence $\pi$ is changed. Precision at a fixed
+threshold does change, and follows
+\[
+\operatorname{prec}(t)=\frac{\pi\,\mathrm{TPR}(t)}
+{\pi\,\mathrm{TPR}(t)+(1-\pi)\,\mathrm{FPR}(t)} .
+\]
+\end{proposisi}
+
+\begin{proof}[Proof]
+By definition, $\mathrm{TPR}$ and $\mathrm{FPR}$ are probabilities conditional on $y$, so neither
+contains $\pi$; a curve assembled from the two contains no $\pi$ either. For precision, the law of
+total probability gives $P(\hat y=1)=\pi\,\mathrm{TPR}+(1-\pi)\mathrm{FPR}$, while
+$P(y=1,\hat y=1)=\pi\,\mathrm{TPR}$. Bayes' rule from Chapter 17 gives the form above.
+\end{proof}
+
+The consequence can be measured. If prevalence is changed to one half without changing the
+conditional score distributions, the AUC stays at $0.967061$ (the difference $0.0006$ is only
+Monte Carlo error), while \emph{average precision} jumps from $0.287636$ to $0.967544$. At a
+prevalence of one in a thousand the baseline is $\pi=0.001$, so $0.288$ is still far better than
+guessing, but far closer to operational reality than $0.966$.
+
+The rule of thumb is simple: when the positive class is rare, report a precision--recall curve, not
+only the ROC curve, and state the prevalence. The ROC curve remains useful for comparing two models
+on the same population because it is not polluted by composition; it misleads as soon as it is used
+to conclude usefulness on another population or at a particular threshold. The AUC is also blind to
+calibration: a model whose scores are twice too large has exactly the same AUC, because the
+ordering does not change. Those two defects carry us to the next section.
+
+\section{Calibration: does the number mean a probability}
+\tingkat{intermediate}
+
+An operator who receives an alarm needs to know one thing that neither precision nor the AUC
+answers: when the model writes $0.8$, are eight of ten such cases really positive. In everyday
+language: calibration checks whether the weather forecast that says ``seventy percent rain'' is
+really right on seven of ten such days.
+
+\kamus{calibration}{kalibrasi}{the agreement between the number a model promises and what actually
+happens in the group sharing that same promise}
+
+\begin{definisi}[Perfect calibration]
+\index{calibration}
+A score $S\in[0,1]$ is called perfectly calibrated when $P(y=1\mid S=s)=s$ for every possible $s$.
+On finite data, calibration is checked by grouping scores into intervals, then comparing the mean
+score in that interval with the observed positive rate. The absolute difference, weighted by the
+size of the interval, is called the \emph{expected calibration error}.
+\end{definisi}
+
+A worked example with $1000$ predictions shows the shape of the check.
+
+\begin{center}
+\small
+\begin{tabular}{lrrrr}
+\hline
+score interval & count & positive & mean score & positive rate \\
+\hline
+$[0.5;0.6)$ & 40 & 21 & 0.55 & 0.525 \\
+$[0.6;0.7)$ & 60 & 36 & 0.65 & 0.600 \\
+$[0.7;0.8)$ & 120 & 90 & 0.75 & 0.750 \\
+$[0.8;0.9)$ & 200 & 176 & 0.85 & 0.880 \\
+$[0.9;1.0]$ & 580 & 551 & 0.95 & 0.950 \\
+\hline
+\end{tabular}
+\end{center}
+
+The largest difference is in the second interval, $0.05$, and the overall calibration error is
+\[
+\tfrac{40}{1000}(0.025)+\tfrac{60}{1000}(0.050)+\tfrac{120}{1000}(0)
++\tfrac{200}{1000}(0.030)+\tfrac{580}{1000}(0)=0.010 .
+\]
+The direction of the error differs between intervals, but its size is small: one percentage point.
+The cross-check is free: the counts in the five intervals add to $1000$, and the positives to $874$.
+
+Calibration is measured by squared error, and there is a neat identity there.
+
+\begin{proposisi}[Brier for calibrated scores]
+\index{brier}
+Let $S$ be perfectly calibrated and $B=\mathbb{E}[(S-y)^2]$ be the Brier score. Then
+\[
+B=\mathbb{E}\bigl[S(1-S)\bigr].
+\]
+In particular the constant score $S=\pi$ is perfectly calibrated with $B=\pi(1-\pi)$, and that
+constant score is the least sharp calibrated forecaster.
+\end{proposisi}
+
+\begin{proof}[Proof]
+Conditional on $S=s$, the variable $y$ takes the value $1$ with probability $s$. Then
+\[
+\mathbb{E}\bigl[(s-y)^2\mid S=s\bigr]
+=s(s-1)^2+(1-s)s^2=s(1-s)\bigl[(1-s)+s\bigr]=s(1-s).
+\]
+Taking the expectation over $S$ gives the first form. For constant $S=\pi$, the calibration
+condition demands $P(y=1)=\pi$, which is indeed true, and the formula gives $\pi(1-\pi)$.
+\end{proof}
+
+That identity explains two things: calibration alone is not enough, since the constant score $\pi$
+is perfectly calibrated but distinguishes no examples; and for rare events the Brier baseline is
+very low, so a model that looks good on accuracy can lose badly on Brier. In our simulation
+$\pi(1-\pi)=0.000999$, while the hard labels of the model give a Brier equal to its error rate,
+$1051/100\,000=0.010510$. The Brier skill score, $1-B/B_{\mathrm{garis\ dasar}}$, is $-9.52$: the
+model is ten times worse than forecasting the constant prevalence.
+
+That negative number is no oddity: hard labels throw away the information about uncertainty, and
+for rare events that information is the most valuable of all. A model that outputs $0.06$ is saying
+something true, and a report that carries only accuracy throws that sentence away.
+
+\section{Uncertainty of metrics}
+\tingkat{advanced}
+
+All the numbers above are computed from a limited number of examples, so all of them wobble when
+the data is replaced. In everyday language: a metric without an interval is a single shot with no
+indication of how wide the target is.
+
+Chapter 20 already derived the Wilson interval and proved its properties, so we do not repeat it
+here. What must be remembered is its form for a proportion $k/n$:
+\[
+\frac{\hat p+\dfrac{z^2}{2n}\pm
+z\sqrt{\dfrac{\hat p(1-\hat p)}{n}+\dfrac{z^2}{4n^2}}}{1+\dfrac{z^2}{n}},
+\qquad z=1.96 .
+\]
+
+\begin{untukanak}
+Two goalkeepers practice stopping penalties. The first stops nine out of ten shots. The second
+stops nine hundred out of a thousand shots. The newspaper prints the same headline for both: ninety
+percent.
+
+But we feel that the two sentences are not equally strong, and that feeling is right. The first
+keeper has faced only ten shots. Perhaps he really is excellent, perhaps he was merely lucky ten
+times in a row. The second keeper has faced a thousand shots, and luck over that long a run is
+almost impossible. The same number, a different strength.
+
+The question that makes one curious: if we may write only one sentence about the first keeper, may
+``ninety percent'' still be written? Yes, provided the sentence is completed. In this chapter we
+will learn why the same number means ``between fifty-nine and ninety-eight percent'' on ten shots,
+but only ``between eighty-eight and ninety-two percent'' on a thousand shots, and why multiplying
+the shots a hundredfold narrows the answer only to a tenth.
+
+\end{untukanak}
+
+The following table applies that formula to accuracy, with $z=1.96$.
+
+\begin{center}
+\small
+\begin{tabular}{lrrr}
+\hline
+data & $\hat p$ & Wilson interval & width \\
+\hline
+$9/10$ & 0.900 & $(0.5959;\ 0.9821)$ & 0.3863 \\
+$900/1000$ & 0.900 & $(0.8798;\ 0.9171)$ & 0.0372 \\
+$10/10$ & 1.000 & $(0.7225;\ 1.0000)$ & 0.2775 \\
+$0/1000$ & 0.000 & $(0.0000;\ 0.0038)$ & 0.0038 \\
+\hline
+\end{tabular}
+\end{center}
+
+The first two rows answer the two goalkeepers. The point estimate is the same, $0.9$, but the first
+interval is $0.3863$ wide and the second $0.0372$: ten times narrower, not a hundred times.
+
+The third row is the case that appears most often: not a single error in $10$ trials, and then
+``accuracy $100$ percent'' is written. The honest Wilson interval, $(0.7225;1)$, is $0.2775$ wide:
+the error rate may still be $27.75$ percent. At the other end, zero events in $1000$ trials gives an
+upper bound of $0.003827$, while the rule of three from Chapter 20 gives $0.003$; either is
+acceptable, as long as the procedure is named.
+
+Comparing two models by checking whether their intervals overlap is a wrong habit: both are tested
+on the same data, and that dependence sharpens the comparison rather than blurring it.
+
+\begin{proposisi}[The difference of two paired models]
+Let $b$ be the number of examples that model A gets right and model B gets wrong, and $c$ the
+reverse, on the same $n$ examples. Their accuracy difference is $d=(b-c)/n$ with variance
+\[
+\operatorname{Var}(d)=\frac{1}{n}\Bigl(p_b+p_c-(p_b-p_c)^2\Bigr),
+\]
+so that its estimated standard error is $\sqrt{b+c-(b-c)^2/n}\,/\,n$.
+\end{proposisi}
+
+\begin{proof}[Proof]
+Every example falls in one of four cells: right for both, wrong for both, right only for A, right
+only for B. Since the examples are independent, $(b,c)$ is multinomial with probabilities $p_b,p_c$.
+Then $\operatorname{Var}(b-c)=n\bigl(p_b+p_c-(p_b-p_c)^2\bigr)$, and dividing by $n^2$ gives the
+formula above.
+\end{proof}
+
+At $b=37$, $c=15$, and $n=1000$, the difference is $0.022$ with standard error $0.007177$, so the
+$95$ percent interval is $(0.007932;0.036068)$, entirely above zero, and the exact McNemar test
+gives a p-value of $0.003185$. The naive treatment, which assumes the two models independent, gives
+the interval $(-0.004296;0.048296)$, which contains zero. The two models can therefore be declared
+different, provided the comparison is paired and the test uses the difference, not two separate
+intervals.
+
+Finally, the size of the test determines how small a difference can be seen. To detect a difference
+$\delta$ at level $\alpha$ and power $1-\beta$,
+\[
+n\approx\frac{(z_{1-\alpha/2}+z_{1-\beta})^2\,\bigl(p_1(1-p_1)+p_0(1-p_0)\bigr)}
+{\delta^2}.
+\]
+At $p_0=p_1=0.9$, level $0.05$, and power $0.8$, a difference of one point demands
+$n\approx14\,128$ examples per model, a difference of two points demands $3532$. A test set of a
+thousand examples cannot separate two models one point apart.
+
+\section{Data leakage and nested cross-validation}
+\tingkat{advanced}
+
+All the computations above assume one thing that must not be violated: the test number is measured
+on data the model has never seen, and never seen either by the procedure that chose the model. In
+everyday language: an exam score means something only if the questions were never leaked, including
+by the teacher who wrote them.
+
+\kamus{data leakage}{kebocoran data}{exam answers that slip accidentally into the study material, so
+that the score goes up without any skill}
+
+\begin{definisi}[Data leakage]
+\index{data leakage}
+Leakage occurs when information that would not be available at the moment the model is used enters
+training, model selection, or reporting, so that the evaluation number measures the ability to
+memorize, not the ability to generalize.
+\end{definisi}
+
+Its forms are various, and the most frequent ones are invisible. Computing a preprocessing mean or
+median from all the data, test data included, is leakage: that statistic should come from training
+data only. Selecting the $50$ best features by correlation with the label before separating
+training from test is also leakage, since the feature filter has already seen the test labels.
+Tuning hyperparameters on the test set and reporting the best number is the leakage most often
+committed knowingly. On grouped data, a random split places the same group on both sides; on time
+series, it leaks the future into the past. The hardest to detect: a feature that is a consequence
+of the label, for example a column ``action taken'' filled in after the incident is known.
+
+Feature-selection leakage can be measured, and its size is startling. Take $200$ randomly labeled
+examples and $2000$ features of normal noise, with no signal at all. Select the $20$ features with
+the largest absolute correlation with the label, then cross-validate with five folds using a nearest
+centroid classifier. If the selection is done once on all the data before the folds are formed, the
+accuracy is $0.7800$; if the selection is repeated inside each fold using only its training rows,
+$0.4600$. On three other seeds the numbers are $0.775$ and $0.415$, $0.820$ and $0.545$: the leaky
+version is always high, the honest one always near $0.5$. That number $0.78$ is an illusion from
+beginning to end, and not one line of its code is mistyped.
+
+The protocol is one sentence: separate first, then compute anything. Split the data into training,
+validation, and test; compute preprocessing statistics from training only; tune hyperparameters on
+validation; touch test once, at the end, for one number. When cross-validation is used, the
+preprocessing lives inside the fold. For grouped data, the folds follow the groups; for time data,
+they follow the time order.
+
+Figure~\ref{fig:pemisahan-tiga} draws that order as three boxes and one forbidden arrow.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[every node/.style={font=\footnotesize},
+  blok/.style={draw=ink,thick,rounded corners=2pt,align=center,
+               minimum width=3.5cm,minimum height=1.5cm,inner sep=3pt}]
+  \node[blok,fill=layerteal!12]   (latih) at (0.0,0) {\textbf{train} $60\%$\\ compute statistics};
+  \node[blok,fill=layerorange!12] (val)   at (4.8,0) {\textbf{validation} $20\%$\\ choose hyperparameters};
+  \node[blok,fill=layerindigo!12] (uji)   at (9.6,0) {\textbf{test} $20\%$\\ touch once};
+  \draw[-{Latex},ink,thick] (latih.east) -- (val.west)
+    node[midway,above,font=\scriptsize] {retrain};
+  \draw[-{Latex},ink,thick] (val.east) -- (uji.west)
+    node[midway,above,font=\scriptsize] {locked before inspection};
+  \draw[-{Latex},accent,thick,dashed] (uji.south) .. controls (9.6,-1.85) and (0.0,-1.85)
+    .. (latih.south);
+  \draw[accent,very thick] (4.62,-1.42) -- (4.98,-1.06);
+  \draw[accent,very thick] (4.62,-1.06) -- (4.98,-1.42);
+  \node[accent,anchor=west,font=\scriptsize] at (5.12,-1.24) {forbidden};
+  \node[anchor=north,align=center,text width=11.6cm] at (4.8,-1.98)
+    {test statistics, feature filters, and hyperparameter tuning must not cross
+     back into the training box};
+\end{tikzpicture}
+\caption{Three separate data sets, with proportions $60/20/20$; on $1000$ connections that means
+$600$, $200$, and $200$. Preprocessing statistics are computed from the training box,
+hyperparameters are chosen in the validation box, and the test box is touched once at the end. The
+dashed arrow from test back to training is leakage: that single arrow is enough to raise accuracy
+from $0.4600$ to $0.7800$ on data that is pure noise.}
+\label{fig:pemisahan-tiga}
+\end{figure}
+
+What remains is one subtle problem. When cross-validation is used both to choose hyperparameters and
+to report quality, the reported number is the best of many trials on the same data, so it is too
+optimistic. The way out is two layers of folds.
+
+\kamus{nested cross-validation}{validasi silang bersarang}{two layers of folds, the outer layer to
+judge and the inner layer to choose, like two separate examination rooms}
+
+\begin{definisi}[Nested cross-validation]
+\index{cross-validation}
+\index{nested cross-validation}
+Let $\Lambda$ be a set of hyperparameters. The data is split into $K$ outer folds. For each outer
+fold $k$: train on the remaining data with every $\lambda\in\Lambda$ using $J$ inner folds, choose
+the best $\lambda_k$, retrain on the whole training part of fold $k$ with $\lambda_k$, then measure
+on fold $k$. The reported number is the average of those $K$ numbers. Judging and selection
+therefore use different data.
+\end{definisi}
+
+Its cost is $K$ times higher, and that is why this protocol is often skipped; without the outer
+layer, not one number in the report can be read as an estimate of quality on new data.
+
+\section{Why one test is not enough}
+\tingkat{intermediate}
+
+The sentence ``we tested the model on $1000$ examples and obtained an accuracy of $0.900$'' sounds
+conclusive, yet it carries three uncertainties. In everyday language: one weighing does not tell
+you whether the scale wobbles, whether the goods changed, or whether we picked the most pleasant
+result.
+
+The first is statistical and already computed: at $n=1000$ the $95$ percent interval is $0.037$
+wide, and separating two models one point apart demands $14\,128$ examples. The conclusion ``A is
+better'' from a difference that small is a conclusion about a coin toss.
+
+The second is selective, and its name is \emph{winner's curse}. Training $20$ variants of identical
+quality and then reporting the best means reporting the maximum of $20$ wobbles: in a simulation
+with true accuracy $0.90$ and $n=1000$, the mean of each variant is $0.899987$ while the mean of
+their maximum is $0.917337$, so $1.7$ points of that number are luck. When the variants are
+dependent, the wobble is smaller, but its direction is always upward.
+
+The third is procedural: a test set used repeatedly stops being a test set. If each comparison has
+a $5$ percent chance of deceiving, the chance that at least one of $20$ comparisons deceives is
+$1-0.95^{20}=0.6415$, larger than the chance of being right.
+
+The remedies match: report intervals, separate the data used for selection from the data used for
+reporting, and lock the test set before the experiment begins. If the test has already been used
+repeatedly, the next number is called an exploratory number.
+
+\section{A reporting checklist}
+\tingkat{basic}
+
+These seven lines separate a report that can be checked from one that merely convinces. In everyday
+language: a receipt does not make the goods arrive, but without a receipt nothing can be traced.
+
+\begin{enumerate}
+  \item The size of each class and its prevalence, not only the total $n$.
+  \item The four numbers of the confusion matrix, then precision and recall at the threshold
+        actually used, together with the value of that threshold.
+  \item A confidence interval for every main metric, with the method named; for small $n$ use
+        Wilson, not Wald.
+  \item A precision--recall curve when the positive class is rare, together with average precision
+        and its baseline $\pi$.
+  \item Calibration: the score interval bounds, the number of examples per interval, and the
+        calibration error.
+  \item The separation protocol: what was computed from which data, how many times the test data
+        was touched, and how many variants were tried; the best number without that denominator is
+        a selected number, not a quality number.
+  \item The spread of results across seeds or across folds, together with the code and the random
+        seed.
+\end{enumerate}
+
+What must not be there: accuracy without prevalence, AUC without a curve, and the phrase ``ready to
+deploy''.
+
+\begin{resep}
+Four steps for reporting evaluation results that do not mislead:
+\begin{enumerate}
+  \item Separate the data first: training, validation, test, with their proportions and the
+        splitting key, written down before a single computation is run.
+  \item Compute preprocessing and select features from training only, tune hyperparameters on
+        validation only, then save test for a single touch.
+  \item Report all four cells of the confusion matrix together with $n$, $\pi$, and the threshold
+        used, then precision, recall, and a confidence interval for every metric.
+  \item State how many variants were tried and the spread of results across seeds or across folds,
+        so that the reader knows how many degrees of freedom have already been spent.
+\end{enumerate}
+A warning about order: step 1 must not come after step 2 or step 3. Statistics computed before the
+data is separated have already moved test information into training, and after that no number can
+repair it; the whole report then measures memory.
+\end{resep}
+
+\section{Worked examples}
+\tingkat{intermediate}
+
+The three computations below can be repeated on paper.
+
+First, the confusion matrix from the author's own working notes, on $35\,069$ test connections:
+$\mathrm{TP}=23\,279$, $\mathrm{FP}=997$, $\mathrm{FN}=590$, $\mathrm{TN}=10\,203$.
+\begin{align*}
+\operatorname{prec}&=\frac{23\,279}{24\,276}=0.958931, &
+\operatorname{rec}&=\frac{23\,279}{23\,869}=0.975282,\\
+F_1&=\frac{46\,558}{48\,145}=0.967037, &
+\mathrm{acc}&=\frac{33\,482}{35\,069}=0.954746,
+\end{align*}
+and its balanced accuracy is $0.943132$. One thing in those notes is inconsistent: one sentence
+states $11\,200$ attacks and $23\,869$ normal, while the matrix places $23\,869$ in the positive
+row. The arithmetic is right, the class labels are swapped, and the prevalence must be read from
+the matrix, not from the sentence.
+
+Second, the AUC of a small data set. Positives scoring $0.92$, $0.81$, $0.55$ against negatives
+scoring $0.70$, $0.41$, $0.35$, $0.22$ give $12$ pairs; $0.92$ and $0.81$ beat all four, $0.55$
+beats three, so $11/12=0.916667$. If one positive score equals one negative score, that pair counts
+as one half and the result is $0.875$; \texttt{sklearn} gives the same number when $y$ and the
+scores are fed in as vectors.
+
+Third, the effect of prevalence on precision when sensitivity $0.90$ and specificity $0.95$ are held
+fixed. With $\operatorname{prec}=\pi(0.9)/\bigl(\pi(0.9)+(1-\pi)(0.05)\bigr)$:
+
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\hline
+$\pi$ & $\operatorname{prec}$ & true alarms & false alarms \\
+\hline
+0.001 & 0.017699 & 1 & 56 \\
+0.010 & 0.153846 & 1 & 5.5 \\
+0.100 & 0.666667 & 2 & 1 \\
+0.500 & 0.947368 & 18 & 1 \\
+\hline
+\end{tabular}
+\end{center}
+
+The last column is the reciprocal of precision minus one, namely the number of false alarms for
+every true alarm. At a prevalence of one in a thousand, one true alarm arrives with $55.5$ false
+alarms; at a prevalence of one half, with $0.056$. The same model, the same quality, and a
+completely different experience for the operator.
+
+\kertas{Take the matrix of $1000$ predictions from earlier and recompute its five metrics without
+looking at the text. Then answer: how many $\mathrm{FP}$ must be removed, without changing
+$\mathrm{TP}$ and $\mathrm{FN}$, for precision to become $0.900$? Hint: precision $62/(62+x)=0.9$
+gives $x=6.89$, so $\mathrm{FP}$ must fall from $17$ to at most $6$. Check that the accuracy after
+that change is $0.956$.}
+
+\section{Computational lab: one number, four ways to read it}
+\tingkat{advanced}
+
+Every number in this chapter is computed by one short program, which also shows two things a
+formula cannot show: how far leakage raises a number, and how far the winner among many variants is
+flattered. The code is run as it stands with \texttt{numpy} and \texttt{scipy}.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from math import sqrt
+from scipy.stats import norm
+
+z = norm.ppf(0.975)
+
+
+def wilson(k, n):
+    p, z2 = k / n, z * z
+    mid = (p + z2 / (2 * n)) / (1 + z2 / n)
+    half = z * sqrt(p * (1 - p) / n + z2 / (4 * n * n)) / (1 + z2 / n)
+    return mid - half, mid + half
+
+
+def roc_pr(spos, sneg):
+    s = np.concatenate([spos, sneg])
+    y = np.concatenate([np.ones(len(spos)), np.zeros(len(sneg))])
+    o = np.argsort(-s)
+    s, y = s[o], y[o]
+    tp, fp = np.cumsum(y), np.cumsum(1 - y)
+    tpr, fpr = tp / len(spos), fp / len(sneg)
+    prec = tp / (tp + fp)
+    auc = np.sum(np.diff(np.concatenate([[0], fpr])) *
+                 (tpr + np.concatenate([[0], tpr[:-1]])) / 2)
+    ap = np.sum(np.diff(np.concatenate([[0], tpr])) * prec)
+    return auc, ap
+
+
+rng = np.random.default_rng(20261025)
+Nneg, Npos = 99900, 100
+sneg = rng.normal(0.0, 1.0, Nneg)
+spos = rng.normal(2.6, 1.0, Npos)
+t = 2.3263
+tp = int((spos > t).sum()); fp = int((sneg > t).sum())
+fn, tn = Npos - tp, Nneg - fp
+n = Nneg + Npos
+print("TP=%d FP=%d FN=%d TN=%d" % (tp, fp, fn, tn))
+print("accuracy %.6f  baseline %.6f" % ((tp + tn) / n, Nneg / n))
+print("precision %.6f  recall %.6f" % (tp / (tp + fp), tp / Npos))
+print("balanced accuracy %.6f" % ((tp / Npos + tn / Nneg) / 2))
+print("brier hard labels %.6f  brier constant %.6f"
+      % ((fp + fn) / n, 0.001 * 0.999))
+a1, p1 = roc_pr(spos, sneg)
+print("pi=0.001: AUC=%.6f  AP=%.6f" % (a1, p1))
+a2, p2 = roc_pr(rng.normal(2.6, 1.0, 50000), rng.normal(0.0, 1.0, 50000))
+print("pi=0.500: AUC=%.6f  AP=%.6f" % (a2, p2))
+for k, m in ((9, 10), (900, 1000), (10, 10), (0, 1000)):
+    lo, hi = wilson(k, m)
+    print("%4d/%-4d (%.6f, %.6f) width %.6f" % (k, m, lo, hi, hi - lo))
+b, c = 37, 15
+d = (b - c) / 1000
+se = sqrt(b + c - (b - c) ** 2 / 1000) / 1000
+print("difference %.6f  se %.6f  CI (%.6f, %.6f)"
+      % (d, se, d - z * se, d + z * se))
+rt = np.random.default_rng(11)
+a = rt.binomial(1000, 0.90, (20000, 20)) / 1000
+print("20 variants: mean %.6f  mean max %.6f"
+      % (a.mean(), a.max(axis=1).mean()))
+
+rl = np.random.default_rng(4)
+nn, dd, kk = 200, 2000, 20
+X = rl.normal(size=(nn, dd))
+y = rl.permutation(np.repeat([0, 1], nn // 2))
+corr = np.array([abs(np.corrcoef(X[:, j], y)[0, 1]) for j in range(dd)])
+sel_all = np.argsort(-corr)[:kk]
+
+
+def cv(pick):
+    idx = rl.permutation(nn)
+    ok = 0
+    for f in np.array_split(idx, 5):
+        tr = np.setdiff1d(idx, f)
+        cols = pick(tr)
+        m1 = X[np.ix_(tr[y[tr] == 1], cols)].mean(0)
+        m0 = X[np.ix_(tr[y[tr] == 0], cols)].mean(0)
+        d1 = ((X[np.ix_(f, cols)] - m1) ** 2).sum(1)
+        d0 = ((X[np.ix_(f, cols)] - m0) ** 2).sum(1)
+        ok += (np.where(d1 < d0, 1, 0) == y[f]).sum()
+    return ok / nn
+
+
+def top_in(tr):
+    c = np.array([abs(np.corrcoef(X[tr, j], y[tr])[0, 1]) for j in range(dd)])
+    return np.argsort(-c)[:kk]
+
+
+print("feature selection: leaky %.4f  honest %.4f"
+      % (cv(lambda tr: sel_all), cv(top_in)))
+\end{verbatim}
+\end{lab}
+
+The actual output, as it stands:
+
+\begin{verbatim}
+TP=62 FP=1013 FN=38 TN=98887
+accuracy 0.989490  baseline 0.999000
+precision 0.057674  recall 0.620000
+balanced accuracy 0.804930
+brier hard labels 0.010510  brier constant 0.000999
+pi=0.001: AUC=0.966448  AP=0.287636
+pi=0.500: AUC=0.967061  AP=0.967544
+   9/10   (0.595850, 0.982124) width 0.386274
+ 900/1000 (0.879848, 0.917091) width 0.037243
+  10/10   (0.722467, 1.000000) width 0.277533
+   0/1000 (0.000000, 0.003827) width 0.003827
+difference 0.022000  se 0.007177  CI (0.007932, 0.036068)
+20 variants: mean 0.899987  mean max 0.917330
+feature selection: leaky 0.7800  honest 0.4600
+\end{verbatim}
+
+Four things must be read from that output. First, the two numbers on the second line must appear
+side by side: $0.989490$ and $0.999000$. The direction of the difference decides the whole
+interpretation: the model under test is below the baseline.
+
+Second, the AUC barely moves, $0.966448$ against $0.967061$, while AP moves from $0.287636$ to
+$0.967544$, a factor of $3.4$: numerical evidence for the previous proposition.
+
+Third, the width of the interval shrinks proportionally to $1/\sqrt n$, from $0.386274$ at $n=10$ to
+$0.037243$ at $n=1000$, and $0/1000$ gives an upper bound of $0.003827$.
+
+Fourth, the last two lines carry two diseases that are invisible in a single number: the paired
+difference $0.022$ with interval $(0.007932;0.036068)$ does not contain zero, yet
+$(0.8798;0.9171)$ and $(0.8563;0.8969)$ overlap widely; and the winner among $20$ identical
+variants is reported as $0.917337$ although the true quality is $0.899987$.
+
+The program proves not one proposition in this chapter; it checks claims that have already been
+proved. The simulation uses distributions we assume, and honest cross-validation on noise data
+gives $0.4600$, not $0.5000$: even a number without signal wobbles.
+
+\begin{untukdosen}
+The teaching order I suggest: start from the vendor report in the chapter opening, write $99$
+percent and $99.9$ percent on the board, then ask the class to decide which is better. Almost the
+whole class picks the detector, and out of that unease the confusion matrix appears as an answer,
+not as a definition to be memorized. Once precision and recall exist, then $F_1$ and balanced
+accuracy can enter. The ROC curve is best drawn by hand for the six points of the threshold table,
+because there the students see for themselves that a point which looks good on the ROC curve can
+have precision $0.013$.
+
+Two typical misconceptions. First, the AUC is taken to be a context-free measure of quality, so the
+threshold is chosen at random; the symptom shows when students cannot explain the precision at the
+threshold in use. Second, cross-validation is taken to be always honest, even though feature
+selection or standardization outside the fold is enough to raise the number by $30$ points on data
+that is pure noise.
+
+Board activity: split the class into two groups, one computing precision for $\pi=0.001$ and one
+for $\pi=0.5$ with the same sensitivity and specificity, then ask both to defend their results. The
+first group finds $0.018$ and must explain why the same model feels different. Sign that the class
+is ready to go on: they can name one situation in which accuracy $0.99$ is worse than not using a
+model at all.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item The four numbers of the confusion matrix play unsymmetric roles: precision answers the
+        operator's question, recall the policy designer's question, and both depend on the
+        threshold; $F_1$ is their harmonic mean and ignores $\mathrm{TN}$.
+  \item The baseline accuracy is $1-\pi$: at $\pi=0.001$ a model with $0.989490$ loses to a program
+        that always answers negative ($0.999000$), while balanced accuracy $0.804930$ is more honest
+        because it does not depend on composition.
+  \item The AUC equals the probability that a random positive score exceeds a random negative
+        score, so it depends only on the conditional score distributions; it does not change when
+        prevalence changes, whereas precision and average precision do, from $0.288$ to $0.968$.
+  \item Calibration checks whether a score of $0.8$ means eight out of ten. For calibrated scores,
+        Brier equals $\mathbb{E}[S(1-S)]$; the constant score $\pi$ is perfectly calibrated but not
+        sharp. Hard labels here give $0.010510$ against $0.000999$.
+  \item The width of the interval shrinks proportionally to $1/\sqrt n$: $0.3863$ at $n=10$ and
+        $0.0372$ at $n=1000$. To compare two models, use the paired difference: $b=37$, $c=15$
+        gives $(0.007932;0.036068)$, whereas the unpaired treatment gives an interval that contains
+        zero.
+  \item One test is not enough, and leakage raises numbers falsely: $0.7800$ when features are
+        selected outside the fold, $0.4600$ when inside; the winner among $20$ identical variants is
+        flattered by $1.7$ points; and $20$ comparisons at the $5$ percent level give a chance of
+        $0.6415$ that one of them deceives.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Assess this claim: ``Model A reaches an accuracy of $99.1$ percent and model B $98.7$
+        percent on the same test set, so A is better.'' True, false, or not enough evidence? Name
+        the part that is wrong and two additional numbers that would strengthen it.
+  \item Prove that the Brier score for hard $0/1$ labels equals the error rate,
+        $(\mathrm{FP}+\mathrm{FN})/n$. Why does that equality fail for scores that are
+        probabilities?
+  \item Prove that a constant score $S=s$ minimizes the Brier score exactly when $s=\pi$, with
+        minimum value $\pi(1-\pi)$.
+  \item Given $\mathrm{TP}=180$, $\mathrm{FP}=45$, $\mathrm{FN}=20$, $\mathrm{TN}=1755$. Compute
+        precision, recall, $F_1$, accuracy, specificity, and balanced accuracy to six decimal
+        places, then check with \texttt{sklearn.metrics}.
+  \item Compute the $95$ percent Wilson interval for $95/100$ and $950/1000$. Compare the two
+        widths, then explain why that comparison must not be used to conclude which model is
+        better.
+  \item Compute the AUC from five positives scoring $0.95$, $0.88$, $0.70$, $0.60$, $0.40$ and five
+        negatives scoring $0.75$, $0.65$, $0.50$, $0.30$, $0.10$. Write down the number of correct
+        pairs, then check with \texttt{roc\_auc\_score}.
+  \item A model has sensitivity $0.80$ and specificity $0.99$. Compute its precision at
+        $\pi=0.002$ and $\pi=0.2$, then determine the minimum prevalence for precision to be at
+        least $0.5$.
+  \item You have $6000$ records from $300$ hosts, about $20$ records each, and $40$ hyperparameter
+        settings. Design an evaluation protocol without leakage: state the data split, where
+        preprocessing is computed, where hyperparameters are chosen, and how many times test is
+        touched.
+  \item Assess this claim: ``Because the AUC of this model is $0.95$, the model is useful at any
+        threshold we choose.'' True, false, or not enough evidence? Include one supporting
+        computation.
+\end{enumerate}
+
+Hints for the three hardest items. Item 2: write $(s-y)^2$ for $s\in\{0,1\}$; its value is $1$
+exactly on an error. Item 3: differentiate $\mathbb{E}[(s-y)^2]=s^2-2s\pi+\pi$ with respect to
+$s$, find its minimum, then use the Brier proposition in this chapter. Item 7: its precision is
+$0.8\pi/\bigl(0.8\pi+0.01(1-\pi)\bigr)$; solve
+$0.8\pi\ge0.5\bigl(0.8\pi+0.01(1-\pi)\bigr)$ for $\pi$.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is proved in this chapter: the accuracy of a constant classifier is $1-\pi$; $F_1$ is the
+harmonic mean of precision and recall with $F_1\le(P+R)/2$; the AUC equals the probability of a
+correct ranking together with its Mann--Whitney form; ROC and AUC are invariant to prevalence while
+precision is not; for calibrated scores Brier equals $\mathbb{E}[S(1-S)]$; and the variance formula
+for the difference of two paired proportions.
+
+What is popular but not a theorem: that ``AUC $0.9$ means a good model''; that the threshold $0.5$
+is neutral; that cross-validation is always honest; and that overlapping intervals mean there is no
+difference. The last three are mathematically wrong, not merely incomplete. \emph{Average
+precision} is also not an unbiased estimate of the area under the population precision--recall
+curve: it is a summary of the observed curve, and its value depends on the sample prevalence.
+
+Primary sources: Wasserman, \emph{All of Statistics}, Chapter 6, Chapters 9--10, Chapter 13 in the
+Model Selection part, and Chapter 22 in the part ``Assessing Error Rates and Choosing a Good
+Classifier''. Goodfellow, Bengio, and Courville, \emph{Deep Learning}, Chapter 11 in the part
+``Performance Metrics'', give the one-in-a-million disease example and the notion of
+\emph{coverage}. Athalye, Carlini, and Wagner (2018) show that weak evaluation produces false
+security claims: seven of nine defenses without a certificate at ICLR 2018 relied on obfuscated
+gradients, and six fell once their evaluation was fixed.
+
+Limits of validity: all simulations use assumed normal distributions, so they measure the behavior
+of the procedure, not the truth of the model. The Wilson interval is a score approximation, and
+McNemar assumes the discordant pairs are symmetric under the null hypothesis. The leakage result
+depends on $n$, $d$, and the number of features selected: $0.78$ is not a constant of nature but
+one point on a curve that rises with $d/n$.
+
+Open questions: honest intervals for metrics from mutually dependent folds; calibration tests
+without the assumption of uniform score intervals; and reporting uncertainty when the test set is
+chosen adaptively.
+\end{untukpeneliti}
+
+\peta{Chapter 27 of Wasserman, \emph{All of Statistics}: Chapter 6 (estimators, bias, standard
+error), Chapters 9--10 (intervals and tests), Chapter 13 in the Model Selection part, and Chapter 22
+in the part ``Assessing Error Rates and Choosing a Good Classifier''. The Wilson interval and the
+rule of three are referred from Chapter 20 of this book and from Wilson (1927) and Jovanovic--Levy
+(1997). The example of deceptive accuracy follows Goodfellow, Bengio, and Courville, \emph{Deep
+Learning}, Chapter 11; the limits of adversarial-defense evaluation follow Athalye, Carlini, and
+Wagner (2018), discussed in Chapters 27 and 28. Bayes' rule for precision is proved in Chapter 16;
+data splitting in Chapter 24.}

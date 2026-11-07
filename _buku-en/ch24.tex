@@ -1,0 +1,1132 @@
+\chapter{Linear and Integer Programming}
+
+A woodworking shop receives 24 sheets of plywood and 6 hours of assembly-machine time for the
+day. One bookshelf uses 6 sheets of plywood and 1 hour of assembly. One bench uses 4 sheets
+and 2 hours. A shelf earns a profit of 5 units, a bench 4 units. How many shelves and how many
+benches should it make?
+
+The first instinct picks shelves, because the profit per unit is higher. That instinct is
+wrong: one shelf consumes as much plywood as one and a half benches. The best answer of the
+continuous model is 3 shelves and 1.5 benches, with profit 21, and half a bench cannot be
+sold. Rounding down gives 19; 4 shelves without benches gives 20. So the best integer answer
+is not the rounding of the best fractional answer, and the difference is an error of reasoning,
+not an error of arithmetic.
+
+The tools of the previous chapters are not enough. Chapter 8 taught us to solve
+$A\mathbf{x}=\mathbf{b}$, but here there are fewer equations than variables, so there are
+infinitely many answers and we must choose the best one. Chapter 23 gives the KKT conditions,
+but in this problem the gradient of the objective is constant and never vanishes: the answer
+clings to the boundary of the feasible region, not to a stationary point. The guarantee of
+Chapter 21 that a local optimum is also global does not show where the optimum is, and it
+disappears as soon as the variables are required to be integers.
+
+For that reason this chapter takes three steps: writing the problem as a linear program and
+recognizing that its answer lies at a corner of the feasible region; putting a price on every
+constraint through duality, so that optimality can be checked without sweeping the whole
+region; then facing the requirement of integrality, when the continuous model gives a valid
+bound that is not necessarily attained.
+
+\begin{untukanak}
+Imagine you have 24 sheets of colored paper and 6 hours to make two kinds of classroom
+decoration. The first decoration uses 6 sheets and 1 hour, the second uses 4 sheets and 2
+hours. The first decoration is in greater demand, so its price is higher. How many of each
+should you make?
+
+If you try things out, there are many mixtures that fit. What is surprising is that the most
+profitable mixture turns out to use half a decoration. Half a decoration cannot be sold, and
+this is where common sense begins to deceive: if you round down, the result is not the best
+one. There is another mixture, entirely whole, that is in fact more profitable, even though it
+does not look like the rounding of anything.
+
+The question that makes one curious is this. If there are thousands of possible mixtures, how
+do we know that one mixture is the best without trying them all? And if your friend offers one
+extra sheet of paper, what is a fair price for that sheet? In this chapter we will learn why
+the best answer always lies at a corner of the possible region, why every material has a price
+that can be computed, and why a fractional answer must be rounded with care, not with instinct.
+\end{untukanak}
+
+\section{From a production plan to standard form}
+\tingkat{basic}
+
+A production plan is a pair of numbers: how many shelves and how many benches. A plan is called
+feasible when its use of materials does not exceed the supply. For $x_{1}$ shelves and
+$x_{2}$ benches, the conditions are
+\[
+  6x_{1}+4x_{2}\le24,\qquad x_{1}+2x_{2}\le6,\qquad x_{1}\ge0,\quad x_{2}\ge0 .
+\]
+Each condition cuts the plane with one line and leaves one side; the intersection is a
+quadrilateral with four corners. The profit is $5x_{1}+4x_{2}$, and we want that number as
+large as possible.
+
+The pattern of this kind of problem is called a linear program. The name is apt: everything
+involved is a straight line, with no curves and no powers.
+
+\kamus{linear program}{program linear}{A problem of finding the best value of a quantity
+computed by a weighted sum, when all the rules take the shape of straight lines.}
+
+\begin{definisi}[Linear program]
+A linear program is the problem of maximizing or minimizing a linear function
+$\mathbf{c}^{\top}\mathbf{x}$ over variables $\mathbf{x}\in\mathbb{R}^{n}$ subject to
+constraints in the form of linear inequalities or equalities. The set of points satisfying all
+the constraints is called the \emph{feasible region}. If the feasible region is empty, the
+program is called \emph{infeasible}; if the objective value can be made as large as we please,
+the program is called \emph{unbounded}.\index{linear program}
+\end{definisi}
+
+Software and textbooks use one uniform written pattern, and that is the pattern used
+throughout this chapter.
+
+\begin{definisi}[Standard form]
+A linear program in \emph{standard form} is
+\[
+  \text{maximize } \mathbf{c}^{\top}\mathbf{x}
+  \quad\text{with}\quad A\mathbf{x}=\mathbf{b},\qquad \mathbf{x}\ge\mathbf{0},
+\]
+where $A$ is $m\times n$ of rank $m$, $\mathbf{b}\in\mathbb{R}^{m}$, and
+$\mathbf{c}\in\mathbb{R}^{n}$. Every linear program can be brought to this form without
+changing its optimal value.\index{standard form}
+\end{definisi}
+
+Four translations do all that work. A constraint
+$\mathbf{a}^{\top}\mathbf{x}\le b$ becomes an equality by adding a variable that records the
+unused remainder; a constraint $\mathbf{a}^{\top}\mathbf{x}\ge b$ by subtracting one. A
+variable that may take negative values is replaced by the difference of two nonnegative
+variables, and maximizing $\mathbf{c}^{\top}\mathbf{x}$ is the same as minimizing
+$-\mathbf{c}^{\top}\mathbf{x}$.
+
+\kamus{slack variable}{variabel kendur}{A number recorded as the unused remainder, so that
+``no more than'' turns into ``equal to''.}
+
+For the shop above, the standard form uses $s_{1}$ as the plywood remainder and $s_{2}$ as the
+remainder of assembly hours:
+\[
+  \begin{array}{rcl}
+    6x_{1}+4x_{2}+s_{1} &=& 24,\\
+    x_{1}+2x_{2}+s_{2} &=& 6,
+  \end{array}
+  \qquad x_{1},x_{2},s_{1},s_{2}\ge0 .
+\]
+Here $m=2$ and $n=4$, so $A$ is $2\times4$. The two slack variables are not decoration: later
+both appear as columns in the simplex tableau and as a sign of which constraint is still loose.
+
+Standard form also demands $\mathbf{b}\ge\mathbf{0}$, and that can always be arranged by
+multiplying one row by $-1$. What cannot be arranged is the rank: rows of $A$ that are
+linearly dependent must be discarded first, since otherwise the basis matrix chosen may be
+singular.
+
+\section{Geometry: why the answer is at a corner}
+\tingkat{intermediate}
+
+The four corners of that quadrilateral are $(0;0)$, $(4;0)$, $(3;1.5)$, and $(0;3)$, with
+profits $0$, $20$, $21$, and $12$. The best is at a corner, and that is no coincidence: in a
+linear program the best value can always be found at a corner, which is why the simplex method
+only travels from corner to corner.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=9.3cm,height=6.3cm,
+  xlabel={$x_{1}$ (shelves)},ylabel={$x_{2}$ (benches)},
+  xmin=-0.35,xmax=5.1,ymin=-0.35,ymax=3.9,
+  axis lines=left,xtick={0,1,2,3,4,5},ytick={0,1,2,3},
+  tick label style={font=\scriptsize},label style={font=\scriptsize}]
+\addplot[forget plot,fill=layerteal!10,draw=layerteal,thick]
+  coordinates {(0,0) (4,0) (3,1.5) (0,3)} \closedcycle;
+\addplot[forget plot,domain=0:2.4,densely dotted,thick,layerindigo] {3-1.25*x};
+\addplot[forget plot,domain=0:3.6,densely dotted,thick,layerindigo] {4.5-1.25*x};
+\addplot[forget plot,domain=0.2:4.2,thick,accent] {5.25-1.25*x};
+\addplot[forget plot,only marks,mark=*,mark size=1.7pt,draw=ink]
+  coordinates {(0,0) (4,0) (0,3)};
+\addplot[forget plot,only marks,mark=*,mark size=2.6pt,draw=accent]
+  coordinates {(3,1.5)};
+\node[font=\scriptsize,anchor=north west] at (axis cs:0,0) {$(0;0)$};
+\node[font=\scriptsize,anchor=north east] at (axis cs:4,0) {$(4;0)$};
+\node[font=\scriptsize,anchor=south west] at (axis cs:0,3) {$(0;3)$};
+\node[font=\scriptsize,anchor=west] at (axis cs:3.05,1.45) {$(3;1.5)$};
+\node[font=\scriptsize,anchor=west,layerindigo] at (axis cs:0.15,1.15) {$z=12$};
+\node[font=\scriptsize,anchor=west,layerindigo] at (axis cs:0.15,2.15) {$z=18$};
+\node[font=\scriptsize,anchor=west,accent] at (axis cs:0.15,3.45) {$z=21$};
+\draw[-{Stealth},thick,accent] (axis cs:2.3,2.75) -- (axis cs:3.25,3.35)
+  node[font=\scriptsize,above,accent,pos=0.9] {profit rises};
+\end{axis}
+\end{tikzpicture}
+\caption{The feasible region of the shop and three lines of equal profit. The polygon has four
+vertices, $(0;0)$, $(4;0)$, $(3;1.5)$, $(0;3)$, with values $0$, $20$, $21$, $12$. The lines
+$z=12$ and $z=18$ still cut the feasible region; the line $z=21$ only touches the vertex
+$(3;1.5)$, so no feasible point has a higher value.}
+\label{fig:ch22-daerah-optimum}
+\end{figure}
+
+Figure~\ref{fig:ch22-daerah-optimum} sharpens that coincidence. The three lines there are
+lines of equal profit, $5x_{1}+4x_{2}=12$, $18$, and $21$. A higher profit line is farther from
+the origin, and shifting it in that direction moves it out of the feasible region; the line
+$21$ only touches the vertex $(3;1.5)$.
+
+A corner has a more precise name, and the name does not refer to a picture.
+
+\begin{definisi}[Vertex]
+Let $P\subseteq\mathbb{R}^{n}$ be a convex set. A point $\mathbf{x}\in P$ is called a
+\emph{vertex} or an \emph{extreme point} if there are no $\mathbf{y},\mathbf{z}\in P$ with
+$\mathbf{y}\ne\mathbf{z}$ and $t\in(0,1)$ such that
+$\mathbf{x}=t\mathbf{y}+(1-t)\mathbf{z}$. In other words, $\mathbf{x}$ is not the midpoint of
+a segment between two other points of $P$.\index{vertex}
+\end{definisi}
+
+In the quadrilateral above, the point $(3;1.5)$ is a vertex: every segment inside the
+quadrilateral that passes through it must end at that point itself. Conversely $(2;1)$ is not a
+vertex, since it is the midpoint between $(1;1)$ and $(3;1)$.
+
+\kamus{vertex}{verteks}{A corner of the feasible region, namely a point that never becomes the
+midpoint between two other feasible points.}
+
+The first step of the proof turns the negation into a direction that can be used.
+
+\begin{lemma}[A point that is not a vertex gives a line]
+If $\mathbf{x}\in P$ is not a vertex, then there is $\mathbf{d}\ne\mathbf{0}$ such that
+$\mathbf{x}+\mathbf{d}\in P$ and $\mathbf{x}-\mathbf{d}\in P$.
+\end{lemma}
+
+\begin{proof}
+Since $\mathbf{x}$ is not a vertex, there are $\mathbf{y}\ne\mathbf{z}\in P$ and $t\in(0,1)$
+with $\mathbf{x}=t\mathbf{y}+(1-t)\mathbf{z}$. Set
+$s=\tfrac12\min\{t,1-t\}>0$ and $\mathbf{d}=s(\mathbf{y}-\mathbf{z})$. Then
+$\mathbf{x}+\mathbf{d}=(t+s)\mathbf{y}+(1-t-s)\mathbf{z}$ and
+$\mathbf{x}-\mathbf{d}=(t-s)\mathbf{y}+(1-t+s)\mathbf{z}$. Since $0<t\pm s<1$, both
+points are convex combinations of $\mathbf{y}$ and $\mathbf{z}$, hence members of $P$ because
+$P$ is convex. Also $\mathbf{d}\ne\mathbf{0}$, since $\mathbf{y}\ne\mathbf{z}$ and $s>0$.
+\end{proof}
+
+Now the statement that makes the simplex method reasonable. In everyday language: if the
+feasible region is enclosed and the objective does not grow in any direction, then the highest
+summit is at one of the corners, not in the middle of the plane.
+
+\begin{teorema}[The optimum is attained at a vertex]
+Let $P=\{\mathbf{x}:A\mathbf{x}\le\mathbf{b}\}$ be nonempty and bounded, and suppose
+$\mathbf{c}^{\top}\mathbf{x}$ is bounded above on $P$. Then there is a vertex
+$\mathbf{x}^{*}$ of $P$ with $\mathbf{c}^{\top}\mathbf{x}^{*}
+=\max_{\mathbf{x}\in P}\mathbf{c}^{\top}\mathbf{x}$.
+\index{optimum at a vertex}
+\end{teorema}
+
+\begin{proof}
+The optimal set $F=\{\mathbf{x}\in P:\mathbf{c}^{\top}\mathbf{x}=p^{*}\}$ is nonempty, closed,
+bounded, and convex, so $F$ is also a polytope. Write the constraints of $P$ as
+$\mathbf{a}_{i}^{\top}\mathbf{x}\le b_{i}$, $i=1,\dots,k$. Choose $\mathbf{x}^{*}\in F$
+that maximizes the number of active constraints, namely the constraints with
+$\mathbf{a}_{i}^{\top}\mathbf{x}^{*}=b_{i}$.
+
+Suppose $\mathbf{x}^{*}$ is not a vertex. By the lemma there is $\mathbf{d}\ne\mathbf{0}$
+with $\mathbf{x}^{*}\pm\mathbf{d}\in F$. Every constraint active at
+$\mathbf{x}^{*}$ is also active at both of those points, so
+$\mathbf{a}_{i}^{\top}\mathbf{d}=0$ for all active $i$. Consider the line
+$\mathbf{x}^{*}+s\mathbf{d}$ for $s\in\mathbb{R}$. Its intersection with $P$ is a closed
+interval $[s_{-},s_{+}]$ that contains $[-1,1]$, and because $P$ is bounded both endpoints are
+finite. The endpoint $s_{+}$ is determined by the constraint with $\mathbf{a}_{i}^{\top}\mathbf{d}>0$
+that is reached first; that constraint is active at $s_{+}$ but not at $\mathbf{x}^{*}$, so the
+new point is feasible and active at more constraints. Its value stays $p^{*}$ because
+$\mathbf{c}^{\top}(\mathbf{x}^{*}+s_{+}\mathbf{d})=p^{*}+s_{+}\mathbf{c}^{\top}
+\mathbf{d}=p^{*}$, and $\mathbf{c}^{\top}\mathbf{d}=0$ since both points
+$\mathbf{x}^{*}\pm\mathbf{d}$ have value $p^{*}$. That new point is a member of $F$ with more
+active constraints, contradicting the choice of $\mathbf{x}^{*}$; hence $\mathbf{x}^{*}$ is a
+vertex.
+\end{proof}
+
+\begin{bacakeras}
+Two voices, read alternately with a friend. Tap the table once each time the word ``summit'' is
+spoken.
+
+``Where is the best answer?'' ``At the summit.''
+``Why not in the middle?'' ``Because in the middle there is a neighbor on two sides.''
+``If there is a neighbor, why is that wrong?'' ``Because there is still a direction to move.''
+``Move in which direction?'' ``In the direction that climbs.''
+``If there is no climbing direction?'' ``Then we are already standing at the summit.''
+
+Repeat the three middle lines, slower and slower, with the same taps: in the middle there is a
+neighbor, in the middle one can still move, a summit has no climbing direction.
+
+The line the reader must repeat, once, in a clear voice: the best answer is at the summit, not
+in the middle, and a summit is recognized by the absence of a climbing direction.
+\end{bacakeras}
+
+That proof uses the boundedness of $P$. If $P$ is unbounded but the objective is bounded above,
+the conclusion is still true; the route goes through the decomposition of $P$ into the convex
+hull of its vertices plus the cone of recession directions, and the complete proof is in
+\texttt{WSPrinted.pdf}, in the section on the structure of polyhedral sets.
+
+The number of vertices is finite, but not always small. In standard form, a vertex corresponds
+to a choice of $m$ linearly independent columns of $A$: the chosen columns determine
+$\mathbf{x}_{B}=B^{-1}\mathbf{b}$, the other columns are zero, and the point is feasible when
+$\mathbf{x}_{B}\ge\mathbf{0}$. There are $\binom{n}{m}$ candidates, which for $n=100$ and
+$m=50$ exceeds $10^{29}$; checking them all is not a sensible plan. This is where the simplex
+method comes in: it walks from a vertex to a better neighboring vertex.
+
+\begin{tangan}
+Materials: a tiled floor, two lengths of string or paper tape, and a handful of buttons.
+
+Stretch two straight strings as two boundaries; one for plywood, one for assembly hours. Stand
+on a corner tile and call that tile the origin: each tile to the right adds one shelf, each
+tile forward adds one bench.
+
+Walk along the strings and stop only at tiles where two strings meet. Put a button there, and
+only there. What must be visible: all the buttons cling to the turns of the fence, not one of
+them stands in the middle of the yard. After that, count the profit at each button on your
+fingers, then move one button to the most profitable corner.
+
+Shift one string one tile inward, then repeat: the buttons move, the winner is still the
+button at the corner.
+\end{tangan}
+
+\section{The simplex method: one tableau, two pivots}
+\tingkat{intermediate}
+
+The idea is simple. Stand at one vertex, check whether any edge direction raises the profit; if
+one does, walk to the vertex at its end. If none does, stop: no neighbor is better, which in a
+linear program means no other point is better.
+
+That edge direction is determined by the \emph{reduced cost}: how much the profit increases
+when a variable that is now zero is raised by one unit, at the optimal expense of the basis
+variables.
+
+\kamus{basic feasible solution}{solusi layak basis}{A point obtained by setting some variables
+to zero and then solving for the rest, which happens to still satisfy all the bounds; such a
+point is always a vertex.}
+
+For the shop above, start from the vertex $(0;0)$, namely $s_{1}=24$ and $s_{2}=6$. Its first
+tableau contains the profit row $z$ and one row for each constraint:
+\begin{center}
+\begin{tabular}{c|cccc|c}
+\hline
+basis & $x_{1}$ & $x_{2}$ & $s_{1}$ & $s_{2}$ & right-hand side \\
+\hline
+$z$   & $-5$ & $-4$ & $0$ & $0$ & $0$ \\
+$s_{1}$ & $6$ & $4$ & $1$ & $0$ & $24$ \\
+$s_{2}$ & $1$ & $2$ & $0$ & $1$ & $6$ \\
+\hline
+\end{tabular}
+\end{center}
+The $z$ row is written as $z-5x_{1}-4x_{2}=0$; a negative coefficient means that raising that
+variable raises $z$, so the column with the most negative coefficient enters, here $x_{1}$ with
+$-5$.
+
+The ratio test decides who leaves: divide the right-hand side by the positive entries in the
+entering column, then take the smallest ratio. $24/6=4$ and $6/1=6$, so $s_{1}$ leaves and the
+pivot is $6$. Dividing the pivot row by $6$ and then clearing that column from the other rows
+gives
+\[
+  \begin{array}{rcl}
+    x_{1}+\tfrac{2}{3}x_{2}+\tfrac{1}{6}s_{1} &=& 4,\\
+    \tfrac{4}{3}x_{2}-\tfrac{1}{6}s_{1}+s_{2} &=& 2,\\
+    z-\tfrac{2}{3}x_{2}+\tfrac{5}{6}s_{1} &=& 20 .
+  \end{array}
+\]
+The point is now $(4;0)$ with profit $20$, and a negative coefficient remains: $x_{2}$ with
+$-2/3$. The ratio test gives $4/(2/3)=6$ and $2/(4/3)=1.5$, so $s_{2}$ leaves and the pivot is
+$4/3$. After one more round,
+\[
+  \begin{array}{rcl}
+    x_{1}+\tfrac{1}{4}s_{1}-\tfrac{1}{2}s_{2} &=& 3,\\
+    x_{2}-\tfrac{1}{8}s_{1}+\tfrac{3}{4}s_{2} &=& \tfrac{3}{2},\\
+    z+\tfrac{3}{4}s_{1}+\tfrac{1}{2}s_{2} &=& 21 .
+  \end{array}
+\]
+The $z$ row now has no negative coefficient, so no direction raises the profit:
+$(3;1.5)$ is optimal with profit $21$. All the arithmetic above was rechecked with exact
+fractions, so that no decimal rounding slipped in.
+
+That last row is more than a stopping sign. The coefficients of $s_{1}$ and
+$s_{2}$ there, $3/4$ and $1/2$, are the prices of the two materials. Those numbers come from the
+basis matrix, $\mathbf{y}^{\top}=\mathbf{c}_{B}^{\top}B^{-1}$, and
+$\mathbf{b}^{\top}\mathbf{y}=24\cdot\tfrac34+6\cdot\tfrac12=21$, the same as the profit.
+That equality is duality, and the next part explains why it is itself already
+a proof of optimality.
+
+Two remarks. The most-negative-coefficient rule does not guarantee termination, since there are
+small examples with an endless cycle; Bland's rule, which picks the smallest index, guarantees
+termination. Modern software uses the dual simplex or interior-point methods, but reports the
+same vertices and the same prices.
+
+\section{Duality: a price for every constraint}
+\tingkat{advanced}
+
+Every scarce material has a hidden price. One extra sheet of plywood raises the profit, and the
+size of that rise is the price of the sheet to the shop. That price is not written in the
+original problem, but it can be computed, and duality is the way to compute it.
+
+Multiply the plywood constraint by $y_{1}\ge0$ and the hours constraint by $y_{2}\ge0$, then
+add them. The result is
+\[
+  (6y_{1}+y_{2})x_{1}+(4y_{1}+2y_{2})x_{2}\le24y_{1}+6y_{2}.
+\]
+If $6y_{1}+y_{2}\ge5$ and $4y_{1}+2y_{2}\ge4$, the left-hand side is at least
+$5x_{1}+4x_{2}$, which is the profit. So $24y_{1}+6y_{2}$ becomes an upper bound on the profit
+for every price satisfying those two conditions, and the best bound is made as small as
+possible.
+
+\begin{definisi}[Primal and dual pair]
+For the linear program
+\[
+  \text{(P)}\quad \text{maximize } \mathbf{c}^{\top}\mathbf{x}
+  \ \text{ with } A\mathbf{x}\le\mathbf{b},\ \mathbf{x}\ge\mathbf{0},
+\]
+\emph{its dual program} is
+\[
+  \text{(D)}\quad \text{minimize } \mathbf{b}^{\top}\mathbf{y}
+  \ \text{ with } A^{\top}\mathbf{y}\ge\mathbf{c},\ \mathbf{y}\ge\mathbf{0}.
+\]
+The variables $\mathbf{y}$ are called \emph{dual variables} or \emph{shadow prices}.
+\index{duality}\index{shadow price}
+\end{definisi}
+
+For the shop above, the dual minimizes $24y_{1}+6y_{2}$ subject to
+$6y_{1}+y_{2}\ge5$, $4y_{1}+2y_{2}\ge4$, and $y_{1},y_{2}\ge0$. Its solution is
+$y_{1}=3/4$, $y_{2}=1/2$, with value $21$, the same as the best profit.
+
+That the upper bound from the dual never falls below the primal value is the first thing to
+hold on to, and its proof is three lines.
+
+\begin{teorema}[Weak duality]
+For every feasible $\mathbf{x}$ of (P) and every feasible $\mathbf{y}$ of (D) we have
+$\mathbf{c}^{\top}\mathbf{x}\le\mathbf{b}^{\top}\mathbf{y}$.
+\index{weak duality}
+\end{teorema}
+
+\begin{proof}
+Since $\mathbf{y}\ge\mathbf{0}$ and $\mathbf{b}-A\mathbf{x}\ge\mathbf{0}$, we have
+$\mathbf{b}^{\top}\mathbf{y}\ge\mathbf{y}^{\top}A\mathbf{x}$. Since
+$\mathbf{x}\ge\mathbf{0}$ and $A^{\top}\mathbf{y}-\mathbf{c}\ge\mathbf{0}$, we have
+$\mathbf{y}^{\top}A\mathbf{x}\ge\mathbf{c}^{\top}\mathbf{x}$. The two chains together give the
+required result.
+\end{proof}
+
+The practical consequence is large: a pair of feasible points, one primal and one dual, with
+the same value already proves both optimal without inspecting any other point. In the shop
+above, $(3;1.5)$ and $(0.75;\,0.5)$ give the value $21$, so $21$ can be neither improved nor
+lowered.
+
+What weak duality does not give is a guarantee that the two values always meet. That guarantee
+is the content of the next theorem.
+
+\begin{teorema}[Strong duality]
+If (P) or (D) has a finite optimal value, then both have optimal values and those values are
+equal.
+\end{teorema}
+
+The proof is not carried out here. There are two routes: through Farkas' lemma on systems of
+linear inequalities, or through the fact that the simplex stops at a tableau with no negative
+coefficient, and that tableau at the same time gives a feasible dual $\mathbf{y}$ of the same
+value. The complete proof is in \texttt{WSPrinted.pdf}, in the section on linear programming
+duality, and in Boyd and Vandenberghe, section 5.2.
+
+From that equality comes the condition used to check a computation quickly. In everyday
+language: a constraint that is still loose does not need to be paid for, and a variable that is
+used must pay its price exactly.
+
+\begin{akibat}[Complementary slackness]
+If $\mathbf{x}$ and $\mathbf{y}$ are both optimal, then
+\[
+  y_{i}\bigl(b_{i}-\mathbf{a}_{i}^{\top}\mathbf{x}\bigr)=0 \ \text{ for every } i,
+  \qquad
+  x_{j}\bigl((A^{\top}\mathbf{y})_{j}-c_{j}\bigr)=0 \ \text{ for every } j .
+\]
+Conversely, if $\mathbf{x}$ is feasible for (P), $\mathbf{y}$ is feasible for (D), and both
+groups of equalities hold, then both are optimal.
+\index{complementary slackness}
+\end{akibat}
+
+\begin{proof}
+Since both are optimal, $\mathbf{c}^{\top}\mathbf{x}=\mathbf{b}^{\top}\mathbf{y}$, and the
+chain in the proof of weak duality becomes a chain of equalities. Every term summed inside it is
+nonnegative, so every term is zero; those terms are exactly
+$y_{i}(b_{i}-\mathbf{a}_{i}^{\top}\mathbf{x})$ and
+$x_{j}((A^{\top}\mathbf{y})_{j}-c_{j})$. The converse direction: if all terms are zero, the same
+chain gives equality of values, and by weak duality that value is optimal for both problems.
+\end{proof}
+
+Now the shadow prices themselves. If the right-hand side is perturbed, the optimal value
+changes, and the rate of change is the component of $\mathbf{y}$. Adding one sheet of plywood
+raises the profit from $21$ to $21.75$; adding one assembly hour raises it to
+$21.5$. So a sheet of plywood is worth $0.75$ units of profit, an assembly hour
+$0.5$.
+
+That price does not hold forever, and its range of validity can be computed. As long as the set
+of active constraints does not change, $\mathbf{x}_{B}=B^{-1}\mathbf{b}$ is linear in
+$\mathbf{b}$, so its value is linear too. For the shop above,
+\[
+  B^{-1}=\begin{pmatrix}\tfrac14&-\tfrac12\\[2pt]-\tfrac18&\tfrac34\end{pmatrix},
+  \qquad
+  \mathbf{x}_{B}=\begin{pmatrix}\tfrac14b_{1}-\tfrac12b_{2}\\[2pt]
+  -\tfrac18b_{1}+\tfrac34b_{2}\end{pmatrix}.
+\]
+With $b_{2}=6$ fixed, the condition $\mathbf{x}_{B}\ge\mathbf{0}$ gives $b_{1}\in[12,36]$;
+outside that interval one basis variable becomes negative and the slope changes. With $b_{1}=24$
+fixed, the interval is $b_{2}\in[4,12]$; a shadow price is therefore always
+reported together with its interval, not as a bare number.
+
+One warning is useful from the start: shadow prices are an idea of the continuous model. In an
+integer model, one extra sheet of plywood may raise the profit by $1$ or not at all, and there is
+no single price that summarizes both.
+
+\section{The LP relaxation: a valid bound, a deceptive rounding}
+\tingkat{intermediate}
+
+If shelves and benches may be fractional, the problem above is finished: $3$ shelves and
+$1.5$ benches. In reality they may not, and the relation between the continuous problem and
+the integer problem must be stated with care.
+
+\begin{definisi}[Integer program, relaxation, and integrality gap]
+An \emph{integer program} is a linear program in which some or all of the variables are
+required to be integer. If all the variables are required to be integer, it is called a pure
+integer program. Its \emph{LP relaxation} is the same linear program without the integrality
+requirement. For a maximization problem with optimal values $z^{*}_{\mathrm{LP}}$ and
+$z^{*}_{\mathrm{IP}}$, the \emph{integrality gap} is $z^{*}_{\mathrm{LP}}-z^{*}_{\mathrm{IP}}$.
+\index{integer program}\index{relaxation}\index{integrality gap}
+\end{definisi}
+
+\kamus{integrality gap}{celah integralitas}{The distance between the bound that the continuous
+model promises and the actual integer answer; that distance measures how far the continuous
+model misleads.}
+
+The reason the relaxation is useful is one sentence: the set of feasible integer points is part
+of the set of feasible continuous points, so maximizing over the larger set cannot give a
+smaller value.
+
+\begin{proposisi}[The relaxation gives a valid bound]
+For a maximization problem, $z^{*}_{\mathrm{IP}}\le z^{*}_{\mathrm{LP}}$. For a minimization
+problem, the inequality reverses.
+\index{relaxation bound}
+\end{proposisi}
+
+\begin{proof}
+Every integer point that is feasible for the integer program is also feasible for its
+relaxation, since the relaxation only removes conditions, it does not add any. So the feasible
+region of the integer program is contained in the feasible region of the relaxation. A maximum
+over a larger set is not smaller than the maximum over its subset.
+\end{proof}
+
+The bound is valid, but not always tight, and the difference can be very misleading when it is
+used for rounding. Rounding fails in two ways, and both appear in our small example.
+
+The first way: the rounded result is infeasible. The point $(3;1.5)$ rounded up becomes
+$(3;2)$. Its profit is $23$, higher than $21$, but its plywood is
+$6\cdot3+4\cdot2=26$ sheets, exceeding $24$: that is not a production plan, only a row of
+numbers.
+
+The second way, subtler: the rounded result is feasible but not the best. Rounding down gives
+$(3;1)$ with profit $19$, although $(4;0)$ has profit $20$ and is entirely feasible.
+Rounding the coordinates one by one in the nearest direction therefore gives a worse answer
+than another integer point that is farther from $(3;1.5)$.
+
+Both failures are a consequence of the shape of the feasible region. The set of feasible
+integer points is not convex: $(3;1)$ and $(4;0)$ are members, but their midpoint
+$(3.5;\,0.5)$ is not, because it is not integer. On a nonconvex set the vertex-optimum theorem
+does not apply: no vertex is guaranteed to contain the answer, and no neighbor can be relied
+upon.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=9.3cm,height=6.3cm,
+  xlabel={$x_{1}$ (shelves)},ylabel={$x_{2}$ (benches)},
+  xmin=-0.35,xmax=5.1,ymin=-0.35,ymax=3.9,
+  axis lines=left,xtick={0,1,2,3,4,5},ytick={0,1,2,3},
+  tick label style={font=\scriptsize},label style={font=\scriptsize}]
+\addplot[forget plot,fill=layerteal!8,draw=layerteal,thick]
+  coordinates {(0,0) (4,0) (3,1.5) (0,3)} \closedcycle;
+\addplot[forget plot,only marks,mark=*,mark size=1.5pt,draw=layerindigo]
+  coordinates {(0,0) (1,0) (2,0) (3,0) (4,0)
+               (0,1) (1,1) (2,1) (3,1)
+               (0,2) (1,2) (2,2) (0,3)};
+\addplot[forget plot,only marks,mark=square*,mark size=2.4pt,draw=layerjade]
+  coordinates {(4,0)};
+\addplot[forget plot,only marks,mark=*,mark size=1.5pt,draw=layerplum]
+  coordinates {(3,1)};
+\addplot[forget plot,only marks,mark=o,mark size=3pt,thick,accent]
+  coordinates {(3,1.5)};
+\draw[densely dashed,layergrey] (axis cs:3,1) -- (axis cs:3,2.35);
+\node[font=\scriptsize,anchor=west,layerjade] at (axis cs:4.1,-0.05) {$(4;0)$, $z=20$};
+\node[font=\scriptsize,anchor=east,layerplum] at (axis cs:2.9,0.85) {$(3;1)$, $z=19$};
+\node[font=\scriptsize,anchor=west,accent] at (axis cs:3.15,1.6) {$(3;1.5)$, $z=21$};
+\node[font=\scriptsize,anchor=north,layergrey] at (axis cs:3,-0.05) {};
+\end{axis}
+\end{tikzpicture}
+\caption{The integer lattice versus the relaxation point. There are $13$ feasible integer points,
+marked with filled dots. The relaxation gives $(3;1.5)$ with value $21$, which stands midway
+between $(3;1)$ with value $19$ and $(3;2)$, which is infeasible since
+$6\cdot3+4\cdot2=26>24$. The best integer answer $(4;0)$ with value $20$ is in fact farther
+from the relaxation point.}
+\label{fig:ch22-kisi-relaksasi}
+\end{figure}
+
+Figure~\ref{fig:ch22-kisi-relaksasi} contains everything: thirteen feasible integer points, and
+one relaxation point standing between two points. The one in between is not an integer point,
+and the nearest is not necessarily the best.
+
+Rounding also has no single meaning in many dimensions. With two variables, ``nearest integer
+point'' can still be pictured; with a hundred variables, the nearest is not necessarily
+feasible, and the feasible one is not necessarily the best. The practice is not to round, but to
+use the relaxation bound to prune the search.
+
+\begin{tantangan}
+Maximize $6x_{1}+5x_{2}$ subject to $2x_{1}+3x_{2}\le12$, $4x_{1}+x_{2}\le13$, and
+$x_{1},x_{2}\ge0$ integer. The relaxation gives $(2.7;\,2.2)$ with value $27.2$.
+Rounding to the nearest integer, $(3;2)$, gives value $28$: higher than the value of any
+relaxation point that is still feasible. Show why $28$ cannot be trusted, then determine the
+correct integer answer together with its value.
+
+Hint 1: check feasibility, not only the value. A higher number may come from a point that is
+not a plan.
+
+Hint 2: squeeze $x_{1}$. The largest integer that is still feasible is $3$; for
+$x_{1}=3$, compute the bound on $x_{2}$ from both constraints and take the smaller one.
+
+If you get stuck, go back to the section The LP relaxation: a valid bound, a deceptive
+rounding.
+\end{tantangan}
+
+\section{Why integer programs are harder}
+\tingkat{intermediate}
+
+Up to here the question is fair: if the relaxation only adds one requirement, why is an integer
+program not solved by solving its relaxation and then rounding? The short answer: the difficulty
+is not in finding an answer, but in making sure that the answer is the best one.
+
+Three differences explain it.
+
+First, there is no simple certificate of optimality. In a linear program, a pair $\mathbf{x}$
+and $\mathbf{y}$ of equal value is a finished proof that can be checked in time proportional to
+the size of the data. In an integer program, the prices from the relaxation give only a bound,
+not an integer point that attains it: the dual of the relaxation gives a lower bound, not an
+answer.
+
+Second, the difference between bound and answer can be large. In the vertex cover of the
+complete graph on $n$ vertices, the relaxation allows $x_{v}=1/2$ for all $v$ with value $n/2$,
+whereas the integer answer is $n-1$; the ratio $2(n-1)/n$ approaches $2$. The complete
+computation is in the computational lab and in Exercise 10.
+
+Third, the computational cost is of a different class, and the number of candidates grows
+exponentially. A linear program is solved in time polynomial in the input size; Khachiyan's
+result through the ellipsoid method and Karmarkar's through interior-point methods are the two
+landmarks. The decision version of the integer program, ``is there a feasible integer point of
+value at least $K$'', is NP-complete, and Karp's list of twenty-one problems contains knapsack,
+which by itself has $2^{n}$ subsets. No polynomial algorithm is known for integer programming,
+and if one existed, many other things would collapse with it.
+
+\begin{untukanak}
+Have you ever laid tiles on a floor? You measure the length of the room, then divide by the size
+of the tile. The result is rarely a whole number. If you round down, there is a gap at the end
+of the floor. If you round up, you cut a tile and throw away the rest. And sometimes the best
+answer is neither of the two, but a laying pattern that is altogether different: start from the
+middle, or use cut tiles on both sides.
+
+Someone who looks only at the single number that comes out of the division will not find that
+pattern. He needs two bounds: at most how many tiles are used, and at least how many. With those
+two numbers he stops thinking about patterns that are plainly too wasteful, and concentrates on
+the ones that may still win.
+
+In this chapter we will learn why the bound from the continuous model is always valid, why
+rounding can give an answer that is feasible but not the best, and how a computer uses that
+bound to prune millions of possibilities without inspecting them one by one.
+\end{untukanak}
+
+\section{Branch and bound}
+\tingkat{advanced}
+
+If the relaxation answer is fractional, we do not round it, but split the problem into two and
+ask again with the relaxation on each piece. Every integer answer satisfies one of two mutually
+exclusive possibilities, $x_{2}\le1$ or $x_{2}\ge2$, so solving both is the same as solving the
+original problem.
+
+The procedure has four steps. Solve the relaxation at one node. If the result is integer, record
+it as a candidate answer and do not continue with that node. If it is fractional, choose one
+fractional variable, $x_{j}=v$, then create two children: $x_{j}\le\lfloor v\rfloor$ and
+$x_{j}\ge\lceil v\rceil$. Before inspecting a node, compare its relaxation bound with the best
+candidate; if it is not better, discard that node together with all its descendants. Stop when
+no node remains.
+
+That discarding rule is valid, and the reason is one line.
+
+\begin{proposisi}[Pruning discards no answer]
+Let $z_{\mathrm{LP}}(N)$ be the relaxation value at node $N$ and $z_{\mathrm{best}}$ the best
+candidate already recorded. If $z_{\mathrm{LP}}(N)\le z_{\mathrm{best}}$, then no feasible
+integer point at $N$ is better than $z_{\mathrm{best}}$.
+\end{proposisi}
+
+\begin{proof}
+Every integer point that is feasible at $N$ is also feasible for the relaxation of $N$, so its
+value is at most $z_{\mathrm{LP}}(N)$ by the relaxation-bound proposition. If
+$z_{\mathrm{LP}}(N)\le z_{\mathrm{best}}$, all those points have value at most
+$z_{\mathrm{best}}$, so there is nothing left to inspect.
+\end{proof}
+
+The tree for the shop above is small, and can be written entirely as a table.
+\begin{center}
+\begin{tabular}{llcc}
+\hline
+node & added constraint & relaxation $\mathbf{x}$ & $z_{\mathrm{LP}}$ \\
+\hline
+root & -- & $(3;\,1.5)$ & $21$ \\
+left & $x_{2}\le1$ & $(10/3;\,1)$ & $20.\overline{6}$ \\
+right & $x_{2}\ge2$ & $(2;\,2)$ & $18$ \\
+left-left & $x_{2}\le1,\ x_{1}\le3$ & $(3;\,1)$ & $19$ \\
+left-right & $x_{2}\le1,\ x_{1}\ge4$ & $(4;\,0)$ & $20$ \\
+\hline
+\end{tabular}
+\end{center}
+The root gives $21$ with $x_{2}$ fractional. Branching on $x_{2}$ gives two children: left
+$20.\overline{6}$ with $x_{1}=10/3$ still fractional, right $18$ and already integer. The right
+node is recorded as a candidate. At the left node, branching on $x_{1}$ gives $(3;1)$ with value
+$19$ and $(4;0)$ with value $20$; the second updates the candidate. No node remains, and the
+answer is $20$.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[
+  simpul/.style={draw=layergrey,fill=layergrey!6,rounded corners=1.5pt,
+    inner sep=3pt,font=\scriptsize,align=center,text width=3.0cm},
+  pangkas/.style={draw=accent,fill=accent!7,rounded corners=1.5pt,
+    inner sep=3pt,font=\scriptsize,align=center,text width=3.0cm},
+  panah/.style={-{Stealth},thick,draw=layergrey}]
+\node[simpul] (akar) at (0,0) {root\\ $z_{\mathrm{LP}}=21$\\ $(3;\,1.5)$};
+\node[simpul] (kiri) at (-3.6,-1.75) {$x_{2}\le1$\\ $z_{\mathrm{LP}}=20.\overline{6}$\\
+  $(10/3;\,1)$};
+\node[pangkas] (kanan) at (3.6,-1.75) {$x_{2}\ge2$\\ $z_{\mathrm{LP}}=18$\\ $(2;\,2)$ integer};
+\node[pangkas] (kk) at (-5.1,-3.6) {$x_{1}\le3$\\ $z_{\mathrm{LP}}=19$\\ $(3;\,1)$ integer};
+\node[simpul] (kn) at (-2.1,-3.6) {$x_{1}\ge4$\\ $z_{\mathrm{LP}}=20$\\ $(4;\,0)$ integer};
+\draw[panah] (akar.south) -- (kiri.north);
+\draw[panah] (akar.south) -- (kanan.north);
+\draw[panah] (kiri.south) -- (kk.north);
+\draw[panah] (kiri.south) -- (kn.north);
+\node[font=\scriptsize,accent,anchor=north] at (3.6,-2.55) {pruned: $18<20$};
+\node[font=\scriptsize,accent,anchor=north] at (-5.1,-4.45) {pruned: $19<20$};
+\end{tikzpicture}
+\caption{The branch-and-bound tree for the shop: five nodes. The root gives $z=21$
+with $x_{2}$ fractional. The branch $x_{2}\ge2$ ends at $(2;\,2)$ with value $18$; the branch
+$x_{2}\le1$ branches again into $(3;\,1)$ with value $19$ and $(4;\,0)$ with value $20$.
+The two nodes labeled integer whose values are below $20$ have a red frame: their bounds are no
+longer better than the best candidate, so both are pruned without further inspection.}
+\label{fig:ch22-pohon-percabangan}
+\end{figure}
+
+Figure~\ref{fig:ch22-pohon-percabangan} draws the same tree. Two nodes there
+have a red frame, namely $(2;\,2)$ with value $18$ and $(3;\,1)$ with value $19$: both are
+integer, but their bounds are below the best candidate $20$, so both are discarded.
+
+The right node with value $18$ would not need further inspection if it were
+fractional: the bound $18$ is already below the candidate $20$, so its whole branch can be
+discarded. On an example this small the saving is not noticeable; on a problem with hundreds of
+variables, that rule is what separates finishing in a minute from not finishing at all, since
+without good bounds branch and bound degenerates into $2^{n}$ nodes.
+
+Two things must be said honestly. The worst-case time is still exponential, and there is no
+guarantee that the tree is small. The choice of branching variable and the order of the nodes
+also strongly affect the size of the tree; software uses heuristics, for example the variable
+closest to one half. Both explain why an integer program can be far slower than a linear program
+of the same size.
+
+\section{Worked example}
+\tingkat{intermediate}
+
+Now all the numbers are carried to the end, so that every claim above can be
+rechecked by hand or with Python.
+
+\begin{resep}
+Four steps solve a two-variable linear program graphically:
+\begin{enumerate}
+  \item Turn each constraint into a line by replacing the inequality sign with an equals sign,
+        then draw the line through two axis intercepts.
+  \item Determine the feasible side by testing one point, usually the origin; shade the wrong
+        side so that the feasible region stays clean.
+  \item Intersect every pair of lines, discard the intersection points that do not satisfy all
+        the constraints, and what remains are the vertices.
+  \item Compute the objective value at every vertex, then take the largest for maximization or
+        the smallest for minimization.
+\end{enumerate}
+A warning about order: step 3 must not be carried out before step 2. Intersection points
+computed earlier often lie outside the feasible region and their values are in fact higher than
+the true answer; a nice number that appears before feasibility is checked is hard to throw away.
+\end{resep}
+
+\emph{First, the linear program of the shop.} Its feasible region is a quadrilateral with four
+vertices, and all four are inspected:
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+vertex & active constraints & profit $5x_{1}+4x_{2}$ \\
+\hline
+$(0;\,0)$ & $x_{1}=0,\ x_{2}=0$ & $0$ \\
+$(4;\,0)$ & $6x_{1}+4x_{2}=24,\ x_{2}=0$ & $20$ \\
+$(3;\,1.5)$ & $6x_{1}+4x_{2}=24,\ x_{1}+2x_{2}=6$ & $21$ \\
+$(0;\,3)$ & $x_{1}+2x_{2}=6,\ x_{1}=0$ & $12$ \\
+\hline
+\end{tabular}
+\end{center}
+The point $(3;1.5)$ is computed from the two equations: $x_{1}=6-2x_{2}$ substituted into
+$6x_{1}+4x_{2}=24$ gives $36-8x_{2}=24$, so $x_{2}=3/2$, $x_{1}=3$, and the profit is
+$15+6=21$.
+
+\emph{Second, the dual and strong duality.} The dual minimizes $24y_{1}+6y_{2}$ subject to
+$6y_{1}+y_{2}\ge5$ and $4y_{1}+2y_{2}\ge4$. Since $x_{1},x_{2}>0$, complementary slackness
+requires both dual constraints to be active; solving both as equalities gives $y_{1}=3/4$ and
+$y_{2}=1/2$. The value is $18+3=21$, the same as the profit. A cross-check:
+$6\cdot\tfrac34+\tfrac12=5$ and $4\cdot\tfrac34+2\cdot\tfrac12=4$, exactly the right-hand
+sides, so the gap is zero.
+
+\emph{Third, shadow prices and their range of validity.} Perturbing the right-hand side gives
+the following table, with $z$ recomputed from scratch in every row.
+\begin{center}
+\begin{tabular}{lccc}
+\hline
+perturbation & optimal $\mathbf{x}$ & $z$ & change \\
+\hline
+$b=(25;\,6)$ & $(3.25;\,1.375)$ & $21.75$ & $+0.75$ \\
+$b=(24;\,7)$ & $(2.5;\,2.25)$ & $21.50$ & $+0.50$ \\
+$b=(12;\,6)$ & $(0;\,3)$ & $12.00$ & $-9.00$ \\
+$b=(24;\,4)$ & $(4;\,0)$ & $20.00$ & $-1.00$ \\
+\hline
+\end{tabular}
+\end{center}
+The third row reduces the plywood to $12$, with change
+$-9=0.75\cdot(-12)$; the fourth row reduces the hours by $2$, with change
+$-1=0.5\cdot(-2)$. Both are still inside the intervals $b_{1}\in[12,36]$ and
+$b_{2}\in[4,12]$, so the linearity holds all the way to the end. Outside them the slope changes:
+with $b_{1}=40$, the relaxation gives $(0;\,3)$ with value $12$, not
+$21+0.75\cdot16=33$.
+
+\emph{Fourth, the integer program of the shop.} The enumeration of the two directions above gave
+the answer $20$ at $(4;0)$, whereas its relaxation is $21$ at $(3;1.5)$. The gap is $1$, namely
+$1/21=4.76\%$ of the relaxation value. Rounding down gives $19$, so it loses
+$1$ unit of profit, or $5\%$ of the true answer, and that happens on a problem with only two
+variables.
+
+\emph{Fifth, a knapsack with four items.} Four items with weights $5,4,3,2$ and
+values $10,7,5,3$ are loaded into a container of capacity $8$. Their value densities are $2$,
+$1.75$, $1.667$, $1.5$, so the greedy rule takes the first item and then $\tfrac34$ of the second:
+weight $5+3=8$, value $15.25$. The best integer answer is the first and the third item, weight
+$8$ exactly full, value $15$. Its integrality gap is $0.25$, only $1.64\%$ of the bound. But
+rounding down throws the second item away entirely and leaves the value $10$, namely
+$33.3\%$ below the true answer: a small gap does not mean that rounding is safe, since the two
+measure different things.
+
+\kertas{For the shop above, suppose the assembly machine is available for only $5$ hours, not
+$6$. Recompute the vertices, determine the optimal continuous profit, then determine the optimal
+integer profit with a small enumeration. Before computing, write down your guess: does the
+integrality gap grow or shrink? After that, inspect the shadow price of assembly hours at
+$b_{2}=5$ and compare it with $0.5$. As an extra, find the $b_{2}$ at which the best integer
+answer moves away from $(4;0)$.}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+The two blocks below are run with Python 3.14.4, numpy 2.5.2, and scipy 1.18.0. The first block
+solves the linear program, its dual, and the perturbations of the right-hand side. The second
+block solves the branch-and-bound tree, the knapsack, and the vertex cover of the complete graph
+on five vertices. The output is copied as it stands.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from scipy.optimize import linprog
+
+np.set_printoptions(precision=6, suppress=True, linewidth=78)
+
+c = np.array([5., 4.])              # profit per shelf, per bench
+A = np.array([[6., 4.], [1., 2.]])  # plywood, assembly hours
+b = np.array([24., 6.])
+
+r = linprog(-c, A_ub=A, b_ub=b, bounds=[(0, None)]*2, method="highs")
+print("LP   x* =", r.x, "  z* =", -r.fun)
+print("residual b - Ax =", b - A @ r.x)
+print("marginals (scipy):", r.ineqlin.marginals)
+
+rd = linprog(b, A_ub=-A.T, b_ub=-c, bounds=[(0, None)]*2, method="highs")
+print("dual y* =", rd.x, "  dual value =", rd.fun)
+print("duality gap =", rd.fun + r.fun)
+
+print("B^-1 =", np.linalg.inv(A), "  x_B =", np.linalg.inv(A) @ b)
+
+for nama, db in [("b=(25, 6)", (1., 0.)), ("b=(24, 7)", (0., 1.)),
+                 ("b=(12, 6)", (-12., 0.)), ("b=(24, 4)", (0., -2.))]:
+    rr = linprog(-c, A_ub=A, b_ub=b + np.array(db), bounds=[(0, None)]*2,
+                 method="highs")
+    print(f"{nama:<10} x = {np.round(rr.x, 6) + 0.0}  z = {-rr.fun:7.4f}"
+          f"  delta z = {-rr.fun + r.fun:+.4f}")
+\end{verbatim}
+The actual output:
+\begin{verbatim}
+LP   x* = [3.  1.5]   z* = 21.0
+residual b - Ax = [0. 0.]
+marginals (scipy): [-0.75 -0.5 ]
+dual y* = [0.75 0.5 ]   dual value = 21.0
+duality gap = 0.0
+B^-1 = [[ 0.25  -0.5  ]
+ [-0.125  0.75 ]]   x_B = [3.  1.5]
+b=(25, 6)  x = [3.25  1.375]  z = 21.7500  delta z = +0.7500
+b=(24, 7)  x = [2.5  2.25]  z = 21.5000  delta z = +0.5000
+b=(12, 6)  x = [0. 3.]  z = 12.0000  delta z = -9.0000
+b=(24, 4)  x = [4. 0.]  z = 20.0000  delta z = -1.0000
+\end{verbatim}
+\end{lab}
+
+\begin{lab}
+\begin{verbatim}
+import itertools
+import numpy as np
+from scipy.optimize import linprog, milp, LinearConstraint, Bounds
+
+c = np.array([5., 4.])
+A = np.array([[6., 4.], [1., 2.]])
+b = np.array([24., 6.])
+
+
+def lp_bengkel(tambahan_A=None, tambahan_b=None):
+    Aub = A if tambahan_A is None else np.vstack([A, tambahan_A])
+    bub = b if tambahan_b is None else np.concatenate([b, tambahan_b])
+    r = linprog(-c, A_ub=Aub, b_ub=bub, bounds=[(0, None)]*2, method="highs")
+    if r.status != 0:
+        return (None, "infeasible")
+    return (-r.fun, np.round(r.x, 6) + 0.0)
+
+
+print("-- branch and bound tree --")
+simpul = [("root",        None, None),
+          ("x2<=1",       [[0., 1.]],  [1.]),
+          ("x2>=2",       [[0., -1.]], [-2.]),
+          ("x2<=1,x1<=3", [[0., 1.], [1., 0.]],  [1., 3.]),
+          ("x2<=1,x1>=4", [[0., 1.], [-1., 0.]], [1., -4.])]
+for nama, ta, tb in simpul:
+    z, x = lp_bengkel(None if ta is None else np.array(ta),
+                      None if tb is None else np.array(tb))
+    print(f"{nama:<14} z_LP = {z:8.4f}  x = {x}")
+
+rb = milp(-c, constraints=LinearConstraint(A, -np.inf, b),
+          integrality=[1, 1], bounds=Bounds(0, np.inf))
+print("IP optimum   z_IP =", -rb.fun, " x =", np.round(rb.x, 6) + 0.0,
+      " gap =", 21.0 + rb.fun)
+
+print("-- knapsack, 4 items, capacity 8 --")
+w = np.array([5., 4., 3., 2.])
+v = np.array([10., 7., 5., 3.])
+for mask in range(16):
+    S = [i + 1 for i in range(4) if mask >> i & 1]
+    bw, bv = w[[i - 1 for i in S]].sum(), v[[i - 1 for i in S]].sum()
+    print(f"{str(S):<12} weight {bw:4.0f}  value {bv:4.0f}"
+          f"  {'feasible' if bw <= 8 else 'infeasible'}")
+rk = milp(-v, constraints=LinearConstraint(w, -np.inf, 8.),
+          integrality=[1]*4, bounds=Bounds(0, 1))
+print("enumeration/MILP z_IP =", -rk.fun, " x =", np.round(rk.x, 6) + 0.0)
+rl = linprog(-v, A_ub=[w], b_ub=[8.], bounds=[(0, 1)]*4, method="highs")
+print("relaxation      z_LP =", -rl.fun, " x =", np.round(rl.x, 6) + 0.0)
+print("integrality gap =", -rl.fun + rk.fun)
+
+print("-- vertex cover of K5: LP vs IP --")
+n = 5
+E = list(itertools.combinations(range(n), 2))
+M = np.zeros((len(E), n))
+for k, (i, j) in enumerate(E):
+    M[k, i] = M[k, j] = 1.
+rv = linprog(np.ones(n), A_ub=-M, b_ub=-np.ones(len(E)),
+             bounds=[(0, 1)]*n, method="highs")
+rc = milp(np.ones(n), constraints=LinearConstraint(M, 1, np.inf),
+          integrality=[1]*n, bounds=Bounds(0, 1))
+print("LP =", rv.fun, " x =", np.round(rv.x, 6) + 0.0)
+print("IP =", rc.fun, " x =", np.round(rc.x, 6) + 0.0)
+\end{verbatim}
+The actual output:
+\begin{verbatim}
+-- branch and bound tree --
+root           z_LP =  21.0000  x = [3.  1.5]
+x2<=1          z_LP =  20.6667  x = [3.333333 1.      ]
+x2>=2          z_LP =  18.0000  x = [2. 2.]
+x2<=1,x1<=3    z_LP =  19.0000  x = [3. 1.]
+x2<=1,x1>=4    z_LP =  20.0000  x = [4. 0.]
+IP optimum   z_IP = 20.0  x = [4. 0.]  gap = 1.0
+-- knapsack, 4 items, capacity 8 --
+[]           weight    0  value    0  feasible
+[1]          weight    5  value   10  feasible
+[2]          weight    4  value    7  feasible
+[1, 2]       weight    9  value   17  infeasible
+[3]          weight    3  value    5  feasible
+[1, 3]       weight    8  value   15  feasible
+[2, 3]       weight    7  value   12  feasible
+[1, 2, 3]    weight   12  value   22  infeasible
+[4]          weight    2  value    3  feasible
+[1, 4]       weight    7  value   13  feasible
+[2, 4]       weight    6  value   10  feasible
+[1, 2, 4]    weight   11  value   20  infeasible
+[3, 4]       weight    5  value    8  feasible
+[1, 3, 4]    weight   10  value   18  infeasible
+[2, 3, 4]    weight    9  value   15  infeasible
+[1, 2, 3, 4] weight   14  value   25  infeasible
+enumeration/MILP z_IP = 15.0  x = [1. 0. 1. 0.]
+relaxation      z_LP = 15.25  x = [1.   0.75 0.   0.  ]
+integrality gap = 0.25
+-- vertex cover of K5: LP vs IP --
+LP = 2.5  x = [0.5 0.5 0.5 0.5 0.5]
+IP = 4.0  x = [1. 1. 1. 1. 0.]
+\end{verbatim}
+\end{lab}
+
+Three things must be read from the first output. The reported $\mathbf{x}^{*}$,
+$(3;\,1.5)$, with $z^{*}$ exactly $21$ and no residual in either constraint, matches
+complementary slackness. \texttt{scipy} reports the multipliers $(-0.75,\,-0.5)$, the negative
+of the shadow prices, because the routine minimizes $-\mathbf{c}^{\top}\mathbf{x}$; the true
+numbers are $0.75$ and $0.5$, and the way to be sure is to recompute through $B^{-1}$. The
+duality gap comes out exactly $0$, not $10^{-15}$, because $21$ is represented exactly in
+binary; on decimal data a residual of order $10^{-12}$ is normal.
+
+The second output matches the hand computation: five nodes with the same values to four
+decimals, the integer answer $20$ at $(4;\,0)$, the knapsack relaxation $15.25$, and its integer
+answer $15$ with gap $0.25$. The enumeration of all sixteen subsets confirms that $15$ is the
+best: every subset of higher value exceeds the capacity.
+
+The last part of the second output checks the factor-two claim above. For the complete graph on
+five vertices, the relaxation is $2.5$ whereas the integer answer is $4$; the ratio is $1.6$,
+and for $n$ vertices the ratio $2(n-1)/n$ approaches $2$ from below. The relaxation bound here
+can be off by nearly twice.
+
+\begin{untukdosen}
+The order that works: start from the shop and the half bench, then standard form, then vertices,
+and only then the simplex. Do not start from the tableau. Students who see the tableau first
+memorize the pivot step without knowing why that step may stop; those who have already seen that
+the answer is at a corner will treat a pivot as a way of moving from corner to corner, and the
+optimality test as a way of knowing that no corner is better.
+
+Two typical misconceptions. First, ``the vertices are all the intersections of the constraint
+lines''. Many intersections lie outside the feasible region, for example $(4;3)$ in our example,
+which cuts both lines but violates both; checking the feasibility of every candidate must be
+done on the board. Second, ``the integer answer is the rounding of the fractional answer''. The
+shop gives $19$ against $20$, the knapsack gives $10$ against $15$; both are enough to break
+that guess.
+
+Class activity: write the initial tableau on the board, ask the class to choose the entering
+column and compute the ratio test, then predict the profit before the pivot. After the final
+tableau, ask for the profit when the plywood becomes $25$ sheets; $21.75$ opens the way to the
+interval $[12,36]$.
+
+Sign of readiness to go on: students can explain why the simplex method does not need to inspect
+every vertex, and can name one reason why the relaxation must not be rounded.
+\end{untukdosen}
+
+\section{Summary}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item A linear program demands an objective and constraints of straight-line shape. The
+        standard form $\max\mathbf{c}^{\top}\mathbf{x}$ with $A\mathbf{x}=\mathbf{b}$ and
+        $\mathbf{x}\ge\mathbf{0}$ covers every case, with slack variables to turn inequalities
+        into equalities.
+  \item If the feasible region is bounded and the objective is bounded above, the best value is
+        attained at a vertex. In standard form, a vertex is the same as a basic feasible
+        solution, and their number is $\binom{n}{m}$, so inspecting all of them is not a
+        sensible plan.
+  \item The simplex method moves from vertex to vertex through columns with negative reduced
+        cost and a ratio test, and stops when there is no negative reduced cost; at that moment
+        the $z$ row already contains the dual prices.
+  \item Weak duality holds without conditions; strong duality states that the two values are
+        equal when both are finite; complementary slackness states that a loose constraint has
+        price zero.
+  \item The shadow price $y_{i}$ is the rate of change of the optimal value with respect to the
+        right-hand side, and it holds only as long as the set of active constraints does not
+        change; in the shop $0.75$ per sheet and $0.5$ per hour, valid for $b_{1}\in[12,36]$
+        and $b_{2}\in[4,12]$.
+  \item The LP relaxation gives a valid bound, not an answer. Rounding can give an infeasible
+        point, such as $(3;2)$, or a feasible point that is not the best, such as $(3;1)$ with
+        value $19$ against $20$.
+  \item Branch and bound uses the relaxation bound to discard branches. The shop tree has five
+        nodes, its integer answer is $20$ with gap $1$. The worst-case time is still
+        exponential, and the decision version is NP-complete.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+
+\begin{latihan}
+\begin{enumerate}
+  \item A bakery uses $10$ kg of flour and $8$ oven hours. Cake A uses $2$ kg and
+        $1$ hour with profit $30$; cake B uses $1$ kg and $2$ hours with profit $20$.
+        Write the linear program, draw its feasible region, and compute the profit at every
+        vertex. Then determine the best integer answer by enumeration, and compare it
+        with the result of rounding down the continuous answer.
+
+  \item Prove that the set $\{\mathbf{x}:A\mathbf{x}\le\mathbf{b}\}$ is convex, then
+        explain why that proof does not apply to the set
+        $\{\mathbf{x}\in\mathbb{Z}^{n}:A\mathbf{x}\le\mathbf{b}\}$.
+
+  \item Change the profit of the shop to $x_{1}+2x_{2}$. Compute its value at the four vertices,
+        state which vertex is optimal, and show that every point of the segment between the two
+        optimal vertices is also optimal. Explain why a point in the middle of that segment is
+        not a vertex, then connect the result with the shadow price of the hours constraint.
+
+  \item Solve with the simplex tableau: maximize $3x_{1}+2x_{2}$ subject to
+        $x_{1}+x_{2}\le4$, $x_{1}\le3$, $x_{2}\le3$, $x\ge0$. Write every intermediate tableau,
+        name the entering column and the reason for it, then read the dual prices from the final
+        tableau. (Hint: two pivots suffice; compare the final result with the vertex obtained
+        from the intersection of $x_{1}+x_{2}=4$ and $x_{1}=3$.)
+
+  \item Write the dual of the program in exercise 1, solve it, and check strong duality
+        numerically. Explain the meaning of every shadow price in one sentence.
+
+  \item Assess this claim: \emph{rounding down the answer of the relaxation always gives a
+        feasible integer point.} Decide true, false, or not enough evidence, and
+        exhibit one counterexample with numbers.
+
+  \item Assess this claim: \emph{a positive shadow price means that the constraint must be
+        binding.} Decide true, false, or not enough evidence, then explain the actual relation
+        between shadow prices and complementary slackness.
+        (Hint: inspect what happens to a constraint with $y_{i}>0$ according to
+        $y_{i}(b_{i}-\mathbf{a}_{i}^{\top}\mathbf{x})=0$.)
+
+  \item For the knapsack with weights $(5,4,3,2)$, values $(10,7,5,3)$, and capacity
+        $8$, compute its LP relaxation by hand using the density order, then compare it with the
+        enumeration result. Compute the integrality gap and state it as a percentage of the
+        bound. (Hint: sort by value per unit of weight, then fill the container to the top; the
+        last item enters partly.)
+
+  \item Repeat exercise 8 with capacity $7$. Determine the relaxation, the integer answer, and
+        the gap, then explain why the gap can change although only one data value changed.
+
+  \item For the vertex cover of the complete graph on $n$ vertices, prove that the relaxation has
+        value $n/2$ and the integer answer $n-1$, then compute the ratio of the two for
+        $n=4,5,10$. Explain why that result shows that rounding is not a general way to solve
+        integer programs.
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+What is really proved in this chapter: weak duality for a primal-dual pair in standard form,
+without any condition; the converse direction of complementary slackness as an optimality test;
+optimality at a vertex for a bounded feasible region, with a proof through the active-constraint
+argument; and the validity of pruning in branch and bound. What is borrowed: strong duality,
+whose usual proof goes through Farkas' lemma or through the termination of the simplex; both are
+recorded in \texttt{WSPrinted.pdf}, in the section on linear programming duality, and in Boyd and
+Vandenberghe, section 5.2.
+
+What is popularized beyond its proof is quite a lot, and three things must be named.
+``The LP relaxation is nearly right'': its worst-case approximation factor can grow without
+bound on certain classes of problems, and even for the vertex cover it reaches $2$. ``The shadow
+price is the derivative of the optimal value'': that is true only when the optimal value is
+differentiable with respect to the right-hand side; at a degenerate point, where two optimal
+bases share the same vertex, the derivative does not exist and what remains is only a
+subgradient. ``Branch and bound is always fast'': its worst-case time is exponential, and
+slowness on a particular instance is not a sign of a bad implementation.
+
+Open questions: how strong the Chvatal-Gomory cutting-plane hierarchy is for particular classes
+of polytopes, and whether a superpolynomial lower bound exists for the size of extended
+formulations of the traveling salesman polytope; the results of Fiorini and coauthors in 2012
+show an exponential bound for that case, while the search for similar bounds for other problems
+continues. Limits of validity of this chapter: rational data, exact arithmetic for proofs,
+floating-point tolerance in practice; all statements about shadow prices hold for the continuous
+model, not for the integer model.
+
+\peta{This chapter follows \emph{Introduction to Linear Optimization} in the file
+\texttt{WSPrinted.pdf}: the sections on formulation, the geometry of polyhedral sets (vertices
+and extreme points), systems of linear inequalities and duality (complementary slackness,
+sensitivity analysis), and the simplex method (basic feasible solutions, reduced costs, the
+optimality test). The integer-programming side follows Wolsey, \emph{Integer Programming},
+chapter 1 (formulation) and chapter 2 (optimality, relaxation, bounds), which places the
+relaxation as the source of bounds and branching as the way to use them. The convex viewpoint in
+the second and fourth parts is Boyd and Vandenberghe, \emph{Convex Optimization}, chapters 4 and
+5. Relation to other chapters: standard form and the feasible region continue Chapter 21,
+solving linear systems uses Chapter 8, and the integrality gap is used again in Chapter 25.}
+
+\end{untukpeneliti}

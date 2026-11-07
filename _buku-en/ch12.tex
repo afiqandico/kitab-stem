@@ -1,0 +1,1185 @@
+\chapter{Derivatives: One and Several Variables}
+
+A position logger on a bicycle writes one point every second. To obtain the velocity, we
+divide the difference in distance by the difference in time. Two readings one second apart
+and four meters apart give four meters per second, even though that is only an average
+velocity. If the separation is one hundredth of a second, the difference in distance is a few
+centimeters while the instrument noise is several meters; the quotient jumps to hundreds of
+meters per second, even with a negative sign. The same division, two different answers.
+
+The derivative resolves that tension by moving the question to the limit, where noise does not
+enter the count. But the limit cannot be measured: what is measurable is only the quotient at
+a finite separation, and it carries two errors at once, truncation because the separation is
+not zero and rounding because the machine stores only so many digits. The derivative is the
+exact mathematical object; the quotient is its approximation, with an error that can be
+computed and controlled.
+
+The second difficulty appears when there is more than one input. A credit scoring model
+receives twelve inputs, and shifting one input gives one number for the rate of change.
+Shifting two inputs at once is not the same as adding those two numbers, unless the function
+behaves well; later we shall see an example that fails, and that function is still
+continuous. The correct answer is not a list of twelve numbers, but a single linear map on the
+shift vector: that is the true derivative, and its matrix is the Jacobian. The continuity of
+Chapter 11 does not say how fast something changes.
+
+\begin{untukanak}
+Have you ever stood on a curved roof? If you step forward, you climb. If you step sideways,
+you can stay at the same height. And yet you are standing at the same point, on the same roof.
+So the question ``how steep is this place'' is not complete before we name the direction of
+the step.
+
+There is another problem. If you look at only two points on the roof, and then divide the
+difference in height by the difference in distance, you get an average slope, not the slope at
+a single point. To get the slope exactly under your feet, the two points must be brought
+closer and closer. The closer they are the more exact it is, but if they are too close your
+measurement numbers fall apart because the measuring instrument is not perfect.
+
+In this chapter we shall learn why the slope at a single point needs a direction, why the
+steepest direction always exists, and why a computing tool whose step is too tight is
+precisely wrong.
+\end{untukanak}
+
+\section{The derivative as a limit and its two meanings}
+\tingkat{basic}
+
+The instantaneous rate of change is the number approached by the quotient of two differences
+as the difference in the input shrinks. The following definition merely writes that sentence
+down carefully, because the quotient itself is undefined when its denominator is zero.
+
+\kamus{derivative}{turunan}{The slope of the line that hugs the graph most tightly at a single
+point, which is also the instantaneous rate of change at that point.}
+
+\begin{definisi}[The derivative at a single point]
+Suppose $f$ is defined on an open interval containing $c$. The derivative of $f$ at $c$ is
+\[
+  f'(c)=\lim_{h\to0}\frac{f(c+h)-f(c)}{h},
+\]
+provided that limit exists and is finite. In this case $f$ is called
+\emph{differentiable} at $c$. Other notation used in this book: $Df(c)$ and
+$\dfrac{df}{dx}(c)$.\index{derivative}
+\end{definisi}
+
+That quotient is defined for every $h\neq0$, so there is no division by zero; what may fail
+is the limit. The failure is real: for $f(x)=|x|$ at $c=0$ the quotient is
+$1$ for $h>0$ and $-1$ for $h<0$, so the two-sided limit does not exist.
+
+Physically, the derivative is the instantaneous rate of change: $s'(t)$ is velocity when
+$s(t)$ is position, $Q'(t)$ is current when $Q(t)$ is the charge that flows, and $C'(q)$ is
+marginal cost when $C(q)$ is the cost of producing $q$ units.
+
+Geometrically, the quotient is the slope of the secant from $(c,f(c))$ to
+$(c+h,f(c+h))$. As $h\to0$, that secant rotates about the first point toward a single
+position; the line in the limiting position is called the tangent line, and its slope is
+$f'(c)$. The equation of the tangent line at $c$ is
+\[
+  y=f(c)+f'(c)(x-c).
+\]
+The tangent line is not ``the line that touches the graph exactly once'', for with
+$f(x)=x^{3}$ at $c=0$ the tangent line $y=0$ crosses the graph at the origin. What is correct:
+its difference from the graph shrinks faster than the distance does.
+
+That rotation can be followed numerically. For $f(x)=x^{2}$ at $c=2$, the secant with $h=1$
+has slope $5$, with $h=0.5$ the slope is $4.5$, and the tangent line has slope $4$.
+Figure~\ref{fig:sekan-singgung} draws all three: from $5$ to $4.5$, settling at $4$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=\linewidth, height=6.4cm,
+  axis lines=left,
+  xlabel={$x$}, ylabel={$y$},
+  xmin=1.55, xmax=3.25, ymin=2.2, ymax=10.2,
+  xtick={2,3}, ytick={4,9},
+  tick label style={font=\footnotesize},
+  label style={font=\footnotesize},
+  legend style={font=\scriptsize, draw=none, fill=none,
+                at={(0.03,0.97)}, anchor=north west},
+  clip=false,
+]
+\addplot[ink, thick, domain=1.6:3.15, samples=90] {x^2};
+\addlegendentry{$f(x)=x^{2}$}
+\addplot[accent, thick, domain=1.95:3.18] {5*(x-2)+4};
+\addlegendentry{secant $h=1$, slope $5$}
+\addplot[layerteal, thick, dashed, domain=1.95:3.0] {4.5*(x-2)+4};
+\addlegendentry{secant $h=0.5$, slope $4.5$}
+\addplot[layerindigo, thick, domain=1.68:3.05] {4*(x-2)+4};
+\addlegendentry{tangent line, slope $4$}
+\addplot[only marks, mark=*, mark size=1.5pt, ink]
+  coordinates {(2,4) (2.5,6.25) (3,9)};
+\node[font=\scriptsize, anchor=north west, text=ink] at (axis cs:2.04,3.75) {$(2,4)$};
+\end{axis}
+\end{tikzpicture}
+\caption{Secants rotating into the tangent line of $f(x)=x^{2}$ at $(2,4)$.
+Their slopes drop from $5$ (for $h=1$) to $4.5$ (for $h=0.5$) and settle at $4$
+as $h\to0$.}
+\label{fig:sekan-singgung}
+\end{figure}
+
+\begin{bacakeras}
+Two voices take turns; the answer gets shorter every time.
+
+--- How fast is it moving? --- From which point to which point?
+
+--- From the first second to the second second. --- Three meters.
+
+--- From the first second to second one and a half. --- Two and a half meters.
+
+--- From the first second to second one and one tenth. --- Two and one fifth.
+
+--- From the first second to second one and one hundredth. --- Almost two.
+
+--- From the first second to the first second. --- I cannot. The denominator is zero.
+
+Stop there. What changes is not the answer, but the distance between the two points being
+compared. The distance shrinks, the secant rotates, the number settles: a value that is never
+reached yet always approached, that is the derivative.
+
+Repeat together: the distance shrinks, the line rotates, the number settles.
+\end{bacakeras}
+
+Let us compute one derivative from the definition. For $f(x)=x^{2}$ at $c=2$,
+\[
+  \frac{f(2+h)-f(2)}{h}=\frac{(4+4h+h^{2})-4}{h}=\frac{h(4+h)}{h}=4+h .
+\]
+Since $h\neq0$, that division is legitimate, and the limit is $4$. For $h=0.01$ the quotient
+is $4.01$; the difference $0.01$ is not an arithmetic mistake but the order-$h$ term that
+disappears only in the limit. For $f(x)=1/x$ at $c=2$,
+\[
+  \frac{1/(2+h)-1/2}{h}
+  =\frac{2-(2+h)}{2h(2+h)}=\frac{-1}{2(2+h)}\longrightarrow-\frac14 .
+\]
+In both computations the algebra removes the factor $h$ from the denominator, so that the
+form $0/0$ becomes a function continuous at $h=0$.
+
+That quotient form is important, but it does not survive when the variables become many. The
+form that survives is the linear approximation.
+
+\begin{definisi}[Derivative as the coefficient of a linear approximation]
+A function $f$ is differentiable at $c$ with derivative $L$ if
+\[
+  f(c+h)=f(c)+Lh+r(h),
+  \qquad\text{with}\qquad
+  \lim_{h\to0}\frac{r(h)}{h}=0 .
+\]
+\end{definisi}
+
+The remainder $r(h)$ is smaller than $h$; that is the content of the definition. For one
+variable this form feels excessive, but only this form survives up to the Jacobian section.
+
+\begin{proposisi}
+The two definitions of the derivative above are equivalent, and the number $L$ in the second
+definition is unique.
+\end{proposisi}
+
+\begin{proof}
+If the limit of the quotient equals $L$, set $r(h)=f(c+h)-f(c)-Lh$. Then $r(h)/h$ is exactly
+the quotient minus $L$, hence tends to $0$. Conversely, if $r$ with that property exists, the
+quotient equals $L+r(h)/h$, which tends to $L$.
+
+For uniqueness, suppose $L_{1}$ and $L_{2}$ both satisfy it. Then
+$(L_{1}-L_{2})h=r_{2}(h)-r_{1}(h)$, and after dividing by $h$ we obtain
+$L_{1}-L_{2}=r_{2}(h)/h-r_{1}(h)/h$. The right-hand side tends to $0$, whereas the left-hand
+side does not depend on $h$. Hence $L_{1}=L_{2}$.
+\end{proof}
+
+The first property to hold on to: differentiability is stronger than continuity.
+
+\begin{proposisi}
+If $f$ is differentiable at $c$, then $f$ is continuous at $c$.
+\end{proposisi}
+
+\begin{proof}
+For $h\neq0$ we have
+\[
+  f(c+h)-f(c)=h\cdot\frac{f(c+h)-f(c)}{h}.
+\]
+The second factor tends to $f'(c)$ and the first factor tends to $0$, so the product tends to
+$0$. In other words $\lim_{h\to0}f(c+h)=f(c)$.
+\end{proof}
+
+The converse does not hold. The function $|x|$ is continuous at $0$ but not differentiable
+there, because the two one-sided quotients have opposite signs. The function $x\sin(1/x)$,
+equal to $0$ at $x=0$, is also continuous but not differentiable there: its quotient is
+$\sin(1/x)$, which oscillates without approaching a single value.
+
+\begin{tantangan}
+Suppose $f(0)=0$ and, for $x\neq0$,
+\[
+  f(x)=|x|\bigl(2+\sin(1/x)\bigr).
+\]
+Show that $f$ is continuous at $0$ but has no derivative there. The two properties do not
+contradict each other: continuity demands that the values of the function approach $f(0)$,
+the derivative demands that the difference quotient approach a single number.
+
+Hint 1: for continuity, one inequality that traps $|f(x)|$ between $0$ and something tending
+to $0$ is enough.
+
+Hint 2: for the second, compute $f(h)/h$ separately for $h>0$ and $h<0$. For $h>0$ the
+quotient is $2+\sin(1/h)$, which oscillates between $1$ and $3$; for $h<0$ it oscillates
+between $-3$ and $-1$. The two sets of values do not overlap.
+
+If you get stuck, go back to the definition of the derivative at the beginning of this section
+and compute the quotient for $h>0$ and then $h<0$ for the function $|x|$.
+\end{tantangan}
+
+The following computation rules free us from the definition every time.
+
+\begin{teorema}[Basic rules]
+Suppose $f$ and $g$ are differentiable at $c$. Then
+\begin{enumerate}
+  \item $(f+g)'(c)=f'(c)+g'(c)$ and $(af)'(c)=a f'(c)$ for $a\in\mathbb{R}$;
+  \item $(fg)'(c)=f'(c)g(c)+f(c)g'(c)$;
+  \item $\left(\dfrac{f}{g}\right)'(c)=\dfrac{g(c)f'(c)-f(c)g'(c)}{g(c)^{2}}$ if
+        $g(c)\neq0$;
+  \item if $n$ is an integer, the derivative of $x^{n}$ at $x\neq0$ is $nx^{n-1}$.
+\end{enumerate}
+\end{teorema}
+
+\begin{proof}
+Part (1) is immediate from the limit of a sum. For (2), write
+\[
+  f(x)g(x)-f(c)g(c)=f(x)\bigl[g(x)-g(c)\bigr]+g(c)\bigl[f(x)-f(c)\bigr].
+\]
+After dividing by $x-c$ and letting $x\to c$, the factor $f(x)$ tends to $f(c)$ because $f$ is
+continuous at $c$ (the previous proposition), and both quotients tend to their derivatives.
+
+For (3), it suffices to show that $1/g$ is differentiable with derivative $-g'(c)/g(c)^{2}$,
+then apply (2) to $f\cdot(1/g)$. The quotient for $1/g$ is
+\[
+  \frac{1/g(x)-1/g(c)}{x-c}
+  =-\frac{1}{g(x)g(c)}\cdot\frac{g(x)-g(c)}{x-c},
+\]
+which tends to $-g'(c)/g(c)^{2}$ because $g$ is continuous and $g(c)\neq0$. Part (4) follows
+from (2) by induction on $n\ge0$, then from (3) for $n<0$.
+\end{proof}
+\section{The chain rule}
+\tingkat{intermediate}
+
+If one quantity depends on a second quantity, and the second quantity depends on time, then
+the rate of change of the first quantity is the product of the two rates. That sentence sounds
+like everyday arithmetic, and that is indeed the content of the chain rule.
+
+Figure~\ref{fig:roda-gigi} uses two gears: the inner wheel turns three times per turn of the
+middle wheel, and the middle wheel twice per turn of the outer wheel. One turn of the outer
+wheel turns the inner wheel $3\times2=6$ times; adding the two ratios gives $5$, a number that
+appears in no turn at all.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.95]
+% inner wheel, ratio 3
+\draw[ink, thick] (0,0) circle (1.05);
+\foreach \a in {0,20,...,340} { \draw[ink, thick] (\a:1.05) -- (\a:1.17); }
+\fill[ink] (0,0) circle (1.5pt);
+\draw[->, layerindigo, thick] (0,0) ++(150:0.55) arc (150:70:0.55);
+% outer wheel, ratio 2
+\begin{scope}[xshift=2.9cm]
+  \draw[ink, thick] (0,0) circle (1.8);
+  \foreach \a in {10,30,...,350} { \draw[ink, thick] (\a:1.8) -- (\a:1.95); }
+  \fill[ink] (0,0) circle (1.5pt);
+  \draw[->, layerbrown, thick] (0,0) ++(-20:0.75) arc (-20:-100:0.75);
+\end{scope}
+\node[font=\footnotesize, text=ink, align=center] at (0,-2.35) {inner wheel:\\3 turns};
+\node[font=\footnotesize, text=ink, align=center] at (2.9,-2.35) {outer wheel:\\2 turns};
+\node[font=\footnotesize, text=layerplum] at (1.45,2.15) {$3\times2=6$};
+\end{tikzpicture}
+\caption{The chain rule as two gears. The inner wheel turns $3$ times for one turn of the
+outer wheel, and the outer wheel $2$ times for one turn of its output; the total ratio is
+$3\times2=6$, not $3+2=5$.}
+\label{fig:roda-gigi}
+\end{figure}
+
+\kamus{chain rule}{aturan rantai}{The rate at the end of the chain equals the product of the
+rates at every link.}
+
+\begin{teorema}[Chain rule]
+Suppose $g$ is differentiable at $c$ and $f$ is differentiable at $g(c)$. Then $f\circ g$
+is differentiable at $c$ and
+\[
+  (f\circ g)'(c)=f'\bigl(g(c)\bigr)\,g'(c).
+\]
+\end{teorema}
+
+\begin{proof}
+Write $y=g(c)$. Since $f$ is differentiable at $y$, by the linear approximation definition
+there is a function $v$ with $v(s)\to0$ as $s\to y$ and
+\[
+  f(s)-f(y)=(s-y)\bigl[f'(y)+v(s)\bigr].
+\]
+In the same way, since $g$ is differentiable at $c$, there is $u$ with $u(t)\to0$ as
+$t\to c$ and
+\[
+  g(t)-g(c)=(t-c)\bigl[g'(c)+u(t)\bigr].
+\]
+Substitute $s=g(t)$ in the first equation, then use the second:
+\[
+  f\bigl(g(t)\bigr)-f\bigl(g(c)\bigr)
+  =(t-c)\bigl[g'(c)+u(t)\bigr]\bigl[f'(y)+v(g(t))\bigr].
+\]
+For $t\neq c$, divide by $t-c$. Since $g$ is continuous at $c$, $g(t)\to y$, so that
+$v(g(t))\to0$, and the quotient tends to $g'(c)f'(y)$.
+\end{proof}
+
+The naive proof that divides by $g(t)-g(c)$ fails when $g(t)=g(c)$ for $t$ near $c$ but
+$t\neq c$; a locally constant function, for instance, makes that denominator zero at every
+point. The buffer $v$ above avoids that division altogether.
+
+Short example: for $h(x)=(x^{2}+1)^{5}$, take $g(x)=x^{2}+1$ and $f(u)=u^{5}$. Then
+$h'(x)=5(x^{2}+1)^{4}\cdot2x$ and $h'(1)=5\cdot16\cdot2=160$; direct expansion is possible,
+but unpleasant.
+
+\begin{resep}
+\begin{enumerate}
+  \item \textbf{Separate the two layers.} Point out which is inside and which is outside. For
+        $k(x)=\sin(x^{3}+2x)$: the inner layer is $g(x)=x^{3}+2x$, the outer layer
+        $f(u)=\sin u$.
+  \item \textbf{Differentiate the outer layer, leave its content intact.} $f'(u)=\cos u$
+        becomes $\cos(x^{3}+2x)$; do not simplify the content yet.
+  \item \textbf{Multiply by the derivative of the inner layer.} $g'(x)=3x^{2}+2$, so that
+        $k'(x)=(3x^{2}+2)\cos(x^{3}+2x)$.
+  \item \textbf{Test one point.} At $x=0$ the formula gives $2$, and the central difference
+        with $h=10^{-3}$ gives $1.9999997$.
+\end{enumerate}
+Warning about order: the outer layer is evaluated at $g(x)$, not at $x$. Swapping the place of
+evaluation gives $\cos(x)\,(3x^{2}+2)$, whose value at $x=1$ is $2.7015$, whereas the true
+value is $-4.9499$.
+\end{resep}
+
+Rate example: the area of a circle $A=\pi r^{2}$ with $\dot r=0.5$ cm per second. At
+$r=10$ cm,
+\[
+  \frac{dA}{dt}=2\pi r\frac{dr}{dt}=2\pi\cdot10\cdot0.5=10\pi\approx31.4159
+  \ \text{cm}^{2}\ \text{per second}.
+\]
+The number $10\pi$ is exact; at $r=20$ cm the same rate gives $20\pi$: the answer depends on
+$r$.
+
+\section{The mean value theorem and its consequences}
+\tingkat{intermediate}
+
+Between any two points on a smooth graph there is always a point whose slope equals the slope
+of the secant joining those two points. That statement looks like geometric fantasy, yet it is
+the bridge between the derivative and the function.
+
+The key to its proof is the special case in which the two ends have equal value.
+
+\begin{teorema}[Rolle]
+If $f$ is continuous on $[a,b]$, differentiable on $(a,b)$, and $f(a)=f(b)$, then there is
+$c\in(a,b)$ with $f'(c)=0$.\index{mean value theorem}
+\end{teorema}
+
+\begin{proof}
+If $f$ is constant, every $c\in(a,b)$ works. If not, $f$ attains a maximum or a minimum that
+differs from the value at the ends; since $f$ is continuous on a closed bounded interval,
+that value is attained at some point, and that point cannot be an endpoint, so $c\in(a,b)$
+(extreme value theorem, Chapter 11). At an interior extreme point, the quotient
+$(f(c+h)-f(c))/h$ is $\le0$ for small $h>0$ and $\ge0$ for small $h<0$. The two inequalities
+together force its two-sided limit, namely $f'(c)$, to be $0$.
+\end{proof}
+
+\begin{teorema}[Mean value]
+If $f$ is continuous on $[a,b]$ and differentiable on $(a,b)$, then there is $c\in(a,b)$
+with
+\[
+  f'(c)=\frac{f(b)-f(a)}{b-a}.
+\]
+\end{teorema}
+
+\begin{proof}
+Set $s=(f(b)-f(a))/(b-a)$ and $g(x)=f(x)-f(a)-s(x-a)$. Then $g$ is continuous on $[a,b]$,
+differentiable on $(a,b)$, and $g(a)=g(b)=0$. By Rolle's theorem there is $c\in(a,b)$ with
+$g'(c)=0$, that is, $f'(c)=s$.
+\end{proof}
+
+Numerical example: $f(x)=x^{3}$ on $[0,3]$ has secant slope $27/3=9$, and $3c^{2}=9$ gives
+$c=\sqrt{3}\approx1.7321$; there is no guarantee that $c$ sits in the middle.
+
+\begin{tangan}
+Prepare a thin 30 cm board, two books, a ruler, and a pencil. Prop up the left end of the
+board to a height of 4 cm, then press the middle slightly so that it curves upward.
+
+Hold the ruler upright at 5 cm and at 25 cm from the raised end; the difference in height
+divided by 20 cm gives one slope number. Repeat with 5 cm and 10 cm: the number changes,
+because what is being measured is the average slope over different intervals.
+
+Now lay the ruler flat at the 15 cm point and rotate it until only one point touches. Lift the
+other end slowly: the ruler rotates about that point, exactly like the secant in
+Figure~\ref{fig:sekan-singgung}. The slope of the ruler that touches a single point is the
+slope at that point, and that is where the mean value theorem promises that such a point
+exists.
+\end{tangan}
+
+\begin{akibat}[Monotonicity test]
+Suppose $f$ is continuous on $[a,b]$ and differentiable on $(a,b)$. If $f'(x)\ge0$ for all
+$x\in(a,b)$, then $f$ is nondecreasing on $[a,b]$. If $f'(x)>0$ for all $x$, then $f$ is
+strictly increasing. If $f'(x)=0$ for all $x$, then $f$ is constant.
+\end{akibat}
+
+\begin{proof}
+Take $a\le x<y\le b$. The mean value theorem on $[x,y]$ gives $c\in(x,y)$ with
+$f(y)-f(x)=f'(c)(y-x)$. Since $y-x>0$, the sign of the difference in values follows the sign
+of $f'(c)$. If $f'$ is zero everywhere, the difference is zero for every pair, so $f$ is
+constant.
+\end{proof}
+
+The direction of the logic deserves attention: this corollary turns information about the
+derivative into information about the function. The converse does not hold: a strictly
+increasing function may have zero derivative at some points, such as $x^{3}$ at $0$. Nor does
+the conclusion run backward from a single point: $f'(c)=0$ does not mean that $c$ is an
+extreme point.
+
+\begin{akibat}[Lipschitz continuity]
+If $f$ is differentiable on an interval $I$ and $|f'(x)|\le M$ for all $x\in I$, then
+$|f(x)-f(y)|\le M|x-y|$ for all $x,y\in I$.
+\end{akibat}
+
+\begin{proof}
+For $x\neq y$, the mean value theorem on the interval between them gives $c$
+with $f(x)-f(y)=f'(c)(x-y)$. Take the absolute value of both sides and use $|f'(c)|\le M$.
+\end{proof}
+
+Therefore a function with bounded derivative is automatically uniformly continuous (take
+$\delta=\varepsilon/M$), but the converse does not hold: $\sqrt{x}$ is uniformly continuous on
+$[0,1]$ with an unbounded derivative near zero.
+
+\section{Taylor polynomials and their remainder}
+\tingkat{advanced}
+
+The tangent line is a polynomial of degree one that clings to the graph at a single point. If
+we want it to cling longer, we add terms of degree two, three, and so on. The question is not
+whether the additions improve the approximation, but how large the remainder is.
+
+\begin{definisi}[Taylor polynomial]
+Suppose $f$ has derivatives up to order $n$ at $a$. The Taylor polynomial of order $n$ of $f$
+at $a$ is
+\[
+  P_{n}(x)=\sum_{k=0}^{n}\frac{f^{(k)}(a)}{k!}(x-a)^{k}.
+\]
+\end{definisi}
+
+The requirement: $P_{n}$ and $f$ agree in value and in their first $n$ derivatives at $a$;
+since $n+1$ coefficients determine one polynomial of degree $n$, $P_{n}$ is unique.
+
+\begin{teorema}[Taylor with Lagrange remainder]
+Suppose $f$ has derivatives up to order $n-1$ that are continuous on $[a,b]$ and a derivative
+of order $n$ on $(a,b)$. For every $\beta\in(a,b]$ there is $\xi\in(a,\beta)$ with
+\[
+  f(\beta)=P_{n-1}(\beta)+\frac{f^{(n)}(\xi)}{n!}(\beta-a)^{n}.
+\]
+\end{teorema}
+
+\begin{proof}
+Define $M$ by $f(\beta)=P_{n-1}(\beta)+M(\beta-a)^{n}$, then set
+\[
+  g(t)=f(t)-P_{n-1}(t)-M(t-a)^{n},\qquad a\le t\le b .
+\]
+$P_{n-1}$ is built from the derivatives of $f$ at $a$, so $g(a)=\cdots=g^{(n-1)}(a)=0$, and
+the choice of $M$ gives $g(\beta)=0$. Rolle gives $x_{1}\in(a,\beta)$ with $g'(x_{1})=0$;
+since $g'(a)=0$, Rolle applied to $g'$ on $[a,x_{1}]$ gives $x_{2}$ with $g''(x_{2})=0$.
+Repeat through $n$ steps: there is $x_{n}\in(a,\beta)$ with $g^{(n)}(x_{n})=0$. The derivative
+of order $n$ of $P_{n-1}$ is zero and that of $(t-a)^{n}$ is $n!$, so
+$0=f^{(n)}(x_{n})-n!M$, that is, $n!M=f^{(n)}(\xi)$ with $\xi=x_{n}$.
+\end{proof}
+
+For $n=1$ this theorem is exactly the mean value theorem; what is new is the ability to
+compute errors of higher order.
+
+\begin{contoh}
+Approximate $e$ by $P_{3}(1)$ from $f(x)=e^{x}$ at $a=0$, then compare with the remainder
+bound.
+\end{contoh}
+
+Here $f^{(k)}(0)=1$ for every $k$, so that
+\[
+  P_{3}(1)=1+1+\frac{1}{2}+\frac{1}{6}=\frac{8}{3}=2.6666\ldots
+\]
+The true value is $e=2.71828\ldots$, so the error is $0.0516152$. The Lagrange remainder
+gives $|e-P_{3}(1)|=e^{\xi}/24$ for some $\xi\in(0,1)$, and since $e^{\xi}\le e<3$, the bound
+is $3/24=0.125$. That bound is correct, but loose by a factor of about two and a half. Using
+order five, $P_{5}(1)=2.71666\ldots$ with error $0.0016152$, whereas the bound is
+$3/720=0.0041667$.
+
+\begin{untukanak}
+Imagine that you are guessing your friend's route from a few clues only. First clue: where he
+is now. Your guess is a single point, and that point does not move. Second clue: which way he
+is stepping. Your guess is a straight line, already closer, but a real route usually curves.
+Third clue: how fast the direction changes. Your guess is a piece of a parabola, which clings
+longer.
+
+The more clues, the longer your guess clings, but never exactly. There is always a remainder.
+That remainder can be bounded without knowing the true route, only from how large the change
+is at the next level. In this chapter we shall learn why a straight line is the guess of order
+one, why a parabola is of order two, and why a remainder bound is more useful than an answer
+that claims to be exact.
+\end{untukanak}
+\section{Partial derivatives, the gradient, and directional derivatives}
+\tingkat{intermediate}
+
+When there is more than one input, ``rate of change'' is not necessarily a single number. It
+depends on the direction in which we step. The simplest way to obtain a single number is to
+freeze every coordinate except one, and then use the definition we already have.
+
+\begin{definisi}[Partial derivative]
+Suppose $f\colon U\to\mathbb{R}$ is defined on an open set
+$U\subseteq\mathbb{R}^{n}$ and $a\in U$. The partial derivative of $f$ with respect to $x_{j}$
+at $a$ is
+\[
+  \frac{\partial f}{\partial x_{j}}(a)
+  =\lim_{h\to0}\frac{f(a+h\,e_{j})-f(a)}{h},
+\]
+with $e_{j}$ the unit vector in the direction of $x_{j}$, provided the limit exists.
+\index{partial derivative}
+\end{definisi}
+
+Geometrically, the partial derivative with respect to $x$ is the slope of the slice of the
+graph by the plane $y$ constant, hence an ordinary derivative of a function of one variable.
+
+\kamus{gradient}{gradien}{An arrow pointing in the steepest direction on a hill, with length
+equal to the steepness in that direction.}
+
+\begin{definisi}[Gradient]
+If all partial derivatives of $f$ at $a$ exist, the vector
+\[
+  \nabla f(a)=\left(\frac{\partial f}{\partial x_{1}}(a),\dots,
+  \frac{\partial f}{\partial x_{n}}(a)\right)
+\]
+is called the gradient of $f$ at $a$.\index{gradient}
+\end{definisi}
+
+For $f(x,y)=x^{2}y^{3}$ we have $\partial f/\partial x=2xy^{3}$ and
+$\partial f/\partial y=3x^{2}y^{2}$, so that $\nabla f(2,-1)=(-4,12)$.
+
+\begin{definisi}[Directional derivative]
+For a unit vector $u\in\mathbb{R}^{n}$, the directional derivative of $f$ at $a$ along $u$ is
+\[
+  D_{u}f(a)=\lim_{t\to0}\frac{f(a+tu)-f(a)}{t},
+\]
+provided the limit exists.\index{directional derivative}
+\end{definisi}
+
+The partial derivatives are the special case $u=e_{j}$. For other directions $D_{u}f$ cannot
+be predicted from the list of partials, except in one well-behaved situation.
+
+\begin{proposisi}
+If $f$ is differentiable at $a$ (in the sense of the linear approximation of the next section),
+then for every unit vector $u$ we have $D_{u}f(a)=\nabla f(a)\cdot u$.
+\end{proposisi}
+
+\begin{proof}
+With $v=tu$ in the linear approximation definition,
+$f(a+tu)=f(a)+t\,\nabla f(a)\cdot u+r(tu)$, so that
+\[
+  \frac{f(a+tu)-f(a)}{t}=\nabla f(a)\cdot u+\frac{r(tu)}{t}.
+\]
+Since $\|r(tu)\|/\|tu\|\to0$ and $\|tu\|=|t|$, the last term tends to $0$.
+\end{proof}
+
+\begin{proposisi}[Direction of steepest ascent]
+If $\nabla f(a)\neq0$, then among all unit vectors $u$ the value $D_{u}f(a)$ is largest at
+$u=\nabla f(a)/\|\nabla f(a)\|$, and the largest value is $\|\nabla f(a)\|$.
+\end{proposisi}
+
+\begin{proof}
+By the Cauchy--Schwarz inequality (Chapter 10),
+\[
+  |D_{u}f(a)|=|\nabla f(a)\cdot u|\le\|\nabla f(a)\|\,\|u\|=\|\nabla f(a)\|.
+\]
+Equality holds exactly when $u$ is parallel to $\nabla f(a)$. Since $u$ is a unit vector, only
+two signs are possible along that direction, and the positive sign gives the largest value.
+\end{proof}
+
+For $f(x,y)=x^{2}y^{3}$ at $(2,-1)$, the length of the gradient is $\sqrt{160}\approx12.6491$,
+so the direction of steepest ascent is $(-4,12)/\sqrt{160}\approx(-0.3162,\,0.9487)$ with
+rate $12.6491$ per unit of distance. The $x$ direction gives $-4$, the $y$ direction gives
+$12$; both are smaller.
+
+If a curve $t\mapsto\gamma(t)$ stays on the level set $f=\text{constant}$, then
+$f(\gamma(t))$ is constant and its derivative is zero; the chain rule gives
+$\nabla f(\gamma(t))\cdot\gamma'(t)=0$. Hence the gradient is perpendicular to the level
+curve, and the direction of steepest ascent is perpendicular to the contour lines on a map.
+
+For example $f(x,y)=x^{2}+2y^{2}$ at $(2,-1)$, a point with $f=6$, so it sits on the level
+ellipse $x^{2}+2y^{2}=6$. Its gradient is $(2x,4y)=(4,-4)$, of length
+$4\sqrt{2}\approx5.6569$, whereas the tangent direction of the ellipse there is $(1,1)$ and
+$(4,-4)\cdot(1,1)=0$. Figure~\ref{fig:kontur-gradien} draws all three: the level ellipse, the
+gradient arrow, and the tangent line perpendicular to it. The gradient arrow does not run
+along the contour; it pierces the contour in the direction in which the value of $f$
+increases.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.92]
+\draw[->, layergrey] (-3.0,0) -- (3.4,0) node[right, font=\scriptsize] {$x$};
+\draw[->, layergrey] (0,-2.45) -- (0,2.5) node[above, font=\scriptsize] {$y$};
+\draw[ink] (0,0) ellipse [x radius=1.414, y radius=1.000];
+\draw[ink] (0,0) ellipse [x radius=2.000, y radius=1.414];
+\draw[ink, thick] (0,0) ellipse [x radius=2.449, y radius=1.732];
+\node[font=\scriptsize, anchor=west, text=ink] at (0.28,-0.98) {$c=2$};
+\node[font=\scriptsize, anchor=west, text=ink] at (0.28,-1.40) {$c=4$};
+\node[font=\scriptsize, anchor=west, text=ink] at (0.28,-1.98) {$c=6$};
+\draw[accent, thick, dashed] (1.30,-1.70) -- (2.72,-0.28);
+\draw[->, very thick, layerindigo] (2,-1) -- (2.707,-1.707);
+\fill[ink] (2,-1) circle (1.7pt);
+\node[font=\scriptsize, anchor=north west, text=ink] at (2.02,-1.05) {$(2,-1)$};
+\node[font=\scriptsize, anchor=west, text=layerindigo] at (2.72,-1.86) {$\nabla f=(4,-4)$};
+\node[font=\scriptsize, anchor=east, text=accent] at (1.32,-1.76) {direction $(1,1)$};
+\end{tikzpicture}
+\caption{Level curves $x^{2}+2y^{2}=c$ for $c=2,4,6$ and the gradient at $(2,-1)$. The
+gradient arrow $(4,-4)$ is perpendicular to the tangent direction $(1,1)$ of the level curve
+$c=6$, because $(4,-4)\cdot(1,1)=0$.}
+\label{fig:kontur-gradien}
+\end{figure}
+
+\section{Differentiability, the Jacobian, and the multivariable chain rule}
+\tingkat{advanced}
+
+The true derivative is not a list of partials, but a single linear map that imitates the
+function near a point; the list of partials can mislead.
+
+\begin{definisi}[Differentiability]
+Suppose $U\subseteq\mathbb{R}^{n}$ is open and $F\colon U\to\mathbb{R}^{m}$. $F$ is
+differentiable at $a\in U$ if there is a linear map $L\colon\mathbb{R}^{n}\to\mathbb{R}^{m}$
+with
+\[
+  F(a+v)=F(a)+Lv+r(v),
+  \qquad
+  \lim_{v\to0}\frac{\|r(v)\|}{\|v\|}=0 .
+\]
+The map $L$ is called the derivative of $F$ at $a$ and is written $F'(a)$.
+\index{differentiability}
+\end{definisi}
+
+\begin{proposisi}
+The map $L$ in that definition is unique if it exists.
+\end{proposisi}
+
+\begin{proof}
+If $L_{1}$ and $L_{2}$ both work, then $(L_{1}-L_{2})v=r_{2}(v)-r_{1}(v)$. Take
+$v=tw$ with $w$ fixed and $t>0$, divide by $t$, then let $t\to0$: this gives
+$(L_{1}-L_{2})w=0$. Since this holds for every $w$, the two maps are equal.
+\end{proof}
+
+\begin{teorema}
+If $F$ is differentiable at $a$, then all its partial derivatives at $a$ exist, and the matrix
+of $L$ with respect to the standard bases is
+\[
+  J_{F}(a)=\begin{pmatrix}
+    \dfrac{\partial F_{1}}{\partial x_{1}}(a) & \cdots &
+    \dfrac{\partial F_{1}}{\partial x_{n}}(a)\\
+    \vdots & \ddots & \vdots\\
+    \dfrac{\partial F_{m}}{\partial x_{1}}(a) & \cdots &
+    \dfrac{\partial F_{m}}{\partial x_{n}}(a)
+  \end{pmatrix}.
+\]
+\end{teorema}
+
+\begin{proof}
+Take $v=te_{j}$ with $t\neq0$. The definition gives
+$F(a+te_{j})-F(a)=tLe_{j}+r(te_{j})$, and after dividing by $t$ and letting $t\to0$, the $j$-th
+column of $L$ appears as the limit of a quotient, namely the vector of partial derivatives
+with respect to $x_{j}$.
+\end{proof}
+
+\kamus{Jacobian matrix}{Jacobian}{A table of all the slopes of a function of several variables:
+each row is one output, each column is one input.}
+
+That $m\times n$ matrix is called the Jacobian matrix of $F$ at $a$.\index{jacobian} For $m=1$
+it becomes a single row, namely the transpose of the gradient. Example:
+$F(x,y)=(x^{2}y,\;x+y^{2})$ at $(1,2)$ gives
+\[
+  J_{F}(1,2)=\begin{pmatrix}2xy & x^{2}\\ 1 & 2y\end{pmatrix}_{(1,2)}
+  =\begin{pmatrix}4&1\\ 1&4\end{pmatrix},
+\]
+so that $F(1.01,\,1.98)\approx(2,5)+J_{F}(1,2)(0.01,-0.02)=(2.02,\,4.93)$,
+whereas the exact value is $(2.019798,\,4.9304)$; the approximation is off by
+$2\times10^{-4}$ in the first component.
+
+Existence of the partials does not guarantee differentiability; the next two examples show two
+levels of failure.
+
+\begin{contoh}[Partials exist, function discontinuous]
+Let $f(x,y)=\dfrac{xy}{x^{2}+y^{2}}$ for $(x,y)\neq(0,0)$ and $f(0,0)=0$. At the origin
+$f(h,0)=0$, so both partial derivatives vanish there. But along the line $y=kx$ the value of
+the function is $k/(1+k^{2})$: for $k=1$ the value is $1/2$, for $k=0$ the value is $0$. The
+limit does not exist, and $f$ is not continuous at the origin.
+\end{contoh}
+
+\begin{contoh}[Continuous, partials exist, not differentiable]
+Let $g(x,y)=\dfrac{xy}{\sqrt{x^{2}+y^{2}}}$ for $(x,y)\neq(0,0)$ and $g(0,0)=0$.
+Since $2|xy|\le x^{2}+y^{2}$, we have $|g(x,y)|\le\frac12\sqrt{x^{2}+y^{2}}$, so $g$ is
+continuous at the origin, and both of its partials vanish there. If $g$ were differentiable,
+its linear map would have to be zero, so the remainder $r(v)=g(v)$ would have to satisfy
+$\|r(v)\|/\|v\|\to0$. Take $v=t(1,1)/\sqrt{2}$ with $t>0$: then $g(v)=(t^{2}/2)/t=t/2$, so
+$g(v)/\|v\|=1/2$ for every $t$. That ratio tends to $1/2$, not to $0$; hence $g$ is not
+differentiable at the origin.
+\end{contoh}
+
+The consequence matters: in the second example $\nabla g(0,0)=0$ yet the diagonal directional
+derivative does not exist, because its quotient is $\pm1/2$ depending on the sign of $t$. Thus
+$D_{u}f=\nabla f\cdot u$ requires differentiability.
+
+A condition that is easy to check and sufficient for differentiability is continuity of the
+partials.
+
+\begin{teorema}
+If the partial derivatives of $F$ exist and are continuous near $a$, then $F$ is
+differentiable at $a$.
+\end{teorema}
+
+\begin{proof}
+It suffices to prove this for $m=1$ and $n=2$; the other cases follow component by component
+with increasing indices. Write $a=(p,q)$ and $v=(h,k)$. Then
+\[
+  f(p+h,q+k)-f(p,q)
+  =\bigl[f(p+h,q+k)-f(p,q+k)\bigr]+\bigl[f(p,q+k)-f(p,q)\bigr].
+\]
+By the mean value theorem in one variable, the first term equals
+$h\,\partial_{x}f(\xi,q+k)$ for some $\xi$ between $p$ and $p+h$, and the second term equals
+$k\,\partial_{y}f(p,\eta)$ for some $\eta$ between $q$ and $q+k$. Therefore
+\[
+  f(a+v)-f(a)-\nabla f(a)\cdot v
+  =h\bigl[\partial_{x}f(\xi,q+k)-\partial_{x}f(a)\bigr]
+  +k\bigl[\partial_{y}f(p,\eta)-\partial_{y}f(a)\bigr].
+\]
+Divide by $\|v\|=\sqrt{h^{2}+k^{2}}$: since $|h|/\|v\|\le1$ and $|k|/\|v\|\le1$, and both
+differences in brackets tend to $0$ (this is where continuity of the partials is used), the
+right-hand side divided by $\|v\|$ tends to $0$.
+\end{proof}
+
+Now composition.
+
+\begin{teorema}[Multivariable chain rule]
+Suppose $H\colon\mathbb{R}^{n}\to\mathbb{R}^{k}$ is differentiable at $a$ and
+$G\colon\mathbb{R}^{k}\to\mathbb{R}^{m}$ is differentiable at $H(a)$. Then $G\circ H$
+is differentiable at $a$ and
+\[
+  (G\circ H)'(a)=G'(H(a))\,H'(a),
+\]
+that is, the composition of two linear maps; in matrices,
+$J_{G\circ H}(a)=J_{G}(H(a))\,J_{H}(a)$.
+\end{teorema}
+
+\begin{proof}
+Write $A=H'(a)$, $B=G'(y_{0})$ with $y_{0}=H(a)$, and
+\[
+  H(a+v)=H(a)+Av+r(v),\qquad G(y_{0}+w)=G(y_{0})+Bw+q(w),
+\]
+with $\|r(v)\|\le\varepsilon(v)\|v\|$ and $\|q(w)\|\le\eta(w)\|w\|$, where
+$\varepsilon(v)\to0$ and $\eta(w)\to0$. For $w=H(a+v)-H(a)=Av+r(v)$ we have
+$\|w\|\le(\|A\|+\varepsilon(v))\|v\|$, so $w\to0$ as $v\to0$. Then
+\[
+  G\bigl(H(a+v)\bigr)-G(H(a))-BAv
+  =B\bigl(H(a+v)-H(a)-Av\bigr)+q(w)
+  =B\,r(v)+q(w).
+\]
+Divide by $\|v\|$:
+\[
+  \frac{\|B\,r(v)+q(w)\|}{\|v\|}
+  \le\|B\|\,\varepsilon(v)+\bigl(\|A\|+\varepsilon(v)\bigr)\eta(w),
+\]
+and the right-hand side tends to $0$. Hence $BA$ satisfies the definition of the derivative of
+$G\circ H$ at $a$.
+\end{proof}
+
+The matrix form explains why the order of multiplication may not be reversed: $J_{H}$ is
+$k\times n$ and $J_{G}$ is $m\times k$, so only one order can be multiplied. For scalar
+functions the result is $\frac{d}{dt}f(\gamma(t))=\nabla f(\gamma(t))\cdot
+\gamma'(t)$.
+
+Finally, second derivatives of a function of several variables are stored in a single matrix.
+
+\kamus{Hessian matrix}{Hessian}{A table of curvature: whether the surface bends upward,
+downward, or in both directions at once.}
+
+\begin{definisi}[Hessian matrix]
+If all second partial derivatives of $f\colon U\to\mathbb{R}$ exist at $a$, the matrix
+\[
+  H_{f}(a)=\left(\frac{\partial^{2}f}{\partial x_{i}\,\partial x_{j}}(a)\right)_{i,j=1}^{n}
+\]
+is called the Hessian matrix of $f$ at $a$.\index{hessian}
+\end{definisi}
+
+For a function whose second partials are continuous, $H_{f}(a)$ is symmetric (Clairaut's
+theorem, proved in Stewart in the section on partial derivatives). Without continuity, that
+conclusion can fail.
+
+The Hessian is the derivative of the gradient. If the second partials are continuous near a
+critical point $a$ ($\nabla f(a)=0$), then
+\[
+  f(a+v)=f(a)+\tfrac12\,v^{\top}H_{f}(a)\,v+o\bigl(\|v\|^{2}\bigr),
+\]
+so that the sign of the quadratic form $v\mapsto v^{\top}Hv$ determines the type of the
+critical point.
+
+\begin{proposisi}[Second derivative test]
+Suppose $f$ has continuous second partial derivatives near a critical point $a$
+($\nabla f(a)=0$).
+\begin{enumerate}
+  \item If $H_{f}(a)$ is positive definite, $a$ is a strict local minimum.
+  \item If $H_{f}(a)$ is negative definite, $a$ is a strict local maximum.
+  \item If $H_{f}(a)$ has eigenvalues of different signs, $a$ is a saddle point.
+  \item If $H_{f}(a)$ is semidefinite but singular, this test gives no conclusion.
+\end{enumerate}
+\end{proposisi}
+
+The first three parts follow from the quadratic expansion above: along a direction with
+$v^{\top}Hv>0$ the function increases, along a direction with $v^{\top}Hv<0$ it decreases. The
+complete proof is in Stewart in the section on maximum and minimum values. The fourth part is
+genuinely empty: $x^{4}+y^{4}$ and $x^{4}-y^{4}$ both have $H=0$ at the origin, but the first
+is a minimum and the second a saddle. For two variables, $AC-B^{2}>0$ with $A>0$ means
+positive definite, $AC-B^{2}<0$ means indefinite.
+\section{Worked examples}
+\tingkat{intermediate}
+
+The following three computations use the same numbers as the code in the lab section.
+
+First, finite differences for $f(x)=\sin x$ at $x_{0}=1$; the exact value is $\cos 1$, whose
+digits appear in the code output in the lab section. The two formulas:
+\[
+  \text{forward: }\frac{f(x_{0}+h)-f(x_{0})}{h},\qquad
+  \text{central: }\frac{f(x_{0}+h)-f(x_{0}-h)}{2h}.
+\]
+
+\begin{center}
+\begin{tabular}{rrrrr}
+\hline
+$h$ & forward difference & relative error & central difference & relative error\\
+\hline
+$10^{-1}$ & $0.497363752535$ & $7.947\times10^{-2}$ & $0.539402252170$ & $1.666\times10^{-3}$\\
+$10^{-2}$ & $0.536085981012$ & $7.804\times10^{-3}$ & $0.540293300875$ & $1.667\times10^{-5}$\\
+$10^{-4}$ & $0.540260231419$ & $7.787\times10^{-5}$ & $0.540302304968$ & $1.667\times10^{-9}$\\
+$10^{-6}$ & $0.540301885121$ & $7.787\times10^{-7}$ & $0.540302305896$ & $5.130\times10^{-11}$\\
+$10^{-8}$ & $0.540302302898$ & $5.497\times10^{-9}$ & $0.540302308449$ & $4.777\times10^{-9}$\\
+$10^{-10}$ & $0.540302247387$ & $1.082\times10^{-7}$ & $0.540302247387$ & $1.082\times10^{-7}$\\
+\hline
+\end{tabular}
+\end{center}
+
+The pattern of the errors is no accident. For the forward difference, the Taylor expansion
+gives
+\[
+  \frac{f(x_{0}+h)-f(x_{0})}{h}=f'(x_{0})+\frac{h}{2}f''(x_{0})+\mathcal{O}(h^{2}),
+\]
+so its relative error is of order $h$ and drops by a factor of ten each time $h$ is divided by
+ten: $7.947\times10^{-2}$, $7.804\times10^{-3}$, $7.787\times10^{-5}$. The numbers can be
+matched: $\frac{h}{2}f''(1)=-\frac{1}{2}\cdot10^{-2}\sin 1=-4.207\times10^{-3}$, and
+$4.207\times10^{-3}/0.5403=7.787\times10^{-3}$. The central difference gives
+\[
+  \frac{f(x_{0}+h)-f(x_{0}-h)}{2h}=f'(x_{0})+\frac{h^{2}}{6}f'''(x_{0})+\mathcal{O}(h^{4}),
+\]
+so its error is of order $h^{2}$ and drops by a factor of a hundred: $1.666\times10^{-3}$,
+$1.667\times10^{-5}$, $1.667\times10^{-9}$. Here $\frac{10^{-4}}{6}\cos 1
+=9.005\times10^{-6}$, and $9.005\times10^{-6}/0.5403$ again gives $1.667\times10^{-5}$.
+
+At $h=10^{-8}$ and $10^{-10}$ the central difference deteriorates again: the truncation error
+is already smaller than the rounding error, which grows like $\varepsilon/h$, with
+$\varepsilon\approx2.2\times10^{-16}$. The best entry in the table, $h=10^{-6}$ with error
+$5\times10^{-11}$, has an order consistent with $\varepsilon^{1/3}\approx6\times10^{-6}$.
+
+Second, the gradient of $f(x,y)=x^{2}y^{3}$ at $(2,-1)$ with analytic value $(-4,12)$. The
+central difference gives an error of $3.333\times10^{-5}$ in the $y$ component for
+$h=10^{-2}$, dropping to $3.333\times10^{-9}$ for $h=10^{-4}$: order $h^{2}$. The $x$
+component is exact to machine error, because $f$ is quadratic in $x$.
+
+Third, the chain rule on a composition of different dimensions. Let
+\[
+  H(x,y)=\bigl(x^{2}+y,\;xy,\;y^{3}\bigr),\qquad
+  G(u,v,w)=\bigl(uv+w,\;u^{2}-vw\bigr),
+\]
+and consider $F=G\circ H$ at $a=(1,2)$. Here $H(a)=(3,2,8)$, and
+\[
+  J_{H}(1,2)=\begin{pmatrix}2&1\\ 2&1\\ 0&12\end{pmatrix}_{3\times2},
+  \qquad
+  J_{G}(3,2,8)=\begin{pmatrix}2&3&1\\ 6&-8&-2\end{pmatrix}_{2\times3}.
+\]
+Their product is $2\times2$:
+\[
+  J_{G}(3,2,8)\,J_{H}(1,2)=
+  \begin{pmatrix}2&3&1\\ 6&-8&-2\end{pmatrix}
+  \begin{pmatrix}2&1\\ 2&1\\ 0&12\end{pmatrix}
+  =\begin{pmatrix}10&17\\ -4&-26\end{pmatrix}.
+\]
+\kertas{For the composition above, compute $J_{F}$ at $(2,1)$ in two ways: the product
+$J_{G}(H(2,1))J_{H}(2,1)$ and the direct derivative of the explicit form. Then check the
+direction $v=(1,3)$ by comparing $J_{F}(2,1)v$ against $\bigl(F(a+sv)-F(a)\bigr)/s$ for
+$s=10^{-2}$ and $s=10^{-4}$. Why does the error drop only by a factor of $10$, not $100$?}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+The following code is run as is with numpy 2.5.2 on Python 3: the first part repeats the three
+computations above, then one experiment that cannot be done by hand, finite differences under
+measurement noise.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+# 1. finite differences for f(x) = sin x at x0 = 1
+x0 = 1.0
+exact = float(np.cos(x0))
+print("cos(1) =", exact)
+for h in [1e-1, 1e-2, 1e-4, 1e-6, 1e-8, 1e-10]:
+    fwd = (np.sin(x0 + h) - np.sin(x0)) / h
+    cen = (np.sin(x0 + h) - np.sin(x0 - h)) / (2*h)
+    em = abs(fwd - exact) / abs(exact)
+    ep = abs(cen - exact) / abs(exact)
+    print(f"{h:8.0e} fwd={fwd:.12f} {em:.3e} "
+          f"cen={cen:.12f} {ep:.3e}")
+\end{verbatim}
+Actual output:
+\begin{verbatim}
+cos(1) = 0.5403023058681398
+   1e-01 fwd=0.497363752535 7.947e-02 cen=0.539402252170 1.666e-03
+   1e-02 fwd=0.536085981012 7.804e-03 cen=0.540293300875 1.667e-05
+   1e-04 fwd=0.540260231419 7.787e-05 cen=0.540302304968 1.667e-09
+   1e-06 fwd=0.540301885121 7.787e-07 cen=0.540302305896 5.130e-11
+   1e-08 fwd=0.540302302898 5.497e-09 cen=0.540302308449 4.777e-09
+   1e-10 fwd=0.540302247387 1.082e-07 cen=0.540302247387 1.082e-07
+\end{verbatim}
+\end{lab}
+
+The last line deserves a second reading: at $h=10^{-10}$ both formulas give identical digits,
+because they are both computing the same rounding error, not the derivative.
+
+\begin{lab}
+\begin{verbatim}
+def f(p):
+    return p[0]**2 * p[1]**3
+
+def grad_fd(fun, a, h):
+    g = np.zeros_like(a)
+    for j in range(a.size):
+        e = np.zeros_like(a)
+        e[j] = h
+        g[j] = (fun(a + e) - fun(a - e)) / (2*h)
+    return g
+
+a = np.array([2.0, -1.0])
+g_an = np.array([2*a[0]*a[1]**3, 3*a[0]**2*a[1]**2])
+print("gradient =", g_an)
+for h in [1e-2, 1e-4, 1e-6]:
+    g = grad_fd(f, a, h)
+    print(f"{h:8.0e} {g[0]:.12f} {g[1]:.12f} "
+          f"{abs(g[0]+4)/4:.3e} {abs(g[1]-12)/12:.3e}")
+\end{verbatim}
+Actual output:
+\begin{verbatim}
+gradient = [-4. 12.]
+   1e-02 -4.000000000000 12.000400000000 1.577e-14 3.333e-05
+   1e-04 -4.000000000004 12.000000039998 1.000e-12 3.333e-09
+   1e-06 -4.000000000115 11.999999999679 2.876e-11 2.676e-11
+\end{verbatim}
+\end{lab}
+
+\begin{lab}
+\begin{verbatim}
+def hh(p):
+    x, y = p
+    return np.array([x*x + y, x*y, y**3])
+
+def gg(q):
+    u, v, w = q
+    return np.array([u*v + w, u*u - v*w])
+
+def F(p):
+    return gg(hh(p))
+
+def jac(fun, p, step):
+    n = p.size
+    J = np.zeros((fun(p).size, n))
+    for j in range(n):
+        e = np.zeros(n)
+        e[j] = step
+        J[:, j] = (fun(p + e) - fun(p - e)) / (2*step)
+    return J
+
+a = np.array([1.0, 2.0])
+q = hh(a)
+Jh = np.array([[2*a[0], 1.0], [a[1], a[0]], [0.0, 3*a[1]**2]])
+Jg = np.array([[q[1], q[0], 1.0], [2*q[0], -q[2], -q[1]]])
+J_chain = Jg @ Jh
+J_num = jac(F, a, 1e-6)
+print("h(1,2) =", q)
+print("Jg @ Jh =\n", J_chain)
+print("max difference =", f"{np.max(np.abs(J_num - J_chain)):.3e}")
+
+v = np.array([0.7, -1.3])
+d_chain = J_chain @ v
+d_num = (F(a + 1e-6*v) - F(a - 1e-6*v)) / 2e-6
+print("J v =", d_chain)
+print("finite difference =", d_num)
+print("relative error =",
+      f"{np.max(np.abs(d_num - d_chain)/np.abs(d_chain)):.3e}")
+\end{verbatim}
+Actual output:
+\begin{verbatim}
+h(1,2) = [3. 2. 8.]
+Jg @ Jh =
+ [[ 10.  17.]
+ [ -4. -26.]]
+max difference = 1.858e-09
+J v = [-15.1  31. ]
+finite difference = [-15.1  31. ]
+relative error = 9.860e-11
+\end{verbatim}
+\end{lab}
+
+The difference $1.858\times10^{-9}$ between the chain-rule Jacobian and the finite-difference
+Jacobian is the truncation error of the central difference, not an algebraic mistake; the
+directional check gives $9.86\times10^{-11}$, because both use the same point.
+
+\begin{lab}
+\begin{verbatim}
+rng = np.random.default_rng(7)
+sigma = 1e-3
+for h in [1e-1, 1e-2, 1e-3, 1e-4, 1e-5]:
+    err = []
+    for _ in range(2000):
+        s1 = np.sin(x0 + h) + sigma*rng.standard_normal()
+        s0 = np.sin(x0) + sigma*rng.standard_normal()
+        err.append(abs((s1 - s0)/h - exact))
+    print(f"{h:8.0e} mean error = {np.mean(err):.3e}")
+\end{verbatim}
+Actual output:
+\begin{verbatim}
+   1e-01 mean error = 4.203e-02
+   1e-02 mean error = 1.112e-01
+   1e-03 mean error = 1.160e+00
+   1e-04 mean error = 1.117e+01
+   1e-05 mean error = 1.088e+02
+\end{verbatim}
+\end{lab}
+
+The last experiment is the heart of this chapter in numbers. With noise
+$\sigma=10^{-3}$, the quotient carries two errors: a truncation bias of $\approx0.42h$ and
+noise that amplifies like $\sqrt{2}\sigma/h$. At $h=10^{-1}$ the bias dominates ($0.042$),
+at $h=10^{-4}$ the noise dominates ($11.2$), and the two balance when
+$0.42h=\sqrt{2}\cdot10^{-3}/h$, that is $h\approx0.058$: with an instrument that bad, the
+best step is about six hundredths, not one hundred-millionth.
+
+That is the honest answer to the opening question. The derivative is a limit, but its best
+approximation is not the closest possible limit. The best is a compromise between two errors
+that move in opposite directions, and that compromise can be computed before a single number
+is measured.
+\begin{untukdosen}
+The order that works: the quotient definition, then the linear approximation form, then the
+computation rules. That form feels excessive for one variable, but only it survives up to the
+Jacobian; if it is introduced later, students memorize the chain rule as matrix multiplication
+without knowing why the order is what it is.
+
+Two typical misconceptions. First, ``the partial derivatives exist means the function is
+smooth''; the example $xy/\sqrt{x^{2}+y^{2}}$ on the board breaks it, provided the facts are
+computed together: partials zero, continuous, yet the diagonal direction gives $1/2$. Second,
+the direction of multiplication in the chain rule: students write $J_{H}J_{G}$ because the
+order in which the functions are written is the reverse of the order in which they are
+applied; the way to check is the size of the matrices.
+
+Blackboard activity: ask the class to compute both partials at the origin for the two
+counterexamples, then to decide whether that function has a tangent plane. Sign of readiness
+to go further: students explain why $D_{u}f=\nabla f\cdot u$ fails in the second example, and
+use the word ``remainder'', not ``formula''.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item The derivative $f'(c)$ is the limit of a difference quotient, and also the unique
+        coefficient of the linear approximation $f(c+h)=f(c)+Lh+r(h)$ with $r(h)/h\to0$.
+        Differentiability guarantees continuity, not the other way around.
+  \item The chain rule $(f\circ g)'=f'(g(c))g'(c)$ is proved through the linear approximation,
+        and the proof survives into many dimensions: $J_{G\circ H}(a)=J_{G}(H(a))J_{H}(a)$.
+  \item The mean value theorem links the sign of the derivative to the behavior of the
+        function: $f'\ge0$ means nondecreasing, $|f'|\le M$ means Lipschitz; it fails for
+        vector functions.
+  \item Taylor with Lagrange remainder uses an unknown $\xi$, so only an upper bound for
+        $|f^{(n)}|$ is used.
+  \item For several variables, the derivative is a linear map with a Jacobian matrix. Partials
+        may exist without continuity, and may exist together with continuity without
+        differentiability.
+  \item The gradient points in the direction of steepest ascent with rate $\|\nabla f\|$,
+        perpendicular to the contours; a definite Hessian determines the type of a critical
+        point.
+  \item Finite differences are of order $h$ (forward) or $h^{2}$ (central), and the rounding
+        error grows like $\varepsilon/h$. The smallest step is not the best step.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Compute $f'(2)$ from the definition for $f(x)=x^{3}$ and $f(x)=\sqrt{x}$, until the
+        factor $h$ disappears from the denominator.
+
+  \item Prove that if $f'(c)>0$, there is $\delta>0$ such that $f(c+h)>f(c)$ for every
+        $h\in(0,\delta)$, and explain why this does not mean that $f$ is increasing on some
+        interval.
+
+  \item Prove the quotient rule by differentiating $1/g$ first, then using the product rule.
+        State at which step the continuity of $g$ is used.
+
+  \item Assess this claim: \emph{if $f$ has all its partial derivatives at a point, then $f$
+        is continuous at that point.} State whether it is true, false, or not yet supported by
+        proof, and include a counterexample if needed.
+
+  \item For $f(x,y)=x^{3}y-xy^{3}$, compute the gradient at $(2,1)$, determine the direction
+        of steepest ascent, and compute its maximum rate. Check with a central difference
+        $h=10^{-4}$ and compare the relative error with the order $h^{2}$.
+
+  \item Prove that if $f'=0$ everywhere on an interval, then $f$ is constant. Explain why that
+        proof fails on a disconnected set, and give an example.
+
+  \item Suppose $H(x,y)=(e^{x}y,\;x+y^{2})$ and $G(u,v)=(u^{2}v,\;u-v)$. Compute
+        $J_{G\circ H}$ at $(0,1)$ in two ways: the matrix product and the direct derivative.
+        (Hint: $H(0,1)=(1,1)$.)
+
+  \item Find all critical points of $f(x,y)=x^{3}+y^{3}-3xy$, then classify them with the
+        Hessian; explain why the sign of the determinant is not enough when the determinant is
+        zero.
+
+  \item Estimate $\sqrt{1.04}$ with the Taylor polynomial of order two at $a=1$, then bound
+        its error with the Lagrange remainder. Compare that bound with the actual error: is it tight? (Hint:
+        $f''(x)=-\frac14x^{-3/2}$ and $f'''$ is positive on that interval.)
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+What is proved in this chapter are the classical statements for one and several variables: the
+linear approximation and the uniqueness of its map, the chain rule, the mean value theorem and
+its consequences, Taylor with Lagrange remainder, the equivalence of differentiability with the
+Jacobian, and the sufficient condition of continuous partials. All of them are theorems, not
+conventions, and they hold in finite-dimensional spaces over $\mathbb{R}$.
+
+What is often popularized is the claim ``the gradient is the derivative''. Without
+differentiability that claim is false, and $xy/\sqrt{x^{2}+y^{2}}$ is a counterexample that
+stays continuous. The claim ``the Hessian determines the type of a critical point'' holds only
+when the Hessian is nonsingular; the singular case requires higher derivatives or direct
+analysis.
+
+Primary sources. Rudin, \emph{Principles of Mathematical Analysis}, the chapters
+\emph{Differentiation} and \emph{Functions of Several Variables}, contains all the statements
+above. Spivak, \emph{Calculus on Manifolds}, the chapter \emph{Differentiation}, takes the same
+route and is shorter. Stewart, \emph{Calculus: Early Transcendentals} ninth edition, sections
+14.3 to 14.7, supplies the computational counterparts, including Clairaut's theorem.
+
+Limits of validity: all arguments assume that the domain is open and that the derivatives used
+exist. For functions that are differentiable only almost everywhere, the monotonicity and
+Taylor conclusions collapse, and that is territory of measure theory which this book does not
+cover. For vector functions, the mean value theorem does not hold; what replaces it is the mean
+value inequality, which requires an operator norm. The best order of a finite difference
+depends on the scale of the function, the noise, and the arithmetic; this chapter has only
+shown the order empirically.
+\end{untukpeneliti}
+
+\peta{This chapter follows Rudin, \emph{Principles of Mathematical Analysis}, the chapters
+\emph{Differentiation} and \emph{Functions of Several Variables}; its computational version is
+Stewart, \emph{Calculus: Early Transcendentals} ninth edition, sections 14.3 to 14.7; its
+abstract counterpart is Spivak, \emph{Calculus on Manifolds}, the chapter
+\emph{Differentiation}. Continuity and the extreme value theorem are used from Chapter 11, the
+Cauchy--Schwarz inequality from Chapter 10, and the Jacobian norm returns in Chapter 23 and
+Chapter 28.}

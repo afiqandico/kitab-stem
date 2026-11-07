@@ -1,0 +1,1127 @@
+\chapter{Metode Formal dengan Lean 4}
+
+Sebuah berkas bernama \texttt{Sertifikat.lean} tiba bersama satu kalimat pengantar: ``semuanya
+sudah dibuktikan mesin''. Isinya empat puluh teorema satu baris, hampir semuanya berakhir dengan
+\texttt{by native\_decide}, dan di bagian bawah ada satu konstanta ringkasan yang menyebut ambang
+$10^{-3}$. Tidak satu pun barisnya dapat kita periksa dengan mata dalam waktu yang wajar: yang
+dibandingkan adalah bilangan bulat enam belas digit hasil pengubahan pecahan biner menjadi bentuk
+eksak. Kalimat pengantar itu benar dalam arti yang sempit dan menyesatkan dalam arti yang penting.
+Mesin memang memeriksa setiap baris, tetapi ia tidak memeriksa apakah yang diperiksa itu yang
+dimaksud.
+
+Pengujian dan pembuktian menjanjikan hal yang berbeda, dan bedanya bukan soal derajat
+kepercayaan. Pengujian mengambil sejumlah masukan, menjalankan program, lalu melaporkan apa yang
+terjadi pada masukan itu. Kesimpulannya selalu berbentuk ``untuk $10^{4}$ sampel uji, tidak ada
+yang gagal''. Pembuktian formal berjanji lebih: satu pernyataan berkuantor atas seluruh masukan,
+disertai objek yang dapat diperiksa pihak ketiga tanpa mempercayai penulisnya. Janji itu
+ditepati hanya bila tiga syarat dipenuhi sekaligus, yaitu pernyataannya ditulis dengan benar,
+objek yang diperiksa memang bukti pernyataan itu, dan landasan pemeriksaannya tidak disalahgunakan.
+Bab ini membongkar ketiga syarat tersebut pada satu sistem konkret, Lean 4.
+
+Alat dari bab sebelumnya belum cukup untuk pekerjaan ini. Bab 27 mengajarkan cara melaporkan
+apa yang benar-benar diukur: pisahkan data latih dari data uji, sebutkan distribusinya, laporkan
+variansi antar seed. Itu adalah disiplin tentang \emph{klaim empiris}. Di sini kita menghadapi
+klaim yang bentuknya lain: bukan rata-rata atas sampel, melainkan pernyataan berkuantor
+$\forall x,\ P(x)$. Untuk klaim semacam itu tidak ada interval kepercayaan yang menolong, karena
+satu penyangkal sudah cukup untuk meruntuhkannya, dan ketiadaan penyangkal bukan bukti. Yang
+dibutuhkan adalah objek yang bisa diperiksa ulang oleh orang yang tidak percaya kepada kita.
+
+\begin{untukanak}
+Bayangkan seorang juri catur yang sangat teliti. Ia tidak pernah bertanya apakah permainan itu
+menarik, apakah kedua pemain bermain dengan baik, atau apakah aturan caturnya memang aturan yang
+seharusnya dipakai. Tugasnya hanya satu: setiap kali ada langkah, ia memeriksa apakah langkah itu
+sah menurut buku aturan. Kalau semua langkah sah, ia menandatangani papan itu dan berkata
+``permainan ini sah''. Ia tidak peduli siapa yang menang.
+
+Sekarang bayangkan seseorang menyerahkan papan yang penuh langkah sah, lalu berkata ``ini
+membuktikan bahwa saya bisa mengalahkan siapa pun''. Juri tadi akan menjawab dengan jujur: yang
+saya periksa hanya bahwa langkahnya sah, bukan bahwa kalimatmu benar. Kalau kalimatnya keliru,
+papan yang sah tidak menolong sama sekali, karena yang salah bukan langkahnya melainkan
+pertanyaannya.
+
+Pernahkah kamu memberikan jawaban yang benar untuk soal yang salah? Atau mengerjakan pekerjaan
+rumah dengan rapi padahal yang diminta halaman lain? Di bab ini kita akan tahu mengapa komputer
+bisa memeriksa pembuktian sampai ke langkah terkecil, mengapa pemeriksaan itu sama sekali tidak
+menjamin bahwa pertanyaannya tepat, dan bagaimana orang menulis pertanyaan yang tepat dalam
+bahasa yang bisa diperiksa mesin.
+\end{untukanak}
+
+\section{Bukti informal dan bukti formal}
+
+\tingkat{menengah}
+
+Bukti dalam buku matematika adalah teks yang meyakinkan pembaca terlatih. Ia memuat lompatan yang
+disepakati bersama: ``jelas'', ``tanpa mengurangi keumuman'', ``analog untuk kasus lain''. Lompatan
+itu bukan kecurangan; ia adalah pemadatan yang diterima komunitas. Masalahnya, pemadatan semacam
+itu tidak bisa diperiksa mesin, dan tidak bisa dipisahkan dari pengetahuan pembacanya.
+
+Bukti formal adalah versi lain dari objek yang sama. Pernyataannya ditulis dalam bahasa dengan
+tata bahasa dan tipe yang tegas, dan buktinya adalah sebuah \emph{term}, yaitu ekspresi yang
+tipenya adalah pernyataan itu. Pemeriksaan dilakukan oleh inti sistem, sepotong kecil kode yang
+hanya tahu beberapa aturan dan tidak tahu apa pun tentang matematika. Karena intinya kecil,
+pemeriksaannya dapat dipercaya jauh lebih kuat daripada program besar mana pun di sekitar
+sistem itu.
+
+\kamus{verifikasi formal}{formal verification}{Pemeriksaan langkah demi langkah oleh juru tulis
+yang tidak pernah bosan dan tidak pernah percaya pada penulisnya.}
+
+\begin{definisi}[Bukti formal]
+Misalkan $P$ adalah pernyataan yang ditulis dalam bahasa formal sistem. \emph{Bukti formal} $P$
+adalah term $p$ sedemikian sehingga $p:P$ dapat diturunkan oleh inti sistem dari definisi,
+teorema yang sudah diperiksa, dan aksioma yang dinyatakan terbuka. Sistem menerima $P$ bila dan
+hanya bila term semacam itu ditemukan dan lolos pemeriksaan tipe.\index{verifikasi formal}
+\end{definisi}
+
+Definisi itu memuat tiga kata yang mudah dilewati. ``Dapat diturunkan'' berarti ada prosedur
+mekanis, bukan ada orang yang setuju. ``Diperiksa'' berarti hasilnya biner: diterima atau
+ditolak, tanpa derajat keyakinan. ``Dinyatakan terbuka'' berarti aksioma tercatat, bukan
+tersembunyi; kita akan memakai pencatatan itu nanti sebagai alat utama.
+
+Perbedaan yang paling sering disalahpahami adalah perbedaan antara \emph{kebenaran} dan
+\emph{keterbuktian}. Lean tidak tahu apakah suatu pernyataan benar dalam dunia nyata. Ia hanya
+tahu apakah ada term yang bertipe pernyataan itu. Bila pernyataannya salah, term itu tidak akan
+pernah ditemukan, tetapi ketiadaan term bukan bukti bahwa pernyataan itu salah; bisa jadi kita
+saja yang belum menemukannya.
+
+\begin{bacakeras}
+Suara pertama: ``Sudah saya periksa, semuanya benar.''
+Suara kedua: ``Tunjukkan caranya.''
+Suara pertama: ``Saya membaca ulang tiga kali.''
+Suara kedua: ``Itu kebiasaan, bukan cara.''
+Suara pertama: ``Saya yakin.''
+Suara kedua: ``Keyakinan bukan bukti. Berikan langkahnya, satu per satu.''
+
+Begitulah percakapan dengan mesin. Ia tidak bertanya apakah kita orang baik, apakah kita sudah
+sarapan, atau apakah kita lulus dengan nilai tinggi. Ia bertanya satu hal, dengan sabar, setiap
+kali, tanpa nada marah: tunjukkan langkahnya. Kalau langkahnya ada, pintu terbuka. Kalau langkahnya
+tidak ada, pintu tetap tertutup, serapat sebelumnya, meskipun kita mengulang permintaan itu seratus
+kali. Mesin tidak menilai niat kita; ia hanya memeriksa bentuk.
+
+Ucapkan bersama, perlahan, lalu ulangi sekali lagi: mesin tidak percaya, ia memeriksa.
+\end{bacakeras}
+
+\section{Proposisi sebagai tipe, bukti sebagai term}
+
+\tingkat{menengah}
+
+Di Lean tidak ada jurang antara pernyataan dan buktinya. Keduanya term, diperiksa oleh aturan yang
+sama. Setiap kalimat yang dapat bernilai benar atau salah diberi tipe $\mathtt{Prop}$; bukti
+kalimat itu adalah term yang bertipe kalimat tersebut. Pernyataan ``$P$ terbukti'' karena itu
+tidak berarti $P$ benar dalam suatu model, melainkan bahwa ada term bertipe $P$ yang lolos
+pemeriksaan.
+
+\kamus{proposisi}{proposition}{Kalimat yang bisa dinilai benar atau salah, seperti soal ujian yang
+jawabannya harus dibuktikan, bukan sekadar dipilih.}
+
+\begin{definisi}[Penghuni tipe]
+Sebuah tipe $T$ disebut \emph{berpenghuni} bila terdapat term $t$ dengan $t:T$; notasi $t:T$
+dibaca ``$t$ bertipe $T$''. Bila $P:\mathtt{Prop}$, maka $P$ disebut \emph{proposisi} dan $t:P$
+disebut \emph{term bukti} bagi $P$.\index{term bukti} Dua term disebut \emph{sama secara definisi} bila keduanya
+menyusut ke bentuk identik melalui perhitungan simbolik.\index{proposisi-tipe}
+\end{definisi}
+
+Kamus ini, yaitu korespondensi antara logika dan tipe, dikenal sebagai Curry--Howard.\index{Curry-Howard} Implikasi
+menjadi tipe fungsi, karena bukti $P\Rightarrow Q$ harus mengubah sebarang bukti $P$ menjadi bukti
+$Q$, dan itulah pekerjaan sebuah fungsi. Kuantor universal menjadi fungsi dependen, karena bukti
+$\forall x,\ P(x)$ harus menghasilkan bukti $P(a)$ untuk setiap $a$ yang diberikan. Konjungsi
+menjadi pasangan, karena bukti $P\wedge Q$ memuat kedua buktinya sekaligus. Baris terakhir tabel
+di bawah adalah yang paling penting: $\bot$ tidak punya penghuni.
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Logika & Tipe di Lean & Cara membangun term \\
+\hline
+$P\Rightarrow Q$   & $P\to Q$              & \texttt{fun h => ...} \\
+$P\wedge Q$        & \texttt{And P Q}      & \texttt{And.intro} \\
+$P\vee Q$          & \texttt{Or P Q}       & \texttt{Or.inl}, \texttt{Or.inr} \\
+$\top$             & \texttt{True}         & \texttt{True.intro} \\
+$\bot$             & \texttt{False}        & tidak ada penghuni \\
+$\forall x,\ P(x)$ & $\forall x,\ P\,x$    & \texttt{fun x => ...} \\
+$\exists x,\ P(x)$ & \texttt{Exists}       & \texttt{Exists.intro} \\
+\hline
+\end{tabular}
+\end{center}
+
+\kamus{term bukti}{proof term}{Struk bangunan yang bentuknya persis mengikuti cetak biru
+pernyataannya; kalau bentuknya tidak cocok, bangunan ditolak.}
+
+Term berikut adalah bukti paling kecil yang berguna: fungsi identitas sebagai bukti implikasi
+identitas, dan komposisi dua fungsi sebagai bukti transitivitas implikasi. Keduanya diperiksa
+tanpa memakai pengetahuan apa pun tentang isi $P$, $Q$, dan $R$.
+
+\begin{verbatim}
+-- bukti implikasi identitas, gaya term
+def bukti_id {P : Prop} : P -> P := fun h => h
+
+-- komposisi dua implikasi
+def bukti_komposisi {P Q R : Prop} (h1 : P -> Q) (h2 : Q -> R) : P -> R :=
+  fun hp => h2 (h1 hp)
+
+#check bukti_id
+#check bukti_komposisi
+#check Prop
+\end{verbatim}
+
+Keluaran perintah terakhir, apa adanya, adalah \texttt{Prop : Type}: himpunan proposisi sendiri
+adalah sebuah tipe. Dua baris sebelumnya mencetak tipe kedua definisi. Perhatikan bahwa
+\texttt{\#check} tidak membuktikan apa pun; ia hanya menanyakan tipe, dan itulah yang juga
+dilakukan inti sistem ketika memeriksa.
+
+\begin{proposisi}
+Untuk setiap $P:\mathtt{Prop}$ berlaku $P\to P$. Untuk $P,Q,R:\mathtt{Prop}$ berlaku
+$(P\to Q)\to(Q\to R)\to P\to R$.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Term $\lambda h.\,h$ bertipe $P\to P$: dalam konteks $h:P$, variabel $h$ sendiri adalah bukti $P$,
+sehingga abstraksi atas $h$ menghasilkan fungsi dari $P$ ke $P$. Untuk pernyataan kedua, misalkan
+$h_{1}:P\to Q$, $h_{2}:Q\to R$, dan $h_{p}:P$. Aplikasi $h_{1}\,h_{p}$ bertipe $Q$, lalu aplikasi
+$h_{2}\,(h_{1}\,h_{p})$ bertipe $R$. Tiga abstraksi berturut-turut atas $h_{p}$, $h_{2}$, dan
+$h_{1}$ memberi term bertipe $(P\to Q)\to(Q\to R)\to P\to R$.
+\end{proof}
+
+Pohon pada Gambar~\ref{fig:pohon-tipe} menuliskan bukti kedua itu sebagai pohon turunan: tiga daun,
+dua batang aplikasi, satu akar. Daun paling kanan adalah hipotesis yang diberikan, bukan hasil
+turunan.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small,
+  daun/.style={draw=layergrey,fill=layergrey!6,rounded corners=2pt,inner sep=4pt},
+  hip/.style={draw=layergrey,dashed,fill=layergrey!3,rounded corners=2pt,inner sep=4pt},
+  batang/.style={thick,layergrey}]
+  \node[daun] (h1) at (-3.7,2.7) {\texttt{h1 : P -> Q}};
+  \node[daun] (hp) at (-0.6,2.7) {\texttt{hp : P}};
+  \node[daun] (ap1) at (-2.2,1.35) {\texttt{h1 hp : Q}};
+  \node[hip]  (h2) at (2.7,1.35) {\texttt{h2 : Q -> R}};
+  \node[daun] (akar) at (0,0) {\texttt{h2 (h1 hp) : R}};
+  \draw[batang] (h1.south) -- (ap1.north west);
+  \draw[batang] (hp.south) -- (ap1.north east);
+  \draw[batang] (ap1.south) -- (akar.north west);
+  \draw[batang] (h2.south) -- (akar.north east);
+\end{tikzpicture}
+\caption{Pohon tipe untuk term \texttt{h2 (h1 hp)}: tiga daun dan dua batang aplikasi, dengan akar
+bertipe $R$. Kotak putus-putus adalah hipotesis yang diberikan, bukan hasil turunan.}
+\label{fig:pohon-tipe}
+\end{figure}
+
+Ada satu sifat yang perlu disebut karena ia menjelaskan mengapa bukti dipakai sebagai sertifikat,
+bukan sebagai data. Inti Lean memperlakukan dua bukti mana pun dari proposisi yang sama sebagai
+sama secara definisi. Sifat ini disebut \emph{irrelevansi bukti}, dan akibatnya sebuah bukti tidak
+membawa informasi selain ``pernyataan ini benar''. Karena itu bukti dapat dibuang setelah
+diperiksa, dan yang tersisa hanyalah status pernyataannya.
+
+Satu peringatan dipasang sejak awal. Korespondensi Curry--Howard berlaku penuh untuk logika
+konstruktif. Begitu kita memakai hukum tengah-tengah, $\mathtt{Classical.em}:P\vee\neg P$, kita
+menambahkan aksioma, dan bukti yang memakainya berhenti bersifat komputasional: ia tetap sah,
+tetapi tidak lagi dibaca sebagai program yang menghasilkan saksi. Banyak teorema pustaka besar
+memuat aksioma pilihan di daftar aksiomanya, dan bagian akhir bab ini menunjukkan cara menanyakan
+daftar itu langsung kepada Lean.
+
+\section{Kuantor: aturan intro dan eliminasi}
+
+\tingkat{menengah}
+
+Pernyataan yang menarik hampir selalu berkuantor.\index{kuantor} ``Untuk setiap bilangan asli'' dan ``ada
+bilangan asli'' bukan hiasan bahasa; keduanya mengubah jenis objek yang harus disediakan. Dalam
+pandangan tipe, perbedaan itu menjadi perbedaan antara fungsi dan pasangan.
+
+\kamus{kuantor}{quantifier}{Kata ``setiap'' dan ``ada''; yang pertama menuntut resep untuk semua
+kasus, yang kedua menuntut satu contoh beserta buktinya.}
+
+Aturan untuk kuantor universal sepenuhnya sama dengan aturan untuk fungsi. Untuk membuktikan
+$\forall x,\ P(x)$, kita mengambil $x$ sebarang dan membuktikan $P(x)$ bagi $x$ itu; itulah
+abstraksi. Untuk memakai hipotesis $\forall x,\ P(x)$, kita terapkan hipotesis itu pada sebuah
+objek; itulah aplikasi. Aturan untuk kuantor eksistensial adalah aturan pasangan: untuk
+membuktikan $\exists x,\ P(x)$ kita menyediakan satu saksi $a$ bersama bukti $P(a)$; untuk memakai
+hipotesis eksistensial kita membongkar pasangan itu menjadi saksi dan buktinya.
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Bentuk pernyataan & Cara membuktikan & Cara memakai \\
+\hline
+$\forall x,\ P(x)$      & \texttt{intro x}              & terapkan pada objek \\
+$\exists x,\ P(x)$      & \texttt{exact Exists.intro a h} & \texttt{cases} pada hipotesis \\
+$P\wedge Q$             & \texttt{constructor}          & \texttt{h.1}, \texttt{h.2} \\
+$P\vee Q$               & \texttt{left}, \texttt{right} & \texttt{cases} pada hipotesis \\
+$\neg P$                & \texttt{intro h} lalu capai $\bot$ & terapkan pada bukti $P$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{tangan}
+Siapkan sepuluh kartu kosong dan satu spidol. Di lima kartu tulis aturan masuk: ``ambil sebarang'',
+``sediakan saksi'', ``pasangkan dua bukti'', ``pilih kiri'', ``pilih kanan''. Di lima kartu lain
+tulis aturan pakai: ``terapkan pada objek'', ``bongkar pasangan'', ``ambil komponen pertama'',
+``pecah per kasus'', ``pakai pada bukti lawan''.
+
+Letakkan satu kartu tujuan di ujung meja, misalnya ``setiap bilangan asli nol atau penerus''. Susun
+rantai ke arah kartu tujuan: kartu pertama harus aturan masuk yang bentuknya cocok dengan tujuan,
+bukan aturan pakai. Setiap kartu berikutnya hanya boleh bekerja pada sisa yang masih terbuka. Kartu
+yang tidak punya sisa untuk dikerjakan disingkirkan ke tepi meja; di Lean kartu itu tidak akan
+pernah dipakai.
+
+Yang harus kamu lihat: rantai memendek menuju tujuan, dan tidak pernah ada dua kartu yang mengerjakan
+sisa yang sama. Kalau itu terjadi, rantaimu bercabang, dan mesin menuntut dua bukti, bukan satu.
+\end{tangan}
+
+Contoh berikut menunjukkan keduanya bekerja pada bilangan asli. Pernyataan pertama adalah
+tautologi yang tidak memerlukan penalaran apa pun; pernyataan kedua menyatakan bahwa setiap
+bilangan asli adalah nol atau penerus sesuatu, dan pembuktiannya memerlukan pemecahan kasus pada
+bentuk bilangan.
+
+\begin{verbatim}
+-- kuantor universal: ambil n sebarang, lalu hitung
+theorem nol_kanan : forall n : Nat, n + 0 = n := by
+  intro n
+  rfl
+
+-- kuantor eksistensial: sediakan saksi, lalu buktikan sifatnya
+theorem ada_tiga : exists n : Nat, n = 3 := by
+  exact Exists.intro 3 rfl
+
+-- setiap bilangan asli adalah nol atau penerus sesuatu
+theorem nol_atau_suksesor (n : Nat) : n = 0 \/ exists m : Nat, n = m + 1 := by
+  cases n with
+  | zero => left; rfl
+  | succ k => right; exact Exists.intro k rfl
+\end{verbatim}
+
+Ketiga teorema itu diperiksa tanpa aksioma tambahan, dan itu dapat dipastikan dengan perintah
+\texttt{\#print axioms}, yang akan kita pakai berulang kali. Perhatikan juga bahwa
+\texttt{Exists.intro k rfl} memakai \texttt{rfl} sebagai bukti kesamaan: pada kasus
+\texttt{succ k}, tujuannya adalah $k+1=k+1$, yang benar secara definisi.
+
+\begin{catatan}
+Arah sebaliknya tidak berlaku otomatis. Dari $\exists x,\ P(x)$ kita tidak boleh menyimpulkan
+$\forall x,\ P(x)$, dan Lean akan menolak setiap percobaan ke arah itu. Kesalahan menukar urutan
+kuantor adalah kesalahan spesifikasi yang paling sering terjadi, dan ia lolos tanpa keluhan dari
+pengujian karena semua sampel uji memenuhinya. Bagian tentang batas di akhir bab ini membahas
+akibatnya.
+\end{catatan}
+
+\section{Taktik: mengubah tujuan menjadi term}
+
+\tingkat{dasar}
+
+Menulis term bukti secara langsung cepat menjadi tidak terbaca, karena term yang dalam harus
+dibaca dari dalam ke luar. Karena itu Lean menyediakan mode taktik.\index{taktik} Setelah kata \texttt{by},
+kita tidak menulis term, melainkan urutan perintah yang mengubah \emph{keadaan tujuan}. Keadaan
+tujuan dicetak sebagai daftar hipotesis, lalu garis pemisah, lalu target.
+
+\kamus{taktik}{tactic}{Perintah memasak langkah demi langkah, bukan resep lengkap yang harus
+dihafalkan sekaligus.}
+
+\begin{verbatim}
+-- keadaan tujuan dicetak setelah setiap taktik; baris "|-" dibaca "maka"
+theorem imp_trans {P Q R : Prop} (h1 : P -> Q) (h2 : Q -> R) : P -> R := by
+  intro hp
+  trace_state          -- P Q R : Prop, h1 : P -> Q, h2 : Q -> R, hp : P, |- R
+  apply h2
+  trace_state          -- target berubah menjadi |- Q
+  exact h1 hp
+\end{verbatim}
+
+Keluaran \texttt{trace\_state} pada mesin uji ini adalah dua blok berikut. Lean mencetak panah
+sebagai karakter Unicode; di sini semuanya ditulis ulang dalam ASCII agar konsisten dengan seluruh
+bab.
+
+\begin{verbatim}
+P Q R : Prop
+h1 : P -> Q
+h2 : Q -> R
+hp : P
+|- R
+
+P Q R : Prop
+h1 : P -> Q
+h2 : Q -> R
+hp : P
+|- Q
+\end{verbatim}
+
+Taktik \texttt{intro} mengambil target berbentuk implikasi dan memindahkan antesedennya menjadi
+hipotesis; itu persis abstraksi fungsi. Taktik \texttt{exact} menutup target dengan term yang
+tipenya cocok persis. Taktik \texttt{apply} menyamakan kesimpulan sebuah lemma dengan target, lalu
+meninggalkan sisa argumen sebagai tujuan baru. Tiga taktik ini sudah cukup untuk semua bukti
+logika murni di bab ini, dan ketiganya adalah bentuk permukaan dari aturan yang sama.
+
+Gambar~\ref{fig:dua-keadaan} memadatkan dua keadaan itu menjadi dua kotak. Yang berubah hanya baris
+di bawah garis: sasaran menyusut dari $R$ ke $Q$. Daftar hipotesis tidak bertambah satu baris pun,
+karena \texttt{apply} tidak menciptakan bukti baru; ia hanya menurunkan tuntutan.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small,
+  kotak/.style={draw=layergrey,fill=layergrey!6,rounded corners=3pt,align=left,inner sep=6pt,
+                text width=3.9cm},
+  panah/.style={-{Stealth[length=2.2mm]},thick,layerteal}]
+  \node[kotak] (awal) at (0,0) {\textbf{keadaan 1}\\[3pt]
+    \texttt{P Q R : Prop}\\
+    \texttt{h1 : P -> Q}\\
+    \texttt{h2 : Q -> R}\\
+    \texttt{hp : P}\\[3pt]
+    \rule{3.6cm}{0.4pt}\\
+    $\vdash$ \texttt{R}};
+  \node[kotak] (akhir) at (6.7,0) {\textbf{keadaan 2}\\[3pt]
+    \texttt{P Q R : Prop}\\
+    \texttt{h1 : P -> Q}\\
+    \texttt{h2 : Q -> R}\\
+    \texttt{hp : P}\\[3pt]
+    \rule{3.6cm}{0.4pt}\\
+    $\vdash$ \texttt{Q}};
+  \draw[panah] (awal.east) -- node[above,font=\scriptsize]{\texttt{apply h2}} (akhir.west);
+\end{tikzpicture}
+\caption{Dua keadaan tujuan pada bukti \texttt{imp\_trans}: hipotesis tetap empat baris, sasaran
+menyusut dari $R$ menjadi $Q$ setelah satu taktik. Kotak kedua masih terbuka; ia ditutup
+\texttt{exact h1 hp}.}
+\label{fig:dua-keadaan}
+\end{figure}
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Taktik & Yang dikerjakan & Kapan dipakai \\
+\hline
+\texttt{intro}     & anteseden menjadi hipotesis   & target berbentuk $P\to Q$ \\
+\texttt{exact}     & menutup target dengan term    & term sudah tersedia \\
+\texttt{apply}     & kesimpulan lemma cocok target & lemma berujung sama \\
+\texttt{rw}        & menulis ulang dengan persamaan & ada hipotesis $a=b$ \\
+\texttt{simp}      & menyederhanakan berulang      & banyak langkah sepele \\
+\texttt{cases}     & memecah target per konstruktor & perlu analisis kasus \\
+\texttt{induction} & basis dan langkah induksi     & target rekursif atas \texttt{Nat} \\
+\hline
+\end{tabular}
+\end{center}
+
+Taktik \texttt{rw} menulis ulang target memakai persamaan. Ia bekerja pada arah yang diberikan,
+dan arah itu penting: menulis ulang ke arah yang salah tidak akan menemukan pola yang dicari.
+Perhatikan dua percobaan berikut, yang satu berhasil dan yang satu ditolak.
+
+\begin{verbatim}
+theorem geser (a b : Nat) (h : a = b) : a + 1 = b + 1 := by
+  rw [h]        -- target menjadi b + 1 = b + 1, lalu ditutup secara definisi
+  rfl
+
+-- komutatifitas penjumlahan TIDAK berlaku secara definisi, jadi rfl gagal
+theorem tukar_salah (n : Nat) : n + 1 = 1 + n := by
+  rfl           -- error: The rfl tactic failed
+
+-- versi yang benar: menulis ulang dengan lemma komutatifitas
+theorem tukar_benar (n : Nat) : n + 1 = 1 + n := by
+  rw [Nat.add_comm]
+\end{verbatim}
+
+Kegagalan di tengah itu adalah pelajaran, bukan kecelakaan. Penjumlahan pada bilangan asli
+didefinisikan dengan rekursi pada argumen kedua, sehingga $n+1$ menyusut menjadi
+$\mathtt{succ}\,n$ sedangkan $1+n$ menyusut menjadi $\mathtt{succ}\,(0+n)$, dan keduanya berhenti
+di bentuk yang berbeda. Yang kita sebut ``sifat komutatif'' di sekolah adalah teorema, bukan
+definisi, dan Lean menolak memperlakukannya seolah-olah definisi. Inilah beda paling terasa antara
+membaca dan menulis bukti formal: setiap hal yang biasa kita lewati harus disebutkan namanya.
+
+Taktik \texttt{cases} memecah target menurut konstruktor tipe. Pada bilangan asli ia memberi dua
+kasus, nol dan penerus. Taktik \texttt{simp} menutup tujuan dengan menulis ulang memakai kumpulan
+lemma yang ditandai; ia berguna tetapi juga berbahaya, karena keluarannya bergantung pada
+kumpulan lemma yang sedang aktif. Bukti yang diawali \texttt{simp} tanpa argumen bisa berhenti
+bekerja ketika pustaka berubah, dan itulah sebabnya pada bab ini \texttt{simp} selalu disebut
+bersama daftar lemma yang dipakai.
+
+Satu peringatan tentang taktik yang tidak ada di sini. Nama-nama seperti \texttt{linarith},
+\texttt{ring}, \texttt{norm\_num}, dan \texttt{induction'} berasal dari pustaka Mathlib, bukan
+dari inti Lean. Semua potongan kode di bab ini dijalankan dengan Lean 4.10.0 tanpa Mathlib,
+sehingga taktik itu tidak tersedia dan tidak dipakai; sebagai gantinya dipakai \texttt{omega}
+(yang ada di inti) dan \texttt{simp} dengan daftar lemma eksplisit. Perbedaan ini bukan soal
+gaya: pustaka menambah ribuan lemma dan beberapa taktik, dan setiap tambahan itu ikut menentukan
+apa yang bisa ditutup dalam satu baris.
+
+\begin{untukanak}
+Ambil setumpuk batu kecil. Satu batu kamu susun menjadi bujur sangkar terkecil. Lalu tambahkan
+tiga batu mengelilinginya, dan hasilnya bujur sangkar yang lebih besar. Tambahkan lima batu lagi,
+dan hasilnya bujur sangkar yang lebih besar lagi. Tambahkan tujuh, sembilan, sebelas, dan
+seterusnya, selalu bertambah dua, dan setiap kali hasilnya tetap bujur sangkar yang rapi.
+
+Sekarang pertanyaannya: apakah ini akan terus begitu kalau kita menambahkan sampai seratus kali,
+sampai sejuta kali? Kamu tidak bisa mencoba semuanya. Kamu juga tidak perlu. Kalau kamu bisa
+menunjukkan bahwa pola penambahan batu selalu menutup satu sudut dan satu sisi bujur sangkar
+dengan rapi, maka satu penjelasan kecil berlaku untuk semua ukuran, termasuk ukuran yang tidak
+akan pernah bisa kamu susun dengan tangan.
+
+Komputer pemalas tidak mau mencoba sejuta kasus, dan komputer yang terlalu percaya diri tidak mau
+memeriksa apa pun. Di bab ini kita akan tahu mengapa ada cara ketiga: menjelaskan polanya sekali,
+lalu meminta mesin memeriksa penjelasan itu sampai ke huruf terakhirnya.
+\end{untukanak}
+
+\section{Bukti induksi lengkap: jumlah bilangan ganjil}
+
+\tingkat{lanjut}
+
+Kita akan membuktikan satu pernyataan aritmetika yang seluruhnya dapat diperiksa mesin, yaitu
+jumlah $n$ bilangan ganjil pertama sama dengan $n^{2}$. Pernyataan ini dipilih karena tiga alasan:
+rumusnya dapat dihitung dengan Python tanpa Lean, buktinya memerlukan induksi, dan langkah
+aljabarnya cukup kecil sehingga setiap taktik dapat dipertanggungjawabkan.
+
+\kamus{induksi}{induction}{Menjelaskan pola dengan dua hal saja: kasus terkecil, dan cara naik
+satu langkah dari kasus mana pun.}
+
+Sebelum menulis kode, kita nyatakan pernyataannya dan buktinya dalam bahasa biasa. Fungsinya
+didefinisikan secara rekursif: jumlah nol bilangan ganjil pertama adalah nol, dan jumlah $n+1$
+bilangan ganjil pertama adalah jumlah $n$ bilangan ganjil pertama ditambah bilangan ganjil ke
+$n+1$, yaitu $2n+1$.
+
+\begin{definisi}[Jumlah bilangan ganjil]
+Fungsi $S:\mathbb{N}\to\mathbb{N}$ didefinisikan oleh $S(0)=0$ dan
+$S(n+1)=S(n)+(2n+1)$ untuk setiap $n\in\mathbb{N}$.\index{induksi}
+\end{definisi}
+
+Angka $2n+1$ bukan pilihan sembarang: bilangan ganjil ke-$n$ memang berbentuk itu, dan
+$2n+1$ juga selisih antara $(n+1)^{2}$ dan $n^{2}$. Kesamaan terakhir itulah inti buktinya.
+
+\begin{lemma}
+Untuk setiap $k\in\mathbb{N}$ berlaku $(k+1)^{2}=k^{2}+2k+1$.
+\end{lemma}
+
+\begin{proof}[Bukti]
+$(k+1)^{2}=(k+1)(k+1)=k(k+1)+(k+1)=k^{2}+k+k+1=k^{2}+2k+1$. Setiap langkah memakai
+distributivitas dan asosiativitas penjumlahan pada bilangan asli.
+\end{proof}
+
+\begin{teorema}
+Untuk setiap $n\in\mathbb{N}$ berlaku $S(n)=n^{2}$.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Dengan induksi pada $n$. Untuk $n=0$, kedua sisi bernilai $0$. Misalkan pernyataan benar untuk
+$k$, yaitu $S(k)=k^{2}$. Maka
+$S(k+1)=S(k)+(2k+1)=k^{2}+2k+1=(k+1)^{2}$, dengan lemma di atas pada langkah terakhir. Jadi
+pernyataan benar untuk $k+1$. Menurut prinsip induksi, pernyataan benar untuk setiap
+$n\in\mathbb{N}$.
+\end{proof}
+
+Bukti di atas adalah bukti informal yang lengkap, dalam arti tidak ada langkah yang dilewati.
+Sekarang kita menuliskannya untuk mesin. Perhatikan bahwa definisi rekursif dan teoremanya hampir
+sama kata demi kata dengan yang baru kita tulis, sedangkan buktinya berubah menjadi urutan taktik.
+
+\begin{verbatim}
+-- definisi rekursif: dua persamaan, tanpa ":=" pada baris pertama
+def oddSum : Nat -> Nat
+  | 0     => 0
+  | n + 1 => oddSum n + (2 * n + 1)
+
+theorem oddSum_sq (n : Nat) : oddSum n = n * n := by
+  induction n with
+  | zero => rfl
+  | succ k ih =>
+    rw [oddSum]        -- buka definisi: oddSum (k+1) = oddSum k + (2*k+1)
+    rw [ih]            -- pakai hipotesis induksi: oddSum k = k*k
+    simp [Nat.succ_eq_add_one, Nat.mul_succ, Nat.add_mul, Nat.one_mul]
+    omega              -- tutup sisa linear
+\end{verbatim}
+
+Baris \texttt{induction n with} membangkitkan dua tujuan. Tujuan pertama bertanda \texttt{zero}
+dan berbunyi $S(0)=0\cdot 0$, yang ditutup \texttt{rfl} karena kedua sisi menyusut ke nol. Tujuan
+kedua bertanda \texttt{succ k} dan membawa satu hipotesis tambahan bernama \texttt{ih}, yaitu
+$S(k)=k\cdot k$. Nama \texttt{ih} dipilih sendiri; yang penting perannya.
+
+Baris \texttt{rw [oddSum]} membuka definisi pada sisi kiri. Setelah baris itu, tujuan berbunyi
+$S(k)+(2k+1)=(k+1)(k+1)$. Baris \texttt{rw [ih]} mengganti $S(k)$ dengan $k\cdot k$, sehingga
+tujuan menjadi $k\cdot k+(2k+1)=(k+1)(k+1)$.
+
+Di titik ini kita berada persis di tempat lemma tadi bekerja, tetapi mesin belum tahu bahwa
+$(k+1)(k+1)$ dapat ditulis sebagai $k\cdot k+2k+1$. \texttt{simp} dengan empat lemma eksplisit
+mengubah bentuk ruas kanan menjadi $k\cdot k+k+(k+1)$, yaitu bentuk yang seluruhnya linear dalam
+$k$. Baris terakhir, \texttt{omega}, menutup tujuan linear semacam itu.
+
+Perlu ditegaskan bahwa \texttt{omega} bukan sulap dan bukan pula aksioma tersembunyi. Ia adalah
+prosedur keputusan untuk aritmetika linear atas bilangan bulat, dan ia hanya menerima tujuan yang
+seluruh operasinya linear. Bila kita memanggilnya sebelum \texttt{simp}, tujuannya masih memuat
+$k\cdot k$ dan $(k+1)(k+1)$ sekaligus. Pada mesin uji ini, berkas percobaan sementara bernama
+\texttt{odd.lean} keluarannya menolak:
+
+\begin{verbatim}
+odd.lean:11:4: error: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  a - b + 2*c <= -2
+  ...
+\end{verbatim}
+
+Pesan itu jujur dan berguna: ia menyebut kemungkinan penyangkal, dan justru karena itu kita tahu
+bahwa yang gagal adalah bentuk tujuan, bukan kebenaran pernyataannya. Urutan taktik karena itu
+bukan selera; ia mengubah jenis tujuan yang dihadapi prosedur keputusan.
+
+\begin{catatan}
+Bila \texttt{simp} di atas dijalankan tanpa \texttt{omega}, tujuan yang tersisa berbentuk
+$k\cdot k+(1+2k)=k+(k+(k\cdot k+1))$. Secara matematis itu benar, tetapi tidak linear lagi, dan
+penyederhana tidak menutupnya. Pada mesin uji ini percobaan tersebut berakhir dengan
+\texttt{unsolved goals}. Inilah bentuk paling umum dari kegagalan bukti formal: bukan
+pernyataannya salah, melainkan bentuk tujuannya tidak cocok dengan alat yang dipakai.
+\end{catatan}
+
+\begin{akibat}
+Untuk setiap $n\in\mathbb{N}$, jumlah $n$ bilangan ganjil pertama adalah kuadrat sempurna.
+\end{akibat}
+
+Akibat itu hanya pengulangan teorema dengan kata lain, dan itu memang gunanya: ia menyatakan
+kembali hasil dalam bahasa yang dipakai di bagian ini, sehingga pembaca yang menemui rumusnya di
+tempat lain dapat mengenalinya.
+
+\section{Struktur, typeclass, dan apa yang benar-benar dijamin}
+
+\tingkat{lanjut}
+
+Sertifikat jarang berupa satu teorema lepas. Biasanya ia sekumpulan data bersama klaim tentang
+data itu: ambang, tabel, nama berkas, dan beberapa pernyataan. Lean menyediakan dua alat untuk
+mengelompokkan hal semacam ini, yaitu \emph{structure} dan \emph{typeclass}.
+
+\kamus{typeclass}{type class}{Daftar kemampuan yang harus dimiliki sebuah tipe agar bisa dipakai
+di tempat tertentu, seperti syarat lisensi untuk mengemudikan kendaraan jenis tertentu.}
+
+\begin{definisi}[Struktur dan typeclass]
+Sebuah \emph{struktur} adalah tipe yang bidangnya diberi nama, sehingga nilainya dibangun dengan
+menyebut nama bidang. Sebuah \emph{typeclass} adalah struktur yang dipakai untuk mencari
+\emph{instance} secara otomatis: ketika sebuah definisi memerlukan kemampuan tertentu dari sebuah
+tipe, Lean mencari instance yang cocok di lingkungan yang sedang aktif.\index{typeclass}
+\end{definisi}
+
+Perbedaan praktisnya sederhana. Struktur dipakai ketika data itu sendiri yang penting, misalnya
+sertifikat dengan bidang klaim dan ambang. Typeclass dipakai ketika yang penting adalah kemampuan:
+sesuatu yang dapat dipakai sebagai bukti, sesuatu yang dapat dihitung normanya, sesuatu yang dapat
+dibandingkan. Pada keduanya, pemeriksaan tetap sama ketatnya: setiap bidang harus diisi, dan
+setiap instance harus lolos pemeriksaan tipe.
+
+\begin{verbatim}
+-- struktur: data yang bidangnya bernama
+structure Sertifikat where
+  klaim  : String
+  ambang : Nat
+
+-- typeclass: kemampuan yang dicari otomatis
+class Terperiksa (a : Type) where
+  jumlah_teorema : a -> Nat
+
+instance : Terperiksa Sertifikat where
+  jumlah_teorema _ := 1
+
+def contoh : Sertifikat := { klaim := "oddSum", ambang := 100 }
+
+#eval (Terperiksa.jumlah_teorema contoh)   -- mencetak 1
+\end{verbatim}
+
+Sekarang bagian yang paling sering dilewati dalam pembicaraan populer tentang Lean, yaitu
+pertanyaan apa yang sebenarnya dijamin oleh penerimaan sebuah teorema. Empat hal dijamin, dan
+empat hal lain tidak.
+
+Gambar~\ref{fig:alur-periksa} menaruh ketiga tahap itu pada satu baris: pernyataan ditulis, term
+diajukan, inti memutuskan. Hanya ada dua keluaran; tidak ada kotak ketiga yang berbunyi ``mungkin''.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small,
+  tahap/.style={draw=layergrey,fill=layergrey!6,rounded corners=3pt,align=center,inner sep=5pt,
+                text width=2.9cm,minimum height=1.7cm},
+  panah/.style={-{Stealth[length=2.2mm]},thick,layergrey},
+  terima/.style={draw=layerjade,fill=layerjade!8,rounded corners=3pt,align=center,inner sep=5pt,
+                 text width=2.9cm},
+  tolak/.style={draw=accent,fill=accent!6,rounded corners=3pt,align=center,inner sep=5pt,
+                text width=2.9cm}]
+  \node[tahap] (s1) at (0,0) {\textbf{1. pernyataan}\\$P$ bertipe \texttt{Prop}};
+  \node[tahap] (s2) at (3.9,0) {\textbf{2. term}\\$p$ diajukan untuk $P$};
+  \node[tahap] (s3) at (7.8,0) {\textbf{3. inti}\\periksa apakah $p:P$};
+  \draw[panah] (s1) -- (s2);
+  \draw[panah] (s2) -- (s3);
+  \node[terima] (ya) at (5.4,-2.9) {\textbf{diterima}\\ada term bertipe $P$};
+  \node[tolak] (tidak) at (9.9,-2.9) {\textbf{ditolak}\\tidak ada term};
+  \draw[panah] (s3.south west) -- node[above left,font=\scriptsize]{cocok} (ya.north);
+  \draw[panah] (s3.south east) -- node[above right,font=\scriptsize]{tidak cocok} (tidak.north);
+\end{tikzpicture}
+\caption{Alur pemeriksaan: tiga tahap (pernyataan, term, inti) dan dua keluaran, diterima atau
+ditolak. Tidak ada keluaran ketiga; berkas yang berhenti di tengah dilaporkan sebagai tujuan yang
+belum tertutup, bukan sebagai ``hampir benar''.}
+\label{fig:alur-periksa}
+\end{figure}
+
+Yang dijamin: (i) ada term yang tipenya persis pernyataan yang ditulis; (ii) term itu diperiksa
+inti, bukan oleh taktik yang menghasilkannya; (iii) pemeriksaan hanya memakai definisi, teorema
+lain yang sudah diperiksa, dan aksioma yang tercatat; (iv) daftar aksioma yang dipakai dapat
+ditanyakan kapan saja dengan \texttt{\#print axioms}. Butir (iv) adalah alat paling berguna di
+seluruh bab ini, karena ia mengubah ``percaya saja'' menjadi ``periksa sendiri''.
+
+Yang tidak dijamin: (i) bahwa pernyataannya menyatakan apa yang kita maksud; (ii) bahwa
+definisinya memodelkan benda di dunia nyata; (iii) bahwa inti, pengurai, dan perangkat kerasnya
+bebas dari kesalahan; (iv) bahwa taktik yang dipakai tidak menambahkan asumsi tersembunyi.
+Butir (iv) bukan cela teoretis: ia dapat diperiksa, dan hasilnya sering mengejutkan.
+
+\begin{contoh}[Dua cara membuktikan hal yang sama, dua daftar aksioma]
+Perhatikan dua pembuktian pernyataan $S(10)=100$ yang keduanya benar. Yang pertama memakai
+\texttt{decide}, yang menjalankan perhitungan di dalam inti. Yang kedua memakai
+\texttt{native\_decide}\index{native-decide}, yang mengompilasi perhitungan menjadi kode mesin
+dan menjalankannya. Kedua pernyataannya sama, tetapi daftar aksiomanya berbeda, dan perbedaan itu
+terlihat dari perintah \texttt{\#print axioms}.
+\end{contoh}
+
+\begin{verbatim}
+def oddSum : Nat -> Nat
+  | 0     => 0
+  | n + 1 => oddSum n + (2 * n + 1)
+
+theorem cek_native : oddSum 10 = 100 := by native_decide
+theorem cek_kernel : oddSum 10 = 100 := by decide
+
+#print axioms cek_native
+#print axioms cek_kernel
+\end{verbatim}
+
+Keluaran pada mesin uji ini, apa adanya:
+
+\begin{verbatim}
+'cek_native' depends on axioms: [Lean.ofReduceBool]
+'cek_kernel' does not depend on any axioms
+\end{verbatim}
+
+Baris pertama adalah inti dari seluruh pembahasan tentang \texttt{native\_decide}. Perhitungannya
+tidak dilakukan oleh inti, melainkan oleh kode terkompilasi, dan Lean mencatat kepercayaan itu
+sebagai aksioma bernama \texttt{Lean.ofReduceBool}. Secara praktis ini bukan bencana: kompilator
+Lean dipakai untuk mengompilasi Lean sendiri setiap hari. Secara prinsipil ini perbedaan besar,
+karena batas kepercayaan berpindah dari inti yang kecil ke rantai panjang kompilator, penghubung,
+dan prosesor. Sertifikat yang dibangun di atas \texttt{native\_decide} karena itu lebih lemah
+daripada sertifikat yang dibangun di atas \texttt{decide}, meskipun keduanya mencetak ``diterima''
+tanpa keluhan.
+
+Pada teorema induksi tadi, daftar aksiomanya juga tidak kosong. Perintah \texttt{\#print axioms}
+untuk \texttt{oddSum\_sq} mencetak \texttt{[propext, Quot.sound]}. Keduanya adalah aksioma standar yang dipakai untuk
+penalaran klasik dan hasil bagi, dan keduanya muncul karena \texttt{omega} membuktikan tujuan
+dengan kontradiksi di dalam bilangan bulat. Ini bukan kesalahan; ini fakta yang seharusnya
+disebutkan bila sertifikat dipakai sebagai dasar klaim.
+
+\section{Batas: menolak bukti salah, \texttt{sorry}, dan aksioma}
+
+\tingkat{lanjut}
+
+Kemampuan menolak sama pentingnya dengan kemampuan menerima. Berkas berikut sengaja berisi
+kesalahan jenis yang berbeda, dan keluarannya adalah jawaban Lean untuk masing-masing.
+
+\begin{verbatim}
+-- Berkas: Salah.lean
+theorem salah_arit : 2 + 2 = 5 := by decide
+
+theorem salah_rfl (n : Nat) : n + 1 = 1 + n := by rfl
+
+axiom magic : 1 = 2
+theorem from_magic : 1 = 2 := magic
+#print axioms from_magic
+
+theorem belum_selesai (n : Nat) : n + 0 = n := by sorry
+\end{verbatim}
+
+Keluaran sebenarnya, dipotong pada bagian yang panjang:
+
+\begin{verbatim}
+Salah.lean:2:37: error: tactic 'decide' proved that the proposition
+  2 + 2 = 5
+is false
+Salah.lean:4:50: error: The rfl tactic failed. Possible reasons:
+- The goal is not a reflexive relation ...
+- The arguments of the relation are not equal.
+...
+n : Nat
+|- n + 1 = 1 + n
+'from_magic' depends on axioms: [magic]
+Salah.lean:10:8: warning: declaration uses 'sorry'
+\end{verbatim}
+
+Tiga jenis penolakan muncul di sini, dan ketiganya berbeda sifat. Yang pertama adalah penolakan
+paling kuat: \texttt{decide} bukan hanya gagal menutup tujuan, ia membuktikan bahwa proposisinya
+salah. Untuk pernyataan berhingga, kegagalan dan penyangkalan adalah hal yang sama. Yang kedua
+adalah penolakan yang lebih halus: \texttt{rfl} menolak karena kedua sisi tidak sama secara
+definisi, padahal pernyataannya benar. Di sini Lean tidak menyalahkan pernyataannya, ia
+menyalahkan alat yang dipakai; pesannya bahkan menyarankan lemma refleksivitas eksplisit. Yang
+ketiga bukan penolakan sama sekali.
+
+Baris \texttt{axiom magic : 1 = 2} diterima tanpa keluhan. Lean tidak memeriksa kewajaran isi
+aksioma; ia hanya mencatatnya.\index{aksioma} Setelah itu, \texttt{from\_magic} juga diterima, dan seluruh
+aritmetika bisa dibongkar dengan \texttt{False.elim} dari sana. Satu-satunya tanda bahaya adalah
+baris \texttt{\#print axioms}, yang menyebut \texttt{[magic]} dengan tenang, tanpa peringatan
+dan tanpa warna merah. Inilah alasan praktis mengapa memeriksa daftar aksioma adalah kebiasaan
+yang wajib: sistem tidak akan menegur kita.
+
+\kamus{aksioma}{axiom}{Aturan yang kita minta diterima tanpa bukti, seperti asumsi pembuka dalam
+perdebatan; sah, tetapi harus disebut.}
+
+Baris terakhir berkas itu memakai \texttt{sorry}, dan keluarannya hanya peringatan
+\texttt{declaration uses 'sorry'}.\index{sorry} Berkas tetap diproses, teorema tetap ``ada'', dan siapa pun
+yang membaca keluaran dengan saksama akan melihat kata \texttt{warning}, bukan \texttt{error}.
+Pada pustaka besar, satu \texttt{sorry} yang tertinggal di tengah ribuan teorema nyaris tidak
+terlihat. Lean menyediakan jawabannya, dan jawabannya sama dengan jawaban untuk aksioma:
+\texttt{\#print axioms} mencetak \texttt{[sorryAx]}. Pustaka matematika Lean, yaitu Mathlib,
+memakai kebijakan yang lebih tegas: berkas yang memuat \texttt{sorry} ditolak oleh pemeriksaan
+otomatis sebelum diterima. Kebijakan itu pantas ditiru siapa pun yang menerbitkan sertifikat.
+
+\kamus{sorry}{sorry}{Catatan ``nanti saya kerjakan'' yang membuat pekerjaan tampak selesai;
+mesin menerimanya, tetapi mencatatnya sebagai utang.}
+
+Sekarang batas yang paling penting, dan yang paling jarang disebut. Verifikasi formal menjamin
+bahwa term cocok dengan pernyataan. Ia tidak menjamin bahwa pernyataan cocok dengan maksud. Bila
+spesifikasinya terlalu lemah, buktinya bisa sempurna dan tidak berguna.\index{spesifikasi} Contoh berikut
+menunjukkannya dalam bentuk paling telanjang: pernyataan pertama mengatakan ``ada gangguan kecil
+yang tidak mengubah keluaran'', pernyataan kedua mengatakan ``setiap gangguan kecil tidak
+mengubah keluaran''. Yang pertama dapat dibuktikan untuk \emph{semua} fungsi, termasuk fungsi
+terburuk yang bisa dibayangkan, karena saksi $\delta=0$ selalu tersedia.
+
+\begin{verbatim}
+def identitas (n : Nat) : Nat := n
+
+-- spesifikasi lemah: ADA delta yang tidak mengubah keluaran (untuk semua f)
+theorem ada_delta (f : Nat -> Nat) (x : Nat) :
+    exists delta : Nat, f (x + delta) = f x := by
+  exact Exists.intro 0 rfl
+
+-- versi kuat salah untuk f = identitas, jadi tidak dapat dibuktikan
+theorem ada_penyangkal :
+    exists x : Nat, exists delta : Nat,
+      Not (identitas (x + delta) = identitas x) := by
+  exact Exists.intro 0 (Exists.intro 1 (by decide))
+\end{verbatim}
+
+Kedua teorema itu lolos tanpa aksioma tambahan, dan justru itulah masalahnya. Teorema pertama
+tidak mengatakan apa pun tentang $f$; ia hanya mengatakan bahwa $\delta=0$ adalah gangguan yang
+tidak mengubah apa pun, dan itu berlaku untuk setiap fungsi, termasuk pengklasifikasi yang salah
+seratus persen. Sertifikat semacam ini lolos semua pemeriksaan dan tidak melindungi apa pun.
+Teorema kedua menunjukkan sisi lain: pernyataan yang benar-benar kita inginkan, yaitu versi
+berkuantor universal, salah untuk fungsi identitas, sehingga tidak ada bukti yang mungkin
+ditemukan.
+
+\begin{tantangan}
+Sebuah sertifikat memuat satu baris yang tampak tidak mungkin salah: untuk setiap bilangan asli $a$
+dan $b$ berlaku $(a-b)+b=a$. Di atas kertas alasannya sederhana: kurangi, tambahkan lagi, kembali ke
+semula. Tulis baris itu di Lean dan tutup dengan \texttt{omega}; pemeriksa menolaknya, dan penolakan
+itu bukan karena taktiknya kurang pintar.
+
+Dua pertanyaan. Mengapa pernyataan itu tidak benar untuk semua $a$ dan $b$? Dan syarat tambahan apa
+yang membuatnya benar sekaligus tetap dapat diperiksa mesin?
+
+Petunjuk 1: jangan percaya pada tanda kurung; tanyakan apa yang terjadi bila $b$ lebih besar dari
+$a$. Petunjuk 2: pengurangan pada bilangan asli berhenti di nol, jadi $0-1=0$, sehingga ruas kiri
+menjadi $0-1+1=1$ sedangkan ruas kanan $0$.
+
+Kalau mentok, kembali ke bagian ``Taktik: mengubah tujuan menjadi term'', tempat $n+1$ dan $1+n$
+berhenti di bentuk yang berbeda.
+\end{tantangan}
+
+Sebelum membaca lebih jauh, coba jawab sendiri. Keluaran mesin uji ini, apa adanya, adalah pembanding
+jawabanmu: berkas kedua memuat pernyataan yang sama dengan hipotesis $b\le a$.
+
+\begin{verbatim}
+$ lean t.lean
+t.lean:1:49: error: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  d >= 0
+  c >= 0
+  c - d >= 1
+where
+ c := b
+ d := a
+$ lean t2.lean
+'potong_benar' depends on axioms: [propext, Quot.sound]
+\end{verbatim}
+
+Keluaran pertama menyebut kendala $b-a\ge 1$, yaitu penyangkal dengan $b>a$; pada $a=0$ dan $b=1$
+ruas kiri bernilai $1$, ruas kanan $0$. Hipotesis $b\le a$ membuat baris yang sama lolos, dengan dua
+aksioma standar yang sudah kita kenal dari \texttt{omega}. Bentuk perbaikannya bukan taktik
+tambahan, melainkan syarat.
+
+\kertas{Klaim yang boleh dibuat dari bab ini: potongan kode Lean yang ditampilkan telah
+dijalankan dengan Lean 4.10.0 tanpa Mathlib pada mesin penulisan, dan keluarannya disalin apa
+adanya; keluaran Unicode dicetak ulang dalam ASCII dan pemotongan ditandai dengan tiga titik.
+Yang tidak dijalankan: taktik Mathlib (\texttt{linarith}, \texttt{ring}, \texttt{norm\_num},
+\texttt{induction'}) dan pustaka Mathlib sendiri, karena tidak terpasang. Yang tidak dibuktikan di
+sini dan tidak diklaim: sertifikat apa pun tentang jaringan saraf, model bahasa, atau ketahanan
+terhadap serangan. Bab 28 tidak memuat satu pun bukti semacam itu.}
+
+Batas ini ada hubungannya langsung dengan Bab 27 dan Bab 29. Evaluasi model yang jujur menuntut
+kita menyebut distribusi tempat angka diukur; verifikasi formal menuntut kita menyebut pernyataan
+yang dibuktikan. Keduanya adalah penyakit yang sama dalam bentuk berbeda: klaim yang tidak
+menyebut syaratnya. Sertifikat ``model ini terbukti aman'' tanpa pernyataan formal di belakangnya
+sama tidak bergunanya dengan ``akurasi 99 persen'' tanpa keterangan data ujinya. Pada Bab 29 dan
+Bab 30, ketika kita membahas serangan dan pertahanan, pertanyaan pertama yang harus diajukan
+kepada setiap sertifikat ketahanan adalah: berapa kuantornya, dan dalam ruang apa kuantor itu
+berjalan?
+
+\section{Contoh hitung}
+
+\tingkat{menengah}
+
+Angka-angka di bagian ini dihitung, bukan diperkirakan. Kolom pertama adalah $n$, kolom kedua
+adalah bilangan ganjil ke-$n$ yang ditambahkan pada langkah itu, kolom ketiga adalah $S(n)$, dan
+kolom keempat adalah $n^{2}$.
+
+\begin{center}
+\begin{tabular}{rrrr}
+\hline
+$n$ & suku ke-$n$ & $S(n)$ & $n^{2}$ \\
+\hline
+0  & --  & 0     & 0 \\
+1  & 1   & 1     & 1 \\
+2  & 3   & 4     & 4 \\
+5  & 9   & 25    & 25 \\
+10 & 19  & 100   & 100 \\
+20 & 39  & 400   & 400 \\
+100 & 199 & 10000 & 10000 \\
+\hline
+\end{tabular}
+\end{center}
+
+Nilai $S(100)=10000$ patut diperiksa dengan tangan sekali, karena ia menunjukkan bahwa rumus itu
+bukan kebetulan untuk bilangan kecil: jumlah seratus bilangan ganjil, dari $1$ sampai $199$,
+sama dengan $100\cdot 100$. Pemeriksaan dengan Python atas seluruh nilai $n<5000$ memberi
+\texttt{True}, dan pemeriksaan identitas aljabar $(k+1)^{2}=k^{2}+2k+1$ untuk seluruh $k<100000$
+juga memberi \texttt{True}. Kedua pemeriksaan itu bukan bukti, tetapi keduanya menutup kemungkinan
+bahwa rumus yang dibuktikan salah ketik.
+
+Ada satu angka lagi yang lebih informatif daripada tabel di atas, yaitu ukuran bukti setelah
+dielaborasi. Kalimat taktik untuk \texttt{oddSum\_sq} panjangnya delapan baris. Ketika Lean
+mencetak term hasil elaborasinya dengan \texttt{\#print}, hasilnya 10.783 karakter dalam 149
+baris. Artinya, satu baris taktik rata-rata mengembang menjadi sekitar sembilan belas baris term.
+Tidak ada manusia yang membaca term itu; yang membacanya adalah inti, dan itulah pembagian kerja
+yang menjadi inti seluruh metode ini.
+
+Angka terakhir menyangkut batas pemeriksaan langsung. Pada pengaturan bawaan, batas kedalaman
+rekursi bernilai 1000. Dengan batas itu, taktik \texttt{decide} berhasil membuktikan
+$S(n)=n^{2}$ hanya untuk $n\le 122$. Percobaan pertama yang gagal adalah $n=123$, dan pesan yang
+keluar menyebut bahwa kedalaman rekursi maksimum telah tercapai. Bila batas dinaikkan ke 100000,
+nilai $n=2000$ berhasil dibuktikan dalam 0,48 detik. Pada $n=20000$ pemeriksaan gagal karena
+rekursi terlalu dalam untuk ruang tumpukan. Jadi pemeriksaan langsung bukan alternatif yang
+berskala, sedangkan bukti induksi tidak peduli pada besarnya $n$.
+
+\section{Lab komputasi}
+
+\tingkat{lanjut}
+
+Lab ini menjalankan dua hal: berkas Lean yang sama dengan yang dibahas di atas, dan pemeriksaan
+silang dengan Python. Berkas Lean ditulis tanpa \texttt{import}, sehingga hanya memakai inti.
+
+\begin{lab}
+\begin{verbatim}
+-- BilanganGanjil.lean : Lean 4.10.0, tanpa Mathlib
+def oddSum : Nat -> Nat
+  | 0     => 0
+  | n + 1 => oddSum n + (2 * n + 1)
+
+theorem oddSum_sq (n : Nat) : oddSum n = n * n := by
+  induction n with
+  | zero => rfl
+  | succ k ih =>
+    rw [oddSum]
+    rw [ih]
+    simp [Nat.succ_eq_add_one, Nat.mul_succ, Nat.add_mul, Nat.one_mul]
+    omega
+
+#eval oddSum 0
+#eval oddSum 5
+#eval oddSum 10
+#eval oddSum 100
+#print axioms oddSum_sq
+\end{verbatim}
+
+\begin{verbatim}
+def odd_sum(n):
+    return sum(2 * i + 1 for i in range(n))
+
+print([odd_sum(n) for n in range(11)])
+print(odd_sum(20), odd_sum(100))
+print(all(odd_sum(n) == n * n for n in range(5000)))
+print(all((k + 1) * (k + 1) == k * k + 2 * k + 1 for k in range(100000)))
+\end{verbatim}
+\end{lab}
+
+Perintah dan keluaran, apa adanya:
+
+\begin{verbatim}
+$ lean --version
+Lean (version 4.10.0, x86_64-unknown-linux-gnu, commit c375e19f6b65, Release)
+$ time lean BilanganGanjil.lean
+0
+25
+100
+10000
+'oddSum_sq' depends on axioms: [propext, Quot.sound]
+waktu 0.14 s
+$ python3 BilanganGanjil.py
+[0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
+400 10000
+True
+True
+\end{verbatim}
+
+Empat baris pertama keluaran Lean adalah hasil \texttt{\#eval}, dan keempatnya cocok dengan tabel
+di bagian sebelumnya. Baris kelima adalah daftar aksioma, dan isinya perlu dibaca dengan hati-hati:
+\texttt{propext} dan \texttt{Quot.sound} bukan kesalahan, melainkan akibat dari cara
+\texttt{omega} bekerja. Keluaran Python menguatkan hal yang sama dari arah lain: daftar sebelas
+nilai pertama adalah kuadrat sempurna, $S(100)=10000$, dan kedua pemeriksaan menyeluruh mencetak
+\texttt{True}. Waktu 0,14 detik adalah waktu mesin uji ini, dan angka semacam itu bergantung pada
+perangkat keras; yang bermakna bukan angkanya, melainkan faktanya bahwa pemeriksaan selesai
+sebelum kita sempat membaca berkasnya.
+
+Pembaca yang ingin mengulang lab ini memerlukan dua hal. Pertama, Lean 4 yang dapat dipasang
+lewat \texttt{elan}, yaitu pengelola versi resmi proyek Lean; setelah pemasangan, perintah
+\texttt{lean --version} harus mencetak versi. Kedua, berkas di atas disimpan sebagai
+\texttt{BilanganGanjil.lean} dan dijalankan dengan \texttt{lean BilanganGanjil.lean} dari direktori
+yang sama; tidak perlu proyek \texttt{lake} karena tidak ada impor. Untuk memakai \texttt{linarith}
+atau \texttt{ring}, pembaca perlu proyek dengan Mathlib, dan sejak saat itu \texttt{lean} saja
+tidak cukup; perintahnya menjadi \texttt{lake env lean}. Perbedaan ini sering menjadi sumber
+kebingungan pertama bagi pemula, dan menyebutkannya lebih baik daripada membiarkannya ditemukan
+lewat pesan \texttt{unknown tactic}.
+
+\begin{resep}
+\begin{enumerate}
+  \item Buat berkas teks biasa bernama \texttt{Uji.lean}; ekstensi itulah yang membuat perintah
+        \texttt{lean} mengenalinya sebagai berkas sumber.
+  \item Tulis semua \texttt{import} di baris paling atas, satu per baris, sebelum deklarasi apa pun.
+  \item Tulis pernyataan lebih dulu, lengkap dengan tipe setiap variabelnya, lalu bukti sesudah
+        \texttt{:= by}.
+  \item Jalankan \texttt{lean Uji.lean} dari direktori berkas itu dan baca keluaran dari baris
+        pertama; kesalahan pertama biasanya yang sebenarnya.
+  \item Tanyakan \texttt{\#print axioms nama\_teorema} sebelum menyebut hasilnya terbukti.
+\end{enumerate}
+Peringatan urutan: \texttt{import} tidak boleh didahului deklarasi. Satu \texttt{def} yang
+diselipkan di atasnya membuat Lean menolak seluruh berkas dengan pesan
+\texttt{invalid 'import' command}, dan berkas itu tidak diperiksa sama sekali. Urutan yang benar
+bukan selera penulis; ia syarat agar berkas dapat diperiksa.
+\end{resep}
+
+\begin{untukdosen}
+Urutan mengajar yang berhasil di kelas: mulai dari kegagalan \texttt{rfl} pada $n+1=1+n$, bukan
+dari definisi. Mahasiswa yang melihat bahwa hal yang ``jelas'' ditolak akan bertanya, dan
+pertanyaan itu adalah pintu masuk ke Curry--Howard. Setelah itu baru definisi proposisi sebagai
+tipe, lalu tiga taktik pertama, lalu induksi. Sisakan satu sesi penuh untuk \texttt{\#print
+axioms}; di situlah mahasiswa berubah dari pengguna menjadi pemeriksa.
+
+Dua miskonsepsi yang paling sering muncul. Pertama, ``Lean membuktikan bahwa program saya benar''.
+Yang benar: Lean memeriksa bahwa term bertipe pernyataan tertentu. Bila pernyataannya tidak
+menyebut hal yang penting, misalnya kuantor atas gangguan, sertifikatnya kosong. Kedua,
+``\texttt{simp} adalah bukti''. \texttt{simp} adalah prosedur yang keluarannya bergantung pada
+kumpulan lemma aktif, sehingga bukti yang bergantung padanya dapat berhenti bekerja ketika pustaka
+berubah; karena itu latih mahasiswa menulis daftar lemma secara eksplisit.
+
+Aktivitas papan tulis yang berhasil: minta dua kelompok menulis spesifikasi untuk ``pengklasifikasi
+yang tahan gangguan''. Satu kelompok hampir selalu menulis kuantor eksistensial. Tempelkan kedua
+rumusan di papan, lalu buktikan yang lemah untuk fungsi konstan. Kelas akan melihat sendiri bahwa
+kalimat yang terbukti dan kalimat yang dimaksud adalah dua kalimat berbeda.
+
+Tanda kesiapan lanjut: mahasiswa dapat menjelaskan mengapa $n+1=1+n$ memerlukan lemma, dapat
+menulis bukti induksi tanpa menyalin, dan dapat menyebut satu aksioma yang dipakai teoremanya
+sendiri.
+\end{untukdosen}
+
+\section{Ringkasan}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Bukti informal meyakinkan pembaca terlatih; bukti formal adalah term yang tipenya adalah
+        pernyataannya, diperiksa inti yang kecil dan tidak tahu matematika.
+  \item Menurut Curry--Howard, implikasi adalah tipe fungsi, konjungsi adalah pasangan, kuantor
+        universal adalah fungsi dependen, dan $\bot$ tidak berpenghuni.
+  \item Taktik mengubah keadaan tujuan; \texttt{intro}, \texttt{exact}, \texttt{apply},
+        \texttt{rw}, \texttt{cases}, dan \texttt{induction} cukup untuk aritmetika dasar.
+  \item Induksi membuktikan pernyataan untuk semua $n$ dengan dua tujuan, bukan dengan memeriksa
+        semua $n$; \texttt{decide} sebaliknya berhenti berskala sangat cepat.
+  \item \texttt{\#print axioms} adalah alat pemeriksaan utama. Taktik \texttt{native\_decide}
+        meninggalkan aksioma \texttt{Lean.ofReduceBool}. Taktik \texttt{sorry} meninggalkan
+        \texttt{sorryAx}. Aksioma buatan sendiri meninggalkan namanya sendiri.
+  \item Verifikasi menjamin term cocok dengan pernyataan, bukan bahwa pernyataan cocok dengan
+        maksud; spesifikasi lemah menghasilkan sertifikat yang kosong.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Nilai klaim ini: \emph{bila sebuah berkas Lean diterima tanpa pesan kesalahan, maka semua
+        pernyataan di dalamnya benar}. Tentukan benar, salah, atau belum cukup bukti, dan sebutkan
+        satu perintah yang dapat dipakai untuk memeriksa klaim itu pada berkas tertentu.
+
+  \item Buktikan di Lean, tanpa Mathlib, bahwa untuk setiap $n$ berlaku $2\cdot S(n)=n\cdot(2n)$
+        dengan $S$ seperti di bab ini. Nyatakan lebih dulu lemma bantu yang kamu perlukan.
+
+  \item Buktikan bahwa jumlah $n$ bilangan genap pertama, yaitu $0+2+\dots+(2n-2)$, sama dengan
+        $n(n-1)$. Tulis bukti informalnya, lalu tulis versi Lean-nya dan sebutkan taktik yang
+        dipakai pada setiap langkah.
+
+  \item Hitung dengan Python: jumlah 37 bilangan ganjil pertama, jumlah 250 bilangan ganjil
+        pertama, dan periksa bahwa keduanya kuadrat sempurna. Sertakan kode dan keluarannya.
+
+  \item Hitung dengan Python banyaknya kasus yang harus diperiksa bila seseorang ingin membuktikan
+        $S(n)=n^{2}$ dengan pemeriksaan langsung untuk semua $n\le 1000$, lalu bandingkan dengan
+        banyaknya tujuan yang dibangkitkan bukti induksi.
+
+  \item Jelaskan mengapa \texttt{rfl} menutup tujuan $n+0=n$ tetapi tidak menutup $0+n=n$. Petunjuk
+        ada pada cara penjumlahan bilangan asli didefinisikan secara rekursif; sebutkan argumen
+        mana yang disusutkan lebih dulu.
+
+  \item Tulis spesifikasi lemah dan spesifikasi kuat untuk klaim ``pengklasifikasi ini tidak
+        berubah pada gangguan berukuran paling banyak satu''. Buktikan versi lemahnya di Lean
+        untuk fungsi apa pun, lalu jelaskan mengapa versi kuatnya tidak dapat dibuktikan untuk
+        fungsi identitas.
+
+  \item Periksa dengan \texttt{\#print axioms} tiga teorema yang kamu tulis sendiri: satu memakai
+        \texttt{decide}, satu memakai \texttt{omega}, satu memakai \texttt{sorry}. Laporkan
+        ketiga daftar aksiomanya dan terangkan asal setiap nama.
+
+  \item Sebuah sertifikat memuat \texttt{theorem aman : exists delta : Nat, f (x + delta) = f x}
+        dengan \texttt{delta} sebagai variabel bebas di dalam konteks. Jelaskan dua kesalahan
+        yang mungkin ada pada pernyataan itu, dan tulis versi yang kamu anggap benar.
+
+  \item Buktikan di Lean bahwa $\neg(P\wedge\neg P)$ untuk setiap proposisi $P$. Petunjuk: mulai
+        dengan \texttt{intro h}, lalu ambil komponennya dengan \texttt{h.1} dan \texttt{h.2}, dan
+        gunakan komponen kedua pada komponen pertama.
+\end{enumerate}
+
+Petunjuk untuk tiga butir tersulit. Butir 2: lemma bantu yang diperlukan berbentuk
+$2\,(k\cdot k+(2k+1))=(k+1)\cdot(2(k+1))$, dan setelah \texttt{rw} pada definisi serta hipotesis
+induksi, sisa tujuannya linear sehingga \texttt{omega} cukup. Butir 7: pada versi lemah, saksi
+$\delta=0$ membuat kedua sisi sama secara definisi, jadi \texttt{rfl} langsung menutup; pada versi
+kuat, fungsi identitas memberi penyangkal dengan $\delta=1$. Butir 9: perhatikan bahwa
+\texttt{delta} yang bebas dapat dipilih oleh pembaca pernyataan, bukan oleh penyerang, sehingga
+pernyataan itu tidak menyatakan ketahanan apa pun; kesalahan kedua adalah tidak adanya kuantor
+atas $x$.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini hanyalah pernyataan aritmetika kecil: $S(n)=n^{2}$ untuk
+semua bilangan asli, beberapa tautologi proposisional, dan dua pernyataan tentang spesifikasi yang
+terlalu lemah. Semuanya diperiksa inti Lean 4.10.0 tanpa Mathlib, dan daftar aksiomanya
+dilaporkan. Yang dipopulerkan jauh melampaui itu: frasa ``terverifikasi secara formal'' sering
+dipakai untuk ``diperiksa alat otomatis'' atau bahkan ``diuji menyeluruh''. Hanya yang pertama
+menghasilkan objek yang dapat diperiksa ulang pihak ketiga.
+
+Sumber primer. Avigad, de Moura, Kong, dan Ullrich, \emph{Theorem Proving in Lean 4}, bagian
+``Propositions and Proofs'' (proposisi sebagai tipe, irrelevansi bukti, peringatan aksioma),
+``Tactics'' (keadaan tujuan), dan ``Induction and Recursion'' (\texttt{induction},
+\texttt{sorryAx}). Avigad dan Massot, \emph{Mathematics in Lean}, Bab 2, 3.1, 5.2, dan 8; edisi
+bahasa Indonesia memakai penomoran bagian yang sama.
+
+Pertanyaan terbuka. Bab ini tidak memuat bukti formal tentang jaringan saraf. Spesifikasi ketahanan yang menarik
+berbentuk
+$\forall x\,\forall\delta,\ \lVert\delta\rVert\le\varepsilon\to f(x+\delta)=f(x)$, yaitu
+pernyataan atas ruang kontinu dengan fungsi berparameter ratusan ribu. Memformalkannya menuntut
+aritmetika real yang dapat diputuskan pada skala itu, dan pustaka Lean sekarang tidak menyediakannya
+untuk model terlatih. Klaim ``kami memverifikasi ketahanan model'' di makalah
+biasanya merujuk verifikasi dengan abstraksi interval atau SMT, bukan bukti Lean; keduanya sah,
+tetapi jaminannya berbeda dan tidak boleh disebut dengan kata yang sama.
+
+Batas keberlakuan. Semua klaim di bab ini berlaku untuk Lean 4.10.0 dengan inti bawaannya, dan
+rincian keluarannya dapat berubah antar versi. Yang tidak berubah adalah struktur argumennya:
+pernyataan, term, inti, daftar aksioma.
+\end{untukpeneliti}
+
+\peta{Bab ini mengikuti Avigad, de Moura, Kong, dan Ullrich, \emph{Theorem Proving in Lean 4},
+bagian ``Propositions and Proofs'' (proposisi sebagai tipe, Curry--Howard, irrelevansi bukti,
+peringatan aksioma), ``Quantifiers and Equality'', ``Tactics'' (keadaan tujuan, \texttt{intro},
+\texttt{apply}, \texttt{exact}), dan ``Induction and Recursion'' (\texttt{induction},
+\texttt{sorry} dan \texttt{sorryAx}). Padanan dalam Avigad dan Massot, \emph{Mathematics in Lean},
+ada pada Bab 2 (Dasar-dasar, khususnya 2.3 Menggunakan Teorema dan Lema serta 2.4 Lebih Banyak
+Contoh Menggunakan apply dan rw), Bab 3.1 (Implikasi dan Kuantor Universal), Bab 5.2 (Induksi dan
+Rekursi), dan Bab 8 (Hierarki) untuk typeclass; edisi bahasa Indonesia mempertahankan penomoran
+bagian yang sama. Untuk kaitan dengan praktik evaluasi, lihat Bab 27 buku ini; untuk serangan yang
+membuat spesifikasi ketahanan menjadi tidak trivial, lihat Bab 27 dan Bab 28.}

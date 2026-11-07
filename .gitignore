@@ -1,0 +1,23 @@
+# Artefak LaTeX (dibangun ulang oleh `make pdf`)
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.idx
+*.ind
+*.ilg
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+_buku-ed2/main.pdf
+_buku-en/main-en.pdf
+
+# Python
+__pycache__/
+*.pyc
+
+# Scratch
+_buku-ed2/_wrap/
+_buku-en/_wrap/

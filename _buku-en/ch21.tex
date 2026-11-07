@@ -1,0 +1,1053 @@
+\chapter{Regression and Applied Statistics}
+
+A small café records nine trading days. Two numbers are written every evening: the number of
+online orders in tens, and the kitchen's overtime hours. The café owner needs one number for
+one question: if orders rise by ten, how many extra overtime hours must she prepare for
+tomorrow?
+
+\begin{center}
+\small
+\begin{tabular}{l*{9}{r}}
+\hline
+day                & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+orders (tens)      & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+overtime (hours)   & 10 & 12 & 13 & 14 & 16 & 18 & 19 & 20 & 22 \\
+\hline
+\end{tabular}
+\end{center}
+
+A quick answer is available without any tool: from the first day to the last, orders rise by
+eight tens and overtime rises by twelve hours, so roughly $1.5$ hours per ten orders. Least
+squares, which we will build in this chapter, gives $1.466667$. The two numbers are close, and
+precisely because they are close we are tempted to treat the matter as settled. Three
+important questions are left unanswered by both. How far does that number move if those nine days
+are replaced by nine other days? If tomorrow's orders are eighty, how many hours must be
+prepared? And if one day turns out to be misrecorded, how much damage does that do?
+
+Chapter 10 already gave the picture: least squares is the orthogonal projection of the
+observation vector onto the column space of the design matrix, and the normal equations say
+that the residual is perpendicular to that space. What is missing there is uncertainty.
+Chapter 20 already gave confidence intervals and hypothesis tests, but for a single parameter
+from observations that are independent and share one distribution. Here the parameter sought
+is a slope, a ratio of two sums that are both random, and the observations are no longer on
+equal footing: a point at the end of the range carries more influence than a point in the
+middle. This chapter joins the two and stops at an honest place: how far a conclusion may be
+carried.
+
+\begin{untukanak}
+A grandmother sells coconut ice in front of her house. She never records anything neatly, but
+her memory is good enough: on a hot day her stock sells out before the afternoon. On a cloudy
+day half the ice melts in the cooler. One day her grandchild arrives with an exercise book and
+records nine days in a row: roughly how hot it was, and how many cups were sold.
+
+From those nine records the grandchild draws one straight line: the hotter it gets, the more is
+sold. The grandmother nods, but then asks, ``if tomorrow is a little hotter, how many cups
+should I prepare?'' The grandchild falls silent. The line gives the direction, not the number.
+Besides, on one day it rained hard although it was hot, and the sales were dreadful; that point
+sits far from the line.
+
+In this chapter we will learn why the best-fitting line is still not a sure forecast, why one
+strange day can shift the line further than five ordinary days, and why anyone who sells
+numbers must state how wide their uncertainty is.
+\end{untukanak}
+
+\section{Nine days and one line}
+\tingkat{basic}
+
+Nine pairs of numbers, two unknowns, nine equations. We met a system like this in Chapter 8:
+more equations than unknowns, so an exact solution exists only if all nine points happen to be
+collinear. No line passes exactly through every point above, and that is not a measurement
+failure but the usual state of affairs. All we can look for is the closest line, and
+``closest'' has to be defined first.
+
+In everyday language: we look for the one line whose total error is as small as possible, with
+the error counted as the perpendicular distance from the point to the line.
+
+\kamus{regression}{regresi}{drawing the one line closest to all the points, rather than a line
+that passes through all of them}
+
+\begin{definisi}[Simple linear regression model]
+\index{regression}
+For observations $i=1,\dots,n$,
+\[
+y_i = a + b\,x_i + \varepsilon_i ,
+\]
+with $x_i$ the observed explanatory variable, $y_i$ the explained variable, $a$ the intercept,
+$b$ the slope, and $\varepsilon_i$ the unobserved error. The model is called \emph{linear}
+because it is linear in the parameters $a$ and $b$, not because the line is straight in $x$.
+\end{definisi}
+
+One small distinction governs the whole chapter: $\varepsilon_i$ and the residual are not the
+same object. The error $\varepsilon_i$ is the difference between the true value and the
+population line that we never see; the residual $e_i=y_i-\hat y_i$ is the difference between
+the observed value and the line we fitted from the data itself. A residual can be computed and
+drawn, an error can only be assumed. Whenever a book states an assumption about errors and then
+checks it through a picture of residuals, there is one jump that must not be forgotten: what is
+inspected is a stand-in, not the thing itself.
+
+\section{Least squares as a projection}
+\tingkat{intermediate}
+
+Stack $y\in\mathbb{R}^n$ as the observation vector and let $X$ be the $n\times2$ matrix whose
+columns are one and $x$. Finding the best line means choosing $\hat y$ in the column space of
+$X$ that is closest to $y$: the problem of Chapter 10, with the addition that we need the
+explicit form of the coefficients in order to compute their uncertainty.
+
+\begin{definisi}[Least-squares estimator]
+\index{least squares}
+$\hat\beta=(\hat a,\hat b)$ is the least-squares estimator if it minimizes
+\[
+\operatorname{RSS}(\beta)=\|y-X\beta\|^2=\sum_{i=1}^{n}\bigl(y_i-a-bx_i\bigr)^2 .
+\]
+\end{definisi}
+
+\kamus{least squares}{kuadrat terkecil}{adding up all the errors after squaring them, then
+choosing the line whose total is smallest}
+
+\begin{teorema}[The normal equations]
+\index{normal equations}
+$\hat\beta$ minimizes RSS if and only if
+\[
+X^{\top}(y-X\hat\beta)=0 ,
+\qquad\text{that is}\qquad X^{\top}X\hat\beta=X^{\top}y .
+\]
+If the columns of $X$ are linearly independent, $\hat\beta=(X^{\top}X)^{-1}X^{\top}y$ is
+unique.
+\end{teorema}
+
+\begin{proof}[Proof]
+Write $f(\beta)=\|y-X\beta\|^2=y^{\top}y-2\beta^{\top}X^{\top}y+\beta^{\top}X^{\top}X\beta$.
+Its gradient is $-2X^{\top}y+2X^{\top}X\beta$, so the stationary condition is exactly the normal
+equations. Since $X^{\top}X$ is positive definite when its columns are linearly independent,
+$f$ is strictly convex and that stationary point is the global minimum.
+
+The converse direction is more informative. Suppose $X^{\top}(y-X\hat\beta)=0$. For any
+$\beta$,
+\[
+\|y-X\beta\|^2=\|y-X\hat\beta\|^2+\|X(\hat\beta-\beta)\|^2
++2(\hat\beta-\beta)^{\top}X^{\top}(y-X\hat\beta),
+\]
+and the cross term vanishes. Hence $\operatorname{RSS}(\beta)\ge\operatorname{RSS}(\hat\beta)$
+for every $\beta$, with equality only when $X\beta=X\hat\beta$.
+\end{proof}
+
+That proof contains the whole geometric content: the residual is perpendicular to every column
+of $X$. Since the first column is the vector of ones and the second is $x$, we get
+$\sum_i e_i=0$ and $\sum_i x_ie_i=0$, and those two identities are what support the
+decomposition of sums of squares in the next section.
+
+\begin{proposisi}[Hat matrix]
+\index{hat matrix}
+With $H=X(X^{\top}X)^{-1}X^{\top}$ we have $\hat y=Hy$, $H^{\top}=H$, $H^2=H$,
+$\operatorname{tr}H=2$, and $0\le h_{ii}\le1$ with $\sum_i h_{ii}=2$. The value $h_{ii}$ is
+called the \emph{leverage} of point $i$.
+\end{proposisi}
+
+\begin{proof}[Proof]
+Symmetry and idempotence follow directly from the definition:
+\[
+H^2=X(X^{\top}X)^{-1}X^{\top}X(X^{\top}X)^{-1}X^{\top}=H .
+\]
+Hence $H$ is an orthogonal projection matrix, so
+$h_{ii}=e_i^{\top}He_i=\|He_i\|^2\ge0$ and $h_{ii}\le\|e_i\|^2=1$. Finally
+$\operatorname{tr}H=\operatorname{tr}\bigl((X^{\top}X)^{-1}X^{\top}X\bigr)
+=\operatorname{tr}I_2=2$.
+\end{proof}
+
+Now the numbers, because the whole chapter rests on one computation that can be rechecked. For
+the café data,
+\[
+X^{\top}X=\begin{pmatrix}9&45\\45&285\end{pmatrix},
+\qquad X^{\top}y=\begin{pmatrix}144\\808\end{pmatrix},
+\qquad \det(X^{\top}X)=9\cdot285-45^2=540 .
+\]
+Therefore
+\[
+\hat\beta=\frac1{540}\begin{pmatrix}285&-45\\-45&9\end{pmatrix}
+\begin{pmatrix}144\\808\end{pmatrix}
+=\frac1{540}\begin{pmatrix}4680\\792\end{pmatrix}
+=\begin{pmatrix}8.666667\\1.466667\end{pmatrix}.
+\]
+The number $808$ is worth checking by hand: $\sum x_iy_i=10+24+39+56+80+108+133+160+198$. So is
+$4680$: $285\cdot144-45\cdot808=41040-36360$.
+
+One more theorem is needed before we may speak about the quality of an estimator. That theorem
+explains why least squares is used in almost every field, and at the same time why it is not a
+sacred choice.
+
+\begin{teorema}[Gauss--Markov]
+\index{gauss-markov}
+Assume (A1) $y=X\beta+\varepsilon$; (A2) $\mathbb{E}[\varepsilon\mid X]=0$;
+(A3) $\operatorname{Var}(\varepsilon\mid X)=\sigma^2I$; (A4) the columns of $X$ are linearly
+independent. Then $\hat\beta$ is unbiased with $\operatorname{Var}(\hat\beta)=\sigma^2
+(X^{\top}X)^{-1}$, and among all linear unbiased estimators, $\hat\beta$ has the smallest
+variance. Such an estimator is called \emph{BLUE} (\emph{best linear unbiased estimator}).
+\end{teorema}
+
+\begin{proof}[Proof]
+Unbiasedness: $\mathbb{E}[\hat\beta\mid X]=(X^{\top}X)^{-1}X^{\top}X\beta=\beta$, using (A2).
+Variance: $\hat\beta-\beta=(X^{\top}X)^{-1}X^{\top}\varepsilon$, so
+$\operatorname{Var}(\hat\beta)=(X^{\top}X)^{-1}X^{\top}(\sigma^2I)X(X^{\top}X)^{-1}
+=\sigma^2(X^{\top}X)^{-1}$.
+
+The third part is not proved in full here. The sketch: every linear unbiased estimator has the
+form $\tilde\beta=Cy$ with $CX=I$, so $\tilde\beta-\beta=C\varepsilon$ and
+$\operatorname{Var}(\tilde\beta)=\sigma^2CC^{\top}$. Writing
+$C=(X^{\top}X)^{-1}X^{\top}+D$ gives $DX=0$ and
+\[
+CC^{\top}-(X^{\top}X)^{-1}=DD^{\top},
+\]
+which is positive semi-definite, so every component of $\tilde\beta$ has variance no smaller
+than the matching component of $\hat\beta$. The full proof is in Seber and Lee,
+\emph{Linear Regression Analysis}, Chapter 3, and in Greene, \emph{Econometric Analysis},
+Chapter 3.
+\end{proof}
+
+\section{Coefficients and their units}
+\tingkat{basic}
+
+The slope $1.466667$ means nothing until its unit is named. The unit is hours per ten orders:
+every additional ten orders raises the forecast overtime by $1.466667$ hours, that is $88$
+minutes, or $8.8$ minutes per order. The café owner can use that sentence; the sentence ``the
+coefficient is $1.47$'' she cannot.
+
+The intercept $8.666667$ hours is the forecast for $x=0$, a day with no online orders at all.
+No such day occurs in the data, and outside the range $1$ to $9$ the line is not guaranteed to
+hold. Calling that number ``fixed overtime cost'' is \index{extrapolation}extrapolation wrapped
+in a name: we are using the line outside the place where it was fitted. What is safe: the
+intercept is the number that makes the line pass through $(\bar x,\bar y)$, because
+$\hat a=\bar y-\hat b\bar x$; it is useful for computation, not for interpretation.
+
+A change of units does not change the conclusion. If $x$ is written in orders rather than tens,
+the slope is $0.146667$ hours per order and its standard error is $0.004714$, both divided by
+ten; $t$ and $R^2$ do not move. Multiplying one variable by a constant $c$ multiplies the
+coefficient and its standard error by $c$ or $1/c$, while their ratio stays put, so a report
+that quotes $t$ without units cannot be read.
+
+\begin{tangan}
+Prepare graph paper, nine coins, and a piece of string as long as the side of the paper. Place
+the coins on the grid according to the nine pairs of numbers at the start of the chapter:
+horizontally orders, vertically overtime, one square to one unit. Tie the ends of the string to
+the two edges of the paper so that the string can be slid as a straight line. Slide and rotate
+the string until the sum of the perpendicular distances from all the coins to the string feels
+smallest; do not measure, just compare by eye, then lock it with tape.
+
+What should be visible: two people will put the string in slightly different places, and the
+difference is largest when you shift the ends of the string. Now lift the leftmost coin by one
+square and notice how far the string has to turn. Put it back, then lift the middle coin by one
+square: almost nothing changes. That is leverage, and you have just seen it with your hands
+before meeting the formula.
+\end{tangan}
+
+\section{R squared and its correlation}
+\tingkat{intermediate}
+
+Once the line exists, people ask ``how good is it''. The most common answer is one number that
+compares the residual with the original spread of $y$. In everyday language: what share of the
+wobble in $y$ the line manages to explain, and what share is left over.
+
+\begin{definisi}[$R^2$]
+\index{coefficient of determination}
+With $\mathrm{SST}=\sum_i(y_i-\bar y)^2$, $\mathrm{SSE}=\sum_i e_i^2$, and
+$\mathrm{SSR}=\sum_i(\hat y_i-\bar y)^2$, the coefficient of determination is
+\[
+R^2=1-\frac{\mathrm{SSE}}{\mathrm{SST}}=\frac{\mathrm{SSR}}{\mathrm{SST}} .
+\]
+\end{definisi}
+
+\kamus{coefficient of determination}{koefisien determinasi}{the share of the wobble that the
+line manages to explain, expressed as a fraction of the whole}
+
+\begin{teorema}[Decomposition of sums of squares]
+If $X$ contains a column of ones, then $\mathrm{SST}=\mathrm{SSR}+\mathrm{SSE}$ and
+$0\le R^2\le1$.
+\end{teorema}
+
+\begin{proof}[Proof]
+Write $y-\bar y\mathbf{1}=(\hat y-\bar y\mathbf{1})+e$. Since $\sum e_i=0$, the vector $e$ is
+perpendicular to $\bar y\mathbf{1}$, and by the normal equations $e$ is also perpendicular to
+$\hat y$. Hence the two terms on the right are perpendicular, and Pythagoras gives
+$\|y-\bar y\mathbf{1}\|^2=\|\hat y-\bar y\mathbf{1}\|^2+\|e\|^2$.
+\end{proof}
+
+For the café data, $\mathrm{SST}=130$, $\mathrm{SSE}=0.933333$, so
+$R^2=1-0.933333/130=0.992821$. In a simple regression, $R^2$ equals the squared correlation:
+$r=88/\sqrt{60\cdot130}=0.996404$ and $r^2=0.992821$. That equality is special to one
+explanatory variable; as soon as there are two, $R^2$ is no longer the square of any
+correlation.
+
+The number $0.992821$ easily makes people stop thinking, so let us tame it. What is explained is
+$99.28$ percent of the \emph{wobble} in overtime, and that wobble is measured against its own
+mean. The residuals still have variance $s^2=0.933333/7=0.133333$, that is a standard deviation
+$s=0.365148$ hours or $21.9$ minutes. A café owner who prepares overtime on the basis of this
+line can still miss by more than twenty minutes. $R^2$ is relative; $s$ is absolute, and what
+people feel is $s$.
+
+\begin{untukanak}
+Imagine two students. The first runs a hundred-meter race and finishes $0.2$ seconds behind the
+winner. The second runs a marathon and finishes twenty minutes behind the winner. Both lose, but
+not in the same sense. Two tenths of a second is very close; twenty minutes is very far. If the
+teacher writes only ``second place'' for both, we lose the whole story.
+
+Numbers of that kind occur in this chapter. There is a number that measures the \emph{share}
+guessed correctly, and there is a number that measures the \emph{size} of the error left over.
+The first can look almost perfect while the second stays large. Someone who reads only the first
+number will prepare too little, then wonder why the forecast misses.
+\end{untukanak}
+
+\begin{proposisi}[Adding a variable never lowers $R^2$]
+If a column block $X_2$ is added to $X_1$ so that its column space contains the column space of
+$X_1$, then $\mathrm{SSE}$ does not increase and $R^2$ does not decrease.
+\end{proposisi}
+
+\begin{proof}[Proof]
+The set of vectors $X_1\beta_1$ is contained in the set $X_2\beta_2$, so the minimum distance to
+$y$ taken over the larger set cannot be larger. Hence $R^2$ cannot fall, even when the added
+variable has nothing to do with $y$.
+\end{proof}
+
+The practical consequence matters: comparing models by raw $R^2$ always favors the fatter model.
+The usual correction is $R^2_{\text{adj}}=1-(1-R^2)(n-1)/(n-p)$ with $p$ the number of
+parameters. For the multiple model of the next section, $R^2=0.997951$ falls to $0.997496$ when
+$p=3$ and $n=12$; at small $n$ with many variables the correction can reverse the ranking.
+
+\section{Multiple regression and collinearity}
+\tingkat{advanced}
+
+So far, one explanatory variable. In reality almost every problem demands more than one, and
+that is where its characteristic disease appears: two explanatory variables carrying almost the
+same information.
+
+Twelve branches of a food stall are recorded: daily sales $y$ in millions of rupiah, the number
+of employees $x_1$, and the seating area $x_2$ in square meters.
+
+\begin{center}
+\small
+\begin{tabular}{l*{12}{r}}
+\hline
+branch   & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 \\
+$x_1$    & 6 & 7 & 7 & 8 & 8 & 9 & 9 & 10 & 10 & 11 & 12 & 12 \\
+$x_2$    & 18 & 22 & 20 & 26 & 24 & 28 & 26 & 32 & 30 & 34 & 36 & 38 \\
+$y$      & 11.2 & 12.4 & 12.0 & 14.1 & 13.6 & 15.2 & 14.8 & 17.0 & 16.4 & 18.1 & 19.4 & 19.9 \\
+\hline
+\end{tabular}
+\end{center}
+
+Least squares gives
+\[
+\hat y=2.442991+0.686916\,x_1+0.239252\,x_2,
+\]
+with standard errors $0.207583$, $0.135366$, and $0.042101$; the $t$ values are
+$11.7687$, $5.0745$, and $5.6828$ on $9$ degrees of freedom; $s=0.143607$ and
+$R^2=0.997951$. All of it looks healthy. Then we fit one explanatory variable at a time: $y$ on
+$x_1$ gives $1.446019$, $y$ on $x_2$ gives $0.450075$, both nearly twice their multiple
+coefficients.
+
+Not because of a miscalculation. Employees and floor area almost determine each other: their
+correlation is $r_{12}=0.986801$. Once $x_2$ is in, $x_1$ carries almost no new information, so
+its coefficient shrinks to its additional effect only, namely $0.687$ million per employee at
+fixed area. The single coefficient $1.446$ mixes the employee effect with the area effect that
+usually accompanies it, and the gap between the two is a measure of how far the two variables
+overlap.
+
+\begin{definisi}[Variance inflation factor]
+\index{variance inflation}
+For explanatory variable $j$, let $R_j^2$ be the coefficient of determination of the regression
+of $x_j$ on all the other explanatory variables. Its variance inflation factor is
+\[
+\mathrm{VIF}_j=\frac{1}{1-R_j^2}.
+\]
+\end{definisi}
+
+\kamus{variance inflation factor}{varians inflasi}{how much the standard error of a coefficient
+is blown up by other explanatory variables that carry similar information}
+
+\begin{proposisi}[VIF with two explanatory variables]
+\index{collinearity}
+If there are only two explanatory variables, $\operatorname{Var}(\hat b_1)=\sigma^2/\bigl(S_{11}
+(1-r_{12}^2)\bigr)$, with $S_{11}=\sum_i(x_{i1}-\bar x_1)^2$. Hence the standard error of
+$\hat b_1$ is inflated by exactly $\sqrt{\mathrm{VIF}_1}$ compared with the case of mutually
+orthogonal explanatory variables.
+\end{proposisi}
+
+\begin{proof}[Proof]
+For two explanatory variables, inverting the $2\times2$ matrix of the centered block
+$X^{\top}X$ gives first element $S_{22}/(S_{11}S_{22}-S_{12}^2)$, and
+$S_{12}=r_{12}\sqrt{S_{11}S_{22}}$. Dividing numerator and denominator by $S_{22}$ yields
+$\sigma^2/\bigl(S_{11}(1-r_{12}^2)\bigr)$.
+\end{proof}
+
+The numbers can be checked: $S_{11}=42.9167$, $r_{12}^2=0.973775$, so $\mathrm{VIF}=38.132232$
+and $\sqrt{\mathrm{VIF}}=6.1751$. The standard error of $\hat b_1$ is indeed $0.135366$, while
+$\sigma/\sqrt{S_{11}}$ is only $0.021921$; the ratio is $6.1751$, matching the root of the VIF
+to four digits.
+
+Collinearity does not damage the forecast; it damages the interpretation. The value
+$R^2=0.997951$ shows that the line is still close to the points, and a forecast at $x_1=9$,
+$x_2=28$ is still useful. What cannot be trusted is the sentence ``one extra employee raises
+sales by $0.687$ million'': its $95$ percent interval $(0.380697;\ 0.993135)$ is wide, and if
+the data shift a little that coefficient can change a lot without the line changing much.
+
+\section{Intervals, the $t$ test, and prediction intervals}
+\tingkat{advanced}
+
+The next question is the same as in Chapter 20, only the object changes: not a mean, but a
+slope. We need one quantity whose distribution is known when the model is correct, then we
+invert it into an interval.
+
+In everyday language: we measure how far the observed slope sits from zero, in units of the
+slope's own typical wobble.
+
+\kamus{prediction interval}{selang prediksi}{an interval for one day that has not happened yet,
+always wider than the interval for the mean because it has to bear the surprise of that day as
+well}
+
+\begin{teorema}[The $t$ test and an interval for one coefficient]
+Assume (A1) to (A4) and normal errors. With $p$ the number of parameters,
+$s^2=\mathrm{SSE}/(n-p)$, and $\operatorname{se}(\hat b_j)=s\sqrt{[(X^{\top}X)^{-1}]_{jj}}$,
+we have
+\[
+\frac{\hat b_j-\beta_j}{\operatorname{se}(\hat b_j)}\sim t_{n-p},
+\]
+so the $1-\alpha$ interval for $\beta_j$ is
+$\hat b_j\pm t_{n-p,1-\alpha/2}\operatorname{se}(\hat b_j)$, and the test of
+$H_0\colon\beta_j=0$ rejects at level $\alpha$ when $|t|>t_{n-p,1-\alpha/2}$.
+\end{teorema}
+
+\begin{proof}[Proof]
+$\hat b_j$ is a linear combination of $y$ with fixed coefficients, so it is normal with
+expectation $\beta_j$ and variance $\sigma^2[(X^{\top}X)^{-1}]_{jj}$ by Gauss--Markov. Moreover
+$\mathrm{SSE}/\sigma^2\sim\chi^2_{n-p}$ and is independent of $\hat\beta$, because the residual
+is perpendicular to the column space while $\hat\beta$ lies entirely inside it. The ratio of a
+standard normal variable to the root of a chi-square variable divided by its degrees of freedom
+follows a $t$ distribution. The full proof is in Wasserman, \emph{All of Statistics},
+Chapter 13.
+\end{proof}
+
+For the café data, $\hat b=1.466667$, $s=0.365148$, $S_{xx}=60$, so
+$\operatorname{se}(\hat b)=0.047140$. With $t_{7,0.975}=2.364624$,
+\[
+\hat b\pm t\,\operatorname{se}(\hat b)=1.466667\pm0.111470
+=(1.355197;\ 1.578136),
+\]
+and $t=31.1127$ with a p-value below $10^{-6}$. Rejecting $\beta=0$ here is no achievement: with
+residuals as tight as $22$ minutes and an $x$ range this wide, almost any data would reject it.
+What deserves reporting is the interval, because it says that the extra overtime per ten orders
+lies between $1.36$ and $1.58$ hours.
+
+Now distinguish two questions that are often confused. What is the average overtime on a day
+with eighty orders? And what is the overtime on one particular day with eighty orders? The first
+answer narrows like $1/\sqrt n$; the second never narrows below the standard deviation of the
+residuals, because a single day brings its own surprise.
+
+\begin{proposisi}[Two kinds of forecast variance]
+For fixed $x_0$ and a new observation $y_0=x_0^{\top}\beta+\varepsilon_0$ independent of the old
+data,
+\[
+\operatorname{Var}(\hat y_0)=\sigma^2x_0^{\top}(X^{\top}X)^{-1}x_0,
+\qquad
+\operatorname{Var}(y_0-\hat y_0)=\sigma^2\bigl(1+x_0^{\top}(X^{\top}X)^{-1}x_0\bigr).
+\]
+\end{proposisi}
+
+\begin{proof}[Proof]
+The first already appeared in Gauss--Markov. For the second, write
+$y_0-\hat y_0=\varepsilon_0-x_0^{\top}(\hat\beta-\beta)$; the two terms are independent because
+$\varepsilon_0$ is independent of the old data, so the variance is the sum of the two
+variances.
+\end{proof}
+
+For $x_0=8$ in the café data, $x_0^{\top}(X^{\top}X)^{-1}x_0=1/9+9/60=0.261111$. The half-width
+of the mean interval is $2.364624\sqrt{0.133333\cdot0.261111}=0.441209$, so
+$(19.9588;\ 20.8412)$ with width $0.882$. The half-width of the prediction interval is
+$2.364624\sqrt{0.133333\cdot1.261111}=0.969635$, so $(19.4304;\ 21.3696)$ with width $1.939$.
+The ratio of widths is $\sqrt{1.261111/0.261111}=2.198$: the prediction interval is more than
+twice as wide, and no amount of data can remove that excess. Figure~\ref{fig:dua-selang} shows
+both bands over the whole range of $x$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=11.4cm, height=6.0cm,
+  xmin=0.6, xmax=9.4, ymin=8.2, ymax=25.4,
+  axis lines=left,
+  xtick={1,2,3,4,5,6,7,8,9},
+  tick label style={font=\scriptsize},
+  xlabel={online orders (tens)}, ylabel={overtime hours},
+  xlabel style={font=\small}, ylabel style={font=\small},
+  legend style={font=\scriptsize,draw=layergrey,at={(0.02,0.98)},
+    anchor=north west,row sep=0.5pt},
+]
+\addplot[accent,very thick,domain=0.7:9.3,samples=60]
+  {8.666667+1.466667*x+0.863439*sqrt(1.111111+(x-5)^2/60)};
+\addplot[accent,very thick,domain=0.7:9.3,samples=60]
+  {8.666667+1.466667*x-0.863439*sqrt(1.111111+(x-5)^2/60)};
+\addplot[accent,very thick,domain=0.7:9.3,samples=60,forget plot]
+  {8.666667+1.466667*x};
+\addplot[layerindigo,densely dashed,thick,domain=0.7:9.3,samples=60]
+  {8.666667+1.466667*x+0.863439*sqrt(0.111111+(x-5)^2/60)};
+\addplot[layerindigo,densely dashed,thick,domain=0.7:9.3,samples=60]
+  {8.666667+1.466667*x-0.863439*sqrt(0.111111+(x-5)^2/60)};
+\addplot[only marks,mark=*,mark size=1.8pt,layerindigo] coordinates {
+  (1,10) (2,12) (3,13) (4,14) (5,16) (6,18) (7,19) (8,20) (9,22)};
+\legend{prediction bands, , fitted line, mean bands, }
+\end{axis}
+\end{tikzpicture}
+\caption{The $95$ percent confidence interval for mean overtime (dashed line) and the $95$
+percent prediction interval for one new day (thick line), both around the fitted line
+$\hat y=8.666667+1.466667x$. At $x=8$ the mean interval
+$(19.9588;\ 20.8412)$ has width $0.882$, while the prediction interval
+$(19.4304;\ 21.3696)$ has width $1.939$. Both bands widen at the ends of the range, where the
+line is less supported by data; the ratio of their widths, $2.198$, does not depend on $n$.}
+\label{fig:dua-selang}
+\end{figure}
+
+\section{Residual diagnostics}
+\tingkat{intermediate}
+
+Every interval above is conditional on the model being right. Hence the first step after fitting
+a line is not to compute p-values but to inspect the residuals. In everyday language: we look at
+whether what is left over from the line still has a pattern; a residual with a pattern means the
+line has the wrong shape, not that chance is at work.
+
+\index{residual}
+Four patterns deserve recognition: a curve against $x$, sign of a non-linear relation; a funnel
+that widens with $x$, a sign that (A3) fails; one faraway point on its own, a suspect
+misrecording; and a pattern by time order, a sign that observations are not independent.
+
+For the café data, the residuals in order are
+\[
+-0.1333,\ 0.4,\ -0.0667,\ -0.5333,\ 0,\ 0.5333,\ 0.0667,\ -0.4,\ 0.1333 .
+\]
+There is no evident curvature, and the sum is zero as it should be. What is interesting is their
+size: the largest residual is $0.5333$ hours, about $32$ minutes, on the fourth and sixth days,
+both near the center of the data. Those points are in fact \emph{not} very influential, because
+their leverage is only $0.1278$.
+
+The leverage of point $i$ in a simple regression has a closed form
+\[
+h_{ii}=\frac1n+\frac{(x_i-\bar x)^2}{S_{xx}},
+\]
+so on this data $h_{11}=h_{99}=1/9+16/60=0.3778$, while $h_{55}=0.1111$. An end point holds
+$3.4$ times the weight of a middle point, and that is not a designer's choice but a consequence
+of geometry: a line rotated about the center of the data moves furthest at the ends. Actual
+influence combines the size of the residual with leverage, and the usual measure is Cook's
+distance
+\[
+D_i=\frac{e_i^2}{p\,s^2}\cdot\frac{h_{ii}}{(1-h_{ii})^2},
+\]
+which here is largest, $0.2870$, on the second and eighth days, both with residual $0.4$ and
+leverage $0.2611$. Values below one are generally considered not worrying, but that threshold
+is a convention, not a law.
+
+One warning that is rarely written: with $n=9$ diagnostics have almost no power. A pattern in
+nine points easily arises from chance, and a pattern that is really there is easily invisible.
+Diagnostics offer suspicion, not verdict.
+
+\begin{bacakeras}
+Two voices.
+
+``The $R$ squared is zero point nine nine. So the model is almost perfect.''
+
+``Perfect for what? The residuals are still twenty-two minutes.''
+
+``But ninety-nine percent of the wobble is already explained.''
+
+``Explained by what? By orders. Not by a kitchen that suddenly slowed down.''
+
+``So a high $R$ squared is not a guarantee.''
+
+``A high $R$ squared only means the line is tight to the points that exist. It knows nothing
+about a day that has not come yet.''
+
+Say it once more, slowly: tight to the old points is not a promise about a new day. Repeat it
+until it feels natural in the mouth: tight to the old points, not a promise.
+\end{bacakeras}
+
+\begin{resep}
+\begin{enumerate}
+  \item Plot $y$ against $x$ before computing anything, and ask whether a straight line makes
+        sense.
+  \item Fit the line by least squares, then write the equation complete with the unit of every
+        coefficient.
+  \item Inspect the residuals against $x$ and against time order; look for curvature, a funnel,
+        and isolated points.
+  \item Report $s$ together with $R^2$, then an interval for the coefficient that carries the
+        main conclusion.
+  \item If the aim is to forecast one event, use a prediction interval; if the aim is a mean,
+        use a mean interval.
+\end{enumerate}
+A warning about order: step 1 must not be swapped with step 2. Plotting after fitting the line
+makes the eye look for justification, not for faults.
+\end{resep}
+
+\section{When the answer is yes or no}
+\tingkat{advanced}
+
+So far $y$ has been a number that can be measured. Many important questions are binary: a
+customer returns or not, a transaction is fraudulent or not, a patient recovers or not. It is
+still tempting to fit an ordinary straight line to $0$ and $1$, then read it as a probability.
+Two things go wrong at once, and both can be computed.
+
+The following data: $26$ customers, the distance of their home from the stall $x$ in kilometers,
+and $y=1$ if they returned within thirty days. Of the $26$, $15$ returned. A linear regression
+on the binary $y$, called the \emph{linear probability model}, gives
+$\hat y=1.346154-0.096154x$. At $x=2$ the forecast is $1.153846$: a probability greater than
+one, and that is not a rounding error but a defect of form. At $x=20$, still outside the data
+range but only seven kilometers outside, the forecast is $-0.576923$.
+
+The second failure is subtler. For binary $y$, the variance of the residual is really $p(1-p)$
+and therefore depends on $x$: at $x=2$ its value is $0.007225$, at $x=14$ it is $0.028890$. The
+linear probability model assumes one variance for all points, namely $s^2=0.124199$ on this
+data, so its standard errors are wrong exactly where it matters most.
+Ordinary least squares, which works well when the variance is constant, here relies on an
+assumption that plainly does not hold.
+
+\index{logistic regression}
+\begin{definisi}[Logistic model]
+For $p_i=P(y_i=1\mid x_i)$,
+\[
+\log\frac{p_i}{1-p_i}=a+b\,x_i,
+\qquad\text{that is}\qquad
+p_i=\frac{1}{1+e^{-(a+bx_i)}} .
+\]
+The parameters are estimated by maximum likelihood, not by least squares, so there is no closed
+form and the computation is iterative.
+\end{definisi}
+
+\kamus{odds ratio}{rasio peluang}{how many times the odds multiply for one additional unit, not
+by how many points the probability rises}
+
+For that data, maximum likelihood gives $\hat a=6.315432$ and $\hat b=-0.699945$ with standard
+errors $2.383413$ and $0.258594$. The odds ratio is $e^{-0.699945}=0.496613$: each extra
+kilometer cuts the odds of returning to about a half, in the sense of a ratio, not a difference
+in points. The estimated probabilities are $0.992722$ at $x=2$ and $0.029777$ at $x=14$, both
+legitimate as probabilities. The $95$ percent interval for $b$ is
+$(-1.233657;\ -0.166233)$; it is entirely negative, so the direction is clear even if the
+magnitude is not.
+
+One costly misreading: a logistic coefficient is not the marginal effect on probability. The
+value $b=-0.699945$ acts on the log-odds scale, and its effect on probability is largest around
+$p=0.5$ and smallest at the ends. A good report states probabilities at several meaningful
+values of $x$, not just the coefficient.
+
+\section{Correlation is not causation}
+\tingkat{basic}
+
+Now the part most often violated in reports that look tidy. Two groups of employees attend
+training of different length, and the number of errors per hundred transactions is recorded.
+
+\begin{center}
+\small
+\begin{tabular}{l*{6}{r}}
+\hline
+morning shift & training hours & 1 & 2 & 3 & 4 & 5 \\
+              & errors         & 4.0 & 3.6 & 3.2 & 2.9 & 2.5 \\
+\hline
+night shift   & training hours & 5 & 6 & 7 & 8 & 9 \\
+              & errors         & 8.0 & 7.5 & 7.0 & 6.4 & 6.0 \\
+\hline
+\end{tabular}
+\end{center}
+
+Within the morning shift, the slope is $-0.36$ errors per training hour. Within the night shift,
+$-0.474286$. Both are negative: longer training goes with fewer errors. But when the two groups
+are pooled, the slope is $+0.359036$ with $R^2=0.226121$. The sign flips, and not one of the
+numbers is wrong.
+
+The cause is not magic but the addition of two sources:
+\[
+b_{\text{pooled}}=\frac{\sum_g S_{xy,g}+\sum_g n_g(\bar x_g-\bar x)(\bar y_g-\bar y)}
+{\sum_g S_{xx,g}+\sum_g n_g(\bar x_g-\bar x)^2}.
+\]
+The morning group contributes $S_{xy}=-6.3$ and $S_{xx}=17.5$; the night group $S_{xy}=-8.3$ and
+$S_{xx}=17.5$; the between-group term is $6\cdot(-2)(-1.85)+6\cdot(2)(1.85)=44.4$; the
+denominator is $83$. Hence
+$b_{\text{pooled}}=(-6.3-8.3+44.4)/83=29.8/83=0.359036$. The between-group term $44.4$ defeats
+the sum of within-group terms $-14.6$, and that is the whole secret.
+
+The interpretation: training hours are not assigned at random. Night-shift employees, who make
+more errors because of working hours and the kinds of transactions, also receive more training,
+so what is measured as the effect of training is mostly the difference between shifts.
+Figure~\ref{fig:simpson} places everything on one plane.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=11.4cm, height=6.2cm,
+  xmin=0.5, xmax=10.5, ymin=1.6, ymax=8.9,
+  axis lines=left,
+  xtick={1,2,3,4,5,6,7,8,9,10},
+  tick label style={font=\scriptsize},
+  xlabel={training hours}, ylabel={errors per 100 transactions},
+  xlabel style={font=\small}, ylabel style={font=\small},
+  legend style={font=\scriptsize,draw=layergrey,at={(0.98,0.98)},
+    anchor=north east,row sep=0.5pt},
+]
+\addplot[only marks,mark=*,mark size=2pt,layerteal] coordinates {
+  (1,4.0) (2,3.6) (3,3.2) (4,2.9) (5,2.5)};
+\addplot[only marks,mark=square*,mark size=1.9pt,layerplum] coordinates {
+  (6,7.5) (7,7.0) (8,6.4) (9,6.0) (10,5.7)};
+\addplot[layerteal,very thick,domain=0.8:5.4,samples=2] {4.326667-0.36*x};
+\addplot[layerplum,very thick,domain=5.6:10.2,samples=2]
+  {10.32381-0.474286*x};
+\addplot[accent,thick,densely dashed,domain=0.8:10.2,samples=2]
+  {2.941968+0.359036*x};
+\legend{morning, night, pooled}
+\end{axis}
+\end{tikzpicture}
+\caption{Simpson's paradox in the training data. Within each shift the line falls: $-0.36$ errors
+per hour for the morning and $-0.4743$ for the night. The pooled line, computed from all twelve
+points regardless of shift, instead rises with slope $+0.3590$. The change of sign comes from
+the difference between groups, not from one odd point; the between-group term $44.4$ defeats the
+within-group term $-14.6$.}
+\label{fig:simpson}
+\end{figure}
+
+\begin{untukanak}
+Two classes take part in a reading contest. Class A reads thin books, many pages, and gets good
+marks. Class B reads thick books, fewer pages, and gets poor marks. If all the pupils are pooled,
+it looks as if the fewer pages read, the higher the mark. Yet inside each class, the more pages,
+the higher the mark.
+
+What is wrong is not the numbers but the pooling. Class B really was given thicker books, and
+class B really is weaker at reading. The two facts blend into one deceptive line.
+
+In this chapter we will learn why pooling two groups can reverse the direction of a conclusion,
+why the question ``does training reduce errors'' cannot be answered just by plotting all the
+points, and why anyone changing policy must know which groups they are really comparing.
+\end{untukanak}
+
+\begin{tantangan}
+Build a table with two groups, five points each, such that both within-group slopes are positive
+but the pooled slope is negative, and the difference between the group means of $y$ is as small
+as still possible. How small is that difference, and why can it not be smaller?
+
+Hint 1: the sign of the pooled slope is decided by the between-group term. Make the first group
+have small $x$ and small $y$, the second large $x$ and large $y$, then reverse the direction
+inside each group.
+
+Hint 2: with five points and within-group slope $+1$ at $S_{xx}=10$, each group contributes
+$S_{xy}=+10$ and the between-group term must be less than $-20$. Since
+$n_g(\bar x_g-\bar x)(\bar y_g-\bar y)$ is negative only when one of the mean differences has
+the opposite sign to the other, the mean difference must pass the point where the two terms
+cancel.
+
+If you get stuck, go back to the section Correlation is not causation and recompute
+$29.8/83$ step by step.
+\end{tantangan}
+
+\section{Honest reporting}
+\tingkat{intermediate}
+
+A regression analysis can be done correctly and reported so as to mislead without a single number
+being falsified. Four habits close most of that gap.
+
+First, state how many observations and how many parameters, because the reader needs both to
+compute the degrees of freedom and to judge whether $s$ can be trusted. On the café data, $n=9$
+and $p=2$, so $s$ is built from seven degrees of freedom; hiding that number makes $s$ look
+sturdier than it is.
+
+Second, separate the data used to choose the model from the data used to judge it. Choosing the
+model form, choosing the variables, and computing the error on the same set always produces
+numbers that are too good. At $n=9$ that separation is impossible, and precisely for that reason
+the conclusion must be called weak, not reinforced with $R^2=0.992821$.
+
+Third, state how many models were tried. If ten possibilities are tested and the best is
+reported, the chance that at least one of them looks meaningful is $1-0.95^{10}=0.401263$ even
+though none of the effects is real. That number is not the probability of being wrong, but the
+probability of picking something that is a coincidence.
+
+Fourth, report magnitudes with units and intervals, not just stars. The sentence
+``$\hat b=0.687$ ($95$ percent: $0.381$ to $0.993$ million per employee)'' can be checked; the
+sentence ``significantly affects'' cannot. If the conclusion is about causation, say why:
+randomization, or adjustment for the named confounders.
+
+\section{A worked example from end to end}
+\tingkat{intermediate}
+
+We repeat the whole chain on the café data, with the intermediate numbers written out, so that
+every step can be checked with a calculator.
+
+The means are $\bar x=5$ and $\bar y=16$. The squared deviations are
+$S_{xx}=\sum(x_i-5)^2=60$ and $S_{yy}=130$; their cross product is
+$S_{xy}=\sum(x_i-5)(y_i-16)=808-9\cdot5\cdot16=88$. Hence $\hat b=88/60=1.466667$ and
+$\hat a=16-1.466667\cdot5=8.666667$.
+
+The forecasts at the nine points are $10.1333$; $11.6$; $13.0667$; $14.5333$; $16$; $17.4667$;
+$18.9333$; $20.4$; $21.8667$. The residuals are $-0.1333$; $0.4$; $-0.0667$; $-0.5333$; $0$;
+$0.5333$; $0.0667$; $-0.4$; $0.1333$, and their sum of squares is $\mathrm{SSE}=0.933333$. With
+$n-p=7$, $s^2=0.133333$ and $s=0.365148$ hours.
+
+The standard error of the slope is $s/\sqrt{S_{xx}}=\sqrt{0.133333/60}=\sqrt{0.00222222}=0.047140$.
+The statistic is $t=1.466667/0.047140=31.1127$, and $t_{7,0.975}=2.364624$, so the half-width of
+the interval is $0.111470$ and the interval is $(1.355197;\ 1.578136)$.
+
+\kertas{Repeat the same computation for one change of data. The ninth day is recorded with $22$
+hours of overtime; suppose the correct record is $26$ hours. Recompute $\hat b$, $s$,
+$\operatorname{se}(\hat b)$, and its $95$ percent interval, then compare with the table above.
+The correct answers: $\hat b=1.733333$, $s=1.306880$, $\operatorname{se}(\hat b)=0.168718$,
+interval $(1.3344;\ 2.1323)$. The width is $0.798$ against $0.223$, that is $3.6$ times.
+Explain why one point at the end can do that, when it is only one of nine.}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+Every number in this chapter can be recomputed in one short file. The following program uses
+$X^{\top}X$ directly, so it also checks the algebra of the second section.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from math import sqrt
+from scipy import stats
+
+x = np.arange(1, 10, dtype=float)
+y = np.array([10, 12, 13, 14, 16, 18, 19, 20, 22], dtype=float)
+n = len(y)
+X = np.column_stack([np.ones(n), x])
+
+beta = np.linalg.solve(X.T @ X, X.T @ y)
+fit = X @ beta
+e = y - fit
+s2 = (e ** 2).sum() / (n - 2)
+sst = ((y - y.mean()) ** 2).sum()
+
+print("X'X =", (X.T @ X).tolist(), " X'y =", (X.T @ y).tolist())
+print("beta = %.6f %.6f" % tuple(beta))
+sse = (e ** 2).sum()
+print("SSE = %.6f  R2 = %.6f  s = %.6f"
+      % (sse, 1 - sse / sst, sqrt(s2)))
+print("residuals =", np.round(e, 4).tolist())
+
+cov = s2 * np.linalg.inv(X.T @ X)
+se = np.sqrt(np.diag(cov))
+tq = stats.t.ppf(0.975, n - 2)
+print("se = %.6f %.6f  t = %.4f %.4f"
+      % (se[0], se[1], beta[0] / se[0], beta[1] / se[1]))
+lo, hi = beta[1] - tq * se[1], beta[1] + tq * se[1]
+print("CI95 slope = (%.6f, %.6f)" % (lo, hi))
+
+for x0 in (5.0, 8.0):
+    c = np.array([1.0, x0])
+    y0 = c @ beta
+    v = s2 * (c @ np.linalg.inv(X.T @ X) @ c)
+    print("x0=%.0f  yhat=%.4f  mean +/-%.4f  prediction +/-%.4f"
+          % (x0, y0, tq * sqrt(v), tq * sqrt(v + s2)))
+
+h = np.einsum("ij,jk,ik->i", X, np.linalg.inv(X.T @ X), X)
+cook = e ** 2 / (2 * s2) * h / (1 - h) ** 2
+print("h_ii =", np.round(h, 4).tolist())
+print("D_Cook =", np.round(cook, 4).tolist())
+
+x1 = np.array([6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 12], dtype=float)
+x2 = np.array([18, 22, 20, 26, 24, 28, 26, 32, 30, 34, 36, 38], dtype=float)
+yb = np.array([11.2, 12.4, 12.0, 14.1, 13.6, 15.2, 14.8, 17.0, 16.4, 18.1,
+               19.4, 19.9])
+Xb = np.column_stack([np.ones(12), x1, x2])
+bb = np.linalg.solve(Xb.T @ Xb, Xb.T @ yb)
+eb = yb - Xb @ bb
+s2b = (eb ** 2).sum() / 9
+seb = np.sqrt(np.diag(s2b * np.linalg.inv(Xb.T @ Xb)))
+r12 = np.corrcoef(x1, x2)[0, 1]
+print("multiple beta = %.4f %.4f %.4f  s = %.4f"
+      % (bb[0], bb[1], bb[2], sqrt(s2b)))
+print("multiple se   = %.4f %.4f %.4f" % tuple(seb))
+print("r12 = %.4f  VIF = %.2f  sqrt VIF = %.2f"
+      % (r12, 1 / (1 - r12 ** 2), 1 / sqrt(1 - r12 ** 2)))
+
+
+def ols(xx, yy):
+    A = np.column_stack([np.ones(len(xx)), xx])
+    return np.linalg.solve(A.T @ A, A.T @ yy)[1]
+
+
+xp = np.array([1, 2, 3, 4, 5, 6], dtype=float)
+yp = np.array([4.0, 3.6, 3.2, 2.9, 2.5, 2.2])
+xm = np.array([5, 6, 7, 8, 9, 10], dtype=float)
+ym = np.array([8.0, 7.5, 7.0, 6.4, 6.0, 5.7])
+print("Simpson: morning %.4f  night %.4f  pooled %.4f"
+      % (ols(xp, yp), ols(xm, ym), ols(np.r_[xp, xm], np.r_[yp, ym])))
+
+xd = np.array([2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
+               11, 11, 12, 12, 13, 13, 14, 14], dtype=float)
+yd = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0,
+               1, 0, 0, 0, 0, 0, 0], dtype=float)
+A = np.column_stack([np.ones(len(yd)), xd])
+lpm = np.linalg.solve(A.T @ A, A.T @ yd)
+print("LPM: %.4f %+.4f  prediction at x=2: %.4f  at x=20: %.4f"
+      % (lpm[0], lpm[1], lpm @ [1, 2], lpm @ [1, 20]))
+
+
+def nll(th):
+    z = A @ th
+    return float(np.sum(np.log1p(np.exp(-z)) + (1 - yd) * z))
+
+
+g = np.array([0.0, 0.0])
+for _ in range(40):
+    p = 1 / (1 + np.exp(-(A @ g)))
+    grad = A.T @ (p - yd)
+    Hm = A.T @ (A * (p * (1 - p))[:, None])
+    g = g - np.linalg.solve(Hm, grad)
+se_g = np.sqrt(np.diag(np.linalg.inv(Hm)))
+p = 1 / (1 + np.exp(-(A @ g)))
+print("logit: %.4f %+.4f  se %.4f %.4f" % (g[0], g[1], se_g[0], se_g[1]))
+print("deviance = %.4f  p(x=2) = %.4f  p(x=14) = %.4f"
+      % (2 * nll(g), p[0], p[-1]))
+print("odds ratio per km = %.4f" % np.exp(g[1]))
+\end{verbatim}
+\end{lab}
+
+The output, exactly as it comes:
+
+\begin{verbatim}
+X'X = [[9.0, 45.0], [45.0, 285.0]]  X'y = [144.0, 808.0]
+beta = 8.666667 1.466667
+SSE = 0.933333  R2 = 0.992821  s = 0.365148
+residuals = [-0.1333, 0.4, -0.0667, -0.5333, 0.0, 0.5333, 0.0667, -0.4, 0.1333]
+se = 0.265274 0.047140  t = 32.6706 31.1127
+CI95 slope = (1.355197, 1.578136)
+x0=5  yhat=16.0000  mean +/-0.2878  prediction +/-0.9101
+x0=8  yhat=20.4000  mean +/-0.4412  prediction +/-0.9696
+h_ii = [0.3778, 0.2611, 0.1778, 0.1278, 0.1111, 0.1278, 0.1778, 0.2611, 0.3778]
+D_Cook = [0.0651, 0.287, 0.0044, 0.1792, 0.0, 0.1792, 0.0044, 0.287, 0.0651]
+multiple beta = 2.4430 0.6869 0.2393  s = 0.1436
+multiple se   = 0.2076 0.1354 0.0421
+r12 = 0.9868  VIF = 38.13  sqrt VIF = 6.18
+Simpson: morning -0.3600  night -0.4743  pooled 0.3590
+LPM: 1.3462 -0.0962  prediction at x=2: 1.1538  at x=20: -0.5769
+logit: 6.3154 -0.6999  se 2.3834 0.2586
+deviance = 17.8843  p(x=2) = 0.9927  p(x=14) = 0.0298
+odds ratio per km = 0.4966
+\end{verbatim}
+
+Two things must be read from that output. First, $\mathrm{X}^{\top}\mathrm{X}$ and
+$\mathrm{X}^{\top}y$ are printed exactly as computed by hand, and $\hat\beta$ comes out of
+solving the system; agreement of this kind is not proof that the theory is true, but it removes
+arithmetic slips, which are the most frequent cause. Second, the last three parts show why
+interpretation is more fragile than computation: $0.6869$ against $1.4460$ in the single
+regression, VIF $38.13$, and a pooled slope whose sign reverses. Not one of the three is a
+programming error.
+
+\begin{untukdosen}
+The teaching order I suggest: start from the table of nine days, ask the class to guess the slope
+in two ways, by the difference of the ends and by ``the closest line''. The two answers differ
+only slightly, and that is exactly the entry point: the real question is not the number but its
+wobble. Only after the class is restless, move to the normal equations and show that
+$\sum x_ie_i=0$ is a geometric statement, not an algebraic trick.
+
+The two misconceptions that appear most often. First, students read $R^2$ as ``the probability
+that the forecast is right'', then are surprised when the prediction interval is two hours wide
+at $R^2=0.99$; the symptom shows when they cannot explain why $s$ does not shrink along with
+$R^2$. Second, they interpret multiple coefficients like single ones, even though on the
+twelve-branch data the number moves from $1.446$ to $0.687$ only because another explanatory
+variable enters.
+
+A blackboard activity that works: have two groups compute the slope on the training data, one
+group using all twelve points, one separating the shifts. Write both results side by side, then
+ask each group to defend theirs. The sign that the class is ready to move on: they can name one
+situation in which a multiple coefficient changes sign, and can explain why the forecast stays
+good.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Regression fits the line that minimizes the sum of squared residuals. By the normal
+        equations the residual is perpendicular to every column of $X$; on the café data
+        $\hat b=88/60=1.466667$ and $\hat a=8.666667$.
+  \item A coefficient is meaningful only together with its unit: $1.466667$ hours per ten orders
+        equals $8.8$ minutes per order. Changing the scale of $x$ changes the coefficient and its
+        standard error, not $t$ or $R^2$.
+  \item $R^2$ is relative, $s$ is absolute. On the café data $R^2=0.992821$ but $s=0.365148$
+        hours, that is $21.9$ minutes.
+  \item Under (A1)--(A4) Gauss--Markov guarantees that least squares is BLUE with
+        $\operatorname{Var}(\hat\beta)=\sigma^2(X^{\top}X)^{-1}$; that guarantee lapses when the
+        error variance is not constant or the explanatory variables are collinear.
+  \item Collinearity does not damage the forecast but it damages the interpretation: on the
+        twelve branches, $r_{12}=0.986801$ gives $\mathrm{VIF}=38.13$ and standard errors $6.18$
+        times larger, while $R^2$ stays at $0.997951$.
+  \item A prediction interval is always wider than a mean interval; at $x_0=8$ the ratio is
+        $2.198$ and does not shrink with $n$. The sign of a slope can reverse when two groups are
+        pooled: $-0.36$ and $-0.474286$ within groups, $+0.359036$ once pooled.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Evaluate this claim: ``Because $R^2=0.99$, this line can forecast a single day with an
+        error of at most twenty minutes.'' True, false, or not enough evidence? Name the part
+        that is right, the part that is wrong, and the additional number that settles the
+        assessment.
+  \item Prove that with a column of ones in $X$ we have $\sum_i e_i=0$ and
+        $\sum_i x_ie_i=0$, then explain why both fail when the line is forced through the
+        origin.
+  \item Prove $\operatorname{Var}(\hat b)=\sigma^2/S_{xx}$ from
+        $\hat b=\sum_i(x_i-\bar x)y_i/S_{xx}$ without matrix formulas.
+  \item Compute $\hat a$, $\hat b$, $s$, $\operatorname{se}(\hat b)$, and the $95$ percent
+        interval for $(1,2)$, $(2,2.5)$, $(3,4)$, $(4,3.5)$, $(5,5)$, then check with Python. Why
+        is the interval much wider than the interval for the café data?
+  \item Compute the $95\%$ prediction interval for $x_0=2$ and $x_0=9$ on the café data.
+        Why do the widths differ when $n$ is the same, and why does the interval never
+        shrink to zero when $n$ is increased?
+  \item Show that adding explanatory variables cannot raise SSE, then explain why
+        $R^2_{\text{adj}}$ can fall. Compute $R^2_{\text{adj}}$ for the café data if $p$ rises
+        from $2$ to $3$ at the same $R^2$.
+  \item For $S_{11}=50$, $S_{22}=200$, $r_{12}=0.9$, and $\sigma^2=2$, compute the VIF and the
+        standard error of $\hat b_1$ with and without $x_2$ in the model.
+  \item Build a table with two groups with within-group slope $-0.2$ and pooled slope $+0.4$,
+        then check the result with the decomposition formula.
+  \item Rewrite this sentence so that it is honest: ``the best model of the twelve we tried gives
+        $p=0.03$, so the effect is real''.
+\end{enumerate}
+
+Hints for the three hardest items. Item 3: write
+$\hat b-\beta=\sum_i(x_i-\bar x)\varepsilon_i/S_{xx}$, take the variance, use independence and
+$\operatorname{Var}(\varepsilon_i)=\sigma^2$. Item 6: compare the column spaces of the two
+models, then remember the divisor $n-p$ that shrinks. Item 7: $\mathrm{VIF}=1/(1-0.81)=5.263158$,
+so the standard error is $\sqrt{5.263158}$ times larger.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is genuinely proved here: the normal equations as a necessary and sufficient condition for
+the minimum, together with uniqueness when $X$ has full column rank; the properties of the hat
+matrix and $\operatorname{tr}H=p$; unbiasedness and $\operatorname{Var}(\hat\beta)=\sigma^2
+(X^{\top}X)^{-1}$; the Gauss--Markov inequality within the class of linear unbiased estimators;
+the decomposition $\mathrm{SST}=\mathrm{SSR}+\mathrm{SSE}$ when a column of ones is present; the
+non-monotonicity of $R^2$ under added columns; the $t$ distribution for the coefficient ratio
+under normal errors; and the variance of the forecast error.
+
+What is merely popular: that $R^2$ measures the quality of a model, that multiple coefficients
+always represent effects, and that the thresholds $\mathrm{VIF}>10$ or $D_i>1$ are derived
+results. Primary sources: Seber and Lee, \emph{Linear Regression Analysis}, Chapter 3; Greene,
+\emph{Econometric Analysis}, Chapter 3; Wasserman, \emph{All of Statistics}, Chapter 13;
+Simpson (1951) for the reversal of direction in contingency tables; Hosmer, Lemeshow, and
+Sturdivant, \emph{Applied Logistic Regression}, Chapters 1--3.
+
+Limits of validity: every interval is conditional on the model being right, the errors being
+independent, and the variance being constant. On grouped data, time series, or repeated
+observations, independence fails and the reported standard errors are too small. Open question:
+how far post-selection intervals depart from their nominal level, and how influence diagnostics
+are constructed when $n$ is far smaller than $p$.
+\end{untukpeneliti}
+
+\peta{Chapter 21 in Wasserman, \emph{All of Statistics}: Chapter 13 (Linear and Logistic
+Regression: least squares, the $t$ distribution for coefficients, and logistic regression) and
+Chapter 6 (Models, Statistical Inference, and Learning: the interpretation of intervals and
+standard errors). The geometry of least squares as an orthogonal projection is set out in
+Chapter 10 of this book, where the normal equations first appear as a consequence of
+orthogonality, and is used again in Chapter 24 for regularization. Confidence intervals,
+p-values, and the interpretation of levels are taken from Chapter 20 and not repeated here. The
+Gauss--Markov theorem and its conditions are referred to Seber and Lee Chapter 3 and Greene
+Chapter 3, because Wasserman does not prove it. Simpson's paradox is referred to Simpson's
+(1951) paper and used again in Chapter 25 when discussing data separation and evaluation
+leakage, and in Chapter 26 when discussing causal claims that must be proved, not inferred from
+correlation.}

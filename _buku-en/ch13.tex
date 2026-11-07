@@ -1,0 +1,1185 @@
+% Judul penuh meluber 62,75 pt di kepala halaman; hanya mark header yang
+% dipendekkan (sekali pakai, lihat \judulpendek di preamble-en.tex).
+\judulpendek{Riemann Integrals}
+\chapter{Riemann Integrals and the Fundamental Theorem of Calculus}
+
+A program computes the area under $y=x^2$ on $[0,1]$ with 1000 slices of equal
+width. If the height of each rectangle is taken at the left endpoint, the result is $0.3328335$; if at
+the right endpoint, $0.3338335$. The difference is $0.001$, and there is no reason to prefer either one.
+The correct value is $1/3$, which does not appear in either computation. Increasing the slices to a
+million does not help: both answers still bracket the value, they never catch it.
+
+What is needed is not a finer partition, but a way to read two approximations at
+once. If the difference can be made smaller than any positive number,
+then there is one number trapped between them, and that is the integral. This entire
+chapter rests on that simple idea.
+
+Chapter 12 taught us to take change apart into rates: from position to velocity,
+from a function to its derivative. What is still missing is the way home. We know that the velocity at
+second $t$ is $v(t)$, but we do not yet know how much distance was covered in one
+minute. The intuition is clear: distance is the sum of velocity times small slices of time.
+What is not clear is how to add up infinitely many such terms correctly.
+This chapter answers that, and the answer is surprising: the way home is the antiderivative.
+
+\begin{untukanak}
+Imagine we want to know the area of a lake whose shape is irregular. There is no
+formula for such a shape. All we have is transparent graph paper. We
+lay that paper over the drawing of the lake, then count how many squares lie entirely
+inside the water. The result is too small. We count again how many squares are
+touched by water, even slightly. The result is too large. The true area lies
+between those two numbers.
+
+Now cut the squares into ten times smaller ones. The lower number rises, the upper number
+falls, and the two grow closer. If the squares are very small, the two numbers are almost equal,
+and we can state the area of the lake to any accuracy we like.
+
+There is one condition that is easy to overlook. If the lake has very thin coral islands
+scattered everywhere, the squares that touch them can keep the upper estimate far
+from the lower estimate. Mathematicians call that condition integrability. In this chapter we
+shall learn why two bracketing estimates can be trusted, and when they fail.
+\end{untukanak}
+
+\section{Partitions, Upper Sums, and Lower Sums}
+\tingkat{basic}
+
+We want to give meaning to the area under a graph without assuming that the area already
+has a meaning: enclose the region with rectangles from inside and from outside, then
+shrink the difference.
+
+\begin{definisi}[Partitions and upper-lower sums]\index{partition}
+Let $[a,b]$ be a closed interval. A \emph{partition} $\mathcal{P}$ of $[a,b]$
+is a finite set of points
+\[
+a=x_0<x_1<\cdots<x_n=b .
+\]
+The width of the $i$-th slice is $\Delta x_i=x_i-x_{i-1}$, and the \emph{mesh} of that partition
+is the widest slice width, $\|\mathcal{P}\|=\max_i\Delta x_i$.
+
+Let $f$ be bounded on $[a,b]$. On the $i$-th slice write
+\[
+M_i=\sup\{f(x):x_{i-1}\le x\le x_i\},\qquad
+m_i=\inf\{f(x):x_{i-1}\le x\le x_i\}.
+\]
+The \emph{upper sum} and the \emph{lower sum} of the partition $\mathcal{P}$ are
+\begin{equation}
+U(\mathcal{P},f)=\sum_{i=1}^{n}M_i\,\Delta x_i,
+\qquad
+L(\mathcal{P},f)=\sum_{i=1}^{n}m_i\,\Delta x_i .
+\end{equation}
+\end{definisi}
+
+We use supremum and infimum, not the largest and smallest values, because $f$ need not
+attain its extremes on a slice: the function equal to $x$ for $x<1$ and to $0$
+at $x=1$ is bounded on $[0,1]$, but its largest value on the last slice does
+not exist, whereas its supremum does, namely $1$.
+
+The upper sum is always at least equal to the lower sum, because $M_i\ge m_i$ for
+every $i$. For $f(x)=x^2$ on $[0,1]$ with four slices of equal width, the lower
+sum is
+\[
+L=\frac{1}{4}\Bigl(0+\frac{1}{16}+\frac{4}{16}+\frac{9}{16}\Bigr)=\frac{7}{32},
+\]
+and the upper sum is $\frac{15}{32}$. Both bracket the value sought, with a difference of
+$\frac14$ that is still large. If $f$ takes negative values, these sums compute signed
+area, and the minus sign is part of the definition, not an error.
+
+Figure~\ref{fig:rect-halus} shows two values of $n$ at once, with the right endpoint
+as height. At $n=4$ the staircase is coarse and $U_4=0.46875$; at $n=16$ the serration is
+fine and $U_{16}=0.3652343750$. The distance from the staircase to the line $1/3$ shrinks from $0.1354$
+to $0.0319$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.47\linewidth,height=4.6cm,
+  axis lines=left,xmin=0,xmax=1.02,ymin=0,ymax=1.12,
+  xtick={0,0.5,1},ytick={0,0.5,1},
+  tick label style={font=\scriptsize},label style={font=\scriptsize},
+  xlabel={$x$},
+  title={\scriptsize $n=4$: $U_4=0.46875$}]
+\pgfplotsinvokeforeach{1,2,3,4}{
+  \draw[fill=layerteal!18,draw=layerteal!65,line width=0.4pt]
+    (axis cs:{(#1-1)/4},0) rectangle (axis cs:{#1/4},{#1*#1/16});
+}
+\draw[densely dashed,layergrey,line width=0.6pt]
+  (axis cs:0,0.33333) -- (axis cs:1,0.33333);
+\addplot[thick,accent,domain=0:1,samples=80] {x^2};
+\node[font=\scriptsize,text=layergrey,anchor=west] at (axis cs:0.06,0.40) {$1/3$};
+\end{axis}
+\end{tikzpicture}\hfill
+\begin{tikzpicture}
+\begin{axis}[width=0.47\linewidth,height=4.6cm,
+  axis lines=left,xmin=0,xmax=1.02,ymin=0,ymax=1.12,
+  xtick={0,0.5,1},ytick={0,0.5,1},
+  tick label style={font=\scriptsize},label style={font=\scriptsize},
+  xlabel={$x$},
+  title={\scriptsize $n=16$: $U_{16}=0.3652343750$}]
+\pgfplotsinvokeforeach{1,...,16}{
+  \draw[fill=layerteal!18,draw=layerteal!65,line width=0.3pt]
+    (axis cs:{(#1-1)/16},0) rectangle (axis cs:{#1/16},{#1*#1/256});
+}
+\draw[densely dashed,layergrey,line width=0.6pt]
+  (axis cs:0,0.33333) -- (axis cs:1,0.33333);
+\addplot[thick,accent,domain=0:1,samples=80] {x^2};
+\node[font=\scriptsize,text=layergrey,anchor=west] at (axis cs:0.06,0.40) {$1/3$};
+\end{axis}
+\end{tikzpicture}
+\caption{Rectangular approximation of $f(x)=x^{2}$ on $[0,1]$ with right-endpoint heights.
+At $n=4$ the upper sum is $U_4=0.46875$, at $n=16$ the upper sum is $U_{16}=0.3652343750$,
+and both are still above the true value $1/3=0.333\ldots$ (dashed line).
+The difference $U_n-L_n$ is exactly $1/n$, so going from $n=4$ to $n=16$ cuts the distance from the
+staircase to that line down to a quarter of it.}
+\label{fig:rect-halus}
+\end{figure}
+
+
+There are two facts that will be used again and again. The first: refining a partition
+does not make the estimate worse.
+
+\begin{lemma}[Refinement]\index{refinement}
+If $\mathcal{P}^{*}$ is a refinement of $\mathcal{P}$, meaning that
+$\mathcal{P}\subseteq\mathcal{P}^{*}$, then
+\[
+L(\mathcal{P},f)\le L(\mathcal{P}^{*},f)\le U(\mathcal{P}^{*},f)\le U(\mathcal{P},f).
+\]
+\end{lemma}
+
+\begin{proof}
+It suffices to prove this for a refinement that adds one point $c$ inside the slice
+$[x_{i-1},x_i]$, since a general refinement is obtained by repeating that step.
+Let $m'$ and $m''$ be the infima of $f$ on $[x_{i-1},c]$ and on $[c,x_i]$. Both
+intervals are contained in $[x_{i-1},x_i]$, so that $m'\ge m_i$ and $m''\ge m_i$.
+Consequently
+\[
+m'(c-x_{i-1})+m''(x_i-c)\ \ge\ m_i(c-x_{i-1})+m_i(x_i-c)=m_i\,\Delta x_i ,
+\]
+so the lower sum does not decrease. The same argument with suprema gives $M'\le M_i$
+and $M''\le M_i$, so that the upper sum does not increase.
+\end{proof}
+
+The second fact is stronger: two different partitions can still be compared, as long as what
+is compared is a lower sum with an upper sum.
+
+\begin{lemma}
+For any two partitions $\mathcal{P}_1$ and $\mathcal{P}_2$ of $[a,b]$ we have
+\[
+L(\mathcal{P}_1,f)\le U(\mathcal{P}_2,f).
+\]
+\end{lemma}
+
+\begin{proof}
+Take $\mathcal{P}$ the common refinement, that is, the union of the points of the two partitions. By
+the previous lemma, $L(\mathcal{P}_1,f)\le L(\mathcal{P},f)$ and
+$U(\mathcal{P},f)\le U(\mathcal{P}_2,f)$. Since $L(\mathcal{P},f)\le U(\mathcal{P},f)$
+always holds, that chain of inequalities gives the result asked for.
+\end{proof}
+
+That lemma ensures that every lower sum is a lower bound for every upper
+sum. Hence the set of all lower sums is bounded above, and the set of all upper sums
+is bounded below; the following two numbers always exist.
+
+\begin{definisi}[Riemann integrable]\index{Riemann integrable}
+For $f$ bounded on $[a,b]$, the \emph{lower integral} and the \emph{upper integral}
+are defined as
+\[
+\underline{I}(f)=\sup_{\mathcal{P}}L(\mathcal{P},f),
+\qquad
+\overline{I}(f)=\inf_{\mathcal{P}}U(\mathcal{P},f),
+\]
+with the supremum and infimum taken over all partitions of $[a,b]$. Since
+$\underline{I}(f)\le\overline{I}(f)$, the function $f$ is called \emph{Riemann integrable}
+on $[a,b]$ when those two numbers are equal. Their common value is written
+$\int_a^b f$ or $\int_a^b f(x)\,dx$.
+\end{definisi}
+
+Notice what is absent from that definition: there is no sample point and no
+limit over $n$. The measure of success of an approximation is the difference between its two brackets,
+not its closeness to a guess.
+
+\kamus{partition}{partisi}{A way of cutting an interval into several slices, like
+dividing a bar of chocolate with a knife, not measuring exactly how long each slice is.}
+
+\kamus{upper sum}{jumlah atas}{An estimate that is deliberately inflated, like
+weighing goods together with their box.}
+
+\begin{bacakeras}
+Two voices. Call the first \emph{Cutter}, the second \emph{Adder}.
+
+Cutter: I have a strip of ribbon. I cut it into four.
+Adder: I add up those four pieces. The result is too small.
+Cutter: I cut again. So, eight.
+Adder: The result goes up a little. Still too small.
+Cutter: Sixteen.
+Adder: Up again. Closer, not there yet.
+Cutter: A hundred.
+Adder: Very close.
+Cutter: A thousand.
+Adder: Closer still, still not there.
+
+Cutter: When do we get there?
+Adder: Never, if you only add slices. Stop chasing the number,
+start chasing the bracket.
+Cutter: What bracket?
+Adder: Thin slices give a lower bound. Fat slices give an upper
+bound. If those two bounds meet at one point, that point is the answer.
+Cutter: So my slices are never enough?
+Adder: Never. Slices only bring the two bounds close. What answers
+is not the last slice, but the meeting of the two bounds.
+
+Now repeat one line: cut thin, bracket tight, bounds meet.
+\end{bacakeras}
+
+\section{The Integrability Criterion}
+\tingkat{intermediate}
+
+The definition just given speaks of suprema and infima over all partitions, and there are infinitely
+many partitions. The following criterion replaces them with a single inequality that
+can be checked on one partition alone.
+
+\begin{teorema}[Integrability criterion]\index{integrability criterion}
+A bounded function $f$ is Riemann integrable on $[a,b]$ if and only if for
+every $\varepsilon>0$ there is a partition $\mathcal{P}$ with
+\[
+U(\mathcal{P},f)-L(\mathcal{P},f)<\varepsilon .
+\]
+\end{teorema}
+
+\begin{proof}
+For every partition,
+$L(\mathcal{P},f)\le\underline{I}(f)\le\overline{I}(f)\le U(\mathcal{P},f)$; the first inequality
+comes from the definition of supremum, the last from the definition of infimum.
+
+$(\Rightarrow)$ Suppose $f$ is integrable with value $I$, and take
+$\varepsilon>0$. By the definition of supremum, there is $\mathcal{P}_1$ with
+$L(\mathcal{P}_1,f)>I-\varepsilon/2$. By the definition of infimum, there is $\mathcal{P}_2$
+with $U(\mathcal{P}_2,f)<I+\varepsilon/2$. Take $\mathcal{P}$ the common refinement
+of both. The refinement lemma gives
+\[
+U(\mathcal{P},f)-L(\mathcal{P},f)
+<\Bigl(I+\tfrac{\varepsilon}{2}\Bigr)-\Bigl(I-\tfrac{\varepsilon}{2}\Bigr)
+=\varepsilon .
+\]
+
+$(\Leftarrow)$ Suppose that condition is met. For every $\varepsilon>0$ there is
+$\mathcal{P}$ with $U(\mathcal{P},f)-L(\mathcal{P},f)<\varepsilon$, so that
+\[
+0\le\overline{I}(f)-\underline{I}(f)\le U(\mathcal{P},f)-L(\mathcal{P},f)<\varepsilon .
+\]
+The number $\overline{I}(f)-\underline{I}(f)$ is nonnegative and smaller than every
+$\varepsilon>0$, so that number is zero. The two integrals are equal, and $f$ is integrable.
+\end{proof}
+
+The criterion turns a question about infinitely many partitions into a single
+inequality. A direct consequence: if the difference is small on one partition, that difference
+stays small on every refinement of it, since the refinement lemma can only
+narrow it.
+
+Before looking for classes of functions that pass the criterion, we record the properties of the integral
+that will be used throughout. All of them are consequences of the definition of upper and lower sums, not new
+assumptions.
+
+\begin{proposisi}[Basic properties of the integral]\index{integral, basic properties}
+Let $f$ and $g$ be Riemann integrable on $[a,b]$. Then:
+(a) $f+g$ is integrable and $\int_a^b(f+g)=\int_a^b f+\int_a^b g$;
+(b) if $f\le g$ on $[a,b]$ then $\int_a^b f\le\int_a^b g$;
+(c) if $a<c<b$ then $f$ is integrable on $[a,c]$ and on $[c,b]$, and
+$\int_a^b f=\int_a^c f+\int_c^b f$;
+(d) $|f|$ is integrable and $\bigl|\int_a^b f\bigr|\le\int_a^b|f|$;
+(e) for every constant $k$, $\int_a^b k\,dx=k(b-a)$.
+\end{proposisi}
+
+\begin{proof}
+(a) On every slice, $\sup(f+g)\le\sup f+\sup g$ and $\inf(f+g)\ge\inf f+\inf g$.
+Hence $U(\mathcal{P},f+g)\le U(\mathcal{P},f)+U(\mathcal{P},g)$ and
+$L(\mathcal{P},f+g)\ge L(\mathcal{P},f)+L(\mathcal{P},g)$. Take $\varepsilon>0$ and
+choose $\mathcal{P}$ that makes $U-L$ less than $\varepsilon/2$ for $f$ and $g$
+at once. Then
+\[
+U(\mathcal{P},f+g)-L(\mathcal{P},f+g)
+\le\bigl[U(\mathcal{P},f)-L(\mathcal{P},f)\bigr]
++\bigl[U(\mathcal{P},g)-L(\mathcal{P},g)\bigr]<\varepsilon ,
+\]
+so that $f+g$ is integrable. Its value is obtained by bracketing from both sides, since
+$\varepsilon$ is arbitrary.
+
+(b) If $f\le g$, then $M_i(f)\le M_i(g)$ on every slice, so that
+$U(\mathcal{P},f)\le U(\mathcal{P},g)$ for all $\mathcal{P}$. Take the infimum of both
+sides.
+
+(c) If $\mathcal{P}$ contains $c$, the sum splits into the parts $[a,c]$ and
+$[c,b]$, with $L(\mathcal{P},f)=L(\mathcal{P}_1,f)+L(\mathcal{P}_2,f)$ and the same
+for $U$. The supremum gives
+$\underline{I}(f)\le\underline{I}_{[a,c]}(f)+\underline{I}_{[c,b]}(f)$, the infimum
+gives the opposite direction. For a partition without $c$, add $c$ first; the
+refinement lemma preserves the inequality.
+
+(d) Since $-|f|\le f\le|f|$, parts (b) and (a) give
+$-\int|f|\le\int f\le\int|f|$. The integrability of $|f|$ follows from
+$\bigl||f(x)|-|f(y)|\bigr|\le|f(x)-f(y)|$, which gives
+$M_i(|f|)-m_i(|f|)\le M_i(f)-m_i(f)$.
+
+(e) On every slice, $M_i=m_i=k$, so $U=L=k(b-a)$ for all partitions.
+\end{proof}
+
+Part (c) is the reason we may cut an interval at any point; without it the accumulation
+function could not be defined cleanly.
+
+\section{Classes of Integrable Functions}
+\tingkat{intermediate}
+
+The criterion in the previous section is a test. Now we look for classes of functions that
+pass that test without having to find a special partition for each case. The two most
+useful classes are continuous functions and monotone functions.
+
+\begin{akibat}[Continuity guarantees integrability]
+If $f$ is continuous on $[a,b]$, then $f$ is Riemann integrable on $[a,b]$.
+\end{akibat}
+
+\begin{proof}
+Take $\varepsilon>0$. Since $[a,b]$ is compact, $f$ is uniformly continuous there (Chapter 11):
+there is $\delta>0$ such that $|f(x)-f(t)|<\varepsilon/(b-a)$ when $|x-t|<\delta$. Choose
+a partition with mesh less than $\delta$. On every slice, for all $x,t$ in
+that slice we have $|f(x)-f(t)|<\varepsilon/(b-a)$, so that
+$M_i-m_i\le\varepsilon/(b-a)$. Then
+\[
+U(\mathcal{P},f)-L(\mathcal{P},f)
+=\sum_{i=1}^{n}(M_i-m_i)\,\Delta x_i
+\le\frac{\varepsilon}{b-a}\sum_{i=1}^{n}\Delta x_i=\varepsilon .
+\]
+The integrability criterion closes the proof.
+\end{proof}
+
+Note the role of uniform continuity: one $\delta$ must work for all slices
+at once, whereas ordinary continuity only gives a $\delta$ that depends on the
+point. This is where Chapter 11 is used, not as decoration.
+
+The second class does not require continuity: a monotone function may jump, as long as
+its jumps are finite in number.
+
+\begin{teorema}[Monotonicity guarantees integrability]
+If $f$ is monotone on $[a,b]$, then $f$ is Riemann integrable on $[a,b]$.
+\end{teorema}
+
+\begin{proof}
+Suppose $f$ is increasing. Divide $[a,b]$ into $n$ slices of equal width, $\Delta x=(b-a)/n$.
+On the $i$-th slice, the smallest value is at the left endpoint and the largest value at the right
+endpoint, so that $M_i-m_i=f(x_i)-f(x_{i-1})$. Then
+\[
+U(\mathcal{P},f)-L(\mathcal{P},f)
+=\Delta x\sum_{i=1}^{n}\bigl(f(x_i)-f(x_{i-1})\bigr)
+=\frac{(b-a)\bigl(f(b)-f(a)\bigr)}{n},
+\]
+because the sum in the middle telescopes. Choose $n>(b-a)(f(b)-f(a))/\varepsilon$ and the criterion
+is satisfied. If $f$ is decreasing, apply this result to $-f$ and use linearity.
+\end{proof}
+
+That proof uses no $\delta$: all it uses is that the sum of all the jumps does not
+exceed $f(b)-f(a)$, so a monotone function is easy to integrate even though its graph is full of
+corners.
+
+Those two classes can be combined: a function that is continuous except at finitely many points
+is still integrable (Rudin, Theorem 6.10, not repeated here).
+
+Now the other side: bounded functions that fail. The cleanest example is the
+Dirichlet function, equal to $1$ at rational numbers and to $0$ at irrational numbers.
+
+\begin{contoh}[The Dirichlet function is not integrable]\index{Dirichlet function}
+Let $D(x)=1$ if $x$ is rational and $D(x)=0$ if $x$ is irrational, on $[0,1]$.
+Every slice contains both (Chapter 3, density of $\mathbb{Q}$), so that $M_i=1$ and
+$m_i=0$ for every $i$, and
+\[
+U(\mathcal{P},D)=\sum_{i=1}^{n}1\cdot\Delta x_i=1,
+\qquad
+L(\mathcal{P},D)=0
+\]
+for \emph{every} partition. The difference is always $1$, never smaller than
+$\varepsilon=1/2$, so by the criterion $D$ is not integrable even though it is bounded.
+\end{contoh}
+
+That failure is not because $D$ is broken at many points, but because
+its jumps are spread everywhere. The following function shows that the number of
+discontinuity points is not an obstacle.
+
+\begin{teorema}[Thomae's function]\index{Thomae function}
+Define $T$ on $[0,1]$ by $T(x)=1/q$ if $x=p/q$ in lowest
+terms with $q\ge1$, and $T(x)=0$ if $x$ is irrational. Then $T$ is integrable in the
+Riemann sense and $\int_0^1 T=0$.
+\end{teorema}
+
+\begin{proof}
+Take $\varepsilon>0$. The set $S=\{x:T(x)\ge\varepsilon\}$ consists of fractions with
+denominator $q\le1/\varepsilon$; for each $q$ there are only $q+1$ such fractions in
+$[0,1]$, so that $S$ is finite. Cover $S$ with finitely many open intervals
+whose total length is less than $\varepsilon$.
+
+Form a partition that contains all endpoints of those covering intervals. The slices that contain $S$
+have total length less than $\varepsilon$ and there $M_i-m_i\le1$, so
+their contribution is less than $\varepsilon$. The other slices satisfy $M_i\le\varepsilon$ and
+$m_i\ge0$, so their contribution is at most $\varepsilon$. Hence
+$U(\mathcal{P},T)-L(\mathcal{P},T)<2\varepsilon$, and the criterion closes the proof. The value is
+zero because every slice contains an irrational number, so that $L(\mathcal{P},T)=0$.
+\end{proof}
+
+So $T$ is broken at every rational number, which is dense in $[0,1]$, yet $T$ is still
+integrable. What decides is not the number of discontinuity points but the amount of space
+they occupy: Lebesgue's criterion states that a bounded function is Riemann integrable
+if and only if its discontinuity points have measure zero (Rudin, Theorem 11.33(b); Abbott,
+Chapter 7). We quote it without proof because measure demands measure theory.
+
+\begin{tantangan}
+Define $h$ on $[0,1]$ by $h(x)=1$ if $x=p/q$ in lowest terms
+and the denominator $q$ is odd, and $h(x)=0$ for all other $x$, including every irrational
+number. Is $h$ Riemann integrable on $[0,1]$? If so, what is the value of
+the integral? If not, prove it using the integrability criterion, not by
+counting points.
+
+Hint 1: do not count the number of points where $h$ equals one. The number is
+infinite, and the criterion does not ask for that count.
+
+Hint 2: take any slice $[x_{i-1},x_i]$ with $x_{i-1}<x_i$. That slice
+contains fractions with odd denominator, so $M_i=1$, and it contains irrational numbers, so
+$m_i=0$. Thus $U-L=1$ for every partition.
+
+If you get stuck, go back to the section Classes of Integrable Functions, the Dirichlet example.
+\end{tantangan}
+
+\kamus{Riemann integrability}{keterintegralan}{The property of a function whose lower and
+upper estimates can be brought together until their difference vanishes.}
+
+\begin{untukanak}
+Have you ever looked at a car's speedometer and then asked how much distance has been
+covered? Distance is not displayed there, only instantaneous speed. But if we
+record the speed every second, we can add it up: one second at
+ten meters per second means 10 meters, the next second 12 meters, and
+so on. The sum of all those slices is the distance.
+
+The problem is that the speed changes in the middle of a second. A car can speed up and then slow down
+within the same second. If we use the speed at the start of the second, the distance we
+compute is too small. If we use the speed at the end of the second, the result is too
+large. The right value lies between them.
+
+If we record ten times per second, the two estimates grow closer; a hundred times,
+closer still. Mathematicians ask further: if the recording can be as dense as we
+like, do the two estimates head toward one and the same number? The answer is not always yes,
+and in this chapter we shall learn when it is yes and why.
+\end{untukanak}
+
+\section{The Integral as an Accumulation Function}
+\tingkat{intermediate}
+
+Up to here the integral is only a number attached to an interval. We can
+view it as a function by letting the upper endpoint move: the integral becomes
+a report on how much has accumulated up to that point.
+
+\begin{definisi}[Accumulation function]\index{accumulation function}
+Let $f$ be integrable on $[a,b]$. For $x\in[a,b]$ define
+\[
+F(x)=\int_a^x f(t)\,dt .
+\]
+For $x<a$ we use the convention $\int_a^x f=-\int_x^a f$, and for $x=a$ the value is
+zero. The function $F$ is called the \emph{accumulation function} of $f$ on $[a,b]$.
+\end{definisi}
+
+With that convention the additive property holds for any ordering of points, so that
+\begin{equation}
+F(y)-F(x)=\int_x^{y} f(t)\,dt
+\end{equation}
+for all $x,y\in[a,b]$. This is the form used in all the proofs that follow:
+the increase of savings between two times is the integral of the income rate in between.
+
+The accumulation function is always better than the function it comes from: it is continuous even when $f$
+is not, and differentiable at every point where $f$ is continuous.
+
+\begin{proposisi}[Accumulation is always continuous]
+If $f$ is bounded on $[a,b]$ with $|f|\le M$ and integrable, then the $F$ that
+is defined above satisfies
+\[
+|F(y)-F(x)|\le M\,|y-x|
+\]
+for all $x,y\in[a,b]$. In particular $F$ is continuous on $[a,b]$.
+\end{proposisi}
+
+\begin{proof}
+For $x<y$, monotonicity and part (d) of the basic properties proposition give
+\[
+|F(y)-F(x)|=\Bigl|\int_x^{y}f\Bigr|\le\int_x^{y}|f|\le M(y-x).
+\]
+For $y<x$ the same result with the opposite sign. Hence $F$ satisfies a
+Lipschitz condition with constant $M$, and every Lipschitz function is continuous.
+\end{proof}
+
+Now the first direction of the derivative-integral relationship. In everyday words: the rate of
+growth of savings at a given moment equals the income rate at that moment.
+
+\begin{teorema}[Fundamental theorem of calculus, first part]\index{fundamental theorem of calculus}
+Let $f$ be integrable on $[a,b]$ and continuous at the point $x_0\in(a,b)$. Then the
+accumulation function $F$ is differentiable at $x_0$ and
+\[
+F'(x_0)=f(x_0).
+\]
+\end{teorema}
+
+\begin{proof}
+Take $h\ne0$ with $x_0+h\in[a,b]$. From the increment form,
+\[
+\frac{F(x_0+h)-F(x_0)}{h}-f(x_0)
+=\frac{1}{h}\int_{x_0}^{x_0+h}\bigl(f(t)-f(x_0)\bigr)\,dt ,
+\]
+because the integral of the constant function $f(x_0)$ over an interval of length $|h|$ equals
+$f(x_0)h$.
+
+Take $\varepsilon>0$. Since $f$ is continuous at $x_0$, there is $\delta>0$ such that
+$|t-x_0|<\delta$ implies $|f(t)-f(x_0)|<\varepsilon$. For $0<|h|<\delta$ the whole
+interval of integration lies inside $(x_0-\delta,x_0+\delta)$, so that, by monotonicity
+and part (d) of the basic properties proposition,
+\[
+\left|\frac{1}{h}\int_{x_0}^{x_0+h}\bigl(f(t)-f(x_0)\bigr)dt\right|
+\le\frac{1}{|h|}\left|\int_{x_0}^{x_0+h}\bigl|f(t)-f(x_0)\bigr|\,dt\right|
+\le\frac{1}{|h|}\,\varepsilon\,|h|=\varepsilon .
+\]
+Since $\varepsilon$ is arbitrary, the difference quotient tends to $f(x_0)$.
+\end{proof}
+
+That theorem demands continuity at only one point. Where $f$ jumps, the derivative of
+$F$ may fail to exist, and that is not a weakness of the proof: for $f(t)=\operatorname{sgn} t$
+on $[-1,1]$ we have $F(x)=\int_0^x\operatorname{sgn} t\,dt=|x|$, which is not
+differentiable at $0$, exactly where the sign of $f$ changes.
+
+One important consequence: every continuous function has an antiderivative, and its antiderivative can be
+written as an integral. Chapter 12 derived the differentiation rules but did not answer whether
+every continuous function is the derivative of something. Now that question is answered,
+and the answer is constructive.
+
+\begin{akibat}[An antiderivative always exists]
+If $f$ is continuous on $[a,b]$, then $F(x)=\int_a^x f$ is differentiable on $[a,b]$
+with $F'=f$. Hence $F$ is an antiderivative of $f$ on $[a,b]$.
+\end{akibat}
+
+\begin{proof}
+The continuity of $f$ gives integrability (the previous corollary) and continuity at every
+point, so that the first part of the theorem applies at every $x_0\in(a,b)$. At the endpoints
+one-sided derivatives are used.
+\end{proof}
+
+The chain rule gives one further flexibility: if the upper limit depends on $x$,
+\[
+\frac{d}{dx}\int_a^{g(x)}f(t)\,dt=f\bigl(g(x)\bigr)\,g'(x),
+\]
+provided $g$ is differentiable. For example,
+$\frac{d}{dx}\int_0^{x^2}e^{-t^2}dt=2x\,e^{-x^4}$.
+
+The two directions are easy to confuse, so it is worth drawing them once.
+Figure~\ref{fig:tdk-dua-arah} places both in one diagram: the upper arrow
+accumulates thin slices, the lower arrow differentiates. What the theorem guarantees is that
+differentiating the result of accumulating returns the original function, not a tidy algebraic inverse,
+since an antiderivative is fixed only up to a constant.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[>=Stealth,every node/.style={font=\footnotesize},
+  kotak/.style={draw,rounded corners=3pt,align=center,inner sep=5pt,
+    minimum height=10mm,text width=3.3cm}]
+\node[kotak,fill=layerindigo!8,draw=layerindigo] (f) at (0,0) {function $f$};
+\node[kotak,fill=layerbrown!8,draw=layerbrown] (F) at (7.6,0)
+  {accumulation function $F$};
+\draw[->,line width=0.9pt,draw=layerindigo] ([yshift=2mm]f.north) to[bend left=24]
+  node[above,text=layerindigo,align=center]
+  {definite integral: accumulate thin slices} ([yshift=2mm]F.north);
+\draw[->,line width=0.9pt,draw=layerbrown] ([yshift=-2mm]F.south) to[bend left=24]
+  node[below,text=layerbrown,align=center]
+  {derivative: $F'=f$, this is part 1} ([yshift=-2mm]f.south);
+\node[draw=layergrey,dashed,rounded corners=3pt,align=center,inner sep=4pt]
+  at (3.8,-2.7)
+  {part 2 closes the loop: $\int_a^b F'(x)\,dx=F(b)-F(a)$};
+\end{tikzpicture}
+\caption{The two directions of the fundamental theorem of calculus as back-and-forth arrows. Upper arrow:
+accumulating thin slices produces $F(x)=\int_a^x f$. Lower arrow: differentiating $F$
+returns $f$, and that is the first part. The dashed box below is the second
+part, which uses an antiderivative to compute integrals. For $f(x)=x^2$ on
+$[0,1]$, $F(x)=x^3/3$, and the second part gives $F(1)-F(0)=1/3$, the same number as
+the bracketing in Figure~\ref{fig:rect-halus}.}
+\label{fig:tdk-dua-arah}
+\end{figure}
+
+\section{The Fundamental Theorem of Calculus, Second Part}
+\tingkat{advanced}
+
+The first part runs from the integral to the derivative. The second part runs the other way:
+if we already hold an antiderivative, the integral can be computed with one subtraction.
+In everyday words: total change equals the final value minus the initial value.
+
+\begin{teorema}[Fundamental theorem of calculus, second part]
+Let $F$ be continuous on $[a,b]$, differentiable on $(a,b)$, and let $F'$ be
+Riemann integrable on $[a,b]$. Then
+\[
+\int_a^b F'(x)\,dx=F(b)-F(a).
+\]
+\end{teorema}
+
+\begin{proof}
+Take a partition $\mathcal{P}=\{x_0,\dots,x_n\}$ of $[a,b]$. On every subinterval, $F$ is
+continuous on $[x_{i-1},x_i]$ and differentiable inside it, so the mean value
+theorem (Chapter 12) gives $t_i\in(x_{i-1},x_i)$ with
+\[
+F(x_i)-F(x_{i-1})=F'(t_i)\,\Delta x_i .
+\]
+Since $m_i\le F'(t_i)\le M_i$, summing over $i$ gives
+\[
+L(\mathcal{P},F')\le\sum_{i=1}^{n}\bigl(F(x_i)-F(x_{i-1})\bigr)\le U(\mathcal{P},F').
+\]
+The sum in the middle telescopes and equals $F(b)-F(a)$, so that number is trapped
+between the lower sum and the upper sum of every partition. Since $F'$ is integrable, both
+brackets head toward the same value, namely $\int_a^b F'$.
+\end{proof}
+
+\begin{resep}
+\begin{enumerate}
+\item Find $F$ with $F'=f$, then check by differentiating $F$. If the derivative does not
+      return to $f$, the candidate is wrong and the following steps are wasted.
+\item Write $F$ at the upper limit, write $F$ at the lower limit, then subtract:
+      $F(b)-F(a)$. Do not insert $+C$; the constant cancels.
+\item Fix the sign if the interval is reversed: $\int_b^a f=-\int_a^b f$, and
+      $\int_a^a f=0$.
+\item Test with one coarse slice, a trapezoid or \texttt{quad}. If the result is far off,
+      the error is in step 1 or 2, not in step 3.
+\end{enumerate}
+Warning about order: checking the antiderivative must happen before subtracting. Two values of an
+arbitrary function still give a tidy and plausible difference, so that a mistake in
+step 1 is not visible from the shape of the answer.
+\end{resep}
+
+Likewise the two parts do not replace each other: the first part differentiates the
+accumulation function without requiring an antiderivative, whereas the second part requires an
+antiderivative and integrability of its derivative.
+
+The second part explains why the result is called net change, not area. For
+$F(x)=\frac{x^4}{4}-\frac{x^2}{2}$ on $[-1,1]$, $F'(x)=x^3-x$, so that
+\[
+\int_{-1}^{1}(x^3-x)\,dx=F(1)-F(-1)=\Bigl(\frac14-\frac12\Bigr)-\Bigl(\frac14-\frac12\Bigr)=0 .
+\]
+The region above the axis has area $1/4$, the region below the axis also $1/4$, so the total area is
+$1/2$ whereas the integral is zero because the signs are opposite.
+Figure~\ref{fig:luas-bertanda} shows both.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.74\linewidth,height=5.4cm,
+  axis lines=middle,xmin=-1.3,xmax=1.3,ymin=-0.6,ymax=0.6,
+  xtick={-1,0,1},ytick=\empty,
+  tick label style={font=\scriptsize},
+  xlabel={$x$},ylabel={$y=x^3-x$},
+  xlabel style={font=\scriptsize},ylabel style={font=\scriptsize,rotate=-90}]
+\addplot[fill=layerjade!22,draw=layerjade!70,domain=-1:0,samples=60]
+  {x^3-x} \closedcycle;
+\addplot[fill=layerplum!22,draw=layerplum!70,domain=0:1,samples=60]
+  {x^3-x} \closedcycle;
+\addplot[thick,ink,domain=-1.2:1.2,samples=120] {x^3-x};
+\node[font=\scriptsize,text=layerjade!55!black] at (axis cs:-0.52,0.36)
+  {$+\frac14$};
+\node[font=\scriptsize,text=layerplum!55!black] at (axis cs:0.52,-0.36)
+  {$-\frac14$};
+\end{axis}
+\end{tikzpicture}
+\caption{Signed area for $F'(x)=x^3-x$ on $[-1,1]$. The region above the $x$-axis
+contributes $+1/4$, the region below the axis contributes $-1/4$, so that
+$\int_{-1}^{1}(x^3-x)\,dx=F(1)-F(-1)=0$. The geometric area is still $1/2$; what is zero is
+the signed sum, and that is what the second part of the theorem computes.}
+\label{fig:luas-bertanda}
+\end{figure}
+
+The integrability hypothesis in the second part is not excessive. There are
+differentiable functions whose derivative is bounded but not Riemann integrable; the classical
+example was found by Volterra in the nineteenth century, and we do not
+prove it here. The second part of the theorem is not an unconditional statement.
+
+\section{Substitution and Integration by Parts}
+\tingkat{advanced}
+
+The two most frequently used rules for computing integrals are not new axioms: both are
+differentiation rules read backwards, and their proofs use only the fundamental theorem of calculus.
+The first one reverses the chain rule.
+
+\begin{proposisi}[Substitution]\index{substitution}
+Let $\varphi$ be differentiable with $\varphi'$ continuous on $[a,b]$, and let $f$ be
+continuous on an interval that contains $\varphi([a,b])$. Then
+\[
+\int_a^b f\bigl(\varphi(t)\bigr)\,\varphi'(t)\,dt
+=\int_{\varphi(a)}^{\varphi(b)}f(u)\,du .
+\]
+\end{proposisi}
+
+\begin{proof}
+Since $f$ is continuous, it has an antiderivative $G(u)=\int_c^u f$, with $c$ inside the
+range of $\varphi$; by the first part of the theorem, $G'=f$. The chain rule (Chapter 12)
+gives
+\[
+\frac{d}{dt}G\bigl(\varphi(t)\bigr)=G'\bigl(\varphi(t)\bigr)\varphi'(t)
+=f\bigl(\varphi(t)\bigr)\varphi'(t).
+\]
+The right-hand side is continuous, hence integrable. The second part of the theorem applied to the function
+$G\circ\varphi$ gives
+\[
+\int_a^b f\bigl(\varphi(t)\bigr)\varphi'(t)\,dt
+=G\bigl(\varphi(b)\bigr)-G\bigl(\varphi(a)\bigr)
+=\int_{\varphi(a)}^{\varphi(b)}f(u)\,du .
+\]
+\end{proof}
+
+The second rule reverses the product rule.
+
+\begin{proposisi}[Integration by parts]\index{integration by parts}
+Let $F$ and $G$ be differentiable on $[a,b]$ with $F'$ and $G'$ continuous. Then
+\[
+\int_a^b F(x)\,G'(x)\,dx=F(b)G(b)-F(a)G(a)-\int_a^b F'(x)\,G(x)\,dx .
+\]
+\end{proposisi}
+
+\begin{proof}
+Let $H=FG$. The product rule gives $H'=F'G+FG'$, and the right-hand side is continuous
+so that $H'$ is integrable. The second part of the theorem applied to $H$ gives
+\[
+F(b)G(b)-F(a)G(a)=\int_a^b H'=\int_a^b F'G+\int_a^b FG' .
+\]
+Move the first term to the left-hand side.
+\end{proof}
+
+\kamus{antiderivative}{antiturunan}{A function whose derivative is the function we are
+integrating, like the way home on a road: it is useful only when the way out is already
+known.}
+
+As a numerical check, take $\int_0^1 x\,e^{x^2}dx$. The substitution $u=x^2$,
+$du=2x\,dx$ gives
+\[
+\int_0^1 x\,e^{x^2}dx=\frac12\int_0^1 e^{u}du=\frac{e-1}{2}=0.8591409142295225 .
+\]
+\texttt{scipy.integrate.quad} gives $0.8591409142295227$, a difference of $2\times10^{-16}$
+from machine rounding. For the second rule, $F(x)=x$ and $G'(x)=e^x$ give
+$\int_0^1 xe^xdx=e-(e-1)=1$, and \texttt{quad} returns $1.0$ with estimated
+error $1.1\times10^{-14}$.
+
+\section{The Mean Value Theorem for Integrals}
+\tingkat{intermediate}
+
+An average is usually computed by adding and then dividing by the number of data. For a function
+that changes continuously, the sum is replaced by an integral and the divisor by the length of the interval: the average
+is the height of the rectangle whose area equals the area under the curve.
+
+\begin{definisi}[Average value]
+For $f$ integrable on $[a,b]$, the \emph{average value} of $f$ on that interval
+is
+\[
+\bar{f}=\frac{1}{b-a}\int_a^b f(x)\,dx .
+\]
+\end{definisi}
+
+\begin{teorema}[Mean value for integrals]\index{mean value of an integral}
+If $f$ is continuous on $[a,b]$, then there is $c\in[a,b]$ with
+\[
+f(c)=\frac{1}{b-a}\int_a^b f(x)\,dx .
+\]
+\end{teorema}
+
+\begin{proof}
+Since $f$ is continuous on a closed bounded interval, it attains its smallest value $m$ and
+its largest value $M$ there (Chapter 11). Monotonicity gives
+\[
+m(b-a)\le\int_a^b f\le M(b-a),
+\]
+so that $\bar{f}\in[m,M]$. By the intermediate value theorem (Chapter 11), the continuous function $f$
+takes every value between $m$ and $M$, so there is $c\in[a,b]$ with
+$f(c)=\bar{f}$.
+\end{proof}
+
+As a number, for $f(x)=x^2$ on $[0,1]$ the average is $1/3$, and the point that the
+theorem reaches is $c=1/\sqrt3=0.5773502691896258$, since
+$c^2=0.3333333333333334$. That point is not the midpoint of the interval: the theorem guarantees
+existence, not location.
+
+\section{Worked Examples}
+\tingkat{intermediate}
+
+Now we work through three things: the upper and lower sums of $f(x)=x^2$ on $[0,1]$,
+a comparison of five quadrature rules, and one integral without an elementary antiderivative.
+Fractions are computed with \texttt{fractions.Fraction}, without rounding.
+
+Start from $n$ slices of equal width with $x_i=i/n$ and $\Delta x=1/n$, so that
+\[
+U_n=\sum_{i=1}^{n}\Bigl(\frac{i}{n}\Bigr)^2\frac1n=\frac{1}{n^3}\sum_{i=1}^{n}i^2
+=\frac{(n+1)(2n+1)}{6n^2}=\frac13+\frac{1}{2n}+\frac{1}{6n^2},
+\]
+using the sum-of-squares formula from Chapter 1. In the same way
+$L_n=\frac13-\frac{1}{2n}+\frac{1}{6n^2}$, so that
+\begin{equation}
+U_n-L_n=\frac1n .
+\end{equation}
+That result is not an approximation. For every $n$ the difference is exactly $1/n$; since $1/n$ can
+be made smaller than any $\varepsilon$ by taking $n>1/\varepsilon$, the integrability
+criterion is satisfied. Hence the following table is at the same time a proof that
+$\int_0^1x^2dx=1/3$: the two sums bracket $1/3$, and their distance tends to zero.
+
+\begin{center}\small
+\begin{tabular}{rrrr}
+\hline
+$n$ & $U_n$ & $L_n$ & $U_n-L_n$ \\
+\hline
+1 & $1.0000000000$ & $0.0000000000$ & $1$ \\
+4 & $0.4687500000$ & $0.2187500000$ & $1/4$ \\
+16 & $0.3652343750$ & $0.3027343750$ & $1/16$ \\
+64 & $0.3411865234$ & $0.3255615234$ & $1/64$ \\
+256 & $0.3352890015$ & $0.3313827515$ & $1/256$ \\
+1024 & $0.3338217735$ & $0.3328452110$ & $1/1024$ \\
+\hline
+\end{tabular}
+\end{center}
+
+At $n=1024$ the difference is $9.77\times10^{-4}$ and the distance from $U_n$ to $1/3$ is half of that.
+Each time $n$ is doubled the difference is exactly halved, and that is why upper and lower
+sums are not an efficient way to reach high accuracy.
+
+\begin{tangan}
+Materials: one sheet of graph paper, scissors, a ruler, tape, a pencil.
+
+Steps. (1) On the graph paper draw a curve that rises faster and faster: one square from the
+left edge has height one square, two squares have height four squares, three squares have height
+nine squares. (2) Cut the region under the curve into vertical strips one square wide.
+(3) Lay those strips side by side on the table, from shortest to longest, with level
+bases. (4) Look at their upper edge: what appears is a jagged staircase, not a smooth line.
+(5) Repeat with strips half a square wide, then a quarter square wide.
+
+What we should see: the serration on the upper edge grows finer as the strips grow thinner,
+whereas the total area does not change, since cutting and rearranging neither adds nor removes
+paper. Hence the area of that curved region equals the area of the jagged figure, and that jagged
+figure increasingly resembles one rectangle. The height of that rectangle is what we shall later call
+the average value of the function on that interval.
+\end{tangan}
+
+Now compare five quadrature rules on the same integral: left endpoint, right
+endpoint, midpoint $x_i=(i-\frac12)/n$, trapezoid, and Simpson with weights
+$1,4,2,4,\dots,4,1$ divided by $3n$. The error is computed against the exact value $1/3$.
+
+\begin{center}\small
+\begin{tabular}{rrrrrr}
+\hline
+$n$ & left & right & midpoint & trapezoid & Simpson \\
+\hline
+10 & $4.833\times10^{-2}$ & $5.167\times10^{-2}$ & $8.333\times10^{-4}$
+   & $1.667\times10^{-3}$ & $1.1\times10^{-16}$ \\
+100 & $4.983\times10^{-3}$ & $5.017\times10^{-3}$ & $8.333\times10^{-6}$
+   & $1.667\times10^{-5}$ & $0$ \\
+1000 & $4.998\times10^{-4}$ & $5.002\times10^{-4}$ & $8.333\times10^{-8}$
+   & $1.667\times10^{-7}$ & $0$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Three patterns stand out. The error of the left and right rules drops by a factor of ten each time $n$ grows
+by a factor of ten: order $\mathcal{O}(1/n)$, about $1/(2n)$ because $f$ is increasing. The error of the midpoint
+and trapezoid rules drops by a factor of a hundred, order $\mathcal{O}(1/n^2)$, with values
+$1/(12n^2)$ and $1/(6n^2)$; the two have opposite signs and the trapezoid is twice as large,
+so that $(2M+T)/3$ cancels the term. Simpson is exact to machine rounding, since the
+rule is exact for polynomials of degree at most three.
+
+The third integral has no elementary antiderivative:
+\[
+\int_0^1 e^{-x^2}dx .
+\]
+That absence is a consequence of Liouville's theorem, which we quote without proof. The reference
+is the error function $\frac{\sqrt{\pi}}{2}\operatorname{erf}(1)=0.746824132812427$; \texttt{quad} gives
+the same number with estimated error $8.3\times10^{-15}$. Simpson's rule gives an error of
+$3.563\times10^{-4}$ at $n=2$, $1.988\times10^{-6}$ at $n=8$, and
+$7.795\times10^{-9}$ at $n=32$.
+
+\kertas{For $f(x)=x^2$ on $[0,1]$, derive the formula
+$U_n-L_n=1/n$ yourself from the sum-of-squares formula, then compute $U_{10}$ and $L_{10}$ as
+fractions. Check that their average $(U_{10}+L_{10})/2$ equals
+$1/3+1/(6\cdot100)$, not $1/3$. Explain why that average is still not the best
+estimate, even though its error is far smaller than the error of $U_{10}$ itself.}
+
+\section{Improper Integrals and Their Relation to Series}
+\tingkat{advanced}
+
+The interval of integration has so far always been bounded and the function bounded. Many real
+computations are not like that: we want the area of a region that extends without end, or the integral
+of a function that blows up at the endpoint of the interval. The method is not to widen the Riemann
+definition, but to write that integral as a limit of ordinary integrals.
+
+\begin{definisi}[Improper integral]\index{improper integral}
+If $f$ is Riemann integrable on $[a,R]$ for every $R>a$, define
+\[
+\int_a^\infty f=\lim_{R\to\infty}\int_a^R f ,
+\]
+provided that limit exists and is finite. If $f$ is integrable on $[c,b]$ for every
+$c\in(a,b]$ but is unbounded near $a$, define
+\[
+\int_a^b f=\lim_{c\to a^{+}}\int_c^b f .
+\]
+In both cases, the integral is called \emph{convergent} if the limit exists, and
+\emph{divergent} if not.
+\end{definisi}
+
+The most important example is the family $f(x)=x^{-p}$ on $[1,\infty)$. For $p\ne1$,
+\[
+\int_1^R x^{-p}dx=\frac{R^{1-p}-1}{1-p},
+\]
+so that the limit exists only when $p>1$, with value $1/(p-1)$; for $p=1$ the result is
+$\ln R$, which tends to infinity. Hence $\int_1^\infty x^{-2}dx=1$, and the partial
+integrals head toward that value at rate $1/R$: $0.9$, $0.99$, $0.999$ for
+$R=10,100,1000$.
+
+The link with the series of Chapter 5 is no coincidence: for $f$ positive and decreasing, the areas of
+rectangles of height $f(n)$ bracket the area under the curve, so that
+\[
+\sum_{n=N+1}^{\infty}f(n)\ \le\ \int_N^\infty f(x)\,dx\ \le\ \sum_{n=N}^{\infty}f(n) .
+\]
+Hence the integral test holds: $\sum f(n)$ converges if and only if
+$\int_1^\infty f$ converges. For $f(x)=1/x^2$ both converge, with
+$\sum_{n=1}^{\infty}1/n^2=\pi^2/6=1.6449340668482264$. The left inequality also gives
+an error bound, and the larger $N$ is the closer the error comes to that bound:
+
+\begin{center}\small
+\begin{tabular}{rrrr}
+\hline
+$N$ & error of the partial sum & $1/N$ \\
+\hline
+10 & $9.516634\times10^{-2}$ & $0.1$ \\
+100 & $9.950167\times10^{-3}$ & $0.01$ \\
+1000 & $9.995002\times10^{-4}$ & $0.001$ \\
+\hline
+\end{tabular}
+\end{center}
+
+It must be stressed: an improper integral is not a Riemann integral, but its limit. Hence
+substitution and integration by parts apply only when the limit exists, and for functions
+that change sign their convergence need not be absolute.
+
+\section{Computational Lab}
+\tingkat{advanced}
+
+The following code is run with Python 3, \texttt{scipy} 1.18.0, and the module
+\texttt{fractions} for exact arithmetic. All partitions are of equal width on $[0,1]$.
+
+\begin{lab}
+\begin{verbatim}
+import math
+from fractions import Fraction as F
+from scipy.integrate import quad
+
+def both_sums(n):
+    U = sum(F(i * i, n ** 3) for i in range(1, n + 1))
+    L = sum(F(i * i, n ** 3) for i in range(n))
+    return U, L
+
+print("n        U_n          L_n          U_n - L_n")
+for n in (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024):
+    U, L = both_sums(n)
+    print(f"{n:5d}  {float(U):.10f}  {float(L):.10f}  {float(U - L):.2e}")
+
+def rules(f, n):
+    h = 1 / n
+    left = sum(f(i * h) for i in range(n)) * h
+    right = sum(f(i * h) for i in range(1, n + 1)) * h
+    mid = sum(f((i + 0.5) * h) for i in range(n)) * h
+    trap = (f(0) / 2 + sum(f(i * h) for i in range(1, n)) + f(1) / 2) * h
+    simp = (f(0) + f(1) + sum((4 if i % 2 else 2) * f(i * h)
+                              for i in range(1, n))) * h / 3
+    return left, right, mid, trap, simp
+
+f = lambda x: x * x
+print()
+print("error |approximation - 1/3|, integral of x^2 on [0,1]")
+print("   n      left     right       mid  trapezoid    Simpson")
+for n in (10, 100, 1000):
+    err = [f"{abs(v - 1 / 3):.3e}" for v in rules(f, n)]
+    print(f"{n:4d}  " + "  ".join(err))
+
+g = lambda x: math.exp(-x * x)
+v, e = quad(g, 0, 1)
+ref = math.sqrt(math.pi) / 2 * math.erf(1)
+print()
+print(f"quad exp(-x^2) = {v:.15f}   estimated error {e:.1e}")
+print(f"erf reference  = {ref:.15f}   difference {v - ref:+.1e}")
+print(f"quad x^2       = {quad(f, 0, 1)[0]:.17f}")
+print()
+print("error |Simpson - reference| for exp(-x^2)")
+for n in (2, 4, 8, 16, 32):
+    print(f"  n={n:3d}  {abs(rules(g, n)[4] - ref):.3e}")
+print()
+print("error |trapezoid - reference| for exp(-x^2)")
+for n in (10, 100, 1000):
+    print(f"  n={n:4d}  {abs(rules(g, n)[3] - ref):.3e}")
+\end{verbatim}
+\end{lab}
+
+The output obtained, as it stands:
+
+\begin{verbatim}
+n        U_n          L_n          U_n - L_n
+    1  1.0000000000  0.0000000000  1.00e+00
+    2  0.6250000000  0.1250000000  5.00e-01
+    4  0.4687500000  0.2187500000  2.50e-01
+    8  0.3984375000  0.2734375000  1.25e-01
+   16  0.3652343750  0.3027343750  6.25e-02
+   32  0.3491210938  0.3178710938  3.12e-02
+   64  0.3411865234  0.3255615234  1.56e-02
+  128  0.3372497559  0.3294372559  7.81e-03
+  256  0.3352890015  0.3313827515  3.91e-03
+  512  0.3343105316  0.3323574066  1.95e-03
+ 1024  0.3338217735  0.3328452110  9.77e-04
+
+error |approximation - 1/3|, integral of x^2 on [0,1]
+   n      left     right       mid  trapezoid    Simpson
+  10  4.833e-02  5.167e-02  8.333e-04  1.667e-03  1.110e-16
+ 100  4.983e-03  5.017e-03  8.333e-06  1.667e-05  0.000e+00
+1000  4.998e-04  5.002e-04  8.333e-08  1.667e-07  0.000e+00
+
+quad exp(-x^2) = 0.746824132812427   estimated error 8.3e-15
+erf reference  = 0.746824132812427   difference +1.1e-16
+quad x^2       = 0.33333333333333337
+
+error |Simpson - reference| for exp(-x^2)
+  n=  2  3.563e-04
+  n=  4  3.125e-05
+  n=  8  1.988e-06
+  n= 16  1.246e-07
+  n= 32  7.795e-09
+
+error |trapezoid - reference| for exp(-x^2)
+  n=  10  6.133e-04
+  n= 100  6.131e-06
+  n=1000  6.131e-08
+\end{verbatim}
+
+Four things stand out. The difference halves each time $n$ doubles, consistent with $1/1024$
+in the last row. The left and right errors drop by a factor of ten, midpoint and
+trapezoid by a factor of a hundred. The Simpson column contains $1.110\times10^{-16}$ and then zero, a residue
+of rounding, and Simpson's error for $e^{-x^2}$ drops by about a factor of sixteen
+each time $n$ is doubled.
+
+That code does not prove a single theorem. It checks that the formulas of this chapter give
+the numbers stated. The proof of integrability of $x^2$ is in the computation $U_n-L_n=1/n$
+in the previous section: the output of a program is data, not an argument.
+
+\begin{untukdosen}
+The teaching order I suggest: start from the two different answers in the opening, then
+the definition of a partition and compute $U$, $L$ for $x^2$ with four slices on the board. After
+that the refinement lemma, the criterion, and only then the classes of functions. Do not postpone the fundamental
+theorem of calculus: students need to see the hard work of the criterion bear fruit as a computational tool.
+
+Two misconceptions that appear often. First, the integral is taken to be the same as the antiderivative,
+so that $F'=f$ is taken to hold by definition, whereas it is a theorem. Second, a function
+with many discontinuity points is taken to be certainly not integrable, because the Dirichlet
+example is too often used as the only example. Thomae's function removes
+that assumption in a single page.
+
+Blackboard activity: ask students to guess $\int_0^1x^2dx$ only from $U_n$ and
+$L_n$ for $n=1,2,4$, then to say how many $n$ are needed for the error to be below
+$10^{-3}$ without computing the integral. The answer $n>1000$ comes out of $1/n$, and that moment
+explains why an antiderivative is more valuable than quadrature. Sign of readiness
+to move on: students can explain the difference in direction of the two parts of the fundamental theorem of calculus,
+and can name one integrable function that is not continuous.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+\item The Riemann integral is the only number trapped between all
+      lower sums and all upper sums; when the two brackets meet, that value is called
+      the integral.
+\item The integrability criterion replaces the examination of infinitely many partitions
+      with one inequality $U(\mathcal{P},f)-L(\mathcal{P},f)<\varepsilon$.
+\item Continuous functions and monotone functions are integrable; the Dirichlet function is not, because
+      every slice of it contains rational and irrational numbers, whereas Thomae's function
+      is integrable even though it is broken at every rational number.
+\item The accumulation function $F(x)=\int_a^xf$ is always continuous and its derivative is $f$ at every
+      point where $f$ is continuous, so every continuous function has an antiderivative.
+\item The second part states $\int_a^bF'=F(b)-F(a)$; its proof is the mean value theorem
+      plus telescoping, with the condition that $F'$ be integrable.
+\item Substitution and integration by parts are the chain rule and the product rule
+      read backwards. An improper integral is a limit of Riemann integrals, and the integral
+      test links it to the series of Chapter 5.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Compute $U_n$ and $L_n$ for $f(x)=x$ on $[0,1]$ with a uniform partition,
+        express both as fractions in $n$, then determine $U_n-L_n$. Conclude
+        that $f$ is integrable and compute the integral.
+  \item Prove that $f$ integrable on $[a,b]$ implies $|f|$ integrable
+        and $\bigl|\int_a^bf\bigr|\le\int_a^b|f|$. Show that the converse is false with
+        one example.
+  \item Assess this claim: ``Every bounded function on $[a,b]$ is integrable, since its
+        upper sum and lower sum are always finite.'' True, false, or not yet
+        enough evidence? Name which part is supported by proof and which part is
+        not.
+  \item Prove that an increasing function on $[a,b]$ is integrable by showing
+        $U(\mathcal{P},f)-L(\mathcal{P},f)\le(b-a)\bigl(f(b)-f(a)\bigr)/n$ for
+        a uniform partition into $n$ parts. Explain why that bound does not hold for
+        a function that is not monotone.
+  \item Compute $\int_0^1(3x^2-2x+1)\,dx$ with the fundamental theorem of calculus, then check
+        the result using Simpson's rule with $n=100$ and the function
+        \texttt{scipy.integrate.quad}. Report all three numbers and their differences.
+  \item Compute $\int_1^{10}x^{-2}dx$ and $\int_1^{\infty}x^{-2}dx$. Report the difference
+        between them, then explain why that difference equals $1/10$ without
+        recomputing.
+  \item Prove that if $f$ is continuous, $f\ge0$ on $[a,b]$, and $\int_a^bf=0$, then
+        $f(x)=0$ for every $x\in[a,b]$. Also show that the statement fails
+        if $f$ is only integrable.
+  \item Compute $\int_0^{\pi/2}\sin x\cos x\,dx$ in two ways: the substitution
+        $u=\sin x$, and the identity $\sin2x=2\sin x\cos x$. Compare the results with
+        the numerical value from \texttt{quad}.
+  \item Show that the Dirichlet function on $[0,1]$ satisfies
+        $U(\mathcal{P},D)-L(\mathcal{P},D)=1$ for every partition, then explain
+        why that fact is enough to conclude that it is not integrable.
+  \item Estimate $\sum_{n=101}^{\infty}1/n^2$ with an integral bound and compare with
+        the true value $9.950167\times10^{-3}$; what is the relative error?
+\end{enumerate}
+
+\noindent\textbf{Hints.} Item 3: the claim contains two different statements, about
+the boundedness of the sums and about the equality of the two integrals. Item 7: use
+continuity at one point to make the integral small on a narrow interval around
+that point. Item 10: use $\sum_{n=N+1}^\infty1/n^2\le\int_N^\infty x^{-2}dx=1/N$
+with $N=100$.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is genuinely proved in this chapter: the integrability criterion with both of its directions,
+the integrability of continuous functions (using uniform continuity from Chapter 11), of monotone
+functions, of Thomae's function, both parts of the fundamental theorem of calculus, the mean value theorem
+for integrals, and the status of substitution and integration by parts as consequences, not
+axioms.
+
+What is quoted without proof and should be called so in class: Lebesgue's criterion
+(Rudin, Theorem 11.33(b); Abbott, Chapter 7), Volterra's example of a bounded derivative that
+is not integrable, and the absence of an elementary antiderivative for $e^{-x^2}$ (Liouville's
+theorem).
+
+Primary sources: Rudin, \emph{Principles of Mathematical Analysis}, Chapter 6, the section
+Definition and Existence of the Integral (Theorems 6.4, 6.6, 6.8, 6.9, 6.10) and the section
+Integration and Differentiation (6.19--6.22). Rudin sets it up for the
+Riemann-Stieltjes integral; the Riemann integral is the case $\alpha(x)=x$. Abbott,
+\emph{Understanding Analysis}, Chapter 7, is slower but more readable; Stewart only
+for the computational rules.
+
+Open question: how sharp the quadrature error bounds are when only $|f''|$ is
+known, and how to estimate the error without any derivative at all; the standard
+answers are adaptive quadrature and the difference of two levels of refinement. Limits of validity:
+bounded functions on a closed bounded interval, improper integrals as limits, without
+measure theory, and vector-valued integrals are not touched.
+\end{untukpeneliti}
+
+\peta{Chapter 13 follows Rudin, Chapter 6: the section Definition and Existence of the Integral
+(partitions, upper and lower sums, the refinement lemma as Theorem 6.4, the criterion as
+6.6, continuous and monotone functions as 6.8 and 6.9) and the section Integration and
+Differentiation (6.19 change of variables, 6.21 the fundamental theorem of calculus, 6.22 integration by
+parts). In Abbott, Chapter 7, from The Definition of the Riemann Integral to
+Lebesgue's Criterion. In Stewart: The Substitution Rule and Average Value of a
+Function (Chapter 5), Integration by Parts and Improper Integrals (Chapter 7), and 11.3
+The Integral Test, the bridge to Chapter 5 of this book.}
+

@@ -1,0 +1,77 @@
+\chapter{Petunjuk dan Kriteria Penilaian Latihan}
+\label{app:petunjuk}
+
+Kunci jawaban ada di Lampiran~D, tetapi bentuknya sengaja tidak lengkap: angka akhir
+dan sketsa langkah, bukan pembuktian penuh. Alasannya konsistensi. Angka akhir tanpa
+jejak pemeriksaan akan mengajari pembaca kebiasaan yang justru ingin dihapus buku ini,
+dan bukti yang disodorkan utuh menghapus satu-satunya latihan yang berguna, yaitu
+mencari sendiri di mana argumen belum menutup. Jadi pakai kunci ini sebagai pembanding
+terakhir, bukan sebagai tempat memulai. Yang disediakan di sini adalah cara memeriksa
+pekerjaan sendiri sebelum kamu membuka Lampiran~D.
+
+\section*{Tiga jenis latihan dan cara memeriksanya}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{2.6cm}p{5.6cm}p{5.8cm}@{}}
+\toprule
+\textbf{Jenis} & \textbf{Yang dinilai} & \textbf{Cara memeriksa} \\
+\midrule
+Bukti & setiap langkah harus berangkat dari definisi atau hasil yang sudah
+  dibuktikan; tidak boleh ada lompatan & tukar naskah dengan teman; minta dia
+  menunjuk kalimat yang tidak bisa ia turunkan sendiri \\
+Hitung & angka akhir dan langkah antara & ulangi dengan Python; hitung galat
+  relatif terhadap hasil eksak; periksa apakah jawaban masuk akal secara
+  orde besaran \\
+Nilai klaim & mutu argumen, bukan benar-salah binari & tuliskan lebih dulu apa
+  yang harus benar agar klaim itu berlaku; cari satu contoh yang mematahkannya;
+  baru putuskan "benar", "salah", atau "belum cukup bukti" \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{Alat verifikasi per bagian}
+
+\begin{center}
+\small
+\begin{tabular}{@{}llp{7.2cm}@{}}
+\toprule
+\textbf{Bab} & \textbf{Alat} & \textbf{Pemeriksaan khas} \\
+\midrule
+1--5 & \texttt{python3} & tabel nilai, faktorisasi, jumlah parsial; bandingkan
+  dengan taksiran analitik (mis. $H_n\approx\ln n+\gamma$) \\
+6--10 & \texttt{numpy}, \texttt{scipy.linalg} & rank, ruang nol (\texttt{null\_space}),
+  nilai eigen, SVD, kuadrat terkecil (\texttt{lstsq}); periksa
+  $\|A\mathbf{v}-\lambda\mathbf{v}\|$ \\
+11--16 & \texttt{scipy.integrate}, beda hingga & kuadratur vs antiturunan; laju
+  galat pada beberapa $h$ atau beberapa $n$ \\
+17--21 & \texttt{numpy.random}, \texttt{scipy.stats} & simulasi Monte Carlo dengan
+  \emph{seed} tetap; bandingkan peluang empiris dengan peluang eksak dan
+  laporkan galat bakunya \\
+22 & \texttt{struct}, \texttt{float.hex} & bitfield, ULP, epsilon mesin;
+  bandingkan algoritme naif dengan Kahan \\
+23--24 & \texttt{scipy.optimize} & \texttt{linprog}, \texttt{minimize},
+  \texttt{milp}; periksa syarat KKT dan dualitas kuat secara numerik \\
+25--26 & \texttt{numpy} & pemeriksaan gradien dengan beda hingga; kurva galat
+  latih vs validasi pada beberapa setelan regularisasi \\
+27--30 & \texttt{numpy}, \texttt{scikit-learn} bila ada & matriks konfusi dari
+  prediksi tersimpan; interval Wilson untuk proporsi; akurasi di bawah serangan
+  untuk beberapa $\varepsilon$ dan beberapa \emph{seed} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{Cara menilai pekerjaan sendiri}
+
+\begin{enumerate}
+  \item Tuliskan lebih dulu apa yang diketahui dan apa yang ingin dibuktikan.
+        Bila keduanya belum jelas, kesulitannya bukan pada matematika.
+  \item Untuk latihan hitung, tebak jawaban sebelum menghitung. Tebakan yang salah
+        tetap berguna: ia menunjukkan di mana intuisi meleset.
+  \item Bandingkan hasil dengan dua cara berbeda. Satu cara bisa benar karena
+        kebetulan; dua cara yang sepakat jarang kebetulan.
+  \item Bila hasilnya berbeda jauh, cari kesalahan pada kasus sederhana lebih dulu
+        (satu variabel, satu langkah, $n=1$).
+  \item Tuliskan batas keberlakuan jawaban. Jawaban benar untuk kasus khusus yang
+        dinyatakan sebagai jawaban umum adalah kesalahan yang paling sering lolos.
+\end{enumerate}

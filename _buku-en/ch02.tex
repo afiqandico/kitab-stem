@@ -1,0 +1,1133 @@
+\chapter{Sets, Relations, Functions, and Cardinality}
+
+A security tester receives a model specification: a classifier with thirty binary
+features, each taking only the value zero or one. To test exhaustively, it must try
+every possible input. Each feature doubles the number of possibilities, so the answer
+is $2^{30} = 1{,}073{,}741{,}824$. At one million inputs per second, that test takes
+$1073.74$ seconds, about $17.9$ minutes. Add ten more features: the number becomes
+$2^{40} = 1{,}099{,}511{,}627{,}776$, and a machine a thousand times faster needs
+$1099.51$ seconds, about $18.3$ minutes. We multiply the problem by a thousand and
+speed the machine up a thousandfold, and we are back at the starting point.
+
+The same difficulty appears more sharply once features may take an arbitrary real
+value. The number of inputs stops being "many" and starts being "infinitely many",
+and the question changes: can two infinite sets still be compared in size? Instinct
+says there are more rational numbers than natural numbers, since between any two
+natural numbers there always lie infinitely many rationals. That instinct is wrong,
+and this chapter shows why.
+
+The previous chapter gave us a language: quantifiers, implication, proof patterns.
+What was missing is the object being talked about. This chapter installs its basic
+vocabulary, namely sets and their operations, relations, functions, and one way of
+comparing the size of sets that does not depend on the ability to count. That
+vocabulary is used throughout the book, from subspaces in Chapter 6 to formal proofs
+in Chapter 28.
+
+\begin{untukanak}
+Picture two baskets of marbles, one red and one blue. We want to know which basket
+holds more, but we are not allowed to count. Take one red marble, pair it with one
+blue marble, set both aside, and repeat until one basket is empty: if both empty at
+the same moment they hold the same number, if blue is left over then blue holds more.
+This method never mentions a number; it only pairs.
+
+Now suppose the baskets never end, so that we can never finish moving marbles. Can
+pairing still be used? It can, and that is the surprise of this chapter: with the
+right pairing rule, all the counting numbers can be paired off with all the even
+numbers, with nothing left over on either side, and pairs of numbers can be paired
+with a single number. We will understand why pairing is stronger than counting, and
+why some endless sets still cannot be paired with the counting numbers, however hard
+we try.
+\end{untukanak}
+
+\section{Operations on sets and De Morgan's laws}
+\tingkat{basic}
+
+A single set is of no use until we can build new sets from it. Four ways of building
+are defined by the same pattern: state a membership condition, and the new set is the
+collection of all objects satisfying it. Let $X$ be a universal set and
+$A, B \subseteq X$; from Chapter 1 we recall that $A \subseteq B$ means every member
+of $A$ is also a member of $B$, and that equality of sets is proved by two inclusions.
+
+\begin{definisi}[Union, intersection, difference, complement]
+The union $A \cup B$ is the set of all $x \in X$ that are members of $A$ or members
+of $B$. The intersection $A \cap B$ is the set of all $x \in X$ that are members of
+$A$ and at the same time members of $B$. The difference $A \setminus B$ is the set of
+all $x \in X$ that are members of $A$ but not members of $B$. The complement
+$A^{c} = X \setminus A$ is the set of all $x \in X$ that are not members of $A$.
+\end{definisi}
+
+The word "or" in a union is inclusive: $x$ may lie in both sets, and that is the
+condition under which $A \cap B \subseteq A \cup B$ is always true, as Hoffman and
+Kunze note in the Appendix. The empty set $\varnothing$ is needed so that the
+intersection of two disjoint sets is still a set.
+
+\begin{proposisi}[De Morgan's laws]\index{De Morgan's laws}
+For any $A, B \subseteq X$,
+\[
+  X \setminus (A \cup B) = (X \setminus A) \cap (X \setminus B),
+  \qquad
+  X \setminus (A \cap B) = (X \setminus A) \cup (X \setminus B).
+\]
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} Take any $x \in X$. By the definition of
+complement and union,
+\[
+  x \in X \setminus (A \cup B)
+  \iff x \in X \ \text{and}\ \text{not}\ (x \in A \ \text{or}\ x \in B).
+\]
+By De Morgan's law for statements from Chapter 1, the negation of "at least one" is
+"both fail", so
+\[
+  x \in X \setminus (A \cup B)
+  \iff x \in X \ \text{and}\ x \notin A \ \text{and}\ x \notin B
+  \iff x \in (X \setminus A) \cap (X \setminus B).
+\]
+Since $x$ was arbitrary, the two sets are equal. The second equality is obtained by
+replacing every "and" by "or" in the same chain.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+The law holds for two sets; what we need later is the version for any number of sets.
+
+\begin{definisi}[Indexed family]
+Let $I$ be an index set and let $A_i \subseteq X$ be given for each $i \in I$.
+\begin{align*}
+  \bigcup_{i \in I} A_i &= \{\, x \in X : x \in A_i \ \text{for some}\ i \in I \,\}, \\
+  \bigcap_{i \in I} A_i &= \{\, x \in X : x \in A_i \ \text{for every}\ i \in I \,\}.
+\end{align*}
+\end{definisi}
+
+The general version reads $X \setminus \bigcup_{i} A_i = \bigcap_{i} (X \setminus A_i)$
+and $X \setminus \bigcap_{i} A_i = \bigcup_{i} (X \setminus A_i)$. Its proof adds no
+new idea: only "for some" turns into "for every" when the negation is pulled inside,
+exactly as in Chapter 1.
+
+Numbers make the definition checkable. For $X = \{1,\dots,10\}$,
+$A = \{1,\dots,5\}$, and $B = \{4,\dots,8\}$, Figure~\ref{fig:venn} shows the three
+operations on the same sets: the union has $3 + 2 + 3 = 8$ members, the intersection
+has $2$, and the complement of $B$ has $3 + 2 = 5$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.82,every node/.style={font=\footnotesize}]
+  \begin{scope}
+    \begin{scope}
+      \clip (-0.5,0) circle (0.85);
+      \fill[layerteal!30] (-1.55,-1.25) rectangle (1.55,1.25);
+    \end{scope}
+    \begin{scope}
+      \clip (0.5,0) circle (0.85);
+      \fill[layerteal!30] (-1.55,-1.25) rectangle (1.55,1.25);
+    \end{scope}
+    \draw[ink,thick] (-0.5,0) circle (0.85);
+    \draw[ink,thick] (0.5,0) circle (0.85);
+    \draw[ink,thick] (-1.55,-1.25) rectangle (1.55,1.25);
+    \node at (-1.0,0) {3};
+    \node at (0,0) {2};
+    \node at (1.0,0) {3};
+    \node at (0,-1.0) {2};
+    \node[above] at (-0.5,0.86) {$A$};
+    \node[above] at (0.5,0.86) {$B$};
+    \node[below] at (0,-1.25) {$A \cup B$: 8};
+  \end{scope}
+  \begin{scope}[xshift=3.9cm]
+    \begin{scope}
+      \clip (-0.5,0) circle (0.85);
+      \clip (0.5,0) circle (0.85);
+      \fill[accent!35] (-1.55,-1.25) rectangle (1.55,1.25);
+    \end{scope}
+    \draw[ink,thick] (-0.5,0) circle (0.85);
+    \draw[ink,thick] (0.5,0) circle (0.85);
+    \draw[ink,thick] (-1.55,-1.25) rectangle (1.55,1.25);
+    \node at (-1.0,0) {3};
+    \node at (0,0) {2};
+    \node at (1.0,0) {3};
+    \node at (0,-1.0) {2};
+    \node[above] at (-0.5,0.86) {$A$};
+    \node[above] at (0.5,0.86) {$B$};
+    \node[below] at (0,-1.25) {$A \cap B$: 2};
+  \end{scope}
+  \begin{scope}[xshift=7.8cm]
+    \fill[layergrey!22] (-1.55,-1.25) rectangle (1.55,1.25);
+    \fill[white] (0.5,0) circle (0.85);
+    \draw[ink,thick] (-0.5,0) circle (0.85);
+    \draw[ink,thick] (0.5,0) circle (0.85);
+    \draw[ink,thick] (-1.55,-1.25) rectangle (1.55,1.25);
+    \node at (-1.0,0) {3};
+    \node[ink!40] at (0,0) {2};
+    \node[ink!40] at (1.0,0) {3};
+    \node at (0,-1.0) {2};
+    \node[above] at (-0.5,0.86) {$A$};
+    \node[above] at (0.5,0.86) {$B$};
+    \node[below] at (0,-1.25) {$B^{c}$: 5};
+  \end{scope}
+\end{tikzpicture}
+\caption{Three Venn diagrams over the same sets, with the number of members in each
+region. Left: $A \cup B$ has $3 + 2 + 3 = 8$ members; middle: $A \cap B$ has $2$
+members; right: $B^{c}$ has $3 + 2 = 5$ members, namely the shaded region, while the
+members inside $B$ are printed faded.}
+\label{fig:venn}
+\end{figure}
+
+\begin{tangan}
+Materials: twenty used name cards, two pieces of string two meters long, an open floor.
+
+Form two string loops overlapping by about a quarter of their width. Write the names
+of five friends who like coffee and five friends who like tea. Put the coffee cards
+in the first loop, the tea cards in the second, then move the card of a friend who
+likes both into the overlap: that is the intersection. Pick one name who likes
+neither and put that card outside both loops.
+
+Count three numbers: cards inside both loops, cards in the overlap, and cards outside
+the second loop. What must become visible: the number of cards in the union is not the
+number of coffee cards plus the number of tea cards, because the cards in the overlap
+are counted twice, and the excess is exactly the intersection.
+\end{tangan}
+
+The set we most often build from $A$ is the set of all its subsets, and its size grows
+far faster than $A$ itself.
+
+\begin{definisi}[Power set]\index{power set}
+The power set $\mathcal{P}(A)$ is the set of all subsets of $A$, that is,
+$\mathcal{P}(A) = \{\, B : B \subseteq A \,\}$.
+\end{definisi}
+
+\kamus{power set}{himpunan kuasa}{A list of every way of choosing part of the members of a bag, including choosing nothing and choosing everything.}
+
+For example, $\mathcal{P}(\varnothing) = \{\varnothing\}$ has one member, and
+$\mathcal{P}(\{1,2\}) = \{\varnothing, \{1\}, \{2\}, \{1,2\}\}$ has four.
+
+\begin{proposisi}
+If $A$ is finite with $|A| = n$, then $|\mathcal{P}(A)| = 2^{n}$.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} For $B \subseteq A$ define the characteristic
+function $\chi_B : A \to \{0,1\}$ by $\chi_B(a) = 1$ if $a \in B$ and
+$\chi_B(a) = 0$ if $a \notin B$. The map $B \mapsto \chi_B$ is a bijection between
+$\mathcal{P}(A)$ and the set of all functions $A \to \{0,1\}$: from $\chi$ we recover
+$B = \{a : \chi(a) = 1\}$, and two different subsets give two different functions.
+Hence $|\mathcal{P}(A)|$ equals the number of functions $A \to \{0,1\}$.
+
+We count those functions by induction on $n$. For $n = 0$ there is only the empty
+function, and $2^{0} = 1$. Suppose $|A| = n+1$, choose $a_0 \in A$, and write
+$A' = A \setminus \{a_0\}$. Every $f : A \to \{0,1\}$ is determined uniquely by the
+restriction $f|_{A'}$ and the value $f(a_0)$; the induction hypothesis gives $2^{n}$
+choices of restriction and $2$ choices of value, $2^{n+1}$ in all.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+That proof never mentions combinations: the bijection moves the count, and induction
+splits it into two free choices.
+
+\begin{bacakeras}
+Read in pairs, one voice for member and one voice for subset. Start slowly, then
+speed up.
+
+Member: One orange goes into the basket. I am inside.
+Subset: One basket goes into the store. I am inside.
+Member: I am cargo.
+Subset: I am container.
+Member: I am pointed at one by one.
+Subset: I am proved all at once.
+Member: When I go in, I am a single mark.
+Subset: When I go in, I am a single proof.
+Member: I am small and many.
+Subset: I am large and sometimes only one.
+
+Repeat until the last line comes out without thinking. The line repeated three times
+together: cargo goes into bag, bag goes into bag, and the two use different marks.
+\end{bacakeras}
+
+\section{Cartesian products and relations}
+\tingkat{basic}
+
+Order matters. The set $\{1,2\}$ equals $\{2,1\}$, but the coordinates of a point in
+the plane may not be swapped without moving the point. We therefore need an object
+that remembers order, and its definition must be built from sets alone.
+
+\begin{definisi}[Ordered pair and Cartesian product]\index{Cartesian product}
+The ordered pair $(a,b)$ is defined as $\{\{a\}, \{a,b\}\}$. The Cartesian product
+$A \times B$ is the set of all ordered pairs $(a,b)$ with $a \in A$ and $b \in B$.
+\end{definisi}
+
+The definition looks strange, but only one property is needed, namely
+$(a,b) = (c,d)$ if and only if $a = c$ and $b = d$. Checking that property requires
+four cases, and we leave it as Exercise 4.
+
+The size of a product is easy to guess, and its proof uses a cut along the first
+coordinate.
+
+\begin{proposisi}
+If $A$ and $B$ are finite, then $|A \times B| = |A| \cdot |B|$.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} For each $a \in A$ the set
+$\{a\} \times B$ has $|B|$ members, since $b \mapsto (a,b)$ is a bijection between $B$
+and $\{a\} \times B$. The family $\{\{a\} \times B\}_{a \in A}$ consists of mutually
+disjoint sets, because $(a,b) = (a',b')$ forces $a = a'$. Their union is $A \times B$,
+so $|A \times B|$ is the sum of $|A|$ terms each equal to $|B|$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Now the object that gives this chapter its title. A relation is merely a statement
+that may be true or false for each pair of objects, and so it can be stored as the set
+of pairs for which the statement is true.
+
+\begin{definisi}[Relation]\index{relation}
+A relation from $A$ to $B$ is any $R \subseteq A \times B$; when $A = B$ we call it a
+relation on $A$. We write $a \mathrel{R} b$ for $(a,b) \in R$. The domain of $R$ is
+$\{\, a \in A : (a,b) \in R\ \text{for some}\ b \in B \,\}$ and its range is
+$\{\, b \in B : (a,b) \in R\ \text{for some}\ a \in A \,\}$.
+\end{definisi}
+
+Since a relation on $A$ is a subset of $A \times A$, the number of relations on a set
+with $n$ members is $2^{n^{2}}$. For $n = 3$ the number is $2^{9} = 512$ and for
+$n = 4$ it becomes $2^{16} = 65{,}536$; both are checked by the script in the lab
+section.
+
+Four properties filter them into useful objects. A relation $R$ on $A$ is called
+reflexive if $a \mathrel{R} a$ for every $a \in A$; symmetric if
+$a \mathrel{R} b$ implies $b \mathrel{R} a$; transitive if $a \mathrel{R} b$ and
+$b \mathrel{R} c$ imply $a \mathrel{R} c$; and antisymmetric if
+$a \mathrel{R} b$ together with $b \mathrel{R} a$ is possible only when $a = b$.
+
+\begin{definisi}[Partial order and equivalence relation]\index{equivalence relation}
+A relation on $A$ that is reflexive, antisymmetric, and transitive is called a partial
+order. A relation on $A$ that is reflexive, symmetric, and transitive is called an
+equivalence relation.
+\end{definisi}
+
+The relation $\le$ on $\mathbb{R}$ is a partial order, as is the relation "divides" on
+the positive natural numbers, and $\subseteq$ on $\mathcal{P}(A)$ gives an example
+that will later become the framework of subspaces in Chapter 6. The word "partial" is
+used because two members need not be comparable: on $\mathcal{P}(\{1,2,3\})$ the sets
+$\{1\}$ and $\{2\}$ are not contained in one another. An order in which every two
+members are comparable is called a total order.
+
+\section{Equivalence relations and partitions}
+\tingkat{intermediate}
+
+An equivalence relation cuts a set into groups that do not overlap. Before reaching
+the theorem, we need a name for the groups.
+
+\begin{definisi}[Equivalence class]\index{equivalence class}
+Let $\sim$ be an equivalence relation on $A$ and $x \in A$. The equivalence class of
+$x$ is $[x] = \{\, y \in A : y \sim x \,\}$.
+\end{definisi}
+
+Since $x \sim x$, no class is empty. The more interesting property: two classes cannot
+overlap even slightly.
+
+\begin{lemma}
+Let $\sim$ be an equivalence relation on $A$ and $x, y \in A$. Then (i) $x \in [x]$;
+(ii) $[x] = [y]$ if and only if $x \sim y$; and (iii) if
+$[x] \cap [y] \neq \varnothing$, then $[x] = [y]$.
+\end{lemma}
+\par\smallskip\noindent\textit{Proof.} Part (i) is the statement $x \sim x$, true
+because the relation is reflexive. For (ii), suppose $[x] = [y]$. By (i),
+$y \in [y] = [x]$, so $y \sim x$ and by symmetry $x \sim y$. Conversely, suppose
+$x \sim y$ and take $z \in [x]$, meaning $z \sim x$. From $z \sim x$ and
+$x \sim y$ we get $z \sim y$, so $z \in [y]$; this gives
+$[x] \subseteq [y]$, and the argument with the roles exchanged gives
+$[y] \subseteq [x]$. For (iii), suppose $z \in [x] \cap [y]$. Then $z \sim x$ and
+$z \sim y$; from $z \sim x$ and symmetry we get $x \sim z$, and together with
+$z \sim y$ and transitivity we get $x \sim y$, so $[x] = [y]$ by (ii).
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Consequently the set of all classes divides $A$ into pieces that are mutually disjoint
+and cover all of $A$.
+
+\begin{definisi}[Partition]\index{partition}
+A partition of a set $A$ is a family $\mathcal{B}$ of nonempty subsets of $A$ such
+that every $x \in A$ lies in exactly one member of $\mathcal{B}$.
+\end{definisi}
+
+\begin{teorema}
+Every equivalence relation on $A$ determines a partition of $A$, every partition of
+$A$ determines an equivalence relation on $A$, and the two processes invert each
+other.
+\end{teorema}
+\par\smallskip\noindent\textit{Proof.} Let $\sim$ be an equivalence relation and
+$\mathcal{B} = \{\, [x] : x \in A \,\}$. By the Lemma, each $[x]$ is nonempty and two
+of its members are either disjoint or identical; every $x$ lies in $[x]$. Hence
+$\mathcal{B}$ is a partition.
+
+Conversely, let $\mathcal{B}$ be a partition of $A$ and set $x \sim y$ when $x$ and
+$y$ lie in the same member of $\mathcal{B}$. Reflexivity and symmetry are clear. For
+transitivity, suppose $x \sim y$ and $y \sim z$, and let $B$ be the member of
+$\mathcal{B}$ containing $y$; then $x \in B$ and $z \in B$, so $x \sim z$.
+
+The two processes invert each other: from $\sim$ we obtain the partition into classes,
+and that partition returns the original $\sim$ because $x \sim y$ exactly when
+$x \in [y]$; from a partition we obtain $\sim$, and the class $[x]$ is the member of
+$\mathcal{B}$ containing $x$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+The number of classes is called the index. The set of all classes is written
+$A/{\sim}$ and called the quotient set, while $q : A \to A/{\sim}$ with $q(x) = [x]$
+is called the quotient map. Hoffman and Kunze note that every equivalence relation can
+be viewed as coming from a function: two members are equivalent exactly when that
+function gives them the same value.
+
+\begin{contoh}
+On the integers, set $x \equiv y \pmod{n}$ when $n$ divides $x-y$. This relation is
+reflexive because $n \mid 0$, symmetric because $n \mid (x-y)$ implies
+$n \mid (y-x)$, and transitive because $n \mid (x-y)$ together with
+$n \mid (y-z)$ implies $n \mid (x-z)$. Its classes are the sets of numbers with the
+same remainder, and there are exactly $n$ classes, namely $[0], \dots, [n-1]$, since
+every integer can be written $x = qn + r$ with $0 \le r \le n-1$ uniquely.
+\end{contoh}
+
+An example closer to our own work: for $f : A \to B$, set $x \sim y$ when
+$f(x) = f(y)$. The class $[x]$ is the set of inputs with the same output; in machine
+learning that is "one prediction file", and the number of classes equals the number of
+distinct labels.
+
+\begin{untukanak}
+The wardrobe at home is usually not sorted by any official rule. White shirts pile up
+on one shelf, printed shirts on another, sports shirts in a third basket. Nobody
+writes the rule down, yet every shirt sits in exactly one place.
+
+That is what an equivalence relation does: it decides when two items count as
+roommates, then groups all the items. The result is a tidy division, every item lands
+in exactly one group, and different groups share no members.
+
+Now the question that makes one curious. What if one shirt belongs to the white group
+under one rule, but to the sports group under another rule? Is the grouping still
+tidy? The tidiness does not depend on the rule chosen, but on three properties: every
+item is a roommate of itself, roommatehood works both ways, and roommatehood can be
+passed along through a third item.
+\end{untukanak}
+
+\section{Functions: injective, surjective, bijective}
+\tingkat{intermediate}
+
+We now fix the meaning of the word "function", because this chapter depends on the
+fine distinction between codomain and range.
+
+\begin{definisi}[Function]\index{injective function}
+A function from $A$ to $B$ is a rule $f$ that pairs every $x \in A$ with exactly one
+$f(x) \in B$. The set $A$ is called the domain, $B$ is called the codomain, and
+$f(A) = \{\, f(x) : x \in A \,\}$ is called the range.
+\end{definisi}
+
+Codomain and range are different, and the difference matters. The function
+$f : \mathbb{R} \to \mathbb{R}$ with $f(x) = x^{2}$ has codomain $\mathbb{R}$ but
+range $[0,\infty)$. Hoffman and Kunze use three names interchangeably for the same
+object: function, mapping, transformation.
+
+For $S \subseteq B$ we define the preimage
+$f^{-1}(S) = \{\, x \in A : f(x) \in S \,\}$. The notation $f^{-1}$ here does not
+presuppose that $f$ has an inverse: a preimage is always defined, an inverse need not
+exist.
+
+\begin{definisi}[Injective, surjective, bijective]\index{surjective function}\index{bijection}
+A function $f : A \to B$ is called injective if $f(x) = f(y)$ is possible only when
+$x = y$; surjective if $f(A) = B$; and bijective if both.
+\end{definisi}
+
+\kamus{bijection}{bijeksi}{A perfect matching: every item in the first box has exactly one partner in the second box, with nothing left over on either side.}
+
+Figure~\ref{fig:bijeksi} compares the three on two columns of nodes: the left panel
+leaves no node over on either side, the middle panel leaves $d$ over on the right, and
+the right panel sends two left nodes to one right node.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.95,every node/.style={font=\footnotesize},>=Stealth,
+  kotak/.style={draw=ink,thick,circle,inner sep=1.2pt,minimum size=4.4mm}]
+  \begin{scope}
+    \foreach \i/\y in {1/1.0,2/0,3/-1.0} {
+      \node[kotak] (a\i) at (0,\y) {\i};
+    }
+    \node[kotak] (ba) at (1.9,1.0) {$a$};
+    \node[kotak] (bb) at (1.9,0) {$b$};
+    \node[kotak] (bc) at (1.9,-1.0) {$c$};
+    \draw[->,thick,layerjade] (a1) -- (ba);
+    \draw[->,thick,layerjade] (a2) -- (bb);
+    \draw[->,thick,layerjade] (a3) -- (bc);
+    \node[below] at (0.95,-1.75) {bijective};
+  \end{scope}
+  \begin{scope}[xshift=3.4cm]
+    \foreach \i/\y in {1/1.2,2/0.4,3/-0.4} {
+      \node[kotak] (c\i) at (0,\y) {\i};
+    }
+    \node[kotak] (da) at (1.9,1.2) {$a$};
+    \node[kotak] (db) at (1.9,0.4) {$b$};
+    \node[kotak] (dc) at (1.9,-0.4) {$c$};
+    \node[kotak] (dd) at (1.9,-1.2) {$d$};
+    \draw[->,thick,layerindigo] (c1) -- (da);
+    \draw[->,thick,layerindigo] (c2) -- (db);
+    \draw[->,thick,layerindigo] (c3) -- (dc);
+    \node[below] at (0.95,-1.75) {injective only};
+  \end{scope}
+  \begin{scope}[xshift=6.9cm]
+    \foreach \i/\y in {1/1.2,2/0,3/-1.2} {
+      \node[kotak] (e\i) at (0,\y) {\i};
+    }
+    \node[kotak] (fa) at (1.9,0.8) {$a$};
+    \node[kotak] (fb) at (1.9,-0.8) {$b$};
+    \draw[->,thick,layerbrown] (e1) -- (fa);
+    \draw[->,thick,layerbrown] (e2) -- (fa);
+    \draw[->,thick,layerbrown] (e3) -- (fb);
+    \node[below] at (0.95,-1.75) {surjective only};
+  \end{scope}
+\end{tikzpicture}
+\caption{Three mappings between two columns of nodes. Left: every node is used exactly
+once, hence bijective. Middle: the right column has four members and the node $d$
+receives no incoming arrow, hence injective but not surjective. Right: two left nodes
+go to $a$, hence surjective but not injective.}
+\label{fig:bijeksi}
+\end{figure}
+
+The word "bijective" is only a short name for the combination of the two previous
+properties. Its power appears in the following proposition: a bijection is the exact
+condition for a function to be invertible.
+
+\begin{proposisi}
+$f : A \to B$ is bijective if and only if there is $g : B \to A$ with
+$g \circ f = \mathrm{id}_A$ and $f \circ g = \mathrm{id}_B$. If $g$ exists, it is
+unique.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} Suppose $g$ satisfies both equalities. If
+$f(x) = f(y)$ then $x = g(f(x)) = g(f(y)) = y$, so $f$ is injective. For any
+$b \in B$ we have $b = f(g(b))$, so $f$ is surjective.
+
+Conversely, suppose $f$ is bijective. For each $b \in B$ there is exactly one
+$x \in A$ with $f(x) = b$: existence from surjectivity, uniqueness from injectivity.
+Define $g(b) = x$ for that $x$, then $g(f(x)) = x$ and $f(g(b)) = b$.
+
+For uniqueness, suppose $g$ and $h$ satisfy both equalities. Then
+\[
+  g = g \circ \mathrm{id}_B = g \circ (f \circ h) = (g \circ f) \circ h
+  = \mathrm{id}_A \circ h = h,
+\]
+which uses only the associativity of composition and the two equalities.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Composition behaves well with respect to all three properties: if $f$ and $g$ are
+injective then $g \circ f$ is injective, and similarly for surjective and bijective.
+The converse fails: with $f : \{1\} \to \{1,2\}$, $f(1) = 1$, and
+$g : \{1,2\} \to \{1\}$, $g(1) = g(2) = 1$, the composition $g \circ f$ is bijective,
+even though $g$ is not injective and $f$ is not surjective.
+
+On finite sets the three properties lock together, and that is why "one-to-one" and
+"onto" can be distinguished only on infinite sets.
+
+\begin{lemma}
+Let $A$ and $B$ be finite, $f : A \to B$, and $C \subseteq B$. Then
+$|f(A)| \le |A|$ with equality if and only if $f$ is injective, and
+$|C| \le |B|$ with equality if and only if $C = B$.
+\end{lemma}
+\par\smallskip\noindent\textit{Proof.} We prove the second part by induction on
+$n = |B|$. For $n = 0$ we have $B = \varnothing$, hence $C = B$. Assume the claim for
+sets with $n$ members and suppose $|B| = n+1$; choose $b \in B$ and write
+$B' = B \setminus \{b\}$.
+
+If $b \notin C$, then $C \subseteq B'$ and the induction hypothesis gives
+$|C| \le |B'| = n < n+1$, with equality impossible. If $b \in C$, write
+$C' = C \setminus \{b\} \subseteq B'$. Then $|C| = |C'| + 1 \le |B'| + 1 = |B|$;
+equality holds exactly when $|C'| = |B'|$, which by the induction hypothesis means
+$C' = B'$, that is $C = B$.
+
+The first part is obtained by the same induction on $|A|$: write
+$A = A' \cup \{a\}$ with $a \notin A'$ and observe that
+$f(A) = f(A') \cup \{f(a)\}$, so $|f(A)| \le |A'| + 1 = |A|$. Equality demands
+$f(a) \notin f(A')$ and $|f(A')| = |A'|$; the latter means $f|_{A'}$ is injective by
+the induction hypothesis, and the former means $f$ does not repeat a value at $a$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+\begin{proposisi}
+Let $A$ and $B$ be finite with $|A| = |B|$, and let $f : A \to B$. Then $f$
+injective, $f$ surjective, and $f$ bijective are three equivalent statements.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} If $f$ is injective, the Lemma gives
+$|f(A)| = |A| = |B|$; since $f(A) \subseteq B$ and both have the same size, the Lemma
+gives $f(A) = B$, so $f$ is surjective. If $f$ is surjective, then $f(A) = B$ so that
+$|f(A)| = |B| = |A|$, and the Lemma forces $f$ to be injective. Since bijective means
+both properties at once, the equivalence of the three is complete.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+A warning to carry into the next chapter: that proposition uses the word "finite"
+essentially. On $\mathbb{N}$ the function $f(x) = 2x$ is injective but not
+surjective, and the function mapping $1$ to $1$ and $n \ge 2$ to $n-1$ is surjective
+but not injective.
+
+\section{Finite, countable, and uncountable sets}
+\tingkat{advanced}
+
+Now we return to the opening question. To compare two sets without counting we pair
+their members, and all we need to require is that the pairing uses an invertible
+function.
+
+\begin{definisi}[Equinumerous]
+The sets $A$ and $B$ are equinumerous, written $A \sim B$, if there is a bijection
+$A \to B$.
+\end{definisi}
+
+The relation $\sim$ is reflexive (the identity is a bijection), symmetric (the inverse
+of a bijection is a bijection), and transitive (the composition of two bijections is a
+bijection). So it behaves as an equivalence relation, but not on "the set of all sets",
+because that collection is not a set; this is discussed in the box for researchers.
+
+\begin{definisi}[Finite, countable, uncountable]\index{countable set}
+A set $A$ is finite if $A = \varnothing$ or there is $n \in \mathbb{N}$ and a
+bijection $A \to \{1,2,\dots,n\}$; in the second case we write $|A| = n$. A set $A$
+is countable if $A \sim \mathbb{N}$. An infinite set that is not countable is called
+uncountable.
+\end{definisi}
+
+\kamus{countable}{terhitung}{All its members can be given serial numbers with none skipped, as when every passenger receives a distinct ticket number.}
+
+The name "countable" is apt: if $A \sim \mathbb{N}$, the bijection is a list. We can
+name the first member, the second, and so on, and every member appears exactly once.
+What is surprising is how many sets can be listed that way. Pairs of numbers, for
+instance.
+
+\begin{proposisi}[Cantor pairing]\index{Cantor pairing}
+$\mathbb{N} \times \mathbb{N}$ is countable.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} Define
+$\pi(m,n) = \frac{(m+n)(m+n+1)}{2} + n$ for $m, n \in \mathbb{N} =
+\{0,1,2,\dots\}$. Write $T_s = \frac{s(s+1)}{2}$, the number of pairs with
+$m + n < s$. For a pair with $m + n = s$ we have $0 \le n \le s$, so
+$\pi(m,n) = T_s + n$ takes the values $T_s, \dots, T_s + s$ exactly once each. Since
+$T_s + s = T_{s+1} - 1$, the block of values for diagonal $s$ is
+$\{T_s, \dots, T_{s+1}-1\}$. The blocks join without gaps and without overlap
+starting from $T_0 = 0$. Hence every counting number lies in exactly one block, and
+within its block comes from exactly one pair; therefore $\pi$ is bijective.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+The inverse is explicit: $s = \lfloor (\sqrt{8q+1}-1)/2 \rfloor$, $n = q - T_s$, and
+$m = s - n$. That square root is the one place where machine arithmetic can deceive
+us, and the example is in the lab section.
+
+Figure~\ref{fig:kisi} draws that grid: the cell in row $m$ and column $n$ is labelled
+$\pi(m,n)$, and the color marks the diagonal $m + n = s$, so that reading by color
+gives $0$ through $14$ without gaps and without repetition. The right panel applies
+the same reading order to a list of four real numbers, with row $d$ flipping the
+diagonal digits so that $d$ is not in the list.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.95,every node/.style={font=\footnotesize}]
+  \foreach \s/\warna in {0/layerteal,1/layerorange,2/layerindigo,3/layerjade,4/layerplum} {
+    \foreach \n in {0,...,\s} {
+      \pgfmathtruncatemacro{\m}{\s-\n}
+      \pgfmathtruncatemacro{\v}{int(\s*(\s+1)/2+\n)}
+      \draw[fill=\warna!30,draw=ink!45] (\n*0.86,-\m*0.72) rectangle ++(0.8,0.66);
+      \node at (\n*0.86+0.4,-\m*0.72+0.33) {\v};
+    }
+  }
+  \draw[->,thick] (4.35,0.33) -- (4.95,0.33);
+  \node[right] at (4.95,0.33) {$n$};
+  \draw[->,thick] (-0.45,-0.05) -- (-0.45,-3.0) node[below] {$m$};
+  \begin{scope}[xshift=6.6cm,yshift=0.45cm]
+    \foreach \i/\j/\b in {1/1/0,1/2/1,1/3/1,1/4/0, 2/1/1,2/2/0,2/3/0,2/4/1,
+                          3/1/0,3/2/0,3/3/1,3/4/0, 4/1/1,4/2/1,4/3/0,4/4/0} {
+      \ifnum\i=\j
+        \fill[accent!28] (\j*0.52-0.52,-\i*0.42) rectangle ++(0.5,0.38);
+      \fi
+      \draw[ink!45] (\j*0.52-0.52,-\i*0.42) rectangle ++(0.5,0.38);
+    }
+    \draw[accent,thick] (0.25,-0.23) -- (1.79,-1.49);
+    \foreach \i/\j/\b in {1/1/0,1/2/1,1/3/1,1/4/0, 2/1/1,2/2/0,2/3/0,2/4/1,
+                          3/1/0,3/2/0,3/3/1,3/4/0, 4/1/1,4/2/1,4/3/0,4/4/0} {
+      \node at (\j*0.52-0.27,-\i*0.42+0.19) {\b};
+    }
+    \foreach \i in {1,...,4} {
+      \node[left] at (-0.62,-\i*0.42+0.19) {$x_{\i}$};
+    }
+    \foreach \j/\b in {1/1,2/1,3/0,4/1} {
+      \fill[layergrey!25] (\j*0.52-0.52,-2.34) rectangle ++(0.5,0.38);
+      \draw[ink!45] (\j*0.52-0.52,-2.34) rectangle ++(0.5,0.38);
+      \node at (\j*0.52-0.27,-2.34+0.19) {\b};
+    }
+    \node[left] at (-0.10,-2.15) {$d$};
+    \node[below] at (0.52,-2.42) {digit flipped};
+  \end{scope}
+\end{tikzpicture}
+\caption{Left: the grid of pairs $(m,n)$ with $m + n \le 4$, each cell labelled
+$\pi(m,n)$, with color marking the diagonal $m + n = s$; the first five diagonals
+carry the values $0$ through $14$. Right: the digit table of four real numbers, with
+the diagonal cells colored and row $d$ flipping the diagonal digits $0,0,1,0$ into
+$1,1,0,1$.}
+\label{fig:kisi}
+\end{figure}
+
+Since every positive rational is a pair of natural numbers already in lowest terms,
+the set of rationals is countable too. All we must guard against is listing a number
+twice.
+
+\begin{proposisi}
+The set $\mathbb{Q}_{>0}$ of positive rational numbers is countable.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} Every $q \in \mathbb{Q}_{>0}$ can be written
+uniquely as $q = p/r$ with $p, r$ natural numbers and $\gcd(p,r) = 1$. Define the
+height of $q$ as $p + r$. For each $k \ge 2$ there are only finitely many rationals of
+height $k$, since $p$ and $r$ lie between $1$ and $k-1$. The following list therefore
+enumerates $\mathbb{Q}_{>0}$ without repetition: for $k = 2, 3, 4, \dots$ write down
+all $p/r$ of height $k$ with $\gcd(p,r) = 1$, increasing in $p$. Every positive
+rational appears exactly once, namely at level $k = p + r$ in its unique reduced form,
+so that list is a bijection $\mathbb{N} \to \mathbb{Q}_{>0}$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+\begin{akibat}
+$\mathbb{Q}$ and $\mathbb{Z}$ are countable.
+\end{akibat}
+\par\smallskip\noindent\textit{Proof.} The list $0, 1, -1, 2, -2, \dots$ is a
+bijection $\mathbb{N} \to \mathbb{Z}$. For $\mathbb{Q}$, enumerate each nonzero
+rational as $\pm p/r$ in reduced form by $(p+r)$ with alternating signs, then place
+$0$ at the front; one extra member does not destroy countability.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+So $\mathbb{N}$, $\mathbb{Z}$, and $\mathbb{Q}$ are equinumerous, even though
+$\mathbb{Q}$ feels far more crowded. Density is not a measure of size; the measure is
+whether or not a list exists.
+
+\begin{tantangan}
+A hotel on the seafront has rooms numbered $1, 2, 3, \dots$ without end, and that
+night every room holds exactly one guest. A traveler arrives without a reservation.
+The receptionist says the hotel is full; the manager says there is still a room for
+him without sending a single guest home.
+
+Show a rule for moving guests that keeps the manager's promise, then explain why that
+rule is a bijection between the old guests plus one new guest and all the rooms. Why
+can the same hotel not accommodate as many new guests as there are real numbers?
+
+Hint 1: do not look for an empty room, because there is none. Create an empty room by
+moving its occupant.
+
+Hint 2: shift the occupant of room $n$ to room $n+1$ for every $n$, then put the
+traveler in room $1$; check that every room holds exactly one person and that no
+guest is lost.
+
+If you get stuck, return to the section Finite, countable, and uncountable sets, in
+particular the definition of equinumerous.
+\end{tantangan}
+
+Cantor showed that $\mathcal{P}(A)$ is always larger than $A$, by a trick that does not
+depend on the size of $A$.
+
+\begin{teorema}[Cantor]\index{Cantor diagonal}
+For every set $A$ there is no surjective function $A \to \mathcal{P}(A)$.
+\end{teorema}
+\par\smallskip\noindent\textit{Proof.} Let $f : A \to \mathcal{P}(A)$ be arbitrary
+and define $D = \{\, a \in A : a \notin f(a) \,\}$. Then $D \subseteq A$, so
+$D \in \mathcal{P}(A)$. Suppose $D = f(a_0)$ for some $a_0 \in A$. If
+$a_0 \in D$, then by the definition of $D$ we have $a_0 \notin f(a_0) = D$, a
+contradiction. If $a_0 \notin D$, then $a_0 \notin f(a_0)$, which is precisely the
+membership condition for $D$, so $a_0 \in D$, a contradiction again. Hence $D$ is not
+in the range of $f$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+The set $D$ is formed by asking, for each $a$, whether $a$ is a member of the set
+paired with it, then flipping the answer; that flip is what makes $D$ differ from
+every value of $f$. For $A = \mathbb{N}$ the trick appears as reading the diagonal of
+a table with every entry changed, which is why it is called the diagonal argument.
+
+\begin{akibat}
+$\mathcal{P}(\mathbb{N})$ is uncountable, and $\mathbb{R}$ is uncountable.
+\end{akibat}
+\par\smallskip\noindent\textit{Proof.} By Cantor's Theorem with $A = \mathbb{N}$,
+there is no surjection $\mathbb{N} \to \mathcal{P}(\mathbb{N})$, so
+$\mathcal{P}(\mathbb{N})$ is uncountable.
+
+For $\mathbb{R}$ it suffices to show that $[0,1]$ is uncountable. Every $x \in [0,1]$
+has a binary expansion $x = \sum_{k \ge 1} b_k 2^{-k}$ with $b_k \in \{0,1\}$; its
+existence is proved in Chapter 3 and Chapter 5. The map from the set of binary
+sequences to $[0,1]$ is therefore surjective, and the set of binary sequences is
+equinumerous with $\mathcal{P}(\mathbb{N})$ because a binary sequence is a function
+$\mathbb{N} \to \{0,1\}$. If $[0,1]$ were countable, its preimage in the set of binary
+sequences would be countable as well, contradicting the previous paragraph.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+One note of honesty: binary expansions are not unique, since
+$0.0111\dots = 0.1000\dots$ in base two. The argument above is undisturbed because
+it uses only the surjectivity, but $|\mathbb{R}| = |\mathcal{P}(\mathbb{N})|$ demands
+the following tool.
+
+\begin{proposisi}[Cantor--Bernstein--Schroeder]
+If there is an injective function $A \to B$ and an injective function $B \to A$, then
+$A \sim B$.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof sketch.} Let $f : A \to B$ and $g : B \to A$ be
+injective. Let $A_0$ be the set of points of $A$ that have no predecessor in $B$, then
+$A_{k+1} = g(f(A_k))$, and write $A^{+}$ for the union of all $A_k$ with $k$ even.
+Define $h(x) = f(x)$ if $x \in A^{+}$ and $h(x) = g^{-1}(x)$ if $x \notin A^{+}$. On
+the first part $h$ is injective because $f$ is injective, on the second because
+$g^{-1}$ is injective, and the images of the two parts are separated by the way
+$A^{+}$ is built, so $h$ is injective. For surjectivity of the image, take
+$y \in B$. If $g(y) \in A^{+}$, then $g(y)$ lies in some $A_k$ with $k$ even so that
+$g(y) = g(f(x))$ for $x \in A_{k-1}$ and $h(x) = y$; if $g(y) \notin A^{+}$, then
+$h(g(y)) = y$. Hence $h$ is surjective.
+
+The bookkeeping of chain depth is the delicate part, and its details are skipped here;
+the full formal version is in \emph{Mathematics in Lean}, section 4.3.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+With that tool we may conclude $|\mathbb{R}| = |\mathcal{P}(\mathbb{N})|$: an
+injection from $\mathcal{P}(\mathbb{N})$ to $\mathbb{R}$ is given by binary expansion,
+and the injection the other way by the tangent function. The size of $\mathbb{R}$ is
+usually written $2^{\aleph_0}$, with $\aleph_0$ the size of $\mathbb{N}$.
+
+\begin{untukanak}
+Picture the ticket machine at the entrance to an exhibition. Every visitor receives one
+numbered ticket: 1, 2, 3, and so on, no number is used twice, and every possible
+number will eventually be given out. A collection of things that can be ticketed like
+that is called countable.
+
+It looks as though every endless collection can be ticketed. But not so. Some
+collections have so many members that however many tickets we print, there is always a
+member left without one. The ticket machine is not broken; that collection really is
+bigger than the supply of numbers.
+
+The question that makes one curious: how can we know that a collection cannot be
+ticketed, when not all methods have been tried? The answer is Cantor's flipping trick.
+Each time someone claims to have ticketed all the members, we build one new member
+deliberately different from every ticketed member; that member is certainly left out.
+\end{untukanak}
+
+\section{Inequalities, absolute value, and upper bounds}
+\tingkat{intermediate}
+
+The last section installs two tools for Chapter 3. The first measures the distance
+between two numbers regardless of direction, namely the absolute value.
+
+\begin{definisi}[Absolute value]\index{absolute value}
+For $x \in \mathbb{R}$, $|x| = x$ if $x \ge 0$ and $|x| = -x$ if $x < 0$.
+\end{definisi}
+
+A route through a third point is never shorter than the direct route.
+
+\begin{proposisi}[Triangle inequality]
+For every $x, y \in \mathbb{R}$, $|x + y| \le |x| + |y|$ and
+$\bigl| |x| - |y| \bigr| \le |x - y|$.
+\end{proposisi}
+\par\smallskip\noindent\textit{Proof.} Note that $-|x| \le x \le |x|$ and
+$-|y| \le y \le |y|$. Adding the two gives
+$-(|x|+|y|) \le x + y \le |x|+|y|$, which by the definition of absolute value means
+$|x+y| \le |x|+|y|$. For the second, write $x = (x-y) + y$ and apply the first result:
+$|x| \le |x-y| + |y|$, so $|x| - |y| \le |x-y|$. Exchanging the roles of $x$ and $y$
+gives $|y| - |x| \le |x-y|$, hence $\bigl| |x| - |y| \bigr| \le |x-y|$.
+\hfill$\blacksquare${\parfillskip=0pt\par}
+
+Now bounds. A set of numbers can be bounded above without having a largest member, and
+precisely that case is the most important one.
+
+\begin{definisi}[Upper bound and supremum]\index{supremum}
+Let $S \subseteq \mathbb{R}$ be nonempty. A number $u$ is called an upper bound of $S$
+if $s \le u$ for every $s \in S$; if one exists, $S$ is called bounded above. A number
+$u$ is called the supremum of $S$, written $u = \sup S$, if $u$ is an upper bound of
+$S$ and $u \le v$ for every upper bound $v$ of $S$.
+\end{definisi}
+
+\kamus{supremum}{batas atas terkecil}{The tightest fence: the highest boundary that cannot be lowered any further without leaving a member above it.}
+
+The supremum, when it exists, is unique, since two least upper bounds dominate each
+other. What the definition does not guarantee is existence:
+$\{x \in \mathbb{Q} : x^{2} < 2\}$ is bounded above in $\mathbb{Q}$ but has no
+supremum there.
+
+\begin{catatan}[Completeness axiom]
+Every nonempty set $S \subseteq \mathbb{R}$ that is bounded above has a supremum in
+$\mathbb{R}$. This axiom is not proved here; its construction together with its
+consequences is the content of Chapter 3, including the epsilon characterization that
+turns a statement about a least bound into a statement about $\varepsilon$, and the
+example of a set that has a supremum without a maximum.
+\end{catatan}
+
+On a finite set the supremum and the maximum coincide, and swapping the two often
+slips through on small examples.
+
+\section{Worked examples}
+\tingkat{intermediate}
+
+The following four computations are done by hand down to the number, then checked
+again with a script. All of them are small, so arithmetic errors show up immediately.
+
+\begin{resep}
+For two finite sets $A$ and $B$:
+\begin{enumerate}
+  \item Compute $|A|$, the number of members of $A$.
+  \item Compute $|B|$ the same way.
+  \item Compute $|A \cap B|$, the members appearing in both lists.
+  \item Add and then subtract: $|A \cup B| = |A| + |B| - |A \cap B|$.
+\end{enumerate}
+A warning about order: step 3 may not be postponed until after step 4. If the addition
+is done first, the members of the intersection are counted twice and the result
+overshoots by exactly $|A \cap B|$. For $A = \{1,\dots,5\}$ and $B = \{4,\dots,8\}$:
+$5 + 5 - 2 = 8$, the same number as in the Venn diagram above.
+\end{resep}
+
+First, the power set. For $A = \{1,2,3\}$ the subsets have sizes $0,1,2,3$ with counts
+$1, 3, 3, 1$, in total $1 + 3 + 3 + 1 = 8 = 2^{3}$. The row $n = 4$ gives
+$1+4+6+4+1 = 16$, $n = 2$ gives $1+2+1 = 4$, and $n = 1$ gives $1+1 = 2$: the same
+Pascal triangle as in the Proposition about $2^{n}$.
+
+Second, the Cantor pairing. With $\pi(m,n) = T_{m+n} + n$ and $T_0 = 0$, $T_1 = 1$,
+$T_2 = 3$, $T_3 = 6$: diagonal $s = 0$ contains $(0,0) \mapsto 0$; $s = 1$ contains
+$(1,0) \mapsto 1$ and $(0,1) \mapsto 2$; $s = 2$ contains $(2,0) \mapsto 3$,
+$(1,1) \mapsto 4$, $(0,2) \mapsto 5$; $s = 3$ contains $(3,0) \mapsto 6$,
+$(2,1) \mapsto 7$, $(1,2) \mapsto 8$, $(0,3) \mapsto 9$. Those ten values are exactly
+$0, \dots, 9$ without repetition and without gaps.
+
+The opposite direction is easier to get wrong. Take $q = 1000$. We look for $s$ with
+$T_s \le 1000 < T_{s+1}$. Since $T_{44} = 44 \cdot 45/2 = 990$ and $T_{45} = 1035$, we
+get $s = 44$, then $n = 1000 - 990 = 10$ and $m = 44 - 10 = 34$. Check:
+$\pi(34,10) = 44 \cdot 45/2 + 10 = 990 + 10 = 1000$, correct.
+
+Third, the rational numbers. By the height rule, level $k = 2$ contains $1/1$;
+$k = 3$ contains $1/2, 2/1$; $k = 5$ contains $1/4, 2/3, 3/2, 4/1$. The number of terms
+at each level is the value of Euler's totient function, $1, 2, 2, 4, 2, 6$ for
+$k = 2, \dots, 7$. The cumulative count up to $k = 7$ is $1+2+2+4+2+6 = 17$, so $6/1$
+occupies position 17. Since the cumulative count up to $k = 9$ is $27$ and level
+$k = 10$ contains $1/9, 3/7, 7/3, 9/1$, the number $7/3$ occupies position 30.
+
+Fourth, the number of relations. On a set with $3$ members there are $2^{9} = 512$
+relations, and only $5$ are equivalence relations: $1$ with one class, $3$ with two
+classes, $1$ with three classes. On a set with $4$ members there are $2^{16} = 65{,}536$
+relations and $15$ that are equivalence relations. Those four numbers appear again as
+the last four lines of the script output; the sequence $1, 2, 5, 15, 52$ is known as
+the Bell numbers.
+
+\kertas{Four numbers already checked again. (i) $|\mathcal{P}(A)| = 2^{n}$ for
+$n = 0,1,2,3,4$ gives $1, 2, 4, 8, 16$.
+(ii) $\pi(34,10) = 990 + 10 = 1000$, and $\pi$ on diagonals $s = 0,1,2,3$ gives
+$0,1,2,3,4,5,6,7,8,9$. (iii) The number of positive rationals of height $k$ is the
+totient value at $k$; the cumulative count up to $k = 9$ is $27$, so $7/3$ sits at
+position 30. (iv) Relations on a set with $3$ members: $512$ in all, $5$ equivalence
+relations.}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+The following script runs the four computations and adds one check that cannot be done
+by hand: it compares the inverse of the Cantor pairing computed with machine floating
+point against the one computed with integer square roots. Both should give the same
+answer; at one point the answers differ.
+
+\begin{lab}
+\begin{verbatim}
+from itertools import combinations
+from math import gcd, isqrt, sqrt, floor
+
+# (1) number of subsets for small n
+for n in range(5):
+    A = range(n)
+    subs = [S for k in range(n + 1) for S in combinations(A, k)]
+    print("n =", n, "|P(A)| =", len(subs), "2^n =", 2 ** n)
+
+# (2) Cantor pairing pi(m, n) = (m+n)(m+n+1)/2 + n
+def pi(m, n):
+    s = m + n
+    return s * (s + 1) // 2 + n
+
+pasangan = [(0, 0), (1, 0), (0, 1), (2, 0), (1, 1),
+            (0, 2), (3, 0), (2, 1), (1, 2), (0, 3)]
+print("pi:", [pi(m, n) for m, n in pasangan])
+keys = {pi(m, n) for m in range(61) for n in range(61)}
+print("unique keys over 61x61 pairs:", len(keys) == 61 * 61)
+
+# (3) inverse: float vs isqrt
+s, n = 2 * 10**8, 2 * 10**8 - 1
+q = s * (s + 1) // 2 + n
+print("q =", q, "s correct =", s)
+print("s from float:", int(floor((sqrt(8 * q + 1) - 1) / 2)))
+print("s from isqrt:", (isqrt(8 * q + 1) - 1) // 2)
+
+# (4) enumerate positive Q by height k = p + q
+seq = []
+for k in range(2, 10):
+    row = [(p, k - p) for p in range(1, k) if gcd(p, k - p) == 1]
+    print("k =", k, "count =", len(row), row)
+    seq += row
+print("terms 1..8:", seq[:8])
+print("total up to k = 9:", len(seq))
+
+# (5) relations on an n-element set: 2^(n*n) in all, Bell numbers equivalence
+def ekuivalen(R, n):
+    refl = all((a, a) in R for a in range(n))
+    sim = all((b, a) in R for a, b in R)
+    trans = all((a, c) in R for a, b in R for c in range(n)
+                if (b, c) in R)
+    return refl and sim and trans
+
+for n in range(1, 5):
+    semua = 2 ** (n * n)
+    hitung = 0
+    for bit in range(semua):
+        R = {(a, b) for a in range(n) for b in range(n)
+             if bit >> (a * n + b) & 1}
+        if ekuivalen(R, n):
+            hitung += 1
+    print("n =", n, "relations =", semua, "equivalences =", hitung)
+\end{verbatim}
+\end{lab}
+
+The output as printed, verbatim:
+
+\begin{verbatim}
+n = 0 |P(A)| = 1 2^n = 1
+n = 1 |P(A)| = 2 2^n = 2
+n = 2 |P(A)| = 4 2^n = 4
+n = 3 |P(A)| = 8 2^n = 8
+n = 4 |P(A)| = 16 2^n = 16
+pi: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+unique keys over 61x61 pairs: True
+q = 20000000299999999 s correct = 200000000
+s from float: 200000001
+s from isqrt: 200000000
+k = 2 count = 1 [(1, 1)]
+k = 3 count = 2 [(1, 2), (2, 1)]
+k = 4 count = 2 [(1, 3), (3, 1)]
+k = 5 count = 4 [(1, 4), (2, 3), (3, 2), (4, 1)]
+k = 6 count = 2 [(1, 5), (5, 1)]
+k = 7 count = 6 [(1, 6), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1)]
+k = 8 count = 4 [(1, 7), (3, 5), (5, 3), (7, 1)]
+k = 9 count = 6 [(1, 8), (2, 7), (4, 5), (5, 4), (7, 2), (8, 1)]
+terms 1..8: [(1, 1), (1, 2), (2, 1), (1, 3), (3, 1), (1, 4), (2, 3), (3, 2)]
+total up to k = 9: 27
+n = 1 relations = 2 equivalences = 1
+n = 2 relations = 16 equivalences = 2
+n = 3 relations = 512 equivalences = 5
+n = 4 relations = 65536 equivalences = 15
+\end{verbatim}
+
+What must be read from that output: the first five lines confirm $2^{n}$ for
+$n = 0$ through $4$; the ten values of $\pi$ are consecutive without gaps, and
+$61 \times 61 = 3721$ pairs give $3721$ unique keys, which is numerical evidence, not a
+mathematical proof, because the mathematical proof is the $T_s$ block argument. The
+last four lines sweep all $2^{n^{2}}$ relations for $n = 1$ through $4$ and count those
+that are reflexive, symmetric, and transitive: the result is $1, 2, 5, 15$. There is no
+line for $n = 5$ because sweeping $2^{25}$ relations takes too long; its value is $52$.
+
+Third, the inverse with faulty floating point. At $q = 20{,}000{,}000{,}299{,}999{,}999$ the
+formula $\lfloor (\sqrt{8q+1}-1)/2 \rfloor$ with 64-bit machine floating point gives
+$s = 200{,}000{,}001$, whereas the true value is $200{,}000{,}000$. The error is one, and that
+is enough to return a completely different pair: with $s = 200{,}000{,}001$ the value
+$n = q - T_s$ becomes negative. The number $8q+1$ is of order $10^{17}$, whereas
+64-bit floating point stores only about $16$ decimal digits exactly; \texttt{isqrt}
+works on integers and gives $200{,}000{,}000$. The lesson is general: inverting an exact
+numbering formula demands integer arithmetic, as discussed in Chapter 22.
+
+\begin{untukdosen}
+Four meetings. First: set operations and De Morgan, with each proof written as a chain
+of equivalences, not as two separate inclusions. Second: Cartesian products,
+relations, then the filtering into partial orders and equivalence relations. Third:
+classes, partitions, and functions, with the Lemma on classes proved at the board.
+Fourth: cardinality up to Cantor's Theorem, plus a sketch of Cantor--Bernstein if time
+allows.
+
+Two misconceptions appear most often. First, students think a symmetric and transitive
+relation is automatically reflexive; the counterexample
+$R = \{(1,1),(2,2),(1,2),(2,1)\}$ on $\{1,2,3\}$ is usually enough, and Exercise 2 asks
+for a verdict on that claim. Second, students think $\mathbb{Q}$ is larger than
+$\mathbb{N}$ because of its density; ask for the first ten terms of the height
+enumeration at the board, then ask for the position of $7/3$.
+
+An activity that works: divide the board into "natural numbers" and "positive
+rationals", then have two volunteers pair members for two minutes. The naive pairing
+will fail, and then together build the pairing by height. Students are ready to move on
+when they can explain why that list misses no rational, and why a similar list fails
+for $[0,1]$.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Union, intersection, difference, and complement are defined through
+        membership conditions; De Morgan's laws are laws of logic transferred to
+        sets, and their version holds for any indexed family.
+  \item $|\mathcal{P}(A)| = 2^{|A|}$ for finite $A$, via a bijection to the
+        characteristic functions $A \to \{0,1\}$.
+  \item A relation is a subset of $A \times B$; on a set with $n$ members there are
+        $2^{n^{2}}$ relations, and four properties filter them into equivalence
+        relations and partial orders.
+  \item Equivalence relations and partitions are two faces of the same object; the
+        classes are always nonempty, mutually disjoint, and cover the whole set.
+  \item A bijective function is exactly one that has a unique two-sided inverse, and
+        on finite sets of equal size the three properties lock together.
+  \item $\mathbb{N} \times \mathbb{N}$ and $\mathbb{Q}$ are countable through explicit
+        numberings, whereas $\mathcal{P}(\mathbb{N})$ and $\mathbb{R}$ are uncountable
+        through Cantor's diagonal argument.
+  \item The supremum is the least upper bound; its existence is guaranteed by the
+        completeness axiom, while the epsilon characterization and its construction
+        continue in Chapter 3.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Prove $A \cap (B \cup C) = (A \cap B) \cup (A \cap C)$ and
+        $A \setminus (B \setminus C) = (A \setminus B) \cup (A \cap C)$ with chains of
+        membership equivalences.
+  \item Assess this claim: true, false, or not enough evidence. "Every relation on a
+        nonempty set that is symmetric and transitive is necessarily reflexive." If it
+        is false, give the smallest possible counterexample; if there is not enough
+        evidence, state what further evidence would be needed.
+  \item Prove that if $f : A \to B$ is injective, then $S \mapsto f(S)$ is an
+        injective function from $\mathcal{P}(A)$ to $\mathcal{P}(B)$. Explain where
+        injectivity is used and why the conclusion fails without it.
+  \item Prove Kuratowski's ordered pair lemma:
+        $\{\{a\},\{a,b\}\} = \{\{c\},\{c,d\}\}$ if and only if $a = c$ and
+        $b = d$. Handle the case $a = b$ separately.
+  \item Complete the first part of the counting Lemma: for $f : A \to B$ with $A$
+        finite, $|f(A)| \le |A|$ and equality holds only if $f$ is injective.
+  \item Count the equivalence relations on a set with $5$ members that have exactly
+        two classes, then check the answer with Python.
+  \item Compute $\pi(7,5)$ with the Cantor pairing formula, then find $(m,n)$ with
+        $\pi(m,n) = 1000$. Check both answers with Python.
+  \item Determine the position of $7/3$ in the enumeration of positive rationals by
+        height, then determine the number at positions 30 and 41. Check with Python.
+  \item Prove that if $A_1, A_2, A_3, \dots$ are each countable and the numbering of
+        every $A_n$ is given explicitly, then $\bigcup_{n \ge 1} A_n$ is countable.
+  \item Show that $(0,1)$ is equinumerous with $\mathbb{R}$ through one explicit
+        bijection, and explain why the function we choose must have its domain
+        restricted.
+\end{enumerate}
+\end{latihan}
+
+Hints for the three hardest items. Exercise 5: in the induction step write
+$A = A' \cup \{a\}$ with $a \notin A'$, then compare $f(A)$ with
+$f(A') \cup \{f(a)\}$; equality of sizes demands $f(a) \notin f(A')$ and
+$|f(A')| = |A'|$ at the same time. Exercise 6: the number of ways to split $n$ members
+into two nonempty parts is $(2^{n}-2)/2$, since choosing the first part or the second
+gives the same split. Exercise 9: arrange the numbering of all the $A_n$ as a two-column
+table, read it diagonal by diagonal as in the proof that $\mathbb{N} \times \mathbb{N}$
+is countable, then discard repeated terms.
+
+\begin{untukpeneliti}
+Four things are genuinely proved here. Cantor's Theorem uses no axiom of choice and is
+constructive: from any $f$ we build $D$ that lies outside its range. The
+uncountability of $\mathbb{R}$ depends on the binary expansion of every point of
+$[0,1]$; that fact requires completeness and here is only referred to Chapter 3 and
+Chapter 5.
+
+The Cantor--Bernstein--Schroeder theorem in this chapter is only a sketch. A full
+proof requires careful bookkeeping of chain depth; the complete formal version is in
+Avigad--Massot, \emph{Mathematics in Lean}, section 4.3, while the classical treatment
+of sets, functions, and equivalence relations is in Hoffman--Kunze,
+\emph{Linear Algebra}, Appendix A.1--A.3. The primary references for the diagonal and
+for uncountability are Cantor, "Ueber eine Eigenschaft des Inbegriffes aller
+reellen algebraischen Zahlen" (1874) and "Ueber eine elementare Frage der
+Mannigfaltigkeitslehre" (1891).
+
+The most famous open question: is there a cardinal between $|\mathbb{N}|$ and
+$|\mathbb{R}|$? The continuum hypothesis states that there is none. Godel (1940) showed
+that the hypothesis is consistent with ZFC, Cohen (1963) showed that its negation is
+consistent too. So the question cannot be answered inside ZFC.
+
+Two technical limits. First, $\sim$ may not be called an equivalence relation on "the
+set of all sets", because that collection is not a set; the correct treatment uses
+classes as metatheoretic objects. Second, the corollary "a countable union of
+countable sets is countable" requires countable choice when the numberings are not
+given, and Exercise 9 deliberately requires an explicit numbering.
+\end{untukpeneliti}
+
+\peta{Chapter 2 maps to Abbott, \emph{Understanding Analysis}, sections "Some
+Preliminaries" (sets, functions, cardinality) and "Cantor's Theorem"; Hoffman--Kunze,
+\emph{Linear Algebra}, Appendix A.1 (sets), A.2 (functions and inverses), A.3
+(equivalence relations, classes, quotients); Avigad--Massot, \emph{Mathematics in
+Lean}, Chapter 4 ("Sets and Functions") for extensionality, preimages, and
+Cantor--Bernstein--Schroeder, and Chapter 6.1 for finite sets.}

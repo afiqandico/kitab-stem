@@ -1,0 +1,1087 @@
+\chapter{Deret Tak Hingga}
+
+Sebuah tim melatih pengklasifikasi pada satu juta contoh. Fungsi objektifnya jumlah
+kerugian tiap contoh, dan pelatihan berhenti otomatis ketika kenaikan total turun di
+bawah $10^{-7}$ per epoch. Pada epoch keempat puluh proses berhenti sendiri. Modelnya
+tetap buruk: setiap contoh baru hanya menyumbang sekitar $10^{-6}$ pada total, jadi
+total hampir tidak bergerak, sementara total itu sendiri belum tentu menuju nilai
+berhingga.
+
+Kecurigaan itu bisa diuji dengan deret paling sederhana. Jumlah
+$H_n = 1 + \tfrac{1}{2} + \cdots + \tfrac{1}{n}$ pada $n=10^6$ bernilai
+$14.3927267229$. Menambah satu juta suku lagi hanya menaikkannya menjadi
+$15.0858736534$; tambahannya $0.6931469306$, hampir tepat $\ln 2 = 0.6931471806$.
+Tiap kali banyaknya suku berlipat dua, deret harmonik naik sekitar $\ln 2$, tanpa
+batas: taksiran $\ln n + \gamma$ memberi $H_{10^9} \approx 21.3004815$. Aturan
+berhenti berbasis "total sudah tidak bergerak" karena itu tidak membedakan konvergen
+dari divergen; yang membedakan adalah laju pengecilan suku.
+
+Bab 4 sudah memberi limit, kriteria Cauchy, kekonvergenan monoton, dan limit superior.
+Deret tidak menambah gagasan baru, sebab jumlah parsial hanyalah barisan. Tetapi jumlah
+parsial jarang punya rumus tertutup, dan menghitung $s_{10^6}$ tidak memberi tahu apakah
+$s_{10^7}$ masih bergerak. Bab ini mengubah pertanyaan itu menjadi pertanyaan yang bisa
+dijawab dengan memeriksa $a_n$ saja.
+
+\begin{untukanak}
+Bayangkan dua toples recehan. Di toples pertama kamu menabung dengan aturan aneh:
+hari pertama satu koin, hari kedua setengah koin, hari ketiga seperempat koin, dan
+seterusnya, selalu separuh dari hari sebelumnya. Kamu menabung setiap hari, tanpa
+pernah libur, sampai kapan pun. Berapa isi toples itu setelah seratus tahun? Jawabannya
+mengejutkan: tidak pernah lebih dari dua koin. Setiap tambahan memang mengecil, dan
+jumlahnya berhenti di suatu angka yang bisa kamu sebut dengan pasti.
+
+Di toples kedua aturannya berbeda. Koin hari pertama besar, lalu makin kecil, dan
+makin kecil lagi. Setelah sebulan isinya baru segepok. Setelah setahun agak lebih
+tebal. Kamu mungkin menyimpulkan toples ini juga akan berhenti di suatu angka, karena
+tambahannya makin tipis. Ternyata tidak. Kalau kamu menabung cukup lama, isinya akan
+melewati angka berapa pun yang kamu sebut, walaupun untuk naik satu angka saja kamu
+butuh bertahun-tahun. Dua toples, dua aturan yang kelihatan mirip, dua nasib yang
+berlawanan.
+
+Pertanyaannya: tanpa menunggu bertahun-tahun, bagaimana tahu toples mana yang berhenti
+dan mana yang tidak? Adakah ciri pada koinnya sendiri, bukan pada hasil akhirnya? Bab
+ini menjawabnya, dan jawabannya dipakai setiap hari oleh orang yang menulis program.
+\end{untukanak}
+
+\section{Deret, Jumlah Parsial, dan Deret yang Bisa Dihitung Langsung}
+\tingkat{dasar}
+
+Deret\index{deret} adalah penjumlahan yang tidak pernah selesai. Karena itu
+definisinya tidak memakai kata "jumlah" secara langsung, melainkan memakai barisan
+jumlah sementara\index{jumlah parsial}.
+Kita membaca hasil setelah sekian suku, lalu menanyakan ke mana bacaan itu menuju.
+
+\begin{definisi}
+Diberikan barisan $(a_n)$ di $\mathbb{R}$. Jumlah parsial ke-$n$ adalah
+\[
+  s_n = a_1 + a_2 + \cdots + a_n = \sum_{k=1}^{n} a_k .
+\]
+Lambang $\sum_{n=1}^{\infty} a_n$ disebut deret, dan deret itu \emph{konvergen} ke
+$s$ bila barisan $(s_n)$ konvergen ke $s$; dalam hal ini kita menulis
+$\sum_{n=1}^{\infty} a_n = s$ dan menyebut $s$ sebagai jumlah deret. Bila $(s_n)$
+divergen, deret disebut \emph{divergen}.
+\end{definisi}
+
+\kamus{deret}{series}{penjumlahan yang tidak pernah selesai, yang nilainya dibaca dari jumlah sementara setelah sekian suku.}
+
+Perhatikan $s_n - s_{n-1} = a_n$. Jadi deret dan barisan adalah benda yang sama; yang
+berubah hanya pertanyaannya: pada barisan rumus $s_n$ diketahui, pada deret hanya $a_n$
+yang kita pegang.
+
+Kriteria Cauchy dari Bab 4 bisa langsung diterjemahkan, dan terjemahannya adalah alat
+paling dasar di bab ini.
+
+\begin{teorema}[Kriteria Cauchy untuk deret]
+$\sum a_n$ konvergen jika dan hanya jika untuk setiap $\varepsilon > 0$ terdapat
+bilangan bulat $N$ sehingga
+\[
+  m \ge n \ge N \quad \Longrightarrow \quad
+  \left| \sum_{k=n}^{m} a_k \right| < \varepsilon .
+\]
+\end{teorema}
+
+\noindent\textbf{Bukti.} Karena $\sum_{k=n}^{m} a_k = s_m - s_{n-1}$, syarat di atas tidak lain adalah syarat
+Cauchy untuk barisan $(s_n)$. Menurut Bab 4, barisan real konvergen jika dan hanya
+jika ia barisan Cauchy.
+
+Kriteria ini bicara tentang potongan ekor deret, bukan tentang suku tunggal. Dengan
+mengambil $m = n$ kita memperoleh syarat perlu yang sangat murah diperiksa.
+
+\begin{akibat}[Uji suku ke-$n$]
+Jika $\sum a_n$ konvergen, maka $a_n \to 0$.
+\end{akibat}
+
+\noindent\textbf{Bukti.} Ambil $m=n$ pada kriteria Cauchy: untuk setiap $\varepsilon>0$ terdapat $N$ sehingga
+$n \ge N$ berakibat $|a_n| < \varepsilon$. Itu persis definisi $a_n \to 0$.
+
+Uji ini hanya menyaring. Ia mengatakan bahwa suku yang tidak menuju nol pasti
+menggagalkan konvergensi, dan tidak mengatakan apa pun tentang suku yang menuju nol.
+Dua contoh cepat untuk sisi yang mudah: $\sum \frac{n}{n+1}$ divergen karena
+$\frac{n}{n+1} \to 1$, dan $\sum (-1)^n$ divergen karena sukunya tidak menuju nol.
+Sisi yang sulit adalah deret harmonik: $\frac{1}{n} \to 0$ tetapi $\sum \frac{1}{n}$
+divergen. Kita buktikan itu di bagian kedua.
+
+\begin{bacakeras}
+Dua suara. Bacakan bergantian, lalu tukar perannya.
+
+\textbf{Suara A:} Saya mengecil. Setiap hari lebih kecil daripada kemarin.
+
+\textbf{Suara B:} Bagus. Tetapi mengecil belum berarti berhenti.
+
+\textbf{A:} Saya mengecil separuh. Separuh dari separuh. Separuh lagi.
+
+\textbf{B:} Maka kamu punya pagar. Jumlahmu akan berhenti.
+
+\textbf{A:} Saya mengecil, tetapi hanya sedikit. Sepertiga. Seperempat. Seperlima.
+
+\textbf{B:} Awas. Tipis bukan berarti habis.
+
+\textbf{A:} Berapa pun kecilnya tambahan saya, saya tetap menambah.
+
+\textbf{B:} Dan berapa pun lamanya, jumlahmu tetap naik.
+
+Ulangi tiga kali makin cepat: mengecil itu urusan suku, berhenti itu urusan jumlah.
+Hafalkan: yang menentukan bukan suku yang mengecil, melainkan sisa yang tidak pernah
+habis.
+\end{bacakeras}
+
+Deret pertama yang bisa dihitung langsung adalah deret geometri\index{deret geometri}. Setiap sukunya
+diperoleh dengan mengalikan suku sebelumnya dengan bilangan tetap.
+
+\begin{teorema}[Deret geometri]
+Untuk $|r| < 1$,
+\[
+  \sum_{k=0}^{\infty} r^k = \frac{1}{1-r},
+\]
+dan untuk $|r| \ge 1$ deret itu divergen.
+\end{teorema}
+
+\noindent\textbf{Bukti.} Untuk $r \neq 1$ berlaku identitas
+\[
+  (1-r)\left(1 + r + \cdots + r^n\right) = 1 - r^{n+1},
+\]
+sehingga $s_n = \frac{1-r^{n+1}}{1-r}$. Bila $|r|<1$ maka $r^{n+1} \to 0$ (Bab 4,
+karena $|r|^{n} \to 0$ untuk $0 \le |r| < 1$), jadi $s_n \to \frac{1}{1-r}$. Bila
+$|r| \ge 1$ maka $|r|^k \ge 1$ untuk semua $k$, sehingga $s_n$ tidak mungkin konvergen:
+untuk $r=1$ jelas $s_n = n+1$, dan untuk $|r|\ge 1$ dengan $r\neq 1$ suku $r^k$ tidak
+menuju nol.
+
+Dengan $r = \tfrac{1}{2}$ kita memperoleh $1 + \tfrac{1}{2} + \tfrac{1}{4} + \cdots = 2$,
+dan dengan $r = -\tfrac{1}{2}$ kita memperoleh $1 - \tfrac{1}{2} + \tfrac{1}{4} - \cdots
+= \tfrac{2}{3}$. Yang kedua menarik: suku-sukunya berganti tanda dan jumlahnya lebih
+kecil daripada suku pertama dikali dua, karena tanda yang berlawanan saling menghapus.
+
+Kasus $r=\tfrac{1}{2}$ punya gambar yang menjelaskan dirinya sendiri: potong persegi
+satuan menjadi dua, potong lagi sisanya, lalu teruskan. Gambar~\ref{fig:potong-geometri}
+menunjukkan potongan $\tfrac12$, $\tfrac14$, $\tfrac18$ dan sisa $2^{-5} = 0.03125$
+setelah lima potong, dengan luas terpakai $1 - 2^{-5} = 0.96875$. Sisa itu menyusut
+tanpa lenyap; itulah rupa geometri dari kalimat "jumlahnya berhenti".
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=6.0]
+  \draw[fill=layerteal!45,draw=ink] (0.5,0) rectangle (1,1);
+  \draw[fill=layerindigo!40,draw=ink] (0,0.5) rectangle (0.5,1);
+  \draw[fill=layerorange!50,draw=ink] (0.25,0) rectangle (0.5,0.5);
+  \draw[fill=layerjade!45,draw=ink] (0,0.25) rectangle (0.25,0.5);
+  \draw[fill=layerplum!40,draw=ink] (0.125,0) rectangle (0.25,0.25);
+  \draw[fill=white,draw=ink,densely dashed] (0,0) rectangle (0.125,0.25);
+  \draw[ink,thick] (0,0) rectangle (1,1);
+  \node[font=\small] at (0.75,0.5) {$\tfrac{1}{2}$};
+  \node[font=\small] at (0.25,0.75) {$\tfrac{1}{4}$};
+  \node[font=\small] at (0.375,0.25) {$\tfrac{1}{8}$};
+  \node[font=\small] at (0.125,0.375) {$\tfrac{1}{16}$};
+  \draw[ink,thin,-{Stealth}] (0.06,0.10) -- (-0.30,-0.05);
+  \node[font=\scriptsize,anchor=east] at (-0.30,-0.05) {sisa $\tfrac{1}{32}$};
+\end{tikzpicture}
+\caption{Deret geometri separuh sebagai potongan persegi satuan. Potongan berukuran
+$\tfrac12$, $\tfrac14$, $\tfrac18$, $\tfrac1{16}$ dipasang berurutan, dan sisa yang
+belum tertutup setelah empat potong adalah $\tfrac1{16}$; setelah lima potong sisanya
+$2^{-5} = 0.03125$ dan luas terpakai $1 - 2^{-5} = 0.96875$. Sisa selalu menyusut,
+tidak pernah lenyap.}
+\label{fig:potong-geometri}
+\end{figure}
+
+\begin{tangan}
+Bahan: satu lembar kertas persegi, pensil, penggaris.
+
+\begin{enumerate}
+\item Lipat kertas menjadi dua, buka, arsir separuhnya. Itu potongan pertama.
+\item Lipat lagi bagian yang belum diarsir menjadi dua, buka, arsir separuhnya.
+\item Ulangi tiga kali lagi, selalu hanya pada bagian yang belum diarsir.
+\item Periksa bagian putih yang tersisa: setelah lima lipatan tinggal sepertiga puluh
+      dua kertas semula.
+\end{enumerate}
+
+Yang harus kamu lihat: setiap arsiran baru selalu separuh dari yang sebelumnya, dan
+bagian putih tidak pernah lenyap, hanya menguncup ke satu sudut. Kalau kertasnya cukup
+tipis untuk dilipat sepuluh kali, bagian putih tinggal $\tfrac{1}{1024} = 0.0009765625$;
+menurut hitungan ia menuju nol, sehingga arsiran akhirnya menutup seluruh kertas.
+Sekarang ganti aturannya: arsir $\tfrac12$ kertas, lalu $\tfrac13$, lalu $\tfrac14$.
+Lipatan tidak lagi bisa mengikuti, dan kertas habis sebelum deretnya berhenti.
+\end{tangan}
+
+Keluarga kedua yang bisa dihitung langsung adalah deret teleskopik\index{deret teleskopik}, yaitu deret yang
+sukunya dapat ditulis sebagai selisih dua suku berurutan dari barisan lain sehingga
+hampir semua pengurangan saling membatalkan.
+
+\begin{contoh}
+Untuk $n \ge 1$,
+\[
+  \frac{1}{n(n+1)} = \frac{1}{n} - \frac{1}{n+1}.
+\]
+Karena itu
+\[
+  s_N = \sum_{n=1}^{N} \left(\frac{1}{n} - \frac{1}{n+1}\right)
+      = 1 - \frac{1}{N+1},
+\]
+sebab semua suku antara saling menghapus dan hanya suku pertama serta suku terakhir
+yang tersisa. Jadi $\sum_{n=1}^{\infty} \frac{1}{n(n+1)} = 1$. Pada $N=100$ rumus itu
+memberi $s_{100} = \tfrac{100}{101} = 0.9900990099$, dan sisa ekornya adalah
+$\tfrac{1}{101} = 0.0099009901$; keduanya berjumlah tepat $1$.
+\end{contoh}
+
+Perhatikan bahwa pada contoh teleskopik kita tidak perlu uji apa pun. Rumus tertutup
+untuk $s_N$ langsung memberi limit. Inilah yang jarang terjadi. Untuk hampir semua
+deret, termasuk deret harmonik dan $\sum 1/n^2$, rumus seperti itu tidak ada, dan kita
+harus memutuskan konvergensi tanpa pernah mengetahui jumlahnya secara tepat.
+
+Sebelum masuk ke uji-uji, kita catat bahwa deret berperilaku linear, seperti halnya
+limit barisan.
+
+\begin{proposisi}
+Jika $\sum a_n = A$ dan $\sum b_n = B$ konvergen, maka untuk setiap $c, d \in
+\mathbb{R}$ deret $\sum (c a_n + d b_n)$ konvergen dengan jumlah $cA + dB$.
+Menambahkan atau membuang berhingga banyak suku tidak mengubah konvergensi, hanya
+mengubah jumlahnya.
+\end{proposisi}
+
+\noindent\textbf{Bukti.} Jumlah parsial deret gabungan adalah $c s_n^{(a)} + d s_n^{(b)}$, dan menurut sifat
+aljabar limit di Bab 4 barisan itu konvergen ke $cA + dB$. Untuk pernyataan kedua,
+misalkan suku dibuang mulai indeks $M$. Jumlah parsial deret baru adalah
+$s_{N} - s_{M-1}$ untuk suatu $N$, yaitu selisih barisan konvergen dengan konstanta,
+sehingga kekonvergenannya sama.
+
+Sebagai pemakaian, $\sum_{n=1}^{\infty} \left(\frac{1}{2^n} +
+\frac{1}{n(n+1)}\right) = 1 + 1 = 2$, karena bagian pertama adalah deret geometri
+dengan $r=\tfrac{1}{2}$ yang dimulai dari $n=1$.
+
+\section{Deret Suku Tak Negatif: Pembanding dan Deret-$p$}
+\tingkat{menengah}
+
+Bila semua suku tidak negatif, jumlah parsial hanya bisa naik atau diam. Pertanyaan
+konvergen lalu berubah menjadi pertanyaan yang jauh lebih sederhana: apakah jumlah
+parsial berhenti di bawah suatu pagar?
+
+\begin{teorema}
+Jika $a_n \ge 0$ untuk semua $n$, maka $\sum a_n$ konvergen jika dan hanya jika
+barisan jumlah parsialnya terbatas.
+\end{teorema}
+
+\noindent\textbf{Bukti.} Dengan $a_n \ge 0$ berlaku $s_{n+1} = s_n + a_{n+1} \ge s_n$, jadi $(s_n)$ monoton
+tak menurun. Menurut teorema kekonvergenan monoton di Bab 4, barisan monoton yang
+terbatas di atas konvergen, dan barisan monoton yang tidak terbatas di atas divergen
+menuju $+\infty$.
+
+Teorema ini terlihat sederhana, tetapi seluruh bagian ini hanya variasi darinya. Yang
+kita butuhkan hanyalah cara membandingkan deret yang belum dikenal dengan deret yang
+sudah dikenal, dan persediaan deret yang sudah dikenal masih tipis: deret geometri.
+
+\begin{teorema}[Uji pembanding]
+Misalkan $0 \le a_n \le c_n$ untuk $n \ge N_0$.
+\begin{enumerate}
+\item Jika $\sum c_n$ konvergen, maka $\sum a_n$ konvergen.
+\item Jika $a_n \ge d_n \ge 0$ untuk $n \ge N_0$ dan $\sum d_n$ divergen, maka
+      $\sum a_n$ divergen.
+\end{enumerate}
+\end{teorema}
+
+\noindent\textbf{Bukti.} Untuk (1), ambil $\varepsilon>0$. Menurut kriteria Cauchy ada $N \ge N_0$ sehingga
+$m \ge n \ge N$ berakibat $\sum_{k=n}^{m} c_k < \varepsilon$. Karena setiap suku tidak
+negatif dan $a_k \le c_k$,
+\[
+  \left| \sum_{k=n}^{m} a_k \right| = \sum_{k=n}^{m} a_k \le \sum_{k=n}^{m} c_k
+  < \varepsilon ,
+\]
+jadi $\sum a_n$ memenuhi kriteria Cauchy. Untuk (2), bila $\sum a_n$ konvergen maka
+dengan (1) dan $d_n \le a_n$ deret $\sum d_n$ ikut konvergen, bertentangan dengan
+hipotesis.
+
+Uji pembanding\index{uji pembanding} menuntut kita memilih pembanding yang tepat. Untuk suku berbentuk
+pecahan rasional, pembanding yang wajar adalah suku terbesar di pembilang dibagi suku
+terbesar di penyebut. Misalnya $\frac{1}{n^2 + 3n} \le \frac{1}{n^2}$, sehingga
+$\sum \frac{1}{n^2+3n}$ konvergen asalkan $\sum \frac{1}{n^2}$ konvergen. Karena itu
+seluruh pertanyaan berpindah ke satu keluarga deret.
+
+Keluarga itu adalah deret-$p$\index{deret-p}, dan alat untuk menanganinya adalah pengelompokan suku
+menjadi blok berukuran pangkat dua. Gagasan pengelompokan ini dipakai berulang kali,
+termasuk pada uji kondensasi\index{kondensasi Cauchy} berikut.
+
+\begin{lemma}[Kondensasi Cauchy]
+Misalkan $a_1 \ge a_2 \ge a_3 \ge \cdots \ge 0$. Maka $\sum_{n=1}^{\infty} a_n$
+konvergen jika dan hanya jika $\sum_{k=0}^{\infty} 2^k a_{2^k}$ konvergen.
+\end{lemma}
+
+\noindent\textbf{Bukti.} Karena sukunya tak negatif, kedua deret konvergen tepat ketika jumlah parsialnya
+terbatas (teorema pertama bagian ini). Kita bandingkan blok-blok. Untuk $k \ge 0$,
+blok $a_{2^k+1} + \cdots + a_{2^{k+1}}$ memuat $2^k$ suku, masing-masing tidak lebih
+besar dari $a_{2^k}$ dan tidak lebih kecil dari $a_{2^{k+1}}$. Jadi
+\[
+  \sum_{n=1}^{2^m} a_n \;\le\; a_1 + \sum_{k=0}^{m-1} 2^k a_{2^k},
+  \qquad
+  \sum_{n=1}^{2^m} a_n \;\ge\; \frac{1}{2}\sum_{k=1}^{m} 2^k a_{2^k}.
+\]
+Pertidaksamaan kiri menunjukkan bahwa jumlah parsial $\sum a_n$ terbatas bila
+$\sum 2^k a_{2^k}$ terbatas. Pertidaksamaan kanan menunjukkan sebaliknya, karena
+jumlah parsial $\sum 2^k a_{2^k}$ terbatas bila $\sum a_n$ terbatas. Kedua arah
+selesai.
+
+\begin{teorema}[Deret-$p$]
+$\sum_{n=1}^{\infty} \frac{1}{n^p}$ konvergen jika $p > 1$ dan divergen jika
+$p \le 1$.
+\end{teorema}
+
+\noindent\textbf{Bukti.} Untuk $p \le 0$ suku $\frac{1}{n^p} = n^{-p}$ tidak menuju nol, jadi deret divergen
+menurut uji suku ke-$n$. Untuk $p>0$ barisan $a_n = n^{-p}$ menurun menuju nol,
+sehingga lemma kondensasi berlaku dan
+\[
+  \sum_{k=0}^{\infty} 2^k a_{2^k}
+  = \sum_{k=0}^{\infty} 2^k \cdot 2^{-kp}
+  = \sum_{k=0}^{\infty} \left(2^{1-p}\right)^{k}.
+\]
+Itu deret geometri dengan rasio $r = 2^{1-p}$. Karena $p>1$ tepat ketika $1-p<0$,
+yaitu tepat ketika $r<1$, teorema deret geometri memberi: konvergen untuk $p>1$,
+divergen untuk $p \le 1$.
+
+Kasus $p=1$ adalah deret harmonik\index{deret harmonik}, dan buktinya sekarang hanya
+satu baris: rasio
+geometrinya $2^{1-1} = 1$, sehingga deret kondensasinya $\sum 1$ divergen. Kita bisa
+membaca kerapuhannya langsung dari blok: setiap blok berukuran $2^k$ menyumbang paling
+sedikit $2^k \cdot \frac{1}{2^{k+1}} = \tfrac{1}{2}$. Karena itu
+\[
+  H_{2^m} \;\ge\; 1 + \frac{m}{2},
+\]
+sehingga $H_n \to \infty$, tetapi untuk menaikkan $H$ sebesar satu perlu menggandakan
+$n$ berkali-kali: laju pertumbuhannya logaritmik. Inilah alasan angka $14.39$ pada
+pembukaan bab ini terlihat seperti batas padahal bukan.
+
+Gambar~\ref{fig:batang-suku} menaruh kedua jenis suku berdampingan. Batang harmonik
+tetap gemuk: suku kesepuluhnya masih $0.1$, sedangkan suku geometri kesepuluh
+$2^{-10} = 0.0009765625$. Jumlah sepuluh suku pertama: $H_{10} = 2.928968254$ melawan
+$1 - 2^{-10} = 0.9990234375$. Suku harmonik lebih besar pada setiap indeks, jadi besar
+suku menyesatkan; yang menentukan adalah apakah pengecilannya meninggalkan ekor
+berhingga.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.93\linewidth, height=6.0cm,
+  ybar, bar width=3.4pt,
+  xlabel={indeks $n$}, ylabel={besar suku $a_n$},
+  xmin=0.3, xmax=10.7, ymin=0, ymax=1.12,
+  xtick={1,2,3,4,5,6,7,8,9,10},
+  scaled y ticks=false,
+  tick label style={font=\scriptsize},
+  label style={font=\small},
+  ymajorgrids, grid style={layergrey!20},
+  legend style={at={(0.98,0.96)},anchor=north east,draw=none,fill=none,
+                font=\scriptsize},
+]
+\addplot[fill=layerteal!85,draw=layerteal] coordinates {
+  (1,1) (2,0.5) (3,0.3333333) (4,0.25) (5,0.2)
+  (6,0.1666667) (7,0.1428571) (8,0.125) (9,0.1111111) (10,0.1)};
+\addlegendentry{harmonik $1/n$}
+\addplot[fill=layerorange!85,draw=layerorange] coordinates {
+  (1,0.5) (2,0.25) (3,0.125) (4,0.0625) (5,0.03125)
+  (6,0.015625) (7,0.0078125) (8,0.0039063) (9,0.0019531) (10,0.0009766)};
+\addlegendentry{geometri $2^{-n}$}
+\end{axis}
+\end{tikzpicture}
+\caption{Batang suku harmonik $1/n$ dan geometri $2^{-n}$ untuk $n=1,\ldots,10$.
+Batang harmonik lebih tinggi pada setiap indeks dan suku kesepuluhnya masih $0.1$,
+sedangkan suku geometri kesepuluh $2^{-10} = 0.0009765625$. Jumlah sepuluh suku
+pertama: $H_{10} = 2.928968254$ melawan $1 - 2^{-10} = 0.9990234375$.}
+\label{fig:batang-suku}
+\end{figure}
+
+\kamus{deret harmonik}{harmonic series}{tumpukan yang terus bertambah tetapi tiap tambahannya makin tipis, sehingga tinggi totalnya naik sangat lambat tanpa batas.}
+
+Deret-$p$ bukan batas akhir. Dengan kondensasi yang sama, Rudin menunjukkan bahwa
+$\sum \frac{1}{n(\log n)^p}$ konvergen untuk $p>1$ dan divergen untuk $p<1$, dan bahwa
+menambah satu logaritma lagi menggeser batasnya. Deret-deret itu berbeda sangat sedikit
+tetapi berada di sisi berlawanan: tidak ada garis batas yang rapi, yang ada hanyalah uji
+yang berlaku pada kelas tertentu.
+
+\begin{tantangan}
+Ambil $k(n)$ bilangan bulat dengan $2^{k-1} \le n < 2^k$, lalu tetapkan
+$a_n = \frac{1}{k(n)}$. Jadi $a_1 = 1$, $a_2 = a_3 = \tfrac12$,
+$a_4 = \cdots = a_7 = \tfrac13$, dan seterusnya. Tunjukkan bahwa $a_n \to 0$ tetapi
+$\sum a_n$ divergen, lalu jelaskan mengapa uji rasio memberi limit superior $1$ di
+sini sehingga tidak berguna.
+
+\textbf{Petunjuk 1.} Jangan menjumlahkan suku satu per satu. Jumlahkan satu blok, dan
+hitung dulu ada berapa suku di dalam blok itu.
+
+\textbf{Petunjuk 2.} Blok ke-$k$ memuat $2^{k-1}$ suku yang semuanya bernilai
+$\frac{1}{k}$, jadi sumbangannya $\frac{2^{k-1}}{k}$. Sepuluh blok pertama sudah
+berjumlah $118.653968$.
+
+Kalau mentok, kembali ke bagian Deret Suku Tak Negatif, tempat blok berukuran pangkat
+dua dipakai pada Lemma kondensasi Cauchy.
+\end{tantangan}
+
+\begin{untukanak}
+Coba bayangkan menumpuk koin di atas meja. Koin pertama tebal. Koin kedua setengah
+tebalnya. Koin ketiga sepertiga, koin keempat seperempat, dan seterusnya: koin
+ke-sejuta sangat tipis, setipis sepersejuta koin pertama. Kalau kamu menumpuk sejuta
+koin, tinggi tumpukan itu kira-kira empat belas setebal koin pertama, bukan sejuta
+kali. Kelihatannya tumpukan itu akan berhenti tumbuh, karena koin berikutnya hampir
+tidak menambah apa pun.
+
+Sekarang pertanyaan yang membuat banyak orang salah: berapa koin agar tumpukan
+mencapai dua puluh kali tebal koin pertama? Jawabannya sekitar dua ratus tujuh puluh
+dua juta koin. Untuk dua puluh satu kali, perlu sekitar sembilan miliar koin. Setiap
+tingkat menuntut koin berkali-kali lipat, tetapi tidak ada tingkat yang mustahil.
+Tumpukan itu tidak pernah berhenti, hanya melambat.
+
+Inilah sebabnya program komputer mudah tertipu. Kalau kamu berhenti menumpuk setelah
+sejuta koin, tumpukan tampak tidak bergerak lagi, padahal ia belum selesai. Di bab ini
+kita akan tahu mengapa lambat bukan berarti berhenti, dan bagaimana membedakannya
+sebelum menghabiskan waktu menumpuk.
+\end{untukanak}
+
+\section{Uji Rasio dan Uji Akar}
+\tingkat{menengah}
+
+Uji pembanding menuntut kita sudah punya deret pembanding. Untuk suku yang memuat
+faktorial atau pangkat $n$, pembanding seperti itu sulit ditebak, tetapi perbandingan
+antar suku berurutan mudah dihitung. Gagasannya: bila setiap suku paling banyak
+$\beta$ kali suku sebelumnya dengan $\beta<1$, deretnya mengecil paling lambat seperti
+deret geometri, jadi konvergen.
+
+\begin{teorema}[Uji rasio]
+Misalkan $a_n \neq 0$ untuk semua $n$ yang cukup besar.
+\begin{enumerate}
+\item Jika $\limsup_{n\to\infty} \left| \frac{a_{n+1}}{a_n} \right| < 1$, maka
+      $\sum a_n$ konvergen, bahkan konvergen mutlak.
+\item Jika terdapat $n_0$ sehingga $\left| \frac{a_{n+1}}{a_n} \right| \ge 1$ untuk
+      semua $n \ge n_0$, maka $\sum a_n$ divergen.
+\end{enumerate}
+\end{teorema}
+
+\noindent\textbf{Bukti.} Untuk (1), tulis $L = \limsup |a_{n+1}/a_n|$ dan pilih $\beta$ dengan $L < \beta < 1$.
+Menurut sifat limit superior di Bab 4, hanya berhingga banyak $n$ yang memenuhi
+$|a_{n+1}/a_n| > \beta$; jadi ada $N$ sehingga $n \ge N$ berakibat
+$|a_{n+1}| \le \beta |a_n|$. Dengan induksi,
+\[
+  |a_{N+k}| \le \beta^{k} |a_N| \qquad (k \ge 0).
+\]
+Deret $\sum \beta^k |a_N|$ konvergen karena $0<\beta<1$, jadi menurut uji pembanding
+$\sum |a_n|$ konvergen, dan menurut teorema konvergensi mutlak di bagian kelima bab ini,
+kekonvergenan mutlak mengimplikasikan kekonvergenan.
+
+Untuk (2), syarat $|a_{n+1}| \ge |a_n|$ untuk $n \ge n_0$ membuat $(|a_n|)$ tak
+menurun dan tak negatif, sehingga tidak mungkin menuju nol. Maka $a_n$ tidak menuju
+nol, dan uji suku ke-$n$ menggugurkan kekonvergenan.
+
+\kamus{uji rasio}{ratio test}{mengukur apakah tiap suku menyusut paling sedikit sebesar sebagian tetap dari suku sebelumnya, sehingga deretnya mengecil seperti deret geometri.}
+\index{uji rasio}
+
+Batas $1$ pada uji rasio adalah titik buta. Untuk $1/n$ rasionya $\frac{n}{n+1} \to 1$
+dan deretnya divergen; untuk $1/n^2$ rasionya $\left(\frac{n}{n+1}\right)^2 \to 1$
+dan deretnya konvergen. Jadi rasio menuju $1$ tidak memberi informasi; orde pengecilan
+yang berbeda jauh bisa memberi rasio yang sama.
+
+Dua deret berikut memperlihatkan uji rasio bekerja pada arah yang berlawanan.
+Untuk $a_n = \frac{n!}{10^n}$ berlaku
+$\frac{a_{n+1}}{a_n} = \frac{n+1}{10}$, yang menuju $+\infty$; deretnya divergen.
+Untuk $a_n = \frac{10^n}{n!}$ berlaku $\frac{a_{n+1}}{a_n} = \frac{10}{n+1}$, yang
+menuju $0$; deretnya konvergen. Jumlah deret kedua tepat $e^{10} = 22026.4657948$,
+sedangkan jumlah $20$ suku pertamanya baru $21950.3788494$.
+
+Uji akar\index{uji akar} memakai besaran lain: akar ke-$n$ dari suku ke-$n$. Secara intuitif ia
+mengukur "rasio geometri rata-rata" dari seluruh suku, bukan rasio antar dua suku
+berurutan.
+
+\begin{teorema}[Uji akar]
+\begin{enumerate}
+\item Jika $\limsup_{n\to\infty} \sqrt[n]{|a_n|} < 1$, maka $\sum a_n$ konvergen,
+      bahkan konvergen mutlak.
+\item Jika $\limsup_{n\to\infty} \sqrt[n]{|a_n|} > 1$, maka $\sum a_n$ divergen.
+\end{enumerate}
+\end{teorema}
+
+\noindent\textbf{Bukti.} Untuk (1), pilih $\beta$ dengan $\limsup \sqrt[n]{|a_n|} < \beta < 1$. Hanya
+berhingga banyak $n$ dengan $\sqrt[n]{|a_n|} > \beta$, jadi ada $N$ sehingga
+$|a_n| \le \beta^n$ untuk $n \ge N$. Uji pembanding dengan deret geometri
+$\sum \beta^n$ menutup kasus ini.
+
+Untuk (2), bila limit superiornya lebih besar dari $1$, maka
+$\sqrt[n]{|a_n|} > 1$, yaitu $|a_n| > 1$, untuk tak berhingga banyak $n$. Suku-suku
+itu tidak menuju nol, jadi deretnya divergen menurut uji suku ke-$n$.
+
+Uji akar lebih kuat daripada uji rasio. Misalkan $a_n = 2^{-n}$ untuk $n$ genap dan
+$a_n = 3^{-n}$ untuk $n$ ganjil. Maka $\sqrt[n]{a_n}$ bernilai $\tfrac{1}{2}$ atau
+$\tfrac{1}{3}$, sehingga limit superiornya $\tfrac{1}{2}$ dan uji akar menyatakan
+deretnya konvergen. Rasionya berayun: pada $n=100$, $\frac{a_{101}}{a_{100}}$ bernilai
+sekitar $3.05 \times 10^{17}$, dengan limit superior $+\infty$ dan limit inferior $0$.
+Uji rasio tidak menyimpulkan apa pun, tepat ketika sukunya berayun dalam skala berbeda.
+
+Uji rasio tetap populer karena faktorial dan pangkat $n$ saling membatalkan pada
+rasio, sedangkan akar ke-$n$ dari faktorial menuntut aproksimasi Stirling. Urutan
+pemakaian: uji suku ke-$n$, pembanding dengan deret-$p$ atau geometri, lalu uji rasio;
+uji akar dipakai bila rasio berayun atau memberi $1$.
+
+Sekarang uji-uji itu bertumpuk, dan urutan pemeriksaan menjadi keterampilan tersendiri.
+
+\begin{resep}
+\begin{enumerate}
+\item Periksa $a_n \to 0$. Bila tidak, deret divergen; selesai.
+\item Kenali bentuknya: faktorial memanggil uji rasio, pangkat $n$ memanggil uji akar,
+      pecahan rasional memanggil pembanding deret-$p$.
+\item Bila uji pilihanmu memberi batas $1$, jangan menyimpulkan apa pun. Pindah ke
+      pembanding atau kondensasi.
+\item Bila tanda berganti dan $|a_n|$ menurun ke nol, pakai Leibniz dan laporkan batas
+      galat $b_{N+1}$.
+\end{enumerate}
+
+Peringatan urutan: langkah 1 jangan ditukar dengan langkah 2. Uji rasio pada deret yang
+sukunya tidak menuju nol bisa memberi batas $1$ dan menyesatkan, sedangkan uji suku
+ke-$n$ menyelesaikannya tanpa hitungan.
+\end{resep}
+
+\section{Deret Berganti Tanda dan Uji Leibniz}
+\tingkat{menengah}
+
+Sampai di sini semua deret bersuku tak negatif, dan di sana konvergensi berarti
+jumlah parsial berhenti naik. Begitu tanda berganti-ganti, jumlah parsial bisa naik
+dan turun, dan pembatalan antar tanda dapat menghasilkan konvergensi yang tidak
+dijamin oleh besarnya suku.
+
+\begin{teorema}[Uji Leibniz]
+Misalkan $(b_n)$ barisan tak negatif yang tak menaik, yaitu $b_1 \ge b_2 \ge \cdots
+\ge 0$, dan $b_n \to 0$. Maka $\sum_{n=1}^{\infty} (-1)^{n+1} b_n$ konvergen.
+\end{teorema}
+
+\noindent\textbf{Bukti.} Tulis $s_N$ untuk jumlah parsial ke-$N$. Pandang jumlah parsial berindeks genap dan
+berindeks ganjil secara terpisah. Karena
+\[
+  s_{2m+2} - s_{2m} = b_{2m+1} - b_{2m+2} \ge 0,
+\]
+barisan $(s_{2m})$ tak menurun. Karena
+\[
+  s_{2m+1} - s_{2m-1} = -b_{2m} + b_{2m+1} \le 0,
+\]
+barisan $(s_{2m-1})$ tak menaik. Selain itu $s_{2m} \le s_{2m-1}$ dan
+$s_{2m-1} - s_{2m} = b_{2m} \to 0$. Jadi $(s_{2m})$ tak menurun dan terbatas di atas
+oleh $s_1 = b_1$, sehingga konvergen ke suatu $s$; $(s_{2m-1})$ tak menaik dan
+terbatas di bawah oleh $s_2$, sehingga konvergen ke suatu $t$; dan
+$s - t = \lim (s_{2m} - s_{2m-1}) = 0$. Kedua subbarisan menuju nilai yang sama, dan
+karena subbarisan genap dan ganjil bersama-sama mencakup semua indeks, seluruh barisan
+$(s_N)$ konvergen ke $s$ itu.
+
+Uji Leibniz\index{uji Leibniz} memberi lebih dari konvergensi: batas galat yang bisa
+dipakai tanpa mengetahui jumlah sebenarnya, dan itulah yang membuat deret berganti tanda
+berguna untuk menghitung konstanta.
+
+\begin{teorema}[Batas galat Leibniz]
+Dengan hipotesis uji Leibniz dan $s = \sum (-1)^{n+1} b_n$,
+\[
+  \left| s - s_N \right| \le b_{N+1}.
+\]
+Lebih tajam: $s$ terletak di antara $s_N$ dan $s_{N+1}$, sehingga tanda galat
+$s - s_N$ sama dengan tanda suku pertama yang dibuang, yaitu $(-1)^{N+2}$.
+\end{teorema}
+
+\noindent\textbf{Bukti.} Dari bukti sebelumnya, $(s_{2m})$ naik menuju $s$ dan $(s_{2m-1})$ turun menuju $s$.
+Jadi untuk setiap $N$, bilangan $s$ berada di antara $s_N$ dan $s_{N+1}$. Karena
+$|s_{N+1} - s_N| = b_{N+1}$, jarak $s$ ke $s_N$ tidak melebihi $b_{N+1}$, dan arah
+pergeserannya ditentukan oleh tanda $s_{N+1} - s_N = (-1)^{N+2} b_{N+1}$.
+
+Contoh klasiknya adalah deret harmonik berganti tanda,
+\[
+  1 - \frac{1}{2} + \frac{1}{3} - \frac{1}{4} + \cdots = \ln 2 .
+\]
+Kesamaan dengan $\ln 2$ dibuktikan lewat deret Taylor untuk $\ln(1+x)$ pada Bab 14;
+di sini kita hanya memakai konvergensinya, yang dijamin uji Leibniz karena
+$b_n = \frac{1}{n}$ menurun menuju nol. Angka $\ln 2$ muncul lagi, kini sebagai jumlah deret yang konvergen; selisih
+$H_{2n} - H_n \to \ln 2$ adalah versi lain perhitungan yang sama.
+
+Gambar~\ref{fig:tangga-leibniz} menggambar jumlah parsial deret itu sebagai dua tangga:
+ganjil turun dari $s_1 = 1$, genap naik dari $s_2 = 0.5$, keduanya mengapit
+$\ln 2 = 0.6931471806$. Pada $n = 10$ dan $n = 11$ apitannya
+$0.6456349206 < \ln 2 < 0.7365440115$, selebar $b_{11} = \tfrac{1}{11} = 0.0909090909$,
+tepat seperti yang dijanjikan teorema batas galat.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.93\linewidth, height=6.2cm,
+  xlabel={banyak suku $n$}, ylabel={jumlah parsial $s_n$},
+  xmin=0.4, xmax=15.0, ymin=0.45, ymax=1.06,
+  xtick={1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+  tick label style={font=\scriptsize},
+  label style={font=\small},
+  ymajorgrids, grid style={layergrey!20},
+  legend style={at={(0.98,0.04)},anchor=south east,draw=layergrey!40,fill=white,
+                fill opacity=0.9,text opacity=1,font=\scriptsize},
+]
+\addplot[color=layerindigo,mark=*,mark size=1.6pt,thick] coordinates {
+  (1,1.0) (3,0.8333333) (5,0.7833333) (7,0.7595238)
+  (9,0.7456349) (11,0.7365440) (13,0.7301338)};
+\addlegendentry{$n$ ganjil, turun}
+\addplot[color=layerteal,mark=square*,mark size=1.6pt,thick] coordinates {
+  (2,0.5) (4,0.5833333) (6,0.6166667) (8,0.6345238)
+  (10,0.6456349) (12,0.6532107) (14,0.6587052)};
+\addlegendentry{$n$ genap, naik}
+\draw[dashed,accent,thick] (axis cs:0.4,0.6931472) -- (axis cs:15.0,0.6931472);
+\node[font=\scriptsize,text=accent,fill=white,inner sep=1pt]
+  at (axis cs:6.4,0.668) {$\ln 2 = 0.6931471806$};
+\end{axis}
+\end{tikzpicture}
+\caption{Jumlah parsial deret harmonik berganti tanda. Subbarisan ganjil turun,
+subbarisan genap naik, dan keduanya mengapit garis batas $\ln 2 = 0.6931471806$.
+Pada $n = 10$ dan $n = 11$: $s_{10} = 0.6456349206$ dan $s_{11} = 0.7365440115$,
+selebar $b_{11} = \tfrac{1}{11} = 0.0909090909$.}
+\label{fig:tangga-leibniz}
+\end{figure}
+
+Batas galat Leibniz berguna dan sering ditaksir terlalu optimistis. Dengan $1000$
+suku, jumlah parsialnya $0.7851481635$ sedangkan $\pi/4 = 0.7853981634$; galat
+sebenarnya $2.5000 \times 10^{-4}$, batas yang dijanjikan
+$b_{1001} = \tfrac{1}{2001} = 4.9975 \times 10^{-4}$. Batas itu benar tetapi dua kali
+galat nyata, karena galat sebenarnya kira-kira $\tfrac{1}{4N}$ sedangkan batasnya
+$\tfrac{1}{2N}$. Untuk galat di bawah $10^{-6}$ perlu $N \ge 500000$, dan pada $N$ itu
+galatnya $5.0000 \times 10^{-7}$.
+
+\section{Konvergensi Mutlak, Pengelompokan, dan Susunan Ulang}
+\tingkat{lanjut}
+
+Deret yang konvergen karena tandanya saling menghapus jauh lebih rapuh daripada deret
+yang konvergen karena sukunya cukup cepat mengecil. Kerapuhan itu punya nama, dan
+bab ini berutang satu penjelasan tentangnya.
+
+\begin{definisi}
+Deret $\sum a_n$ \emph{konvergen mutlak} bila $\sum |a_n|$ konvergen. Bila
+$\sum a_n$ konvergen tetapi $\sum |a_n|$ divergen, deret itu disebut
+\emph{konvergen bersyarat}\index{konvergensi bersyarat}.
+\end{definisi}
+
+\kamus{konvergensi mutlak}{absolute convergence}{deret yang tetap konvergen meskipun semua tandanya dipaksa menjadi positif, jadi tidak bergantung pada saling menghapus.}
+\index{konvergensi mutlak}
+
+\begin{teorema}
+Jika $\sum a_n$ konvergen mutlak, maka $\sum a_n$ konvergen dan
+$\left| \sum a_n \right| \le \sum |a_n|$.
+\end{teorema}
+
+\noindent\textbf{Bukti.} Untuk setiap $n \le m$ berlaku
+$\left| \sum_{k=n}^{m} a_k \right| \le \sum_{k=n}^{m} |a_k|$. Karena $\sum |a_n|$
+konvergen, ekspresi paling kanan bisa dibuat lebih kecil dari $\varepsilon$ menurut
+kriteria Cauchy, sehingga $\sum a_n$ juga memenuhi kriteria Cauchy. Ketaksamaan
+nilai mutlak jumlah diperoleh dengan mengambil limit pada
+$\left| s_n \right| \le \sum_{k=1}^{n} |a_k|$.
+
+Kebalikannya tidak berlaku: deret harmonik berganti tanda konvergen bersyarat,
+karena $\sum \frac{1}{n}$ divergen. Pada deret seperti ini, urutan penjumlahan mulai
+berperan. Sebelum sampai ke sana, kita lihat dulu operasi yang aman, yaitu
+pengelompokan\index{pengelompokan}.
+
+\begin{proposisi}[Pengelompokan]
+Misalkan $\sum a_n$ konvergen ke $s$, dan $n_1 < n_2 < n_3 < \cdots$ barisan indeks.
+Maka deret yang sukunya
+\[
+  A_k = a_{n_{k-1}+1} + a_{n_{k-1}+2} + \cdots + a_{n_k}
+\]
+(dengan $n_0 = 0$) juga konvergen ke $s$. Kebalikannya salah: pengelompokan yang
+konvergen tidak menjamin deret asalnya konvergen.
+\end{proposisi}
+
+\noindent\textbf{Bukti.} Jumlah parsial deret kelompok adalah $S_K = A_1 + \cdots + A_K = s_{n_K}$, yaitu
+subbarisan dari $(s_n)$. Subbarisan dari barisan konvergen menuju limit yang sama
+(Bab 4), jadi $S_K \to s$.
+
+Untuk kebalikannya, ambil $1 - 1 + 1 - 1 + \cdots$. Deret ini divergen karena sukunya
+tidak menuju nol, tetapi dengan mengelompokkan berpasangan diperoleh
+$(1-1) + (1-1) + \cdots = 0 + 0 + \cdots$, yang konvergen ke $0$.
+
+Contoh penyangkal itu praktis penting: tanda kurung boleh dipasang pada deret yang sudah
+diketahui konvergen, tetapi tidak boleh dipakai untuk membuktikannya.
+
+Sekarang kita ubah urutannya, bukan hanya mengelompokkannya: susunan ulang menomori
+kembali suku yang sama sehingga setiap suku muncul tepat sekali, tetapi pada posisi
+berbeda.
+
+\begin{definisi}
+Misalkan $\sigma$ suatu bijeksi dari himpunan bilangan bulat positif ke dirinya
+sendiri. Deret $\sum a_{\sigma(n)}$ disebut \emph{susunan ulang} dari $\sum a_n$.
+\end{definisi}
+
+\kamus{susunan ulang}{rearrangement}{menukar urutan kedatangan barang tanpa mengubah barangnya, sehingga total sementara bisa berbeda meski isi gudang sama.}
+\index{susunan ulang}
+
+Untuk deret yang konvergen mutlak, susunan ulang tidak berbahaya.
+
+\begin{teorema}
+Jika $\sum a_n$ konvergen mutlak, maka setiap susunan ulangnya konvergen, dan
+semuanya menuju jumlah yang sama.
+\end{teorema}
+
+\noindent\textbf{Bukti.} Tulis $s = \sum a_n$ dan misalkan $\sum a_{\sigma(n)}$ susunan ulang dengan jumlah
+parsial $s'_N$. Ambil $\varepsilon > 0$. Menurut kriteria Cauchy ada $N_0$ sehingga
+$m \ge n \ge N_0$ berakibat $\sum_{k=n}^{m} |a_k| < \varepsilon$; khususnya
+$\sum_{k=N_0}^{\infty} |a_k| \le \varepsilon$.
+
+Pilih $P$ sehingga bilangan $1, 2, \ldots, N_0-1$ semuanya muncul di antara
+$\sigma(1), \ldots, \sigma(P)$. Untuk $N > P$, suku-suku $a_1, \ldots, a_{N_0-1}$
+saling menghapus pada selisih $s_N - s'_N$ (keduanya memuat suku itu), sehingga yang
+tersisa hanyalah suku-suku berindeks $k \ge N_0$. Maka
+\[
+  \left| s_N - s'_N \right| \;\le\; \sum_{k \ge N_0} |a_k| \;\le\; \varepsilon
+  \qquad (N > P).
+\]
+Karena $s_N \to s$ dan $\left| s'_N - s \right| \le \left| s'_N - s_N \right| +
+\left| s_N - s \right|$, kita peroleh $s'_N \to s$.
+
+Untuk deret yang hanya konvergen bersyarat, kesimpulan itu runtuh sepenuhnya. Teorema
+berikut dirumuskan tanpa bukti; buktinya panjang dan teknis, dan dapat dibaca pada
+Rudin, bab tentang barisan dan deret bilangan, bagian "Rearrangements".
+
+\begin{teorema}[Susunan ulang Riemann, pernyataan]
+Misalkan $\sum a_n$ konvergen tetapi tidak konvergen mutlak, dan misalkan $\alpha \le
+\beta$ dua bilangan real (boleh $\pm\infty$). Maka ada susunan ulang $\sum
+a_{\sigma(n)}$ yang jumlah parsialnya mempunyai limit inferior $\alpha$ dan limit
+superior $\beta$. Khususnya, untuk setiap $c \in \mathbb{R}$ ada susunan ulang yang
+konvergen ke $c$, dan ada susunan ulang yang divergen.
+\end{teorema}
+
+Gagasan buktinya begini. Bila $\sum a_n$ konvergen bersyarat, deret suku positifnya
+dan deret nilai mutlak suku negatifnya sama-sama divergen. Kita menyusun ulang dengan
+aturan: tambahkan suku positif sampai melewati $\beta$, lalu suku negatif sampai turun
+di bawah $\alpha$, lalu ulangi. Karena kedua deret divergen, langkah itu selalu bisa
+dilakukan, dan karena $a_n \to 0$, loncatan melewati batas semakin kecil. Hasilnya
+osilasi dengan limit inferior $\alpha$ dan limit superior $\beta$. Konstruksi
+lengkapnya ada pada Rudin, Teorema 3.54.
+
+Kasus paling terkenal adalah deret harmonik berganti tanda yang disusun ulang dengan
+pola dua suku positif lalu satu suku negatif,
+\[
+  1 + \frac{1}{3} - \frac{1}{2} + \frac{1}{5} + \frac{1}{7} - \frac{1}{4} + \cdots
+\]
+Deret ini konvergen, tetapi bukan ke $\ln 2$: jumlahnya $\tfrac{3}{2}\ln 2 =
+1.0397207708$, dan perhitungannya ada di bagian berikut. Mengubah urutan mengubah
+jawaban meskipun sukunya sama persis. Penjumlahan bilangan real tidak komutatif tanpa
+syarat, dan itu peringatan konkret bagi siapa pun yang menjumlahkan pecahan di
+komputer.
+
+Ini juga menjelaskan mengapa uji di bagian kedua dan ketiga menuntut suku tak negatif.
+Ketika tanda berganti, mengecil tidak cukup: pengecilannya harus cukup cepat mengalahkan
+pembatalan.
+
+\begin{untukanak}
+Bayangkan dua tumpuk kartu: hijau bertanda "masuk", merah bertanda "keluar",
+masing-masing dengan angka. Kamu memindahkan kartu satu per satu, dan saldo di layar
+berubah: hijau menambah, merah mengurangi. Kalau urutan pemindahannya kamu ubah,
+apakah saldo akhirnya berubah?
+
+Kalau jumlah hijau dan merah sama-sama besar sehingga saling menghapus, urutannya
+penting. Memindahkan hijau dulu membuat saldo melonjak sebelum turun; memindahkan
+merah dulu membuat saldo sempat negatif. Saldo akhirnya pun bisa berbeda.
+
+Ada satu keadaan aman: bila jumlah seluruh angka tanpa memandang warna tetap terbatas,
+urutan tidak berpengaruh. Itulah konvergensi mutlak. Di bab ini kita akan tahu mengapa,
+dan mengapa komputer bisa memberi jawaban berbeda untuk penjumlahan yang tampak sama.
+\end{untukanak}
+
+\section{Contoh Hitung}
+\tingkat{menengah}
+
+Bagian ini mengerjakan tiga hitungan yang menjadi tulang punggung bab. Semua angka
+diperiksa dengan Python pada bagian lab; di sini langkah antaranya ditulis agar bisa
+diulang dengan kertas dan pensil.
+
+\medskip\noindent\textbf{1. Deret harmonik pada satu juta suku}
+
+Kita ingin $H_{10^6}$ tanpa menjumlahkan satu juta suku. Alatnya adalah bentuk
+asimtotik
+\[
+  H_n = \ln n + \gamma + \frac{1}{2n} - \frac{1}{12n^2} + O\left(\frac{1}{n^4}\right),
+\]
+dengan $\gamma = 0.5772156649$ adalah konstanta Euler--Mascheroni. Untuk $n = 10^6$:
+\[
+  \ln 10^6 = 13.8155105580, \qquad \ln 10^6 + \gamma = 14.3927262229 .
+\]
+Suku koreksi pertama $\frac{1}{2n} = 5 \times 10^{-7}$ memberi
+$14.3927267229$, dan koreksi kedua $-\frac{1}{12n^2} = -8.33 \times 10^{-14}$
+jauh di bawah presisi yang kita butuhkan. Jadi
+\[
+  H_{10^6} = 14.3927267228657\ldots
+\]
+Penjumlahan langsung dengan \texttt{math.fsum} memberi $14.392726722865724$, sepakat
+sampai $10^{-15}$.
+
+Yang lebih penting adalah berapa banyak suku yang dibutuhkan untuk mencapai batas
+tertentu. Dari $H_n \approx \ln n + \gamma$ kita peroleh $n \approx e^{H - \gamma}$.
+Untuk $H = 20$:
+\[
+  n \approx e^{20 - 0.5772156649} = e^{19.4227843351} = 2.724006 \times 10^{8}.
+\]
+Pencarian langsung memberi $n = 272400600$ sebagai indeks pertama dengan $H_n > 20$,
+dan $H$ di titik itu $20.0000000016$. Untuk $H = 21$ perlu sekitar
+$7.4 \times 10^8$ suku; taksiran pada $n = 10^9$ memberi $21.3004815$. Setiap
+tambahan satu satuan menuntut penggandaan $n$ sebesar $e \approx 2.718$.
+
+\medskip\noindent\textbf{2. Jumlah $\sum 1/n^2$ dan $\pi^2/6$}
+
+Dengan $N = 10^6$ suku, penjumlahan langsung memberi
+\[
+  s_{10^6} = 1.6449330668487263, \qquad \frac{\pi^2}{6} = 1.6449340668482264 .
+\]
+Selisihnya $9.9999950 \times 10^{-7}$, sangat dekat dengan $\frac{1}{N} = 10^{-6}$;
+itu masuk akal karena ekor deret $\sum_{n>N} n^{-2}$ kira-kira $\frac{1}{N}$.
+Koreksi orde berikutnya adalah $-\frac{1}{2N^2} = -5 \times 10^{-13}$, sehingga
+\[
+  s_{10^6} + \frac{1}{N} - \frac{1}{2N^2} = 1.6449340668482262,
+\]
+yang cocok dengan $\pi^2/6$ sampai $2 \times 10^{-16}$, batas presisi pecahan
+64-bit. Satu juta suku ditambah satu koreksi sudah memberi ketelitian mesin.
+
+\medskip\noindent\textbf{3. Susunan ulang harmonik berganti tanda}
+
+Ambil pola dua positif satu negatif: pada blok ke-$k$ kita menjumlahkan
+$\frac{1}{4k-3} + \frac{1}{4k-1} - \frac{1}{2k}$. Setelah $K$ blok, seluruh suku
+positif dengan penyebut $1, 3, \ldots, 4K-1$ sudah terpakai, dan suku negatif dengan
+penyebut $2, 4, \ldots, 2K$ juga sudah terpakai. Jadi
+\[
+  S_K = \sum_{j=1}^{2K} \frac{1}{2j-1} - \sum_{j=1}^{K} \frac{1}{2j}
+      = \left( H_{4K} - \frac{1}{2}H_{2K} \right) - \frac{1}{2}H_K .
+\]
+Dengan $H_m \approx \ln m + \gamma$,
+\[
+  S_K \approx \left(\ln 4K - \tfrac{1}{2}\ln 2K\right) - \tfrac{1}{2}\ln K
+  = \ln \frac{4K}{\sqrt{2K}\sqrt{K}} = \ln\left(2\sqrt{2}\right) = \tfrac{3}{2}\ln 2 .
+\]
+Semua suku $\gamma$ menghapus, dan hasilnya tidak memuat $K$. Jadi
+$S_K \to 1.0397207708$, bukan $\ln 2 = 0.6931471806$. Pada $K = 10^6$ blok nilai
+numeriknya $1.0397205208$, galat $2.5 \times 10^{-7}$ terhadap $\tfrac{3}{2}\ln 2$,
+sesuai orde $\frac{1}{4K}$ seperti deret Leibniz.
+
+\kertas{Ringkasan angka. $H_{10^6} = 14.3927267229$ dan
+$\ln 10^6 + \gamma = 14.3927262229$, selisihnya $\frac{1}{2n} = 5 \times 10^{-7}$.
+$H_n > 20$ pertama kali tercapai pada $n = 272400600$, dekat
+$e^{20-\gamma} = 2.724006 \times 10^8$. Deret Leibniz $1000$ suku memberi galat
+$2.5000 \times 10^{-4}$ terhadap $\pi/4$, batasnya $\frac{1}{2001} =
+4.9975 \times 10^{-4}$. Jumlah $\sum 1/n^2$ sampai $10^6$ suku kurang
+$9.9999950 \times 10^{-7}$ dari $\pi^2/6$; satu koreksi Euler--Maclaurin menutupnya
+sampai presisi mesin. Susunan ulang dua positif satu negatif menuju
+$\frac{3}{2}\ln 2 = 1.0397207708$, bukan $\ln 2$.}
+
+\section{Lab Komputasi}
+\tingkat{lanjut}
+
+Kode berikut dijalankan apa adanya pada Python 3.14.4 dengan NumPy 2.5.2. Bagian pertama
+menguji ketelitian penjumlahan harmonik dan taksiran asimtotiknya.
+
+\begin{lab}
+\begin{verbatim}
+import math
+import numpy as np
+
+n = 10**6
+a = 1.0 / np.arange(1, n + 1)
+vals = a.tolist()
+naive = 0.0
+for x in vals:
+    naive += x
+
+print("np.sum   ", repr(float(np.sum(a))))
+print("for-loop ", repr(naive))
+print("fsum     ", repr(math.fsum(vals)))
+small = a.astype(np.float32)
+print("float32  ", repr(float(np.sum(small, dtype=np.float32))))
+g = 0.5772156649015328606
+print("ln n + g ", repr(math.log(n) + g))
+print("1/(2n)   ", 1 / (2 * n))
+\end{verbatim}
+\end{lab}
+
+Keluaran yang diperoleh:
+\begin{verbatim}
+np.sum    14.392726722865726
+for-loop  14.392726722864989
+fsum      14.392726722865724
+float32   14.392724990844727
+ln n + g  14.392726222865807
+1/(2n)    5e-07
+\end{verbatim}
+
+Empat hasil pertama seharusnya sama, dan tiga di antaranya berbeda pada digit
+terakhir: galat pembulatan. Menjumlahkan sejuta bilangan berukuran $10^{-6}$ ke
+akumulator berukuran $14$ membuang bit rendah. \texttt{float32} kehilangan
+$1.7 \times 10^{-6}$, lebih besar daripada koreksi $\frac{1}{12n^2}$ yang ingin diukur;
+bila galat yang dicari lebih kecil daripada galat penjumlahannya, hasilnya tidak
+bermakna.
+
+Bagian kedua memeriksa tiga angka dari bagian sebelumnya.
+
+\begin{lab}
+\begin{verbatim}
+import math
+import numpy as np
+
+pi4 = math.pi / 4
+s = 0.0
+for k in range(1000):
+    s += (-1)**k / (2*k + 1)
+print("Leibniz 1000 suku", repr(s))
+print("galat", repr(pi4 - s))
+print("batas 1/2001", repr(1/2001))
+
+N = 10**6
+m = np.arange(1, N + 1, dtype=np.float64)
+S = float(np.sum(1.0 / m**2))
+print("jumlah 1/n^2", repr(S))
+print("pi^2/6", repr(math.pi**2/6))
+print("terkoreksi", repr(S + 1/N - 1/(2*N**2)))
+
+S = 0.0
+for k in range(1, 10**6 + 1):
+    S += 1.0/(4*k-3) + 1.0/(4*k-1) - 1.0/(2*k)
+print("susunan ulang", repr(S))
+print("1.5 ln 2", repr(1.5*math.log(2)))
+\end{verbatim}
+\end{lab}
+
+Keluarannya:
+\begin{verbatim}
+Leibniz 1000 suku 0.7851481634599485
+galat 0.00024999993749974525
+batas 1/2001 0.0004997501249375312
+jumlah 1/n^2 1.6449330668487263
+pi^2/6 1.6449340668482264
+terkoreksi 1.6449340668482262
+susunan ulang 1.0397205208399414
+1.5 ln 2 1.0397207708399179
+\end{verbatim}
+
+Tiga hal perlu dibaca dari keluaran ini. Pertama, galat Leibniz $2.5000 \times
+10^{-4}$ persis separuh batas $4.9975 \times 10^{-4}$; itu bukan kebetulan, karena
+sisa deret berganti tanda yang monoton mendekati setengah suku pertama yang dibuang.
+Kedua, koreksi Euler--Maclaurin menutup selisih sampai $2 \times 10^{-16}$, satu unit
+pembulatan pada besaran $1.64$. Ketiga, susunan ulang memberi $1.0397205$, bukan
+$0.6931472$, dan galatnya terhadap $\tfrac{3}{2}\ln 2$ hanya $2.5 \times 10^{-7}$.
+
+\begin{untukdosen}
+Urutan mengajar yang saya sarankan: mulai dari masalah epoch pada pembukaan, lalu
+definisi jumlah parsial dan dua deret yang bisa dihitung (geometri, teleskopik).
+Uji-uji masuk sebagai urutan pemeriksaan, bukan daftar hafalan: suku ke-$n$, pembanding,
+rasio, akar. Deret-$p$ menyusul setelah kondensasi, yang menjelaskan mengapa harmonik
+divergen dan mengapa lambat.
+
+Dua miskonsepsi yang paling sering muncul. Pertama, mahasiswa menyimpulkan
+konvergensi dari $a_n \to 0$; deret harmonik adalah obatnya, dan sebaiknya
+ditunjukkan dengan tabel $H_{10} = 2.9290$, $H_{100} = 5.1874$, dan
+$H_{1000} = 7.4855$ supaya lambatnya terlihat.
+Kedua, mahasiswa menganggap "deret konvergen" berarti "jumlah parsial berhenti
+berubah"; padahal perubahan per suku bisa jauh di bawah presisi mesin sementara
+deretnya divergen. Ini tempat yang tepat untuk menyebut galat pembulatan.
+
+Aktivitas kelas yang berhasil: bagi kelas menjadi kelompok, tiap kelompok diberi
+empat deret tanpa nama, dan tugasnya hanya menentukan konvergen atau divergen
+beserta ujinya dalam sepuluh menit. Deret yang dipilih harus memuat satu jebakan
+rasio $=1$. Diskusikan kelompok yang memakai uji berbeda dan sama-sama benar.
+Mahasiswa siap lanjut bila bisa menjelaskan mengapa $\sum 1/n^2$ konvergen sementara
+$\sum 1/n$ tidak, cukup dengan pengelompokan blok.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+\item Deret adalah barisan jumlah parsial; konvergen berarti barisan itu konvergen.
+\item Untuk suku tak negatif, konvergen setara dengan jumlah parsial terbatas. Dari
+      sini lahir uji pembanding, kondensasi, dan klasifikasi deret-$p$: konvergen
+      tepat ketika $p>1$.
+\item Uji rasio dan uji akar mengukur kecepatan pengecilan relatif terhadap deret
+      geometri. Keduanya buta pada batas $1$, dan uji akar lebih kuat daripada uji
+      rasio.
+\item Uji Leibniz memberi konvergensi untuk deret berganti tanda yang menurun menuju
+      nol, sekaligus batas galat $b_{N+1}$ yang tandanya diketahui.
+\item Konvergensi mutlak kebal terhadap pengelompokan dan susunan ulang. Konvergensi
+      bersyarat tidak: susunan ulang Riemann dapat mengubah jumlahnya menjadi
+      bilangan apa pun, atau membuatnya divergen.
+\item Deret harmonik divergen secara logaritmik: $H_{10^6} \approx 14.39$ dan perlu
+      $272$ juta suku untuk mencapai $20$. Aturan berhenti berbasis "total tidak
+      berubah lagi" tidak dapat dipercaya.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+\item Hitung $s_{20}$ untuk deret geometri $\sum_{k=0}^{\infty} \left(\frac{3}{5}\right)^k$,
+      lalu bandingkan dengan jumlah sebenarnya. Berapa galatnya, dan berapa batas
+      galat yang bisa kamu janjikan dari rumus $\frac{r^{21}}{1-r}$?
+
+\item Buktikan bahwa $\sum_{n=1}^{\infty} \frac{1}{n(n+2)} = \frac{3}{4}$ dengan
+      menguraikan suku menjadi pecahan parsial dan menunjukkan deretnya teleskopik.
+
+\item Buktikan: bila $a_n \ge 0$ dan $\sum a_n$ konvergen, maka $\sum a_n^2$
+      konvergen. Tunjukkan dengan contoh bahwa kebalikannya salah.
+
+\item Nilai klaim ini: benar, salah, atau belum cukup bukti. "Karena
+      $\frac{1}{n} \to 0$ dan setiap sukunya lebih kecil daripada suku deret
+      geometri dengan rasio $\frac{1}{2}$ untuk $n$ cukup besar, deret harmonik
+      konvergen." Sebutkan tepat di mana penalaran itu patah.
+
+\item Tentukan konvergen atau divergen, dengan menyebut uji yang dipakai:
+      (a) $\sum \frac{n^2}{2^n}$, (b) $\sum \frac{2^n}{n^2}$,
+      (c) $\sum \frac{n!}{n^n}$, (d) $\sum \frac{1}{n^{1/3}}$.
+
+\item Hitung jumlah $\sum_{n=1}^{10^6} \frac{1}{n^2}$ dengan NumPy, lalu taksir
+      ekornya dengan $\frac{1}{N} - \frac{1}{2N^2}$ dan bandingkan hasilnya dengan
+      $\pi^2/6$. Berapa angka di belakang koma yang benar sebelum koreksi, dan
+      sesudahnya?
+
+\item Deret $\sum \frac{(-1)^{n+1}}{\sqrt{n}}$ konvergen. Tentukan $N$ terkecil
+      sehingga batas Leibniz menjamin galat di bawah $10^{-3}$, lalu hitung galat
+      sebenarnya pada $N$ itu dengan Python. Apakah batasnya longgar atau ketat?
+
+\item Buktikan bahwa bila $\sum a_n$ konvergen mutlak dan $(b_n)$ terbatas, maka
+      $\sum a_n b_n$ konvergen mutlak.
+
+\item Susun ulang deret harmonik berganti tanda dengan pola tiga positif satu
+      negatif. Tebak jumlahnya dengan metode bagian contoh hitung, lalu periksa
+      secara numerik. Apakah hasilnya masih berbentuk kelipatan $\ln 2$?
+
+\item Buktikan bahwa bila $\sum a_n$ konvergen bersyarat, maka deret suku
+      positifnya divergen dan deret nilai mutlak suku negatifnya juga divergen.
+      Jelaskan mengapa fakta ini menjadi bahan bakar teorema susunan ulang Riemann.
+\end{enumerate}
+
+\noindent\emph{Petunjuk untuk tiga butir tersulit.} Butir 7: batas Leibniz memakai
+suku pertama yang dibuang, jadi selesaikan $\frac{1}{\sqrt{N+1}} < 10^{-3}$ dan
+periksa apakah ketaksamaan itu cukup tajam. Butir 9: setelah $K$ blok, suku positif
+terpakai sampai penyebut $6K-1$, suku negatifnya sampai $\frac{1}{2K}$; tulis jumlah
+parsialnya dalam $H_{6K}$, $H_{3K}$, dan $H_{K}$, lalu ambil limit. Butir 10: tulis
+$p_n = \max(a_n, 0)$ dan $q_n = \max(-a_n, 0)$; maka $a_n = p_n - q_n$ dan
+$|a_n| = p_n + q_n$, sehingga konvergensi salah satu deret itu menyimpulkan tentang
+$\sum |a_n|$.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini adalah pernyataan dengan bukti penuh: kriteria
+Cauchy untuk deret, uji pembanding, kondensasi Cauchy, klasifikasi deret-$p$, uji rasio
+dan uji akar dalam bentuk limit superior, uji Leibniz beserta batas galatnya, dan
+ketertutupan deret konvergen mutlak terhadap susunan ulang. Pernyataan susunan ulang
+Riemann saya kutip tanpa bukti. Sumber primernya Rudin, \emph{Principles of Mathematical
+Analysis}, bab "Numerical Sequences and Series": Teorema 3.22--3.23, 3.25, 3.27--3.28,
+3.33--3.34, 3.42--3.43, 3.45--3.46, dan 3.54--3.55. Abbott, \emph{Understanding
+Analysis}, bab "Sequences and Series", membahas hal yang sama dengan penekanan pada
+susunan ulang di bagian pembuka bab itu.
+
+Yang sering dipopulerkan secara berlebihan adalah gagasan ambang batas antara deret
+konvergen dan divergen. Rudin menunjukkan tidak ada ambang seperti itu: dua deret yang
+berbeda sangat sedikit bisa berada di sisi berlawanan, dan prosedur itu bisa diteruskan
+tanpa henti.
+
+Pertanyaan terbuka: seberapa andal keputusan konvergensi bila $a_n$ hanya tersedia
+sebagai taksiran berbising, seperti jumlah kerugian pada pembelajaran mesin? Untuk
+deret semacam itu belum ada teori yang rapi.
+
+Batas keberlakuan: seluruh bab membahas deret bilangan real. Di ruang bernorma lain
+definisinya sama tetapi ujinya berbeda; deret fungsi menuntut kekonvergenan seragam
+(Bab 14). Semua angka berasal dari NumPy 2.5.2, aritmetika 64-bit.
+\end{untukpeneliti}
+
+\peta{Bab 5 pada Rudin, \emph{Principles of Mathematical Analysis}, bab "Numerical
+Sequences and Series": deret dan jumlah parsial (3.21--3.24), deret suku tak negatif
+dan pembanding (3.25--3.29), uji akar dan rasio (3.33--3.37), konvergensi mutlak dan
+susunan ulang (3.45--3.55). Pada Abbott, \emph{Understanding Analysis}, bab "Sequences
+and Series": susunan ulang di bagian pembuka. Bab ini tidak memakai ulang prosa Bab 4;
+dari sana hanya dirujuk definisi limit, kriteria Cauchy, dan kekonvergenan monoton.}

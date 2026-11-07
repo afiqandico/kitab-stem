@@ -1,0 +1,1184 @@
+% Judul penuh meluber 14,54-20,02 pt di kepala halaman; hanya mark header yang
+% dipendekkan (sekali pakai, lihat \judulpendek di preamble-en.tex).
+\judulpendek{Law of Large Numbers and Central Limit Theorem}
+\chapter{The Law of Large Numbers and the Central Limit Theorem}
+
+A short program computes the average of $\exp(U)$ over ten thousand random numbers
+$U$ uniform on $(0,1)$. The result it prints is $1.722206$. The true value is
+$e-1=1.7182818285$, so the error of that run is $+0.003924$. The program is run
+again with four times as many numbers: $1.717502$, error $-0.000780$. With ten
+times as many: $1.717767$, error $-0.000515$. The pattern is not tidy. Four
+times the data cuts the error by more than a factor of five, whereas ten times the
+data cuts it by only $7.6$ times. The naive guess "ten times the data, one tenth
+of the error" does not hold for a single run. One run of a program carries no rate
+at all; what has a rate is the distribution over many runs.
+
+That distribution can be measured. With $n=10^4$ the standard deviation of this
+estimator is $0.00492$; with $n=4\cdot10^4$ it becomes $0.00246$; with $n=10^5$
+it becomes $0.00156$. Every time $n$ grows fourfold, that deviation is exactly
+halved. Here we have two different statements that are often confused. First, the
+average really does approach the true value: that is a tendency, and its name is
+the law of large numbers. Second, the remaining error has a definite size and
+shape: that is fluctuation, and its name is the central limit theorem. This chapter
+supplies names, proofs, and limits of validity for both.
+
+Chapter 18 has already prepared the ingredients: expectation, variance, and the
+distribution of a sum through convolution. Convolution is useful only when $n$ is
+small and the original shape is simple; for most distributions no closed form
+exists. What we need is not the exact distribution at one $n$, but a statement that
+holds for every large $n$. The practical questions are two: how close may the
+average be trusted, and how large an error is reasonable. The answers come from
+examining how the sequence of distributions behaves, not from computing one
+distribution.
+
+\begin{untukanak}
+Imagine a class is asked to guess the number of marbles in a large jar. The
+children's guesses miss badly in both directions. One child guesses three hundred,
+another guesses two thousand, when the jar holds eight hundred. The teacher then
+writes all the guesses on the board and computes their average. The number turns
+out to be very close to eight hundred.
+
+Now the teacher adds students. With thirty guessers the average still wobbles. With
+three hundred guessers the average is calmer. With three thousand guessers the
+average hardly shifts any more. There are two strange things here. First, not one
+of the guessers has become better; only the number of guessers changed. Second,
+adding guessers from thirty to three hundred helps far more than adding from three
+hundred to three thousand. The help keeps growing, but more and more slowly.
+
+The question that makes us curious: if each guess can miss by a great deal, why
+can the average be trusted? And why does the help slow down in a pattern we can
+predict, rather than at random? In this chapter we will find out why, and at the
+same time find out when the habit of trusting the average deceives us.
+\end{untukanak}
+
+\section{Three Meanings of Approaching for a Random Variable}
+\tingkat{basic}
+
+In everyday language: a sequence of random variables can "approach" in three
+different senses, and the loosest sense says nothing at all about the values coming
+closer.
+
+A sequence of real numbers has only one sense of approaching, namely that the
+distance $|x_n-L|$ becomes small. For random variables that distance is itself a
+random variable, so we have to choose which quantity is made small. The first
+choice is the probability. This is the choice that is weakest intuitively but most
+useful practically.
+
+\kamus{convergence in probability}{konvergensi dalam peluang}{a promise that the
+probability of missing by more than a tolerance shrinks to zero, not a promise that
+the value comes closer on a single run}
+
+\begin{definisi}[Convergence in probability]
+A sequence of random variables $X_1,X_2,\dots$ \emph{converges in probability}
+\index{convergence in probability} to a random variable $X$ if for every
+$\varepsilon>0$
+\[
+P\bigl(|X_n-X|>\varepsilon\bigr)\to 0 \qquad (n\to\infty).
+\]
+\end{definisi}
+
+Note where the quantifier sits. The value of $\varepsilon$ is chosen first, and the
+probability may shrink only after that. This definition does not say that
+$|X_n-X|$ shrinks for one particular outcome of the experiment; it says that the
+event "missing by more than $\varepsilon$" becomes rarer and rarer. On the same
+experiment, $X_n$ may still miss by a lot, provided that event is rare.
+
+\kamus{convergence in distribution}{konvergensi dalam distribusi}{what resembles is
+the shape of the distribution, not the value itself; two variables can share a shape
+without ever coming close}
+
+\begin{definisi}[Convergence in distribution]
+Let $F_n$ be the distribution function of $X_n$ and $F$ the distribution function
+of $X$. We write $X_n\rightsquigarrow X$ when $F_n(t)\to F(t)$ at every point $t$
+at which $F$ is continuous. That limit is called the \emph{limit in
+distribution}\index{convergence in
+distribution}.
+\end{definisi}
+
+The condition "at continuity points" is not a technical whim. Take $X_n$ equal to
+$1/n$ with probability one, and $X$ equal to $0$ with probability one. Then
+$F_n(0)=0$ for every $n$, whereas $F(0)=1$, so the sequence does not converge at
+$t=0$. At every $t\neq0$ the sequence does converge, and $t=0$ is the only point of
+discontinuity of $F$. Without that condition, a correct conclusion would be
+rejected because of a single point.
+
+The third sense is stronger and more literal: almost every outcome of the
+experiment, as one point $\omega$ of the sample space, produces a convergent
+sequence of real numbers.
+
+\begin{definisi}[Almost sure convergence]
+$X_n$ \emph{converges almost surely}\index{convergence almost surely} to $X$ when
+\[
+P\bigl(\{\omega : X_n(\omega)\to X(\omega)\}\bigr)=1 .
+\]
+\end{definisi}
+
+Here the sequence of real numbers $X_1(\omega),X_2(\omega),\dots$ really does
+converge in the sense of Chapter 4, and the set of outcomes that fail to converge
+may only have probability zero. Therefore almost sure convergence speaks about one
+long run, whereas convergence in probability speaks about one $n$ across many runs
+at once.
+
+The three senses are not equivalent, but there is a fixed direction of implication.
+
+\begin{teorema}[Relations among the three modes]
+For random variables $X_n$ and $X$:
+(a) $X_n\to X$ almost surely implies $X_n\to X$ in probability;
+(b) $X_n\to X$ in probability implies $X_n\rightsquigarrow X$;
+(c) if $X_n\rightsquigarrow c$ and $c$ is a constant, then $X_n\to c$ in
+probability.
+\end{teorema}
+
+\begin{proof}[Proof]
+For (a), fix $\varepsilon>0$ and let
+$A_n=\{\sup_{k\ge n}|X_k-X|>\varepsilon\}$. The sets $A_n$ decrease, and every
+$\omega$ in $\bigcap_n A_n$ satisfies $|X_k(\omega)-X(\omega)|>\varepsilon$ for
+infinitely many $k$, so the sequence does not converge to $X(\omega)$. Hence
+$\bigcap_n A_n$ is contained in a set of probability zero. Since probability is
+continuous from above on sets of finite probability,
+$P(A_n)\to P(\bigcap_n A_n)=0$. The event $\{|X_n-X|>\varepsilon\}$ is contained in
+$A_n$, so its probability also tends to zero.
+
+For (b), take $t$ a continuity point of $F$ and $\varepsilon>0$. From
+$\{X_n\le t\}\subseteq\{X\le t+\varepsilon\}\cup\{|X_n-X|>\varepsilon\}$ we obtain
+\[
+F_n(t)\le F(t+\varepsilon)+P\bigl(|X_n-X|>\varepsilon\bigr).
+\]
+In the same way, from $\{X\le t-\varepsilon\}\subseteq\{X_n\le t\}\cup
+\{|X_n-X|>\varepsilon\}$ we obtain
+$F(t-\varepsilon)\le F_n(t)+P(|X_n-X|>\varepsilon)$. The two inequalities give
+\[
+F(t-\varepsilon)-\delta_n\le F_n(t)\le F(t+\varepsilon)+\delta_n,
+\qquad \delta_n=P\bigl(|X_n-X|>\varepsilon\bigr).
+\]
+Since $\delta_n\to0$, the limit inferior and the limit superior of $F_n(t)$ are
+trapped between $F(t-\varepsilon)$ and $F(t+\varepsilon)$. Let
+$\varepsilon\downarrow0$ and use the continuity of $F$ at $t$; both tend to $F(t)$.
+
+For (c), take $\varepsilon>0$. Since $F$ is the point-mass distribution at $c$, the
+points $c-\varepsilon$ and $c+\varepsilon$ are both continuity points of $F$, so
+\[
+P\bigl(|X_n-c|>\varepsilon\bigr)
+\le P(X_n<c-\varepsilon)+P(X_n>c+\varepsilon)
+\le F_n(c-\varepsilon)+1-F_n(c+\varepsilon)
+\to 0+1-1=0 .
+\]
+\end{proof}
+
+The three reverse implications fail, and the counterexamples are worth remembering
+because each one shows what is actually lost.
+
+\begin{contoh}[In probability but not almost surely]
+Split $(0,1)$ into $k$ pieces of equal length, for $k=1,2,3,\dots$, then arrange all
+those pieces into one list. Define $X_n(\omega)=1$ if $\omega$ lies in the $n$-th
+piece and $0$ otherwise. The $n$-th piece comes from the split into $k_n$ pieces, so
+$P(X_n=1)=1/k_n\to0$ and $X_n\to0$ in probability. But for every
+$\omega\in(0,1)$, within every block of splits there is exactly one $n$ with
+$X_n(\omega)=1$. That value one appears infinitely often, so $X_n(\omega)$ does not
+converge, for every $\omega$. Hence there is no almost sure convergence. This
+sequence even converges in $L^1$, because $\mathbb{E}|X_n|=1/k_n\to0$, so $L^1$
+strength does not close that gap either.
+\end{contoh}
+
+\begin{contoh}[In distribution but not in probability]
+Take $X\sim N(0,1)$ and set $X_n=-X$ for every $n$. The distribution of $X_n$ is
+exactly the distribution of $X$, so $F_n(t)=F(t)$ and $X_n\rightsquigarrow X$
+vacuously. But $P(|X_n-X|>\varepsilon)=P(2|X|>\varepsilon)>0$ for every
+$\varepsilon$, and that probability does not depend on $n$. Two variables of the
+same shape need not be close: $X$ and $-X$ can be far apart on the same run.
+\end{contoh}
+
+The lesson of those two examples: convergence in distribution touches the
+distributions one at a time, whereas the other two modes touch the relation between
+variables on the same sample space. That is why part (c) of the theorem matters
+practically: in asymptotic statistics the limit is almost always a constant, and
+there the three modes meet.
+
+One further warning has to be recorded from the start, because the mistake is
+expensive.
+
+\begin{catatan}
+Convergence in probability does not carry convergence of expectations with it.
+Suppose $P(X_n=n^2)=1/n$ and $P(X_n=0)=1-1/n$. For every $\varepsilon>0$,
+$P(|X_n|>\varepsilon)=1/n\to0$, so $X_n\to0$ in probability. But
+$\mathbb{E}[X_n]=n$, so the expectation tends to infinity. An average that
+concentrates is no guarantee that its expectation concentrates.
+\end{catatan}
+
+\section{Chebyshev's Inequality and the Weak Law of Large Numbers}
+\tingkat{intermediate}
+
+In everyday language: the probability of straying far from the mean is bounded by
+the variance divided by the square of that stray distance.
+
+To prove the law of large numbers we need only one inequality, and that inequality
+needs only one simple observation about expectation.
+
+\begin{lemma}[Markov]
+If $Y\ge0$ and $a>0$, then $P(Y\ge a)\le \mathbb{E}[Y]/a$.
+\index{Markov's inequality}
+\end{lemma}
+
+\begin{proof}[Proof]
+Write $Y=Y\mathbf{1}_{\{Y<a\}}+Y\mathbf{1}_{\{Y\ge a\}}$. The first term is
+nonnegative. On the event $Y\ge a$ we have $Y\ge a$, so the expectation of the
+second term is at least $a\,P(Y\ge a)$. Hence
+$\mathbb{E}[Y]\ge 0+a\,P(Y\ge a)$.
+\end{proof}
+
+\begin{akibat}[Chebyshev's inequality]
+If $\mathbb{E}[X]=\mu$ and $\operatorname{Var}(X)=\sigma^2<\infty$, then for every
+$a>0$
+\[
+P\bigl(|X-\mu|\ge a\bigr)\le\frac{\sigma^2}{a^2}.
+\]
+\index{Chebyshev's inequality}
+\end{akibat}
+
+\begin{proof}[Proof]
+Apply Markov's lemma to $Y=(X-\mu)^2$ with threshold $a^2$. The event
+$\{Y\ge a^2\}$ is the same as $\{|X-\mu|\ge a\}$, and $\mathbb{E}[Y]=\sigma^2$.
+\end{proof}
+
+This inequality is weak, and its weakness is not a hidden defect but its strength.
+It knows nothing about the shape of any distribution, only two moments. Therefore it
+holds for every distribution with finite variance, and precisely for that reason it
+is enough to prove a theorem that holds in general.
+
+\kamus{law of large numbers}{hukum bilangan besar}{a promise that the average of
+many observations sticks to the true mean, with a probability of missing that
+shrinks}
+
+\begin{teorema}[Weak law of large numbers]
+Suppose $X_1,X_2,\dots$ are independent and identically distributed with
+$\mathbb{E}[X_i]=\mu$ and $\operatorname{Var}(X_i)=\sigma^2<\infty$. Then for every
+$\varepsilon>0$\index{law of large numbers}
+\[
+P\bigl(|\bar X_n-\mu|\ge\varepsilon\bigr)\to0,
+\qquad \bar X_n=\frac1n\sum_{i=1}^n X_i .
+\]
+\end{teorema}
+
+\begin{proof}[Proof]
+Since expectation is linear, $\mathbb{E}[\bar X_n]=\mu$. Since the variables are
+independent, the variance of a sum is the sum of the variances, so
+$\operatorname{Var}(\bar X_n)=\sigma^2/n$. Chebyshev's inequality with
+$a=\varepsilon$ gives
+\[
+P\bigl(|\bar X_n-\mu|\ge\varepsilon\bigr)\le\frac{\sigma^2}{n\varepsilon^2}.
+\]
+The right-hand side tends to zero for each fixed $\varepsilon>0$.
+\end{proof}
+
+Note what has just been proved and what has not. What is proved: for a tolerance
+$\varepsilon$ that we choose ourselves, the probability that the average misses by
+more than $\varepsilon$ tends to zero. What is not proved: how fast, and what the
+shape of the remaining error is. Those are two different questions.
+
+Figure~\ref{fig:tiga-lebar} draws the content of that statement for dice. Only two
+things change from $n=4$ to $n=64$: the width shrinks and the peak rises, while the
+center stays at $3.5$. The law of large numbers is not a promise that one run is
+more accurate, but that the distribution of possibilities contracts to a single
+point.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.95\linewidth, height=5.4cm,
+  xmin=1, xmax=6, ymin=0, ymax=2.05,
+  xlabel={value of the average $\bar x_n$}, ylabel={density},
+  label style={font=\small}, tick label style={font=\footnotesize},
+  axis lines=left,
+  legend style={font=\footnotesize, draw=layergrey!35, fill=white,
+    fill opacity=0.9, text opacity=1, at={(0.015,0.985)},
+    anchor=north west, cells={anchor=west}},
+  legend cell align=left,
+]
+\addplot[draw=layerteal!60!black, fill=layerteal!18, fill opacity=0.85,
+  line width=0.4pt] coordinates{
+  (1,0.0031) (1.25,0.0123) (1.5,0.0309) (1.75,0.0617) (2,0.108) (2.25,0.1728)
+  (2.5,0.2469) (2.75,0.321) (3,0.3858) (3.25,0.4321) (3.5,0.4506) (3.75,0.4321)
+  (4,0.3858) (4.25,0.321) (4.5,0.2469) (4.75,0.1728) (5,0.108) (5.25,0.0617)
+  (5.5,0.0309) (5.75,0.0123) (6,0.0031)};
+\addlegendentry{$n=4$}
+\addplot[draw=layerindigo!70!black, fill=layerindigo!22, fill opacity=0.8,
+  line width=0.4pt] coordinates{
+  (1.6875,0) (1.75,0.0001) (1.8125,0.0002) (1.875,0.0004) (1.9375,0.0008) (2,0.0014)
+  (2.0625,0.0025) (2.125,0.0043) (2.1875,0.0072) (2.25,0.0117) (2.3125,0.0184) (2.375,0.028)
+  (2.4375,0.0416) (2.5,0.0601) (2.5625,0.0847) (2.625,0.1163) (2.6875,0.1558) (2.75,0.2039)
+  (2.8125,0.2607) (2.875,0.3258) (2.9375,0.3981) (3,0.4759) (3.0625,0.5567) (3.125,0.6374)
+  (3.1875,0.7145) (3.25,0.7843) (3.3125,0.8431) (3.375,0.8878) (3.4375,0.9156) (3.5,0.9251)
+  (3.5625,0.9156) (3.625,0.8878) (3.6875,0.8431) (3.75,0.7843) (3.8125,0.7145) (3.875,0.6374)
+  (3.9375,0.5567) (4,0.4759) (4.0625,0.3981) (4.125,0.3258) (4.1875,0.2607) (4.25,0.2039)
+  (4.3125,0.1558) (4.375,0.1163) (4.4375,0.0847) (4.5,0.0601) (4.5625,0.0416) (4.625,0.028)
+  (4.6875,0.0184) (4.75,0.0117) (4.8125,0.0072) (4.875,0.0043) (4.9375,0.0025) (5,0.0014)
+  (5.0625,0.0008) (5.125,0.0004) (5.1875,0.0002) (5.25,0.0001) (5.3125,0)};
+\addlegendentry{$n=16$}
+\addplot[draw=accent!80!black, fill=accent!30, fill opacity=0.8,
+  line width=0.5pt] coordinates{
+  (2.5312,0) (2.5469,0.0001) (2.5625,0.0001) (2.5781,0.0001) (2.5938,0.0002) (2.6094,0.0003)
+  (2.625,0.0004) (2.6406,0.0005) (2.6562,0.0007) (2.6719,0.0009) (2.6875,0.0012) (2.7031,0.0016)
+  (2.7188,0.0021) (2.7344,0.0028) (2.75,0.0036) (2.7656,0.0047) (2.7812,0.0061) (2.7969,0.0079)
+  (2.8125,0.01) (2.8281,0.0127) (2.8438,0.0161) (2.8594,0.0202) (2.875,0.0252) (2.8906,0.0312)
+  (2.9062,0.0385) (2.9219,0.0472) (2.9375,0.0576) (2.9531,0.0698) (2.9688,0.0842) (2.9844,0.1009)
+  (3,0.1203) (3.0156,0.1426) (3.0312,0.1681) (3.0469,0.1971) (3.0625,0.2297) (3.0781,0.2663)
+  (3.0938,0.307) (3.1094,0.3521) (3.125,0.4015) (3.1406,0.4553) (3.1562,0.5136) (3.1719,0.5762)
+  (3.1875,0.6429) (3.2031,0.7134) (3.2188,0.7875) (3.2344,0.8645) (3.25,0.944) (3.2656,1.0252)
+  (3.2812,1.1075) (3.2969,1.19) (3.3125,1.2718) (3.3281,1.352) (3.3438,1.4295) (3.3594,1.5035)
+  (3.375,1.573) (3.3906,1.6369) (3.4062,1.6943) (3.4219,1.7445) (3.4375,1.7867) (3.4531,1.8202)
+  (3.4688,1.8445) (3.4844,1.8592) (3.5,1.8641) (3.5156,1.8592) (3.5312,1.8445) (3.5469,1.8202)
+  (3.5625,1.7867) (3.5781,1.7445) (3.5938,1.6943) (3.6094,1.6369) (3.625,1.573) (3.6406,1.5035)
+  (3.6562,1.4295) (3.6719,1.352) (3.6875,1.2718) (3.7031,1.19) (3.7188,1.1075) (3.7344,1.0252)
+  (3.75,0.944) (3.7656,0.8645) (3.7812,0.7875) (3.7969,0.7134) (3.8125,0.6429) (3.8281,0.5762)
+  (3.8438,0.5136) (3.8594,0.4553) (3.875,0.4015) (3.8906,0.3521) (3.9062,0.307) (3.9219,0.2663)
+  (3.9375,0.2297) (3.9531,0.1971) (3.9688,0.1681) (3.9844,0.1426) (4,0.1203) (4.0156,0.1009)
+  (4.0312,0.0842) (4.0469,0.0698) (4.0625,0.0576) (4.0781,0.0472) (4.0938,0.0385) (4.1094,0.0312)
+  (4.125,0.0252) (4.1406,0.0202) (4.1562,0.0161) (4.1719,0.0127) (4.1875,0.01) (4.2031,0.0079)
+  (4.2188,0.0061) (4.2344,0.0047) (4.25,0.0036) (4.2656,0.0028) (4.2812,0.0021) (4.2969,0.0016)
+  (4.3125,0.0012) (4.3281,0.0009) (4.3438,0.0007) (4.3594,0.0005) (4.375,0.0004) (4.3906,0.0003)
+  (4.4062,0.0002) (4.4219,0.0001) (4.4375,0.0001) (4.4531,0.0001) (4.4688,0)};
+\addlegendentry{$n=64$}
+\draw[layergrey, densely dotted, line width=0.6pt] (axis cs:3.5,0) -- (axis cs:3.5,1.95);
+\node[font=\footnotesize, layergrey, anchor=south east] at (axis cs:3.45,1.95) {$3.5$};
+\end{axis}
+\end{tikzpicture}
+\caption{The three distributions of the average of $n$ die rolls, drawn on the same
+scale: $n=4$, $16$, and $64$. Their widths are $0.853913$, $0.426956$, and
+$0.213478$, so each time $n$ is multiplied by four the width is halved. The peak
+rises from $0.4506$ to $0.9251$ and $1.8641$, while the center stays at
+$3.5$.}
+\label{fig:tiga-lebar}
+\end{figure}
+
+The numbers make that difference tangible. For a coin toss with $p=1/2$ and
+tolerance $\varepsilon=0.1$, Chebyshev gives
+$\sigma^2/(n\varepsilon^2)=0.25/(0.01n)=25/n$. For the probability of missing to
+be at most $0.3$, it suffices that $n\ge25/0.3=83.33$, that is $n=84$. At
+$n=84$ that bound equals $0.297619$, so Chebyshev guarantees that the probability
+of landing between $0.4$ and $0.6$ is at least $0.702381$. The true
+probability, computed from the binomial distribution, is $0.937028$, and the
+normal approximation gives $0.933197$. The guarantee is correct but too low by
+about $23$ percentage points.
+
+The same weakness becomes severe when $\sigma$ is large. For a fair die,
+$\operatorname{Var}(X)=35/12=2.916667$ and $\sigma=1.707825$. At $n=100$ with
+$\varepsilon=0.1$, Chebyshev gives the bound $2.916667$, a number larger than
+one and therefore meaningless. To obtain an error of $0.01$ with $95$ percent
+confidence, the normal formula demands at least $112043$ observations, whereas
+Chebyshev demands far more still.
+
+This is where the problem that sets up the next section lies. Chebyshev answers "may
+the average be trusted" correctly but bluntly. It cannot answer "how close, with
+what probability" in a usable way. A sharp answer demands knowledge of the shape of
+the error distribution, not only of its size.
+
+\begin{bacakeras}
+Two voices, taking turns. The first names the number of tosses; the second names the
+distance off that is still reasonable.
+
+--- Ten tosses. The miss is still wide.
+--- A hundred tosses. Already narrower.
+--- A thousand tosses. Narrower still.
+
+Now quadruple, do not add ten: ten becomes forty, a hundred becomes four hundred, a
+thousand becomes four thousand. The miss is half. Not a quarter. Half. Every time
+fourfold, exactly half.
+
+Then reverse the direction, and read it more slowly. What is the cost of one more
+digit after the decimal point? A hundred times the tosses. A hundred times the work,
+one digit. The average is impatient: it demands four times, not two, and it offers
+no discount.
+
+The line repeated three times: four times the data, half the error.
+\end{bacakeras}
+
+\begin{untukanak}
+Imagine a machine that fills bags of rice. Each bag misses the requested weight by a
+little, sometimes over and sometimes under, and the size of the miss differs from
+bag to bag; weighing one bag tells us nothing about the direction of its miss.
+
+Now the machine fills a hundred bags, and we weigh all of them at once. The misses
+upward and downward cancel each other, so the total weight is much closer to a
+hundred times the requested weight. If there are ten thousand bags, the total is
+almost exact.
+
+The surprising part is that we do not need to know the shape of the distribution of
+the miss. Whether the miss has a bell shape, takes only two values, or has any odd
+shape at all, the distribution of the total still resembles the same bell, provided
+there are enough bags and the miss does not turn into a giant too often. This is
+what lets gamblers, bridge builders, and weather researchers use the same formula.
+
+The question that makes us curious: why does the original shape of the miss no
+longer matter once there are many bags? And why can one bag with a giant miss ruin
+the whole conclusion? In this chapter we will find out why.
+\end{untukanak}
+
+\section{The Strong Law: What It Actually Adds}
+\tingkat{advanced}
+
+In everyday language: with confidence one, the average along one long run
+eventually settles, rather than merely coming close often.
+
+The weak law speaks about each $n$ separately: at a sufficiently large $n$, the
+probability of missing is small. It does not forbid the average from missing badly
+at $n=10^6$, then calming down, and then missing again at $n=10^9$, provided such
+events are rare at each $n$. The strong law closes that gap.
+
+\begin{teorema}[Strong law of large numbers]
+Suppose $X_1,X_2,\dots$ are independent and identically distributed with
+$\mathbb{E}|X_1|<\infty$ and $\mathbb{E}[X_1]=\mu$. Then
+$\bar X_n\to\mu$ almost surely.\index{strong law of large numbers}
+\end{teorema}
+
+The difference is subtle but sharp. The sequence $X_n$ of the previous section
+converges in probability to zero, yet at each $\omega$ its value is one infinitely
+often. The weak law cannot reject it; the strong law does, because it demands
+convergence at every $\omega$ outside a set of probability zero.
+
+Note the hypothesis as well. The strong law demands only $\mathbb{E}|X_1|<\infty$,
+with no variance. The weak law we proved above demands $\sigma^2<\infty$ only
+because its proof uses Chebyshev; that hypothesis is not the natural hypothesis of
+the theorem. For the weak law, a necessary and sufficient condition for an iid
+sequence is $n\,P(|X_1|>n)\to0$, which is weaker than $\mathbb{E}|X_1|<\infty$. We
+leave those details aside, and the reader can find them in Feller, \emph{An
+Introduction to Probability Theory and Its Applications}, volume 2, in the chapter
+on the law of large numbers.
+
+We do not carry out the proof of the strong law here. Its classical form truncates
+the variables at the level $n$, applies Borel--Cantelli to the tails of the
+truncation, and then uses the Cauchy criterion for almost sure convergence; Etemadi
+gives a proof that avoids the variance assumption and needs only pairwise
+independence. Where the proofs live: Blitzstein and Hwang,
+\emph{Introduction to Probability}, chapter 10, section 10.2; Wasserman, \emph{All
+of Statistics}, appendix to chapter 5, section 5.7.1. What must be remembered from
+that statement: the strong law gives no rate. It says that the error is eventually
+small and stays small, not how fast.
+
+\begin{tangan}
+Take one coin and a sheet of lined paper. Heads counts one, tails counts zero.
+
+Toss forty times, write 1 or 0 in a row. On the second line, write the running
+average under each toss: the sum so far divided by the number of tosses so far.
+
+What we should see: the second line swings most wildly over the first five tosses,
+then grows calmer. At the fortieth toss the number need not be $0.5$; $0.475$ or
+$0.525$ is still normal.
+
+Now repeat that experiment four times and draw the four paths on one graph with
+different pencils. All four paths narrow toward $0.5$, and the width of their
+spread is halved each time the number of tosses is multiplied by four.
+
+Tape the sheet to the wall. If someone says the results must balance, point to the
+fortieth toss, not the tenth.
+\end{tangan}
+
+\section{The Central Limit Theorem}
+\tingkat{advanced}
+
+In everyday language: the error of the average, once magnified by a factor
+$\sqrt n$, always has the same bell shape, whatever the original shape of the data.
+
+The law of large numbers tells us that $\bar X_n$ sticks to $\mu$. It does not tell
+us how wide that sticking is. The central limit theorem answers that, and the answer
+is surprising because it does not depend on the original distribution.
+
+\kamus{central limit theorem}{teorema limit pusat}{the bell shape that appears in
+the error of the average, not in the data, and only after that error is magnified by
+the square root of the number of data points}
+
+\begin{teorema}[Central limit, Lindeberg--Levy form]\index{central limit theorem}
+Suppose $X_1,X_2,\dots$ are independent and identically distributed with
+$\mathbb{E}[X_i]=\mu$ and $0<\operatorname{Var}(X_i)=\sigma^2<\infty$. Then
+\[
+Z_n=\frac{\sqrt n\,(\bar X_n-\mu)}{\sigma}
+\;\rightsquigarrow\; Z\sim N(0,1),
+\]
+meaning that $P(Z_n\le z)\to\Phi(z)$ for every $z\in\mathbb{R}$.
+\end{teorema}
+
+Note where $\sqrt n$ sits. The standard deviation of $\bar X_n$ is $\sigma/\sqrt n$,
+not $\sigma/n$. That is why cutting the error in half requires four times the data,
+and adding one digit of precision requires a hundred times the data. This is bad
+news that cannot be dodged: precision comes at a quadratic price.
+
+Figure~\ref{fig:lonceng-dari-kotak} shows where the bell shape comes from. The left
+panel is the distribution of a single die: flat, with no bell at all. The right panel
+is the distribution of the average of twelve dice after standardization. The raw
+material is not a bell; the result is a bell.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  name=satu, width=4.3cm, height=4.5cm,
+  ybar, bar width=11pt,
+  xmin=0.5, xmax=6.5, ymin=0, ymax=0.21,
+  xtick={1,2,3,4,5,6}, ytick={0,0.0833,0.1667},
+  yticklabels={$0$,$\frac{1}{12}$,$\frac16$},
+  xlabel={die face}, ylabel={probability},
+  title={\footnotesize one die},
+  label style={font=\footnotesize}, tick label style={font=\scriptsize},
+  axis lines=left,
+]
+\addplot[fill=layerindigo!50, draw=layerindigo!80!black, line width=0.3pt]
+  coordinates{
+  (1,0.1667) (2,0.1667) (3,0.1667) (4,0.1667) (5,0.1667) (6,0.1667)};
+\end{axis}
+\begin{axis}[
+  name=duabelas, at={(satu.east)}, anchor=west, xshift=7pt,
+  width=9.3cm, height=4.5cm,
+  ybar, bar width=3.4pt,
+  xmin=-5.3, xmax=5.3, ymin=0, ymax=0.45,
+  xtick={-4,-2,0,2,4}, ytick={0,0.2,0.4},
+  xlabel={score $z$ from the mean}, ylabel={density},
+  title={\footnotesize twelve dice, already standardized},
+  label style={font=\footnotesize}, tick label style={font=\scriptsize},
+  axis lines=left,
+]
+\addplot[fill=accent!45, draw=accent!70!black, line width=0.2pt]
+  coordinates{
+  (-4.3948,0) (-4.2258,0.00001) (-4.0567,0.00003) (-3.8877,0.00009) (-3.7187,0.0002) (-3.5496,0.00044)
+  (-3.3806,0.00091) (-3.2116,0.00177) (-3.0426,0.00327) (-2.8735,0.00575) (-2.7045,0.00966) (-2.5355,0.01559)
+  (-2.3664,0.02418) (-2.1974,0.03614) (-2.0284,0.05215) (-1.8593,0.07276) (-1.6903,0.09826) (-1.5213,0.1286)
+  (-1.3522,0.16323) (-1.1832,0.20113) (-1.0142,0.24073) (-0.8452,0.28001) (-0.6761,0.31669) (-0.5071,0.34838)
+  (-0.3381,0.37287) (-0.169,0.38835) (0,0.39365) (0.169,0.38835) (0.3381,0.37287) (0.5071,0.34838)
+  (0.6761,0.31669) (0.8452,0.28001) (1.0142,0.24073) (1.1832,0.20113) (1.3522,0.16323) (1.5213,0.1286)
+  (1.6903,0.09826) (1.8593,0.07276) (2.0284,0.05215) (2.1974,0.03614) (2.3664,0.02418) (2.5355,0.01559)
+  (2.7045,0.00966) (2.8735,0.00575) (3.0426,0.00327) (3.2116,0.00177) (3.3806,0.00091) (3.5496,0.00044)
+  (3.7187,0.0002) (3.8877,0.00009) (4.0567,0.00003) (4.2258,0.00001) (4.3948,0)};
+\addplot[domain=-4.6:4.6, samples=120, layerindigo, line width=0.9pt]
+  {0.39894228*exp(-x^2/2)};
+\end{axis}
+\end{tikzpicture}
+\caption{From flat to bell. Left: the distribution of one die, flat over six values.
+Right: the distribution of the average of twelve dice after standardization, stacked
+with the standard normal curve. The supremum distance between the two is
+$0.03384$, less than half the distance at $n=2$, which is $0.08333$. The raw
+material is not a bell, the result is a bell.}
+\label{fig:lonceng-dari-kotak}
+\end{figure}
+
+The following proof uses moment generating functions. It is complete for the case
+in which the third moment is finite, and we state that limitation honestly at the
+end.
+
+\begin{lemma}[Convergence through moment generating functions]\index{moment generating function}
+Suppose $\psi_n(t)=\mathbb{E}[e^{tZ_n}]$ and $\psi(t)=\mathbb{E}[e^{tZ}]$ are finite
+on some open interval around $t=0$. If $\psi_n(t)\to\psi(t)$ for every $t$ in that
+interval, then $Z_n\rightsquigarrow Z$.
+\end{lemma}
+
+That lemma is the continuity theorem for moment generating functions. Its proof uses
+the fact that the distribution function is determined by its moment generating
+function on an interval around zero, and we do not repeat it here; see Wasserman,
+\emph{All of Statistics}, chapter 5, section 5.7.2, Lemma 5.20.
+
+\begin{proof}[Proof of the central limit theorem]
+Set $Y_i=(X_i-\mu)/\sigma$, so that $\mathbb{E}[Y_i]=0$,
+$\operatorname{Var}(Y_i)=1$, and $Z_n=n^{-1/2}\sum_{i=1}^n Y_i$. Let
+$\psi(t)=\mathbb{E}[e^{tY_1}]$ be the moment generating function of $Y_1$, which is
+finite on the interval $|t|\le\delta$. Since the variables are independent, the
+moment generating function of $Z_n$ is
+\[
+\xi_n(t)=\Bigl[\psi\bigl(t/\sqrt n\bigr)\Bigr]^n .
+\]
+Derivatives at zero give $\psi(0)=1$, $\psi'(0)=\mathbb{E}[Y_1]=0$, and
+$\psi''(0)=\mathbb{E}[Y_1^2]=1$. The second-order Taylor expansion with third-order
+remainder, valid when $\mathbb{E}|Y_1|^3<\infty$, reads
+\[
+\psi(s)=1+\frac{s^2}{2}+R(s),\qquad |R(s)|\le C|s|^3 \quad (|s|\le\delta).
+\]
+For $n$ large enough we have $|t|/\sqrt n\le\delta$, so
+\[
+\xi_n(t)=\Bigl(1+\frac{t^2}{2n}+R\bigl(t/\sqrt n\bigr)\Bigr)^n
+=\Bigl(1+\frac{t^2}{2n}+O\bigl(n^{-3/2}\bigr)\Bigr)^n .
+\]
+Take logarithms. With $\log(1+a)=a-a^2/2+\dots$ and
+$a_n=t^2/(2n)+O(n^{-3/2})$,
+\[
+\log\xi_n(t)=n\Bigl(a_n-\frac{a_n^2}{2}+\dots\Bigr)
+=\frac{t^2}{2}+O\bigl(n^{-1/2}\bigr)-\frac{t^4}{8n}+\dots
+\longrightarrow \frac{t^2}{2}.
+\]
+Hence $\xi_n(t)\to e^{t^2/2}$ for every fixed $t$. That last function is the moment
+generating function of $N(0,1)$, so the lemma above gives
+$Z_n\rightsquigarrow N(0,1)$.
+\end{proof}
+
+There is one further hypothesis that slips in: the third-order Taylor remainder
+demands $\mathbb{E}|Y_1|^3<\infty$. For distributions with very heavy tails that
+hypothesis can fail even though the variance is finite, and the proof above has to
+be replaced. The usual route is to use the characteristic function
+$\varphi(t)=\mathbb{E}[e^{itX}]$, which always exists because $|e^{itX}|=1$, and then
+to apply Levy's continuity theorem. The skeleton of the proof is the same: the
+logarithm of the characteristic function of $Z_n$ tends to $-t^2/2$. The version
+without the third-moment assumption is in Wasserman, chapter 5, section 5.7.2, and
+in Blitzstein and Hwang, chapter 10, section 10.3.
+
+This theorem does not say that the error is small. It says that the error has a bell
+shape once it is divided by $\sigma/\sqrt n$. Its size is still given by
+$\sigma/\sqrt n$, and $\sigma$ is a quantity we usually do not know. In practice
+$\sigma$ is replaced by the sample standard deviation $s$, and that replacement does
+not destroy the limit; the statement becomes $\sqrt n(\bar X_n-\mu)/s_n
+\rightsquigarrow N(0,1)$. The quantity $\sigma/\sqrt n$ is called the standard error
+\index{standard error} (\emph{galat baku}), and it is the basis of the confidence
+intervals in Chapter 20.
+
+How fast that approximation improves can also be bounded.
+
+\begin{teorema}[Berry--Esseen inequality]
+If $\rho=\mathbb{E}|X_1-\mu|^3<\infty$, then
+\[
+\sup_z\bigl|P(Z_n\le z)-\Phi(z)\bigr|\le \frac{C\rho}{\sigma^3\sqrt n},
+\]
+where $C$ is a universal constant; the value $C=0.4748$ suffices for all
+distributions.
+\end{teorema}
+
+The shape of this inequality matters: the distance shrinks like $1/\sqrt n$, with a
+constant that depends on the skewness of the original distribution through
+$\rho/\sigma^3$. A strongly skewed distribution will need a far larger $n$ than a
+symmetric one. The numbers in the lab section show this quantitatively for the
+exponential distribution, whose third moment is $\rho=2.414553$ and whose bound is
+therefore $1.1464/\sqrt n$.
+
+\begin{resep}
+Three steps to standardize a sample average. The order must not be swapped.
+\begin{enumerate}
+\item \textbf{Subtract the center.} Compute $\bar x-\mu$. The bell shifts so that
+      its peak falls at zero.
+\item \textbf{Divide by the width.} Divide the result by the standard error
+      $\sigma/\sqrt n$. The shape of the bell does not change; only its scale becomes
+      one unit.
+\item \textbf{Read the table.} The remaining number $z$ is read off $\Phi(z)$; for
+      the right tail use $1-\Phi(z)$.
+\end{enumerate}
+A warning about order: dividing before subtracting the center shifts the result by
+$\mu\sqrt n/\sigma$. For dice with $\mu=3.5$, $\sigma=1.707825$, and $n=12$,
+that shift is $7.10$; the number is already outside any normal table.
+\end{resep}
+
+\section{The Normal Approximation and the Continuity Correction}
+\tingkat{intermediate}
+
+In everyday language: to compute the probability of a sum we may use the normal
+table, but when the sum can only take integer values, the threshold is shifted by
+one half.
+
+The normal approximation for sums works most simply on discrete distributions, and
+there a small correction appears whose effect is large. It is called the continuity
+correction\index{continuity correction}. Take $S\sim
+\text{Binomial}(100;\,0.5)$, so that $\mu=50$ and $\sigma=\sqrt{100\cdot0.5
+\cdot0.5}=5$. The event $\{S\le40\}$ is the same event as $\{S<40.5\}$, because
+$S$ only takes integer values. Hence the correct threshold to standardize is
+$40.5$, not $40$.
+
+\begin{center}
+\begin{tabular}{lrrr}
+\hline
+Event & Exact & No correction & With correction \\
+\hline
+$P(S\le40)$ & $0.028444$ & $0.022750$ & $0.028717$ \\
+$P(S\le55)$ & $0.864373$ & $0.841345$ & $0.864334$ \\
+$P(S=60)$   & $0.010844$ & $0.010798$ & $0.010852$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Read that table line by line. In the first row, the approximation without the
+correction misses by $0.005694$, whereas with the correction it misses by
+$0.000273$, almost twenty-one times closer. In the third row both are already
+close, because near the center of the distribution a width of one unit is already
+small compared with $\sigma=5$. The general lesson: the continuity correction helps
+most in the tails and when $\sigma$ is small. The size of the shift in $z$ that it
+produces is $1/(2\sigma)$, namely $0.1$ in this example.
+
+\kertas{Recompute the first row of this table by hand. $z=(40-50)/5=-2$,
+$\Phi(-2)=0.022750$; then $z=(40.5-50)/5=-1.9$, $\Phi(-1.9)=0.028717$.
+The exact value is $\sum_{k=0}^{40}\binom{100}{k}2^{-100}=0.028444$. Check also
+that the error without the correction $0.005694$ is about $21$ times the error
+with the correction $0.000273$.}
+
+This correction is not a new formula, only a rereading of the event. For a discrete
+variable with spacing $h$ between values, the threshold is shifted by $h/2$ inward.
+For a continuous variable nothing needs shifting, because there are no jumps.
+
+One bad habit deserves mention here. Many books write that the normal approximation
+"may be used when $n\ge30$". That is not a theorem but a habit. The numbers in the
+lab section show why: for the exponential average, the supremum distance to the
+normal at $n=30$ is $0.02429$, and the $95$ percent quantile of $Z_{30}$ is
+$1.7419$ whereas the normal gives $1.6449$. That difference of $0.097$ means a
+confidence interval that is too narrow by about six percent. What decides is not $n$
+alone, but the skewness and kurtosis of the original distribution.
+
+\section{When the Central Limit Theorem Misleads: Heavy Tails}
+\tingkat{advanced}
+
+In everyday language: when one observation can occasionally be far larger than all
+the others, the average no longer settles, and the bell does not appear.
+
+\kamus{heavy tail}{ekor berat}{a probability of huge values that does not shrink
+fast enough, so that one observation can outweigh all the rest}
+
+All the theorems above use one hypothesis that is easy to pass over: finite variance.
+The Cauchy distribution\index{Cauchy distribution}, with density
+\[
+f(x)=\frac{1}{\pi(1+x^2)},\qquad x\in\mathbb{R},
+\]
+does not have it. Its tail shrinks like $1/x$, which is too slow. The probability of
+exceeding ten is $1-(2/\pi)\arctan 10=0.063451$, and the probability of exceeding
+one hundred is still $0.006366$. Compare the standard normal, whose probability of
+exceeding ten is practically zero. Even $\mathbb{E}|X|$ is not finite: the
+expectation truncated at level $M$ equals $(2/\pi)\ln(1+M^2)$, namely $2.9381$ for
+$M=10$, $8.7952$ for $M=10^3$, and $17.5905$ for $M=10^6$. That number grows
+like a logarithm, so there is no limit.
+
+The consequence is blunt, and not merely "the CLT is less accurate".
+
+\begin{proposisi}
+If $X_1,\dots,X_n$ are iid Cauchy, then $\bar X_n$ has a Cauchy distribution for
+every $n$.
+\end{proposisi}
+
+\begin{proof}[Proof]
+The characteristic function of the Cauchy distribution is $\varphi(t)=e^{-|t|}$.
+Since the variables are independent, the characteristic function of $\bar X_n$ is
+$\bigl[e^{-|t|/n}\bigr]^n=e^{-|t|}$, which is the Cauchy characteristic function
+again. Since the characteristic function determines the distribution, $\bar X_n$ has
+a Cauchy distribution.
+\end{proof}
+
+So the average of $10^5$ Cauchy observations is no more informative than one
+observation. The law of large numbers fails, the central limit theorem fails, and
+"standard error" means nothing. The numbers in the lab section show all three
+symptoms at once. The median of $|\bar X_n|$ stays around one for all $n$
+($1.004$, $1.008$, $1.040$, $0.973$), whereas for a distribution with finite
+variance it must shrink like $1/\sqrt n$. The probability $|\bar X_n|>10$ stays
+around $0.0635$, its theoretical value, for all $n$. The empirical standard
+deviation jumps about: $33.04$, $863.61$, $23.87$, $379.53$ for $n=10$ up to
+$10^4$. Those jumps are not a bug in the program. The sample standard deviation of
+Cauchy data is itself a random variable with no typical value.
+
+Figure~\ref{fig:cauchy-berjalan} shows the difference on one run. The running
+average of uniform data sticks to $0.5$ after a few dozen draws. The running
+average of Cauchy data jumps from $-0.0866$ to $4.4572$ at the twentieth draw,
+because one value $90.79$ happened to arrive, and then wanders again. One giant
+value is enough to cancel the entire history before it.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.95\linewidth, height=6.0cm,
+  xmode=log, xmin=1, xmax=4000, ymin=-1.1, ymax=4.9,
+  xlabel={number of draws $n$ (logarithmic scale)}, ylabel={running average},
+  label style={font=\small}, tick label style={font=\footnotesize},
+  axis lines=left,
+  legend style={font=\footnotesize, draw=layergrey!35, fill=white,
+    fill opacity=0.9, text opacity=1, at={(0.015,0.985)},
+    anchor=north west, cells={anchor=west}},
+  legend cell align=left,
+]
+\addplot[accent, line width=0.7pt] coordinates{
+  (1,-0.253) (2,1.045) (3,0.582) (4,0.564) (5,0.553) (6,1.064)
+  (7,-0.579) (8,-0.517) (9,-0.409) (10,-0.325) (11,-0.409) (12,-0.361)
+  (13,-0.344) (14,-0.262) (15,0.008) (16,-0.038) (17,0.017) (18,-0.08)
+  (19,-0.087) (20,4.457) (21,4.29) (22,4.153) (23,4.046) (24,3.762)
+  (25,3.656) (26,3.551) (27,3.425) (28,3.257) (29,3.186) (30,3.083)
+  (31,2.934) (32,2.786) (33,2.837) (34,2.743) (35,2.633) (36,2.528)
+  (37,2.464) (38,2.381) (39,2.279) (40,2.218) (41,2.157) (44,1.732)
+  (47,1.387) (50,1.367) (53,1.191) (57,1.113) (61,1.077) (65,0.942)
+  (70,0.796) (75,0.773) (80,0.725) (85,0.492) (91,0.79) (97,0.655)
+  (104,0.54) (111,0.478) (119,0.494) (127,0.401) (135,0.981) (145,0.868)
+  (155,2.5) (165,2.351) (177,2.207) (189,2.168) (202,1.935) (216,1.854)
+  (230,1.776) (246,1.665) (263,1.573) (281,0.848) (300,0.794) (321,0.791)
+  (343,0.511) (367,0.922) (392,0.986) (419,0.984) (447,1.03) (478,0.951)
+  (511,0.827) (546,0.685) (583,0.37) (623,0.548) (666,0.953) (712,1.021)
+  (761,0.945) (813,2.066) (869,2.135) (929,1.855) (992,1.814) (1060,1.649)
+  (1133,1.31) (1211,0.557) (1294,0.422) (1383,0.434) (1478,0.466) (1579,0.324)
+  (1688,0.406) (1803,0.386) (1927,0.444) (2059,0.403) (2201,0.585) (2352,0.419)
+  (2513,0.528) (2686,0.397) (2870,0.356) (3067,0.326) (3278,0.276) (3503,-0.096)
+  (3743,-0.159) (4000,-0.203)};
+\addlegendentry{Cauchy}
+\addplot[layerteal, dashed, line width=1.0pt] coordinates{
+  (1,0.221) (2,0.272) (3,0.323) (4,0.472) (5,0.462) (6,0.519)
+  (7,0.524) (8,0.573) (9,0.55) (10,0.574) (11,0.605) (12,0.601)
+  (13,0.57) (14,0.581) (15,0.543) (16,0.532) (17,0.529) (18,0.528)
+  (19,0.532) (20,0.544) (21,0.545) (22,0.547) (23,0.539) (24,0.531)
+  (25,0.54) (26,0.555) (27,0.561) (28,0.541) (29,0.545) (30,0.547)
+  (31,0.562) (32,0.549) (33,0.533) (34,0.542) (35,0.531) (36,0.535)
+  (37,0.537) (38,0.526) (39,0.519) (40,0.516) (41,0.517) (44,0.518)
+  (47,0.519) (50,0.503) (53,0.518) (57,0.515) (61,0.525) (65,0.53)
+  (70,0.529) (75,0.53) (80,0.535) (85,0.538) (91,0.539) (97,0.538)
+  (104,0.541) (111,0.535) (119,0.532) (127,0.533) (135,0.528) (145,0.526)
+  (155,0.518) (165,0.523) (177,0.513) (189,0.516) (202,0.513) (216,0.507)
+  (230,0.5) (246,0.498) (263,0.495) (281,0.496) (300,0.496) (321,0.495)
+  (343,0.499) (367,0.499) (392,0.501) (419,0.503) (447,0.497) (478,0.505)
+  (511,0.508) (546,0.509) (583,0.504) (623,0.502) (666,0.497) (712,0.494)
+  (761,0.488) (813,0.484) (869,0.485) (929,0.484) (992,0.485) (1060,0.484)
+  (1133,0.483) (1211,0.485) (1294,0.487) (1383,0.489) (1478,0.488) (1579,0.491)
+  (1688,0.489) (1803,0.489) (1927,0.49) (2059,0.491) (2201,0.49) (2352,0.492)
+  (2513,0.491) (2686,0.493) (2870,0.492) (3067,0.49) (3278,0.492) (3503,0.491)
+  (3743,0.493) (4000,0.493)};
+\addlegendentry{uniform $(0,1)$}
+\draw[layergrey, densely dotted, line width=0.6pt]
+  (axis cs:1,0.5) -- (axis cs:4000,0.5);
+\node[font=\scriptsize, layergrey, anchor=south west] at (axis cs:1.3,0.53) {$0.5$};
+\end{axis}
+\end{tikzpicture}
+\caption{Running averages over 4000 draws. Dashed line: uniform on $(0,1)$, settling
+near $0.5$ and ending at $0.4930$. Solid line: Cauchy, jumping from $-0.0866$
+to $4.4572$ at the twentieth draw when one value $90.79$ arrived, then wandering
+again and ending at $-0.203$. The horizontal axis is logarithmic in width, so that
+the early jump is not hidden.}
+\label{fig:cauchy-berjalan}
+\end{figure}
+
+What replaces the central limit theorem is the family of stable
+distributions\index{stable distribution}. For iid variables with tails that shrink
+like $x^{-\alpha}$ with $0<\alpha<2$, there are constants $a_n$ such that
+\[
+\frac{S_n-a_n}{n^{1/\alpha}}\;\rightsquigarrow\;Y_\alpha,
+\]
+with $Y_\alpha$ the stable distribution of index $\alpha$. For $\alpha=1$ we get
+Cauchy and $n^{1/1}=n$, exactly as in the proposition above. For
+$\alpha\in(1,2)$ the average still converges to $\mu$, but the error shrinks like
+$n^{1-1/\alpha}$, slower than $1/\sqrt n$, and its shape is not a bell. This general
+statement is the result of Gnedenko and Kolmogorov; the details are in Feller volume
+2, in the chapter on stable distributions.
+
+If $\alpha>2$ but the third moment does not exist, the central limit theorem still
+holds because the variance is finite. What is lost is the guarantee of a rate: the
+Berry--Esseen bound becomes infinite, so there is no longer any handle on the claim
+that the error shrinks like $1/\sqrt n$ with a controlled constant. In practice this
+is what bites most often: the distribution is not extreme like Cauchy, but it has
+enough tail to make confidence intervals too narrow at realistic sample sizes.
+
+\begin{tantangan}
+A distribution with no mean. Take $X$ with
+$P(X=2^k)=P(X=-2^k)=2^{-k-1}$ for $k=1,2,3,\dots$
+
+Show two things. First, $\mathbb{E}|X|=\infty$, so there is no $\mu$ that may be
+approached. Second, the sample average does not converge in probability to any
+constant: the law of large numbers fails, it does not merely slow down.
+
+Hint 1: what decides is not the average of all the terms, but the largest term. Ask
+how often one term exceeds the threshold $n$.
+
+Hint 2: compute $n\,P(|X|>n)$ for $n$ between two powers of two, then use the
+necessary condition $n\,P(|X_1|>n)\to0$ stated in the section on the strong law.
+
+If you get stuck, go back to the section on heavy tails and to the paragraph on the
+necessary and sufficient condition in the section on the strong law.
+\end{tantangan}
+
+\begin{untukanak}
+In a village there are a hundred people with ordinary incomes, and one person who is
+extremely rich. If we compute the average income of that village, the number is
+decided almost entirely by that rich person. If the rich person happens to be away,
+the average drops drastically. If that person comes back, the average jumps up.
+
+Now add inhabitants. Another hundred people, another thousand; as long as the
+newcomers are ordinary people, the average changes little. But if among the newcomers
+there is one more giant, the average jumps again. Adding many people does not help,
+because what decides is not the number of people but who is the largest.
+
+This is what happens with data whose tails are heavy: one observation can outweigh
+all the others. The average becomes unstable, and the bell that is usually used to
+compute "how confident" does not appear at all.
+
+The question that makes us curious: how can we know, before computing, whether our
+data are of the calm kind or of the kind ruled by giants? In this chapter we will
+find out why that question cannot be answered just by looking at the average.
+\end{untukanak}
+
+\section{Computational Lab: Five Checks}
+\tingkat{advanced}
+
+The five claims of this chapter can be checked with one script: the $1/\sqrt n$
+rate in the law of large numbers, the skewness and kurtosis of the exponential
+average, the supremum distance to the normal, the Monte Carlo standard error, and
+total failure for Cauchy. All the numbers below are real output from an execution
+with NumPy 2.5.2 and SciPy 1.18.0, generator \texttt{default\_rng(20261024)}.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from scipy import stats
+
+rng = np.random.default_rng(20261024)
+
+print("== 1. law of large numbers: dice average ==")
+for k in range(1, 6):
+    n = 10**k
+    m = rng.integers(1, 7, size=(2000, n)).mean(axis=1)
+    print("n=%6d  mean=%.4f  rms=%.4f  sd/sqrt n=%.4f"
+          % (n, m.mean(), np.sqrt(np.mean((m-3.5)**2)),
+             np.sqrt(35/12/n)))
+
+print("== 2. CLT: exponential average ==")
+for n in (2, 5, 10, 30, 100, 500):
+    z = (rng.exponential(size=(50000, n)).mean(axis=1)
+         - 1)*np.sqrt(n)
+    ks = stats.kstest(z, "norm")
+    print("n=%4d skew=%+.3f (%+.3f) kurt=%+.3f (%+.3f)"
+          % (n, stats.skew(z), 2/np.sqrt(n),
+             stats.kurtosis(z), 6.0/n))
+    print("      KS D=%.4f p=%.3f" % (ks.statistic, ks.pvalue))
+
+print("== 3. sup distance to normal, exact via gamma ==")
+rho = 2 + 2*(6/np.e - 2)          # E|X-1|^3 for X ~ Exp(1)
+for n in (2, 5, 10, 30, 100, 500):
+    zg = np.linspace(-4, 4, 40001)
+    Fn = stats.gamma.cdf(n*(1+zg/np.sqrt(n)), a=n)
+    D = np.max(np.abs(Fn - stats.norm.cdf(zg)))
+    print("n=%4d sup|Fn-Phi|=%.5f  D*sqrt n=%.3f  BE=%.3f"
+          % (n, D, D*np.sqrt(n), 0.4748*rho/np.sqrt(n)))
+
+print("== 4. Monte Carlo standard error for E[exp(U)] ==")
+for k in (2, 3, 4, 5):
+    n = 10**k
+    est = np.exp(rng.random(size=(2000, n))).mean(axis=1)
+    print("n=%6d  sd=%.5f  sd*sqrt n=%.5f"
+          % (n, est.std(), est.std()*np.sqrt(n)))
+
+print("== 5. Cauchy: the average does not concentrate ==")
+for k in (1, 2, 3, 4):
+    n = 10**k
+    m = rng.standard_cauchy(size=(4000, n)).mean(axis=1)
+    print("n=%5d  median|m|=%.3f P(|m|>10)=%.4f sd=%.2f"
+          % (n, np.median(np.abs(m)), np.mean(np.abs(m) > 10),
+             m.std()))
+print("theory P(|mean|>10) = %.4f"
+      % (1 - 2/np.pi*np.arctan(10)))
+\end{verbatim}
+\end{lab}
+
+Its output, verbatim:
+
+\begin{verbatim}
+== 1. law of large numbers: dice average ==
+n=    10  mean=3.5014  rms=0.5440  sd/sqrt n=0.5401
+n=   100  mean=3.4992  rms=0.1698  sd/sqrt n=0.1708
+n=  1000  mean=3.4986  rms=0.0527  sd/sqrt n=0.0540
+n= 10000  mean=3.5001  rms=0.0171  sd/sqrt n=0.0171
+n=100000  mean=3.4997  rms=0.0053  sd/sqrt n=0.0054
+== 2. CLT: exponential average ==
+n=   2 skew=+1.440 (+1.414) kurt=+3.130 (+3.000)
+      KS D=0.0929 p=0.000
+n=   5 skew=+0.919 (+0.894) kurt=+1.393 (+1.200)
+      KS D=0.0602 p=0.000
+n=  10 skew=+0.631 (+0.632) kurt=+0.589 (+0.600)
+      KS D=0.0480 p=0.000
+n=  30 skew=+0.355 (+0.365) kurt=+0.181 (+0.200)
+      KS D=0.0219 p=0.000
+n= 100 skew=+0.196 (+0.200) kurt=+0.038 (+0.060)
+      KS D=0.0167 p=0.000
+n= 500 skew=+0.112 (+0.089) kurt=-0.003 (+0.012)
+      KS D=0.0062 p=0.043
+== 3. sup distance to normal, exact via gamma ==
+n=   2 sup|Fn-Phi|=0.09446  D*sqrt n=0.134  BE=0.811
+n=   5 sup|Fn-Phi|=0.05963  D*sqrt n=0.133  BE=0.513
+n=  10 sup|Fn-Phi|=0.04211  D*sqrt n=0.133  BE=0.363
+n=  30 sup|Fn-Phi|=0.02429  D*sqrt n=0.133  BE=0.209
+n= 100 sup|Fn-Phi|=0.01330  D*sqrt n=0.133  BE=0.115
+n= 500 sup|Fn-Phi|=0.00595  D*sqrt n=0.133  BE=0.051
+== 4. Monte Carlo standard error for E[exp(U)] ==
+n=   100  sd=0.04928  sd*sqrt n=0.49281
+n=  1000  sd=0.01586  sd*sqrt n=0.50156
+n= 10000  sd=0.00495  sd*sqrt n=0.49538
+n=100000  sd=0.00155  sd*sqrt n=0.49056
+== 5. Cauchy: the average does not concentrate ==
+n=   10  median|m|=1.004 P(|m|>10)=0.0630 sd=33.04
+n=  100  median|m|=1.008 P(|m|>10)=0.0680 sd=863.61
+n= 1000  median|m|=1.040 P(|m|>10)=0.0653 sd=23.87
+n=10000  median|m|=0.973 P(|m|>10)=0.0580 sd=379.53
+theory P(|mean|>10) = 0.0635
+\end{verbatim}
+
+Part 1 shows the law of large numbers at work, and shows its price. The rms column
+matches $\sigma/\sqrt n$ to two decimal places for $n\ge100$: $0.1698$ against
+$0.1708$, $0.0171$ against $0.0171$, $0.0053$ against $0.0054$. But look
+at the magnitudes: at $n=10^5$ the average still misses by about $0.005$, which is
+$0.15$ percent of $3.5$. The average of $10^5$ tosses is not "practically
+exact"; it is exact to two decimal places.
+
+Parts 2 and 3 show two ways of measuring closeness to the normal. Skewness and
+kurtosis follow the theoretical prediction neatly from $n=10$ on: $0.631$ against
+$2/\sqrt{10}=0.632$ and $0.589$ against $6/10=0.600$. At $n=2$ and $n=5$ the
+kurtosis estimator is still noisy, because its deviation depends on the eighth moment
+of that distribution, not only on the number of repetitions. Part 3 computes the
+supremum distance exactly, without simulation, by using the Gamma distribution for
+the exponential average: $0.04211$ at $n=10$ and $0.00595$ at $n=500$. The column
+$D\sqrt n$ is nearly constant at $0.133$, direct evidence that the rate is
+$1/\sqrt n$. The Berry--Esseen bound $1.1464/\sqrt n$ holds, with the numbers
+$0.209$ against $0.02429$ at $n=30$; that bound is about $8.6$ times looser
+than reality, which is normal for a bound that is uniform over all distributions.
+
+The Kolmogorov--Smirnov test on fifty thousand draws rejects normality with
+$p=0.000$ for all $n$ up to $100$, then gives $p=0.043$ at $n=500$. That is not a
+sign that the program is wrong: the normal approximation is never exact for finite
+$n$, and the distance merely shrinks until a test that large can no longer see it.
+The right question is not "is it normal" but "how large an error can we still
+accept", and part 3 answers it with numbers.
+
+Part 4 separates two quantities that are often confused. The standard deviation of
+the estimator falls from $0.04928$ to $0.00155$ when $n$ grows a thousandfold,
+whereas $\text{sd}\cdot\sqrt n$ is nearly constant at $0.49$. That constant value
+is the $\sigma$ of $\exp(U)$, namely $\sqrt{(e^2-1)/2-(e-1)^2}=0.491971$. This is
+the $1/\sqrt n$ law in its barest form: for a precision of $0.001$ at $95$ percent
+confidence we need $(1.96\cdot0.491971/0.001)^2=929803$ draws.
+
+Part 5 is the counterweight. The median of $|\bar X_n|$ does not shrink; the
+probability of exceeding ten does not shrink; and the empirical standard deviation
+jumps from $33.04$ to $863.61$ and then down to $23.87$. Theory says
+$0.0635$, and all five simulation numbers hover around it. There is no law of large
+numbers here, and no central limit theorem. The only way to rescue the analysis is to
+change the question: estimate the tail index, not the mean.
+
+\begin{untukdosen}
+The teaching order I suggest: start from the simulation table, not from the
+definitions. Show the class that the error of one run follows no pattern at all,
+whereas the distribution of the error does. After that, the three modes of
+convergence, with a counterexample for each direction that fails; do not postpone
+those examples, because that is where students understand that "approaching" needs to
+be made precise. Only then Markov, Chebyshev, the weak law, the strong law as a
+statement, and then the central limit theorem with the moment generating function
+proof.
+
+Two misconceptions appear most often. First, students read "converges in
+probability" as "the value becomes fixed", and are then surprised when a simulation
+shows big jumps at large $n$; the split $(0,1)$ example in this chapter is the
+antidote. Second, they read the central limit theorem as "the average becomes
+normal", whereas what becomes normal is the error divided by $\sigma/\sqrt n$; as a
+result they write $\bar X_n\approx N(\mu,\sigma^2)$ and forget $\sqrt n$.
+
+A blackboard activity that works: ask two students to play the gambler and the
+bookmaker. The gambler names a tolerance, the bookmaker names the number of tosses
+that guarantees it, and the class computes with Chebyshev and then compares against
+the exact numbers from SciPy. The gap is always large, and that is the doorway into
+the normal approximation. Sign that the class is ready to move on: they can explain
+why Chebyshev is still useful although it is loose, and they can name one
+distribution that makes the central limit theorem fail.
+\end{untukdosen}
+
+\section{Summary}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item There are three different modes of convergence: almost sure, in probability,
+        and in distribution. Almost sure implies in probability, in probability
+        implies in distribution, and the reverse directions fail unless the limit is
+        a constant.
+  \item Markov's and Chebyshev's inequalities use only moments, which is why they
+        hold for every distribution with finite variance, and why they are loose.
+  \item Weak law of large numbers: $P(|\bar X_n-\mu|\ge\varepsilon)\le
+        \sigma^2/(n\varepsilon^2)\to0$. The strong law adds that
+        $\bar X_n\to\mu$ almost surely when $\mathbb{E}|X_1|<\infty$, without
+        demanding a variance.
+  \item Central limit theorem: $\sqrt n(\bar X_n-\mu)/\sigma\rightsquigarrow N(0,1)$
+        when the variance is finite. The rate is $1/\sqrt n$, hence four times the
+        data for half the error, and a hundred times the data for one extra digit.
+  \item The normal approximation for discrete sums requires a continuity correction
+        of half a unit; in the binomial example of this chapter that correction cuts
+        the error in the tail by about a factor of twenty.
+  \item If the variance is infinite, the central limit theorem fails, it does not
+        merely slow down. The average of $n$ Cauchy observations is still Cauchy, and
+        what replaces the bell is a stable distribution of index $\alpha<2$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Prove: if $X_n\to X$ and $Y_n\to Y$ in probability, then
+        $X_n+Y_n\to X+Y$ in probability. Write down the set inequality you use, then
+        explain why $\varepsilon/2$ appears.
+  \item Prove that Chebyshev's inequality is sharp: for $0<\sigma^2\le a^2$, take $X$
+        with $P(X=a)=P(X=-a)=\sigma^2/(2a^2)$ and
+        $P(X=0)=1-\sigma^2/a^2$, then compute $\operatorname{Var}(X)$ and
+        $P(|X|\ge a)$.
+  \item Evaluate this claim: "Since the central limit theorem holds for all
+        distributions, the average of thirty observations may always be treated as
+        normal." True, false, or not enough evidence? Name the hypothesis that is
+        violated or that has not been checked, and use numbers from the lab section.
+  \item For a coin with $p=1/2$ and tolerance $\varepsilon=0.05$, find the smallest
+        $n$ that Chebyshev guarantees for a probability of missing of at most
+        $0.05$. Then find the smallest $n$ that really satisfies that condition, by
+        computing the binomial distribution in Python. Compare the two numbers.
+  \item Prove that convergence in probability does not guarantee convergence of
+        expectations, using $P(X_n=n^2)=1/n$ and $P(X_n=0)=1-1/n$. Compute
+        $\mathbb{E}[X_n]$ and $P(|X_n|>\varepsilon)$ for fixed $\varepsilon$.
+  \item For $S\sim\text{Binomial}(200;\,0.3)$, approximate $P(S\le50)$ with the
+        normal without and with the continuity correction, then compare both with the
+        exact value from SciPy. Report both errors.
+  \item Generate $4000$ averages of $n$ Cauchy numbers for
+        $n=10,10^2,10^3,10^4$, then report the median of $|\bar X_n|$, the
+        probability $|\bar X_n|>10$, and the standard deviation. Compare with
+        $1-(2/\pi)\arctan10$ and explain why the standard deviation column does not
+        shrink.
+  \item Prove with characteristic functions that the average of $n$ iid Cauchy
+        variables has a Cauchy distribution. Then explain why a report of the form
+        "average $\pm$ two standard errors" on such data cannot be interpreted.
+  \item How many Monte Carlo draws are needed for the estimator
+        $\mathbb{E}[\exp(U)]$ to have a $95$ percent interval half-width of
+        $0.0005$? Use $\sigma=0.491971$ from the lab section, then compare with
+        the $n$ needed for a half-width of $0.001$. State the ratio and explain
+        where it comes from.
+  \item Prove that if $X_n\rightsquigarrow c$ with $c$ a constant, then
+        $X_n\to c$ in probability, without using part (c) of the theorem on the
+        relations among the three modes at the start of the chapter, then show by
+        example that the hypothesis "constant" cannot be dropped.
+\end{enumerate}
+
+Hints for the three hardest items. Item 1: write
+$\{|(X_n+Y_n)-(X+Y)|>\varepsilon\}$ as contained in the union of two events, then use
+the union bound. Item 8: the characteristic function of a sum is the product of the
+characteristic functions, and the Cauchy characteristic function $e^{-|t|}$ is
+special because its form does not change when it is raised to a power. Item 10: write
+$P(X_n\le t)\le P(X_n\le c-\varepsilon)+P(|X_n-c|>\varepsilon)$ for $t$ to the left
+of $c$, and remember that a point-mass distribution jumps exactly at $c$.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is really proved in this chapter: the implications almost sure $\Rightarrow$ in
+probability $\Rightarrow$ in distribution, the weak law via Chebyshev, and the
+central limit theorem via moment generating functions under the assumption
+$\mathbb{E}|Y_1|^3<\infty$. What is popular but not proved here: the strong law (the
+statement only, Etemadi's proof is skipped), the version of the central limit theorem
+without a third moment (it needs characteristic functions and Levy's continuity
+theorem), and the whole theory of stable distributions (the Gnedenko--Kolmogorov
+statement, without proof).
+
+Primary sources I used: Wasserman, \emph{All of Statistics}, chapter 5, sections 5.2
+(types of convergence and the implication diagram), 5.3 (the weak law), 5.4 (the
+central limit theorem and Berry--Esseen), plus appendix 5.7.1 and 5.7.2 for the strong
+law and the proof of the central limit theorem. Blitzstein and Hwang,
+\emph{Introduction to Probability}, chapter 10, sections 10.1 (inequalities), 10.2
+(the law of large numbers), 10.3 (the central limit theorem). For the heavy-tail
+side: Feller volume 2.
+
+Limits of validity that must be mentioned. First, all the theorems here assume
+independence and identical distribution; for dependent data, for instance time series
+or iterates of a Markov chain, what holds are martingale or mixing versions, and the
+rate can be far slower. Second, the optimal constant in Berry--Esseen is not known;
+$0.4748$ suffices, and the best lower bound for that constant is still below
+$0.5$. Third, the rate $1/\sqrt n$ is the worst rate that can be guaranteed
+uniformly; for particular distributions the true rate is better, and for heavy tails
+with $\alpha\in(1,2)$ the true rate is worse. Open questions that are still alive:
+how sharp the Berry--Esseen bound is for classes of distributions with bounded
+moments, and how to estimate the tail index with valid confidence intervals at small
+$n$.
+\end{untukpeneliti}
+
+\peta{Chapter 19 in Wasserman, \emph{All of Statistics}: chapter 5 (Convergence of
+Random Variables), sections 5.2 Types of Convergence, 5.3 The Law of Large Numbers,
+5.4 The Central Limit Theorem, and appendix 5.7.1 Almost Sure and L1 Convergence as
+well as 5.7.2 Proof of the Central Limit Theorem. In Blitzstein and Hwang,
+\emph{Introduction to Probability}: chapter 10 (Inequalities and limit theorems),
+sections 10.1 Inequalities, 10.2 Law of large numbers, 10.3 Central limit theorem.
+For stable distributions: Feller, \emph{An Introduction to Probability Theory and Its
+Applications}, volume 2. The basic distributions used here are built in Chapter 17,
+and the confidence intervals that rest on this chapter are discussed in Chapter 19.}

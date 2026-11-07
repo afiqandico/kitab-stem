@@ -1,0 +1,1079 @@
+\chapter{Barisan dan Limit}
+
+Sebuah program kecil mencetak satu bilangan per baris. Aturannya hanya satu: suku
+berikutnya adalah akar dari dua ditambah suku sebelumnya, dimulai dari satu. Yang
+muncul di layar: 1.000000, lalu 1.732051, 1.931852, 1.982890, 1.995718, 1.998929,
+dan seterusnya. Pada baris kedua belas layar menunjukkan 1.999999738545. Angka itu
+tampak berhenti bergerak. Tetapi tampak dan benar adalah dua hal berbeda: program
+tidak tahu apakah baris keseribu masih akan bergeser, dan ia juga tidak tahu ke
+bilangan mana deretan ini menuju.
+
+Contoh kedua lebih nakal. Barisan $(1+1/n)^n$ untuk $n=10$ bernilai 2.5937424601,
+untuk $n=100$ bernilai 2.7048138294, untuk $n=1000$ bernilai 2.7169239322, dan
+untuk $n=10^7$ bernilai 2.7182816941. Enam angka pertama tampak mantap pada 2.71828.
+Tetapi nilai sebenarnya pada $n=10^7$ adalah 2.7182816925, sehingga tujuh digit
+terakhir pada keluaran mesin itu adalah galat pembulatan, bukan tanda kedekatan.
+Tabel dapat menipu ke dua arah sekaligus: membuat barisan yang divergen tampak
+tenang, dan membuat barisan yang konvergen tampak melenceng. Bab 22 nanti
+menjelaskan mengapa aritmetika mesin berperilaku begitu; bab ini menyiapkan alat
+yang membuat kita tidak perlu bergantung pada tabel.
+
+Bab 3 sudah memberi bahan bakunya: aksioma lapangan, aksioma urutan, dan sifat
+supremum. Tetapi supremum hanya bekerja setelah himpunan sukunya terkumpul; ia
+tidak memberi tahu apakah barisan berhenti bergerak. Yang kita perlukan adalah
+definisi yang bisa diperiksa dengan kertas, lalu teorema yang mengubah pemeriksaan
+itu menjadi pekerjaan terkira: definisi $\varepsilon$-$N$, sifat aljabar limit,
+teorema apit, barisan monoton, subbarisan, kriteria Cauchy, dan limit superior.
+
+\begin{untukanak}
+Pernahkah kalian berjalan menuju pintu dengan aturan aneh: setiap langkah hanya
+menempuh separuh dari jarak yang tersisa? Langkah pertama membawa kalian separuh
+jalan. Langkah kedua memotong separuh dari sisa itu, jadi kalian sudah di tiga
+perempat jalan. Langkah ketiga menambah seperdelapan lagi. Setiap langkah pasti
+maju, tetapi selalu ada sisa yang belum terjangkau. Kalau aturan itu dijalankan
+terus, kalian tidak pernah benar-benar menyentuh pintu.
+
+Meski begitu, ada pertanyaan yang bisa dijawab dengan pasti. Berapa langkah yang
+diperlukan supaya jarak ke pintu kurang dari sejengkal? Jawabannya bisa dihitung
+sebelum melangkah, dan tidak berubah karena ruangan menjadi dua kali lebih panjang:
+kalian hanya perlu beberapa langkah tambahan. Jadi ada dua hal berbeda di sini.
+"Tidak pernah sampai" dan "sedekat apa pun bisa didekati" bukan dua pernyataan
+yang bertentangan. Justru keduanya benar sekaligus.
+
+Sekarang pertanyaan yang membuat penasaran. Bagaimana kalau aturannya diubah
+sedikit, misalnya setiap langkah menempuh sepertiga sisa jarak, atau separuh
+ditambah sedikit? Apakah kalian masih bisa menebak di mana perjalanan itu berakhir,
+dan apakah kecepatannya masih bisa dihitung? Di bab ini kita akan tahu mengapa
+pertanyaan semacam itu punya jawaban yang pasti, dan mengapa jawabannya tidak
+pernah kita peroleh hanya dengan menonton angka di layar.
+\end{untukanak}
+
+\section{Definisi limit dan cara memakainya}
+\tingkat{dasar}
+
+\kamus{barisan}{sequence}{deretan bilangan yang diberi nomor urut, seperti nomor
+rumah di satu sisi jalan yang tidak pernah habis}
+
+Limit menjawab satu pertanyaan: seberapa dekat suku-suku akhir berkumpul, dan mulai
+kapan. Dalam bahasa sehari-hari, barisan menuju $L$ bila setelah beberapa suku awal
+dibuang, semua sisa sukunya sedekat apa pun yang diminta kepada $L$.
+
+\begin{definisi}[Kekonvergenan]
+Barisan $(x_n)$ bilangan real \emph{konvergen} ke $L \in \mathbb{R}$ jika untuk
+setiap $\varepsilon>0$ terdapat $N \in \mathbb{N}$ sehingga untuk setiap $n>N$
+berlaku $|x_n-L|<\varepsilon$. Kita tulis $x_n \to L$, dan $L$ disebut
+\emph{limit}\index{limit barisan} barisan itu. Barisan yang tidak konvergen ke
+bilangan real mana pun disebut \emph{divergen}\index{barisan divergen}.
+\end{definisi}
+
+Urutan kuantor pada definisi itu menentukan segalanya. Nilai $\varepsilon$ dipilih
+lebih dahulu, lalu $N$ menyusul dan boleh bergantung pada $\varepsilon$. Membalik
+urutan itu menghasilkan pernyataan yang jauh lebih kuat dan biasanya salah: ada
+barisan yang memenuhi "untuk setiap $n$ ada $N$" secara hampa, karena $N=n$ selalu
+bisa dipakai. Cara membaca yang sehat adalah sebagai permainan dua pihak. Penantang
+menyebut satu $\varepsilon$, sekecil apa pun. Penjawab harus membalas dengan satu
+$N$ yang berlaku untuk semua suku setelahnya. Barisan konvergen bila penjawab
+selalu punya balasan, untuk setiap tantangan.
+
+Gambar~\ref{fig:pita-epsilon} memotret permainan itu untuk $x_n=1+1/n$. Dua pita
+berpusat di $L=1$ digambar dengan lebar berbeda, dan masing-masing punya ambangnya
+sendiri: $N=2$ untuk $\varepsilon=0.5$, $N=10$ untuk $\varepsilon=0.1$. Tidak ada
+yang berubah pada barisannya; yang berubah hanya permintaan penantang.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=0.72cm,y=3.0cm,>=Stealth,font=\footnotesize]
+  \fill[layerteal!14] (0,0.5) rectangle (14,1.5);
+  \fill[layerorange!20] (0,0.9) rectangle (14,1.1);
+  \draw[->,ink] (-0.1,0.35) -- (14.6,0.35) node[right] {$n$};
+  \draw[->,ink] (0,0.35) -- (0,2.15) node[above] {$x_n$};
+  \draw[dashed,layergrey,thick] (0,1) -- (14.1,1);
+  \node[layergrey,anchor=south west] at (0.08,1.02) {$L=1$};
+  \foreach \n/\y in {1/2.0000,2/1.5000,3/1.3333,4/1.2500,5/1.2000,6/1.1667,%
+      7/1.1429,8/1.1250,9/1.1111,10/1.1000,11/1.0909,12/1.0833,13/1.0769,14/1.0714}
+    \fill[accent] (\n,\y) circle (2.2pt);
+  \draw[dashed,layerteal,thick] (2,0.35) -- (2,1.52);
+  \draw[dashed,layerorange,thick] (10,0.35) -- (10,1.12);
+  \node[anchor=north] at (2,0.30) {$N_1=2$};
+  \node[anchor=north] at (10,0.30) {$N_2=10$};
+  \node[anchor=north west,align=left] at (4.6,2.28)
+    {pita luar: $\varepsilon=0.5$\\ pita dalam: $\varepsilon=0.1$};
+\end{tikzpicture}
+\caption{Barisan $x_n=1+1/n$ masuk ke pita $\varepsilon$ di sekitar $L=1$. Dengan
+$\varepsilon=0.5$ semua suku sesudah $n=2$ sudah di dalam pita; dengan
+$\varepsilon=0.1$ ambangnya bergeser ke $n=10$. Pita yang lebih sempit menuntut
+ambang yang lebih jauh.}
+\label{fig:pita-epsilon}
+\end{figure}
+
+\begin{bacakeras}
+Dua suara bergantian. Suara pertama bertanya, suara kedua menjawab. Bacakan pelan,
+beri jeda pada setiap titik, dan jangan menambah kata di antaranya.
+
+``Semakin lama?'' \ ``Semakin dekat.'' \ ``Seberapa dekat?'' \ ``Sedekat yang
+diminta.'' \ ``Kalau yang diminta seperseribu?'' \ ``Tunggu seribu langkah, lalu
+ukur.'' \ ``Kalau seperseratus juta?'' \ ``Tunggu seratus juta langkah. Sabar tidak
+apa-apa.'' \ ``Jadi akan sampai?'' \ ``Tidak. Tidak pernah sampai.'' \ ``Lalu apa
+gunanya menunggu?'' \ ``Sebab jaraknya mengecil, dan yang meminta bebas memilih
+seberapa kecil.'' \ ``Dan kalau permintaannya berhenti?'' \ ``Maka tidak ada yang
+perlu dibuktikan.''
+
+Baris yang diulang tiga kali, makin pelan setiap kali: dekat bukan sampai; dekat
+adalah jarak yang boleh kita tentukan sendiri.
+\end{bacakeras}
+
+Untuk $x_n=1/n$, balasannya langsung: ambil $N$ bilangan asli dengan $N>1/\varepsilon$,
+yang ada menurut sifat Archimedes di Bab 3. Untuk $n>N$ berlaku
+$|1/n-0|=1/n<1/N<\varepsilon$. Bila penantang meminta $\varepsilon=10^{-3}$,
+jawabannya $N=1000$; pada $n=1000$ galatnya tepat $10^{-3}$ dan belum memenuhi
+syarat ketat, sedangkan pada $n=1001$ galatnya $0.000999$. Perbedaan satu suku ini
+bukan keisengan: definisi memakai $n>N$, bukan $n \ge N$, sehingga $N$ yang dipilih
+harus benar-benar melewati ambang.
+
+\begin{tangan}
+Bahan: lakban, meteran, kapur, dan satu lembar catatan. Bentuk garis bilangan di
+lantai sepanjang dua meter: nol di ujung kiri, dua di ujung kanan, dan angka satu
+tepat di tengah. Tempel dua pita mendatar selebar telapak kaki, berpusat di angka
+satu: pita lebar dari setengah sampai satu setengah meter, pita sempit dari sembilan
+persepuluh sampai satu koma satu meter.
+
+Sekarang berjalanlah ke posisi satu ditambah satu per n, untuk n sama dengan satu,
+dua, tiga, sampai empat belas. Setiap kali, catat apakah tumit masuk pita lebar,
+pita sempit, atau di luar keduanya, lalu berjalan mundur supaya tanda tidak
+terinjak.
+
+Yang harus terlihat: dua langkah pertama masih di luar pita sempit, langkah
+kesepuluh berhenti tepat di tepinya, dan sesudah itu tidak ada lagi tumit yang
+keluar. Pita yang lebih sempit menuntut langkah yang lebih banyak, sedangkan angka
+satu tidak pernah tersentuh tumit.
+\end{tangan}
+
+Kegunaan definisi justru paling terasa ketika kita ingin membuktikan bahwa sesuatu
+\emph{tidak} konvergen. Negasi definisi berbunyi: ada $\varepsilon>0$ sehingga untuk
+setiap $N$ terdapat $n>N$ dengan $|x_n-L| \ge \varepsilon$. Perhatikan bahwa $L$
+masih nama bebas di situ; untuk menyangkal kekonvergenan kita harus melakukannya
+untuk setiap $L$.
+
+\begin{contoh}
+Barisan $x_n=(-1)^n$ divergen.
+\end{contoh}
+
+\begin{proof}[Bukti]
+Andaikan $x_n \to L$ untuk suatu $L$. Ambil $\varepsilon=1$; ada $N$ sehingga
+$|x_n-L|<1$ untuk semua $n>N$. Pilih $n>N$ yang genap; maka $x_n=1$ dan
+$|1-L|<1$. Suku berikutnya $n+1$ juga melebihi $N$ dan ganjil, jadi $x_{n+1}=-1$
+dan $|-1-L|<1$. Ketaksamaan segitiga memberi
+\[
+2 = |1-(-1)| \le |1-L| + |L-(-1)| < 1+1 = 2,
+\]
+suatu kemustahilan. Jadi tidak ada $L$ yang memenuhi definisi.
+\end{proof}
+
+Bukti tadi memperlihatkan pola yang akan sering muncul: untuk menyangkal, kita
+memilih $\varepsilon$ yang lebih kecil daripada jarak antar dua kelompok suku.
+Kelompok genap dan ganjil berjarak tetap $2$, sehingga tidak ada satu $N$ pun yang
+dapat memisahkan keduanya bila $\varepsilon<1$.
+
+Sifat pertama yang patut dicatat adalah ketunggalan. Kalimat sehari-harinya: sebuah
+barisan tidak dapat berhenti di dua tempat berbeda sekaligus.
+
+\begin{teorema}[Ketunggalan limit]
+Jika $x_n \to L$ dan $x_n \to M$, maka $L=M$.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Andaikan $L \neq M$ dan misalkan $\varepsilon=|L-M|/2>0$. Ada $N_1$ dengan
+$|x_n-L|<\varepsilon$ untuk $n>N_1$, dan $N_2$ dengan $|x_n-M|<\varepsilon$ untuk
+$n>N_2$. Untuk $n>\max(N_1,N_2)$ kedua ketaksamaan berlaku sekaligus, sehingga
+\[
+|L-M| \le |L-x_n| + |x_n-M| < 2\varepsilon = |L-M| .
+\]
+Ketaksamaan $|L-M|<|L-M|$ mustahil, jadi pengandaian salah.
+\end{proof}
+
+Frasa "untuk $n$ yang cukup besar" berarti: ada $N$ sehingga sifat yang disebut
+berlaku untuk semua $n>N$. Dengan kosakata itu, definisi limit ringkasnya: $x_n$
+sedekat apa pun ke $L$ bila $n$ cukup besar.
+
+Sifat kedua: barisan yang konvergen tidak dapat lari ke tak hingga.
+
+\begin{teorema}
+Setiap barisan konvergen terbatas.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Misalkan $x_n \to L$. Ambil $\varepsilon=1$; ada $N$ dengan $|x_n-L|<1$ untuk
+$n>N$, sehingga $|x_n| \le |x_n-L|+|L| < |L|+1$. Hanya suku pertama sampai suku
+ke-$N$ yang belum terkendali, dan jumlahnya berhingga. Maka
+\[
+M=\max\{|x_1|,|x_2|,\dots,|x_N|,|L|+1\}
+\]
+adalah batas yang berlaku untuk semua $n$.
+\end{proof}
+
+Kebalikannya tidak berlaku: $(-1)^n$ terbatas tetapi divergen. Keterbatasan adalah
+syarat perlu, bukan syarat cukup; dari tabel yang tampak tenang kita hanya boleh
+menyimpulkan keterbatasan.
+
+\section{Sifat aljabar limit}
+\tingkat{menengah}
+
+Kalimat sehari-harinya: limit sopan terhadap penjumlahan, perkalian, dan pembagian,
+selama pembaginya tidak menuju nol.
+
+Sebelum membuktikan sifat-sifat itu, kita perlu satu kendali kecil: barisan yang
+menuju bilangan tak nol akhirnya menjauh dari nol.
+
+\begin{lemma}
+Jika $y_n \to y$ dengan $y \neq 0$, maka ada $N$ sehingga $|y_n|>|y|/2$ untuk
+semua $n>N$.
+\end{lemma}
+
+\begin{proof}[Bukti]
+Ambil $\varepsilon=|y|/2>0$. Ada $N$ dengan $|y_n-y|<|y|/2$ untuk $n>N$. Maka
+$|y_n| \ge |y|-|y_n-y| > |y|-|y|/2 = |y|/2$.
+\end{proof}
+
+Konsekuensinya untuk berhitung: limit dapat dihitung suku demi suku, dan satu-satunya
+pengecualian adalah pembagian dengan nol.
+
+\begin{teorema}[Sifat aljabar limit]
+Jika $x_n \to x$ dan $y_n \to y$, maka
+$x_n+y_n \to x+y$, \ $x_n y_n \to xy$, dan $c x_n \to cx$ untuk setiap
+$c \in \mathbb{R}$. Jika $y \neq 0$ dan $y_n \neq 0$ untuk semua $n$, maka
+$x_n/y_n \to x/y$.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Untuk jumlah, ambil $\varepsilon>0$. Pilih $N_1$ dengan $|x_n-x|<\varepsilon/2$
+untuk $n>N_1$ dan $N_2$ dengan $|y_n-y|<\varepsilon/2$ untuk $n>N_2$. Untuk
+$n>\max(N_1,N_2)$,
+$|(x_n+y_n)-(x+y)| \le |x_n-x|+|y_n-y| < \varepsilon$. Kasus kelipatan skalar
+serupa dan lebih singkat: untuk $c=0$ barisan konstan; untuk $c \neq 0$ pakai
+$\varepsilon/|c|$.
+
+Untuk perkalian, tulis selisihnya sebagai dua bagian,
+\[
+x_n y_n - xy = x_n(y_n-y) + (x_n-x)y .
+\]
+Karena $(x_n)$ konvergen, ia terbatas: ada $M>0$ dengan $|x_n| \le M$ untuk semua
+$n$. Pilih $N$ sehingga untuk $n>N$ berlaku $|y_n-y|<\varepsilon/(2M)$ dan
+$|x_n-x|<\varepsilon/(2(|y|+1))$. Maka
+\[
+|x_n y_n - xy| \le M|y_n-y| + |x_n-x|\,|y| < \frac{\varepsilon}{2}
++ \frac{\varepsilon}{2} = \varepsilon .
+\]
+Penyebut $|y|+1$ dipakai supaya tidak pernah nol ketika $y=0$; ia tetap konstanta
+positif, jadi tidak mengubah kesimpulan.
+
+Untuk hasil bagi, cukup ditunjukkan $1/y_n \to 1/y$, lalu gunakan hasil perkalian.
+Menurut lemma, untuk $n>N_1$ berlaku $|y_n|>|y|/2$, sehingga
+\[
+\left|\frac{1}{y_n}-\frac{1}{y}\right| = \frac{|y-y_n|}{|y_n y|}
+\le \frac{2}{|y|^2}\,|y_n-y| .
+\]
+Ruas kanan lebih kecil dari $\varepsilon$ asalkan $|y_n-y|<\varepsilon|y|^2/2$,
+dan itu dapat dijamin dengan memilih $N_2$.
+\end{proof}
+
+Perhatikan teknik yang baru muncul: menambah dan mengurangkan suku yang sama untuk
+memecah selisih menjadi dua bagian kecil. Hampir setiap bukti kekonvergenan yang
+melibatkan perkalian memakainya, dan ambang yang diambil selalu yang terbesar.
+
+Sifat berikutnya menyangkut urutan, bukan operasi. Kalimat sehari-harinya: limit
+tidak dapat melompati pagar yang dipatuhi semua suku.
+
+\begin{teorema}[Sifat urutan]
+Jika $x_n \to x$ dan $x_n \ge 0$ untuk semua $n$, maka $x \ge 0$. Lebih umum,
+jika $x_n \le y_n$ untuk semua $n$ yang cukup besar, $x_n \to x$, dan $y_n \to y$,
+maka $x \le y$.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Andaikan $x<0$ dan ambil $\varepsilon=-x>0$. Ada $N$ dengan $|x_n-x|<\varepsilon$
+untuk $n>N$, sehingga khususnya $x_n < x+\varepsilon = 0$. Itu bertentangan dengan
+$x_n \ge 0$. Untuk pernyataan kedua, terapkan bagian pertama pada $y_n-x_n \ge 0$,
+yang limitnya $y-x$ menurut teorema sebelumnya.
+\end{proof}
+
+Perhatikan bahwa kesimpulan yang sah adalah $x \ge 0$, bukan $x>0$: barisan
+$1/n$ seluruhnya positif tetapi limitnya nol. Sifat urutan juga tidak boleh dipakai
+mundur. Dari $x_n<y_n$ kita hanya memperoleh $x \le y$; kesenjangan ketat bisa
+lenyap di limit.
+
+Dengan sifat aljabar, limit barisan rasional dapat dihitung seperti biasa. Untuk
+\[
+x_n=\frac{3n^2+2n}{n^2-5},
+\]
+bagi pembilang dan penyebut dengan $n^2$:
+$x_n=\dfrac{3+2/n}{1-5/n^2}$. Karena $1/n \to 0$ dan $1/n^2 \to 0$, pembilangnya
+menuju $3$ dan penyebutnya menuju $1 \neq 0$, jadi $x_n \to 3$. Nilai numeriknya
+memang merayap ke sana: $x_{10}=3.368421$, $x_{100}=3.021511$. Contoh lain,
+\[
+y_n=\frac{2n^2-n}{3n^2+7} \longrightarrow \frac{2}{3},
+\]
+dengan $y_{10}=0.618893$ dan $y_{100}=0.663179$; keduanya masih jauh dari $2/3$
+pada $n=100$ karena galatnya sekitar $1/n$.
+
+Sifat aljabar hanya berbicara tentang limit yang sudah ada; menerapkannya pada
+barisan yang belum diketahui konvergen adalah kekeliruan yang mahal.
+
+\section{Teorema apit dan barisan pembanding}
+\tingkat{menengah}
+
+Kadang limit sebuah barisan tidak dapat dihitung langsung, tetapi dapat dikurung
+dari atas dan dari bawah oleh dua barisan yang limitnya sama. Kalimat sehari-harinya:
+bila dua penjaga berjalan berdekatan sambil mengapit seorang anak, anak itu harus
+berhenti di tempat yang sama dengan mereka.
+
+\begin{teorema}[Teorema apit]
+\index{teorema apit}
+Misalkan $a_n \le x_n \le b_n$ untuk semua $n$ yang cukup besar. Jika
+$a_n \to L$ dan $b_n \to L$, maka $x_n \to L$.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Ambil $\varepsilon>0$. Pilih $N_1$ sehingga $|a_n-L|<\varepsilon$ untuk $n>N_1$,
+yakni $a_n>L-\varepsilon$, dan $N_2$ sehingga $b_n<L+\varepsilon$ untuk $n>N_2$.
+Ambil juga $N_3$ sehingga pengapitan berlaku untuk $n>N_3$. Untuk
+$n>\max(N_1,N_2,N_3)$,
+\[
+L-\varepsilon < a_n \le x_n \le b_n < L+\varepsilon,
+\]
+jadi $|x_n-L|<\varepsilon$.
+\end{proof}
+
+Sebelum memakainya, kita perlu satu barisan pembanding yang akan muncul terus:
+pangkat yang mengecil menuju nol.
+
+\begin{lemma}
+Jika $0<q<1$, maka $q^n \to 0$.
+\end{lemma}
+
+\begin{proof}[Bukti]
+Tulis $1/q=1+h$ dengan $h>0$. Ketaksamaan Bernoulli, yang dibuktikan dengan induksi
+di Bab 1, memberi $(1+h)^n \ge 1+nh$. Karena kedua ruas positif,
+\[
+0 < q^n = \frac{1}{(1+h)^n} \le \frac{1}{1+nh} .
+\]
+Diberikan $\varepsilon>0$, sifat Archimedes memberi $n$ dengan $1+nh>1/\varepsilon$,
+yakni $1/(1+nh)<\varepsilon$. Menurut teorema apit, $q^n \to 0$.
+\end{proof}
+
+Sekarang contoh yang tidak dapat diselesaikan dengan membagi pangkat tertinggi.
+Untuk $x_n=(2^n+3^n)^{1/n}$, suku terbesar di dalam kurung adalah $3^n$; keluarkan
+pangkat itu:
+\[
+x_n = 3\left(1+\left(\tfrac{2}{3}\right)^{n}\right)^{1/n}.
+\]
+Karena $(2/3)^n \to 0$ dan $1 \le 1+(2/3)^n \le 2$, kita peroleh
+$1 \le x_n/3 \le 2^{1/n}$. Tinggal ditunjukkan $2^{1/n} \to 1$: tulis
+$2^{1/n}=1+a_n$ dengan $a_n \ge 0$, maka
+$2=(1+a_n)^n \ge 1+na_n$, sehingga $0 \le a_n \le 1/n$. Teorema apit menutup
+kedua ujung, dan $x_n \to 3$. Angka Python menegaskan arahnya:
+$x_1=5$, $x_2=3.605551$, $x_5=3.075152$, $x_{10}=3.005162$, dan $x_{100}=3$.
+
+\begin{untukanak}
+Dua penjaga sekolah berjalan berdampingan menyusuri koridor, dan seorang murid
+berjalan di antara mereka. Penjaga di kiri melangkah ke arah pintu keluar, penjaga
+di kanan juga, dan keduanya makin rapat sampai bahu mereka hampir bersentuhan.
+Murid yang terjepit di tengah tidak perlu tahu jalan; ia hanya perlu tetap di
+antara kedua penjaga. Ke mana pun penjaga itu berhenti, di situ pula murid
+berhenti.
+
+Sekarang pertanyaan yang membuat penasaran. Bagaimana kalau penjaga kiri berhenti
+lebih awal daripada penjaga kanan: masih bisakah kita menebak di mana murid
+berhenti? Lalu bagaimana kalau jarak mereka tidak pernah nol, hanya makin kecil
+dari hari ke hari? Apakah murid itu tetap punya tempat berhenti yang pasti, atau
+terus berjalan tanpa ujung?
+
+Ternyata jawabannya tidak bergantung pada wajah penjaganya, hanya pada dua hal: ke
+mana penjaga kiri menuju, dan ke mana penjaga kanan menuju. Kalau keduanya menuju
+tempat yang sama, murid di tengah tidak punya pilihan lain. Cara berpikir "terjepit
+di antara dua pihak" itulah yang dipakai matematikawan untuk barisan yang rumusnya
+terlalu rumit dihitung langsung.
+\end{untukanak}
+
+\section{Barisan monoton dan teorema kekonvergenan monoton}
+\tingkat{menengah}
+
+Kalimat sehari-harinya: barisan yang hanya bergerak satu arah, dan tidak pernah
+melewati pagar tertentu, pasti berhenti di suatu tempat. Inilah tempat kelengkapan
+bekerja paling murah, karena limitnya tidak perlu ditebak lebih dahulu.
+
+\kamus{barisan monoton}{monotone sequence}{tangga yang anak tangganya hanya naik,
+tidak pernah turun}
+
+Bahasa sehari-harinya sederhana: satu arah saja, tidak pernah berbalik.
+
+\begin{definisi}[Barisan monoton]
+Barisan $(x_n)$ disebut \emph{naik}\index{barisan monoton} jika $x_n \le x_{n+1}$
+untuk semua $n$, dan \emph{turun} jika $x_n \ge x_{n+1}$ untuk semua $n$.
+Barisan disebut monoton jika ia naik atau turun.
+\end{definisi}
+
+Gambaran kasarnya: yang melangkah satu arah tanpa melewati pagar pasti berhenti, dan
+berhentinya tepat di pagar terdekat yang tidak pernah dilewati.
+
+\begin{teorema}[Kekonvergenan monoton]
+\index{teorema kekonvergenan monoton}
+Barisan naik yang terbatas di atas konvergen, dan limitnya adalah
+$\sup\{x_n : n \in \mathbb{N}\}$.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Misalkan $(x_n)$ naik dan terbatas di atas. Himpunan sukunya tidak kosong dan
+terbatas di atas, jadi menurut sifat supremum di Bab 3 ia mempunyai supremum;
+sebut $s=\sup\{x_n\}$. Ambil $\varepsilon>0$. Karena $s-\varepsilon$ bukan batas
+atas, ada $N$ dengan $x_N>s-\varepsilon$. Untuk $n>N$, kemonotonan memberi
+$x_n \ge x_N>s-\varepsilon$, sedangkan $x_n \le s$ menurut definisi supremum. Jadi
+$|x_n-s|<\varepsilon$.
+\end{proof}
+
+Akibat langsungnya: untuk barisan seperti itu limitnya dapat dibaca dari himpunan
+sukunya, tanpa menghitung suku demi suku.
+
+\begin{akibat}
+Barisan turun yang terbatas di bawah konvergen, dan limitnya adalah infimum
+himpunan sukunya.
+\end{akibat}
+
+\begin{proof}[Bukti]
+Terapkan teorema pada $(-x_n)$, yang naik dan terbatas di atas, lalu gunakan sifat
+kelipatan skalar pada limit dan kesamaan
+$\sup\{-x_n\}=-\inf\{x_n\}$.
+\end{proof}
+
+Perhatikan bahwa teorema ini tidak mengatakan limitnya sama dengan batas atas yang
+kita pakai. Batas $3$ pada contoh berikut hanya alat bukti; limitnya justru $e$.
+
+Aplikasi pertama adalah barisan rekursif yang membuka bab ini. Misalkan $x_1=1$ dan
+$x_{n+1}=\sqrt{2+x_n}$.
+
+Pertama, semua suku berada di antara $1$ dan $2$. Untuk $n=1$ jelas. Bila
+$1 \le x_n \le 2$, maka $3 \le 2+x_n \le 4$, sehingga
+$1 \le \sqrt{3} \le x_{n+1} \le 2$. Dengan induksi, $1 \le x_n \le 2$ untuk semua
+$n$.
+
+Kedua, barisan itu naik. Karena $x_n \le 2$, berlaku
+\[
+x_{n+1} \ge x_n \iff 2+x_n \ge x_n^2 \iff (2-x_n)(1+x_n) \ge 0,
+\]
+dan ruas terakhir benar sebab $x_n \le 2$ dan $x_n \ge 1$.
+
+Menurut teorema kekonvergenan monoton, $(x_n)$ konvergen; sebut limitnya $L$.
+Karena $x_n \le 2$ untuk semua $n$, sifat urutan memberi $L \le 2$. Sekarang
+kuadratkan relasinya: $x_{n+1}^2=2+x_n$. Ruas kiri menuju $L^2$ menurut sifat
+perkalian, ruas kanan menuju $2+L$, jadi $L^2=2+L$, atau
+$(L-2)(L+1)=0$. Karena $L \ge 1$, satu-satunya kemungkinan adalah $L=2$.
+
+Perhatikan bahwa kita tidak pernah memakai kesinambungan akar; cukup sifat aljabar
+limit dan sifat urutan, sehingga peralatan Bab 11 belum diperlukan di sini.
+
+Aplikasi kedua adalah barisan $y_n=(1+1/n)^n$. Ekspansi binomial memberi
+\[
+y_n = \sum_{k=0}^{n} \binom{n}{k}\frac{1}{n^k}
+= \sum_{k=0}^{n} \frac{1}{k!}\prod_{j=1}^{k-1}\left(1-\frac{j}{n}\right),
+\]
+dengan hasil kali kosong bernilai $1$ untuk $k=0$ dan $k=1$. Setiap faktor
+$1-j/n$ naik ketika $n$ bertambah, sehingga setiap suku dengan indeks $k$ naik;
+jumlahnya juga mendapat satu suku baru yang positif. Jadi $(y_n)$ naik. Setiap
+faktor paling besar $1$, sehingga
+\[
+y_n \le \sum_{k=0}^{n}\frac{1}{k!} \le 1+1+\frac12+\frac14+\cdots = 3,
+\]
+karena $1/k! \le 1/2^{k-1}$ untuk $k \ge 1$, yang diperiksa dengan induksi.
+Barisan naik dan terbatas di atas oleh $3$, jadi ia konvergen. Limitnya kita beri
+nama $e$.
+
+Gambar~\ref{fig:monoton-e} menampilkan barisan itu untuk $n=1$ sampai $n=30$.
+Titik-titiknya naik tanpa pernah berbalik, garis putus-putus di $3$ adalah pagar
+yang dipakai dalam bukti, dan garis titik-titik di $2.71828$ adalah tempat ia
+benar-benar berhenti. Jarak antara pagar dan tujuan tetap ada sepanjang gambar;
+pagar bekerja karena tidak pernah dilewati, bukan karena dicapai.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=0.32cm,y=3.0cm,>=Stealth,font=\footnotesize]
+  \draw[->,ink] (-0.6,1.85) -- (31.2,1.85) node[right] {$n$};
+  \draw[->,ink] (0,1.85) -- (0,3.12) node[above] {$y_n$};
+  \draw[dashed,layergrey,thick] (0,3.0) -- (30.6,3.0);
+  \node[layergrey,anchor=south] at (20,3.02) {batas bukti $B=3$};
+  \draw[densely dotted,layerindigo,very thick] (0,2.71828) -- (30.4,2.71828);
+  \node[layerindigo,anchor=west] at (31.3,2.71828) {limit $e\approx2.71828$};
+  \foreach \n/\y in {1/2.0000,2/2.2500,3/2.3704,4/2.4414,5/2.4883,6/2.5216,%
+      7/2.5465,8/2.5658,9/2.5812,10/2.5937,11/2.6042,12/2.6130,13/2.6206,%
+      14/2.6272,15/2.6329,16/2.6379,17/2.6424,18/2.6464,19/2.6500,20/2.6533,%
+      21/2.6563,22/2.6590,23/2.6615,24/2.6637,25/2.6658,26/2.6678,27/2.6696,%
+      28/2.6713,29/2.6728,30/2.6743}
+    \fill[accent] (\n,\y) circle (1.7pt);
+  \draw[->,layerteal,thick] (9.5,2.42) -- (15.5,2.60);
+  \node[layerteal,anchor=north] at (12,2.40) {naik, tidak pernah berbalik};
+\end{tikzpicture}
+\caption{Barisan $y_n=(1+1/n)^n$ untuk $n=1$ sampai $n=30$. Titik-titiknya naik dan
+tidak pernah berbalik; pagar $B=3$ tidak pernah disentuh; nilai yang dituju adalah
+$e\approx2.71828$, bukan pagarnya.}
+\label{fig:monoton-e}
+\end{figure}
+
+\section{Subbarisan, Bolzano--Weierstrass, dan kriteria Cauchy}
+\tingkat{lanjut}
+
+Kalimat sehari-harinya: dari barisan yang terbatas selalu dapat dipetik satu
+deretan anak yang berhenti di suatu tempat, walaupun deretan induknya kacau.
+
+\kamus{subbarisan}{subsequence}{menyortir sebagian surat dari tumpukan tanpa
+mengubah urutannya}
+
+Subbarisan dibentuk dengan memilih sebagian suku saja: nomor yang dipakai makin
+besar, tetapi suku yang dilewati boleh sebanyak apa pun.
+
+\begin{definisi}[Subbarisan]
+Misalkan $n_1<n_2<n_3<\cdots$ bilangan asli naik. Barisan $(x_{n_k})_{k \in
+\mathbb{N}}$ disebut \emph{subbarisan}\index{subbarisan} dari $(x_n)$.
+\end{definisi}
+
+Karena $n_k \ge k$ untuk setiap $k$, yang diperiksa dengan induksi, subbarisan
+tidak dapat "lebih lambat" daripada barisan asalnya dalam hal indeks.
+
+Kalimat sehari-harinya: memilih sebagian suku tidak mengubah tempat berhenti, hanya
+memperlambat atau mempercepat kedatangannya.
+
+\begin{proposisi}
+Jika $x_n \to L$, maka setiap subbarisan $(x_{n_k})$ juga konvergen ke $L$.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Ambil $\varepsilon>0$ dan $N$ dengan $|x_n-L|<\varepsilon$ untuk $n>N$. Untuk
+$k>N$ berlaku $n_k \ge k>N$, jadi $|x_{n_k}-L|<\varepsilon$.
+\end{proof}
+
+Akibatnya sederhana tetapi paling sering dipakai untuk menyangkal: dua tempat
+berhenti yang berbeda sudah cukup.
+
+\begin{akibat}
+Jika $(x_n)$ mempunyai dua subbarisan dengan limit berbeda, maka $(x_n)$ divergen.
+\end{akibat}
+
+\begin{proof}[Bukti]
+Bila $(x_n)$ konvergen, semua subbarisannya konvergen ke limit yang sama, dan
+ketunggalan limit melarang dua nilai berbeda.
+\end{proof}
+
+Akibat ini menjelaskan contoh $(-1)^n$ tanpa argumen kemustahilan: subbarisan
+genap menuju $1$, subbarisan ganjil menuju $-1$. Cara kerjanya juga menjelaskan
+mengapa divergensi lebih sering dapat dibuktikan daripada kekonvergenan.
+
+Untuk membuktikan Bolzano--Weierstrass, kita butuh lemma berikut. Isinya: setiap
+barisan, betapa pun kacau, memuat subbarisan yang monoton.
+
+\begin{lemma}
+Setiap barisan real mempunyai subbarisan monoton.
+\end{lemma}
+
+\begin{proof}[Bukti]
+Sebut indeks $n$ sebuah \emph{puncak} bila $x_n \ge x_m$ untuk semua $m>n$, yakni
+bila tidak ada suku sesudahnya yang lebih besar. Ada dua kemungkinan.
+
+Bila puncak tak berhingga banyak, susun $n_1<n_2<\cdots$ sebagai daftar puncak.
+Karena $n_1$ puncak, $x_{n_1} \ge x_{n_2}$; karena $n_2$ puncak,
+$x_{n_2} \ge x_{n_3}$; dan seterusnya. Hasilnya subbarisan turun.
+
+Bila puncak hanya berhingga, ambil $n_1$ melewati puncak terakhir. Karena $n_1$
+bukan puncak, ada $n_2>n_1$ dengan $x_{n_2}>x_{n_1}$. Karena $n_2$ juga melewati
+puncak terakhir, ia bukan puncak, jadi ada $n_3>n_2$ dengan $x_{n_3}>x_{n_2}$.
+Proses ini berlanjut tanpa henti dan menghasilkan subbarisan naik.
+\end{proof}
+
+Isi teorema ini: dari barisan yang terkurung selalu dapat dipetik sebagian suku yang
+benar-benar menuju satu titik.
+
+\begin{teorema}[Bolzano--Weierstrass]
+\index{bolzano-weierstrass}
+Setiap barisan real yang terbatas mempunyai subbarisan yang konvergen.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Menurut lemma, $(x_n)$ mempunyai subbarisan monoton. Subbarisan dari barisan
+terbatas juga terbatas. Barisan monoton yang terbatas konvergen menurut teorema
+kekonvergenan monoton. Jadi subbarisan itu konvergen.
+\end{proof}
+
+Bukti alternatif memakai pembagian dua interval dan sifat interval bersarang; kedua
+bukti bersandar pada kelengkapan, yang tadi dipinjam lewat supremum.
+
+\kamus{barisan Cauchy}{Cauchy sequence}{penumpang yang makin berdesakan di lorong
+kereta, tanpa tahu pintu keluarnya di mana}
+
+Sekarang perhatikan masalah yang berbeda. Definisi limit menuntut kita menyebut
+$L$ lebih dahulu, padahal dalam banyak perhitungan justru $L$ yang dicari. Yang
+kita punya hanya daftar angka. Karena itu kita perlu ukuran kedekatan antar suku
+sendiri, tanpa menyebut tujuan.
+
+\begin{definisi}[Barisan Cauchy]
+Barisan $(x_n)$ disebut \emph{Cauchy}\index{barisan cauchy} jika untuk setiap
+$\varepsilon>0$ terdapat $N$ sehingga untuk semua $m,n>N$ berlaku
+$|x_n-x_m|<\varepsilon$.
+\end{definisi}
+
+Perhatikan perbedaan urutan gagasannya. Pada definisi limit semua suku dibandingkan
+dengan satu bilangan tetap $L$; pada definisi Cauchy suku dibandingkan dengan suku
+lain, tanpa bilangan luar. Karena itu definisi Cauchy masuk akal di ruang mana pun
+yang punya jarak, sedangkan definisi limit menuntut calon tujuan.
+
+\begin{teorema}[Kriteria Cauchy]
+\index{barisan cauchy}
+Barisan real konvergen jika dan hanya jika ia Cauchy.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Misalkan $x_n \to L$ dan ambil $\varepsilon>0$. Ada $N$ dengan
+$|x_n-L|<\varepsilon/2$ untuk $n>N$. Untuk $m,n>N$,
+\[
+|x_n-x_m| \le |x_n-L| + |L-x_m| < \varepsilon .
+\]
+Jadi konvergen memberi Cauchy.
+
+Sebaliknya, misalkan $(x_n)$ Cauchy. Ambil $\varepsilon=1$; ada $N_0$ sehingga
+$|x_n-x_m|<1$ untuk $m,n>N_0$. Dengan memilih $m=N_0+1$ diperoleh
+$|x_n|<|x_{N_0+1}|+1$ untuk $n>N_0$, jadi $(x_n)$ terbatas. Menurut
+Bolzano--Weierstrass ada subbarisan $x_{n_k} \to L$. Ambil $\varepsilon>0$; pilih
+$N_1$ dengan $|x_n-x_m|<\varepsilon/2$ untuk $m,n>N_1$, dan $K$ dengan
+$|x_{n_k}-L|<\varepsilon/2$ untuk $k>K$. Pilih $k>K$ yang juga memenuhi
+$n_k>N_1$; untuk $n>N_1$,
+\[
+|x_n-L| \le |x_n-x_{n_k}| + |x_{n_k}-L| < \varepsilon .
+\]
+Jadi $x_n \to L$.
+\end{proof}
+
+Arah kedua memakai Bolzano--Weierstrass, yang memakai teorema kekonvergenan
+monoton, yang memakai supremum. Rantai itu tidak dapat diputus: di dalam
+$\mathbb{Q}$ teorema ini gagal. Barisan pemotongan desimal
+$1;\ 1.4;\ 1.41;\ 1.414;\ 1.4142;\ \dots$ menuju akar dua adalah Cauchy, sebab
+selisih dua sukunya paling besar $10^{-k}$ bila keduanya melewati suku ke-$k$,
+tetapi tidak ada bilangan rasional yang menjadi limitnya. Bila barisan itu
+konvergen ke $L$, maka $a_k^2 \to L^2$; di pihak lain $a_k^2 \to 2$, sehingga
+$L^2=2$. Bab 3 sudah menunjukkan tidak ada rasional yang kuadratnya $2$. Jadi
+"Cauchy" dan "konvergen" adalah dua sifat berbeda; yang menyamakan keduanya adalah
+kelengkapan, dan itulah isi aksioma supremum.
+
+\begin{tantangan}
+Barisan $h_n=1+\frac12+\cdots+\frac1n$ tumbuh sangat lambat: $h_{10}=2.928968$,
+$h_{100}=5.187378$, $h_{1000}=7.485471$, dan $h_{10^6}=14.392727$. Selisih dua suku
+berurutan, yaitu $1/(n+1)$, menuju nol, sehingga barisan ini lolos pemeriksaan
+dangkal yang paling sering menipu: suku-sukunya makin rapat. Pertanyaannya, apakah
+$(h_n)$ konvergen? Buktikan jawabanmu, dan jelaskan mengapa $h_{10^6}<15$ bukan
+bukti bahwa barisan itu terbatas.
+
+Petunjuk 1: jangan periksa suku satu per satu. Jumlahkan dalam blok yang panjangnya
+berlipat dua, yaitu satu suku, dua suku, empat suku, delapan suku, dan seterusnya.
+
+Petunjuk 2: blok ke-$k$ berisi $2^{k-1}$ suku, dan suku terkecil di dalamnya paling
+kecil $1/2^k$; jadi setiap blok menyumbang sedikitnya $1/2$. Bandingkan hasilnya
+dengan $h_{2^m}$ dan lihat apa yang terjadi bila $m$ membesar.
+
+Kalau mentok, kembali ke Teorema Kekonvergenan Monoton: di sana barisan naik
+dibuktikan konvergen justru karena ada pagar, dan di sini justru pagarnya yang
+tidak ada.
+\end{tantangan}
+
+\section{Limit superior dan limit inferior}
+\tingkat{lanjut}
+
+Kalimat sehari-harinya: untuk barisan yang berayun, kita masih dapat menyebut
+tempat berayun yang paling tinggi dan yang paling rendah, walaupun barisan itu
+sendiri tidak punya limit.
+
+\kamus{limit superior}{upper limit}{puncak tertinggi yang masih dikunjungi
+barisan sesering apa pun setelah melewati sebarang titik}
+
+Sepanjang bagian ini $(x_n)$ terbatas. Untuk setiap $n$ bentuklah himpunan ekor
+$\{x_k : k \ge n\}$ dan tulis
+\[
+s_n=\sup\{x_k : k \ge n\}, \qquad t_n=\inf\{x_k : k \ge n\}.
+\]
+Karena ekornya menyusut, $(s_n)$ turun dan $(t_n)$ naik; keduanya terbatas, jadi
+keduanya konvergen menurut akibat teorema kekonvergenan monoton.
+
+Kalimat sehari-harinya: yang kita lacak bukan di mana barisan berada, melainkan
+seberapa tinggi dan seberapa rendah ia masih berkunjung setelah titik mana pun.
+
+\begin{definisi}[Limit superior dan inferior]
+Untuk barisan terbatas $(x_n)$,
+\[
+\limsup_{n\to\infty} x_n = \lim_{n\to\infty} s_n
+\qquad \text{dan} \qquad
+\liminf_{n\to\infty} x_n = \lim_{n\to\infty} t_n .
+\]
+Bilangan pertama disebut \emph{limit superior}\index{limit superior}, yang kedua
+\emph{limit inferior}\index{limit inferior}.
+\end{definisi}
+
+Karena $s_n \ge t_n$ untuk setiap $n$ dan limit mempertahankan urutan, selalu
+berlaku $\liminf x_n \le \limsup x_n$. Keduanya dapat berbeda jauh, dan justru
+selisih itulah ukuran kekacauan barisan.
+
+\begin{contoh}
+Untuk $x_n=(-1)^n+1/n$, ekornya memuat suku genap $1+1/k$ dan suku ganjil
+$-1+1/k$. Supremum ekor ke-$n$ datang dari suku genap terkecil yang masih
+tersedia, jadi $s_1=1.5$, $s_2=1.5$, $s_3=1.25$, $s_4=1.25$, $s_5=1.166667$,
+dan seterusnya menurun menuju $1$. Infimum ekornya berbeda sifat: suku ganjil
+$-1+1/k$ selalu hadir di setiap ekor dan turun menuju $-1$ tanpa pernah
+mencapainya, sehingga $t_n=-1$ untuk semua $n$, walaupun tidak ada satu suku pun
+yang bernilai $-1$. Maka $\limsup x_n=1$ dan $\liminf x_n=-1$, sedangkan
+barisannya divergen.
+\end{contoh}
+
+Gambar~\ref{fig:divergen-ayun} memplot suku ke-$n$ terhadap $n$ untuk barisan yang
+sama. Deretan titik genap menempel di dekat $1$, deretan titik ganjil menempel di
+dekat $-1$, dan jarak kedua kumpulan itu tetap $2$. Tidak ada satu garis mendatar
+yang dapat didekati seluruh titik, sejauh apa pun kita berjalan.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=0.62cm,y=1.9cm,>=Stealth,font=\footnotesize]
+  \draw[->,ink] (-0.3,0) -- (13.4,0) node[right] {$n$};
+  \draw[->,ink] (0,-1.3) -- (0,2.0) node[above] {$x_n$};
+  \draw[densely dotted,layerindigo,very thick] (0,1) -- (13.0,1);
+  \draw[densely dotted,layerplum,very thick] (0,-1) -- (13.0,-1);
+  \node[layerindigo,anchor=south west] at (0.1,1.03) {$\limsup x_n=1$};
+  \node[layerplum,anchor=north west] at (0.1,-1.03) {$\liminf x_n=-1$};
+  \foreach \n/\y in {1/0.0000,2/1.5000,3/-0.6667,4/1.2500,5/-0.8000,6/1.1667,%
+      7/-0.8571,8/1.1250,9/-0.8889,10/1.1000,11/-0.9091,12/1.0833}
+    \fill[accent] (\n,\y) circle (2.2pt);
+  \draw[<->,layerbrown,thick] (12.5,-1) -- (12.5,1) node[midway,right] {jarak $2$};
+\end{tikzpicture}
+\caption{Grafik suku ke-$n$ terhadap $n$ untuk $x_n=(-1)^n+1/n$. Titik genap
+menempel di dekat $1$, titik ganjil di dekat $-1$, dan jarak kedua kumpulan itu
+tetap $2$. Tidak ada pita mendatar yang memuat semua suku, jadi barisan ini
+divergen.}
+\label{fig:divergen-ayun}
+\end{figure}
+
+Kalimat sehari-harinya: nilai tertinggi yang masih dikunjungi barisan sesering apa
+pun memang dikunjungi oleh sebagian sukunya, bukan sekadar didekati dari jauh.
+
+\begin{teorema}
+Untuk barisan terbatas $(x_n)$, limit superiornya adalah limit subbarisan
+terbesar: $\limsup x_n$ sama dengan supremum himpunan semua limit subbarisan yang
+konvergen, dan nilai itu sendiri dicapai oleh suatu subbarisan.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Tulis $S=\limsup x_n$. Pertama, setiap limit subbarisan paling besar $S$. Bila
+$x_{n_k} \to L$, maka untuk setiap $k$ berlaku $x_{n_k} \le s_{n_k}$, dan karena
+$n_k \ge k$ serta $(s_n)$ turun, $s_{n_k} \le s_k$. Jadi $x_{n_k} \le s_k$, dan
+mengambil limit memberi $L \le S$.
+
+Kedua, kita bangun subbarisan yang menuju $S$, mulai dari $n_0=0$. Untuk setiap $k$,
+karena $s_n \to S$ dan $(s_n)$ turun, ada $M \ge k$ dengan $s_M<S+1/k$. Ekor
+$\{x_n : n \ge M\}$ mempunyai supremum $s_M$ dan memuat indeks sebesar apa pun, jadi
+ada $n_k>\max(k,n_{k-1})$ dengan $n_k \ge M$ dan $x_{n_k}>s_M-1/k$. Untuk pilihan itu
+\[
+S - \frac1k \le s_M - \frac1k < x_{n_k} \le s_M < S + \frac1k ,
+\]
+sehingga $|x_{n_k}-S|<1/k$. Jadi $x_{n_k} \to S$.
+\end{proof}
+
+Akibatnya: kesamaan limit inferior dan limit superior menjadi cara termurah
+memeriksa kekonvergenan tanpa menebak limitnya lebih dahulu.
+
+\begin{akibat}
+Barisan terbatas $(x_n)$ konvergen ke $L$ jika dan hanya jika
+$\liminf x_n = \limsup x_n = L$.
+\end{akibat}
+
+\begin{proof}[Bukti]
+Bila $x_n \to L$, setiap subbarisan juga menuju $L$, jadi himpunan limit
+subbarisan hanya berisi $L$ dan supremumnya $L$; dengan cara yang sama infimumnya
+$L$. Sebaliknya, bila kedua nilai sama dengan $L$, maka $t_n \le x_n \le s_n$ dan
+kedua pagar menuju $L$, sehingga teorema apit memberi $x_n \to L$.
+\end{proof}
+
+Bagi barisan tak terbatas dipakai kesepakatan $\limsup x_n=+\infty$ bila $(x_n)$
+tidak terbatas di atas; hukum aritmetika untuk $\infty$ tidak berlaku otomatis, dan
+kita tidak memakainya di sini.
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Kita kembali ke dua barisan pembuka, kali ini dengan angka yang bisa diperiksa
+ulang dan dengan langkah antara yang ditulis.
+
+\begin{resep}
+\begin{enumerate}
+  \item Tulis selisihnya. Bentuk $|x_n-L|$, lalu sederhanakan sampai tinggal satu
+        pecahan dalam $n$; untuk contoh di bawah, $|x_n-3|=5/(n+2)$.
+  \item Selesaikan untuk $n$. Pecahkan $5/(n+2)<\varepsilon$ menjadi
+        $n>5/\varepsilon-2$, dan namai ambang itu $g(\varepsilon)$.
+  \item Pilih $N$. Ambil $N=\lfloor g(\varepsilon)\rfloor$, bilangan terkecil yang
+        sah, lalu periksa galat pada $n=N$ dan $n=N+1$ sebelum menulis apa pun.
+  \item Tutup dengan kalimat definisi: untuk setiap $\varepsilon>0$ dipilih $N$
+        itu, maka setiap $n>N$ memenuhi $|x_n-3|<\varepsilon$.
+\end{enumerate}
+Peringatan urutan: $\varepsilon$ disebut lebih dahulu, $N$ menjawab. Menyusun $N$
+lalu mencari $\varepsilon$ yang cocok membalik permainan; hasilnya biasanya $N$
+yang bergantung pada $n$, bukan pada $\varepsilon$, dan di titik itu buktinya batal.
+\end{resep}
+
+Untuk $x_n=(3n+1)/(n+2)$,
+\[
+|x_n-3| = \left|\frac{3n+1-3n-6}{n+2}\right| = \frac{5}{n+2}.
+\]
+Pertidaksamaan $5/(n+2)<\varepsilon$ setara dengan $n>5/\varepsilon-2$. Karena
+syaratnya ketat, bilangan bulat terbesar yang masih di bawah ambang itu sudah sah:
+$N=\lfloor 5/\varepsilon-2 \rfloor$ adalah pilihan terkecil yang memenuhi definisi.
+Untuk $\varepsilon=10^{-2}$ ambangnya $498$ dan $N=498$. Uji batasnya: pada $n=498$
+galatnya $5/500=0.01$, yang \emph{tidak} lebih kecil dari $\varepsilon$; pada $n=499$
+galatnya $5/501=0.00998004$, baru memenuhi. Untuk $\varepsilon=10^{-4}$ diperoleh
+$N=49998$, dengan galat $0.0001$ pada $n=49998$ dan $9.9998 \times 10^{-5}$ pada
+$n=49999$.
+
+Nilai sukunya bergerak sangat lambat: $n=10$ memberi $2.583333$, $n=1000$ memberi
+$2.995010$, dan galat $10^{-4}$ baru tercapai pada suku ke-$49999$. Empat angka di
+depan koma sudah benar jauh sebelum galatnya kecil.
+
+\kertas{Untuk $x_n=(3n+1)/(n+2)$, hitung $N$ yang sah untuk $\varepsilon=10^{-3}$
+dengan rumus $N=\lfloor 5/\varepsilon-2 \rfloor$, lalu periksa galat pada $n=N$ dan
+$n=N+1$. Jelaskan mengapa galat pada $n=N$ boleh tepat sama dengan $\varepsilon$
+sementara definisi tetap terpenuhi.}
+
+Untuk $y_n=(1+1/n)^n$, aritmetika 40 digit memberi galat $0.124539$ pada $n=10$,
+$0.00135790$ pada $n=10^3$, dan $1.35914 \times 10^{-7}$ pada $n=10^7$. Hasil kali
+$n$ dengan galatnya hampir tetap: $1.245394$, $1.357896$, lalu merayap ke
+$1.3591409 = e/2$. Jadi galatnya turun seperti $1/n$, bukan $1/n^2$; satu angka
+tambahan di belakang koma menuntut $n$ sepuluh kali lebih besar. Di sinilah tabel
+mesin pada pembuka bab rusak: pada $n=10^7$ float64 melaporkan
+$1.34327 \times 10^{-7}$, karena galat relatif kecil pada $1+1/n$
+terlipatgandakan oleh pangkat $n$.
+
+Untuk rekursi $x_{n+1}=\sqrt{2+x_n}$ dengan $x_1=1$, galatnya terhadap $2$ adalah
+$2.679 \times 10^{-1}$ pada $n=2$, $1.711 \times 10^{-2}$ pada $n=4$, dan
+$2.615 \times 10^{-7}$ pada $n=12$. Nisbah dua galat berurutan menetap di
+$0.250000$.
+
+Angka $1/4$ itu bukan kebetulan. Dari relasinya,
+\[
+x_{n+1}-2 = \frac{(2+x_n)-4}{\sqrt{2+x_n}+2}
+= \frac{x_n-2}{\sqrt{2+x_n}+2},
+\]
+sehingga
+\[
+|x_{n+1}-2| = \frac{|x_n-2|}{\sqrt{2+x_n}+2}
+\le \frac{|x_n-2|}{2+\sqrt{2}} = 0.292893\,|x_n-2| ,
+\]
+karena $x_n \ge 1$ memberi $\sqrt{2+x_n} \ge \sqrt{3}$. Batas $0.292893$ berlaku
+untuk semua $n$, dan nisbah sebenarnya menuju $1/4$ karena penyebutnya menuju $4$.
+Akibat praktisnya: galat $10^{-6}$ tercapai pada $n=12$, $10^{-9}$ pada $n=17$, dan
+ketelitian mesin sekitar $n=27$; jauh lebih murah daripada membagi interval dua kali
+lipat.
+
+\section{Lab komputasi: empat pemeriksaan}
+\tingkat{lanjut}
+
+\kamus{galat pemotongan}{truncation error}{selisih antara potret dan wajah aslinya}
+
+Empat klaim di bab ini dapat diperiksa dengan satu skrip pendek: ambang $N$ yang
+eksplisit, laju galat $(1+1/n)^n$, ketelitian mesin, dan nisbah galat rekursi.
+
+\begin{lab}
+\begin{verbatim}
+import math, mpmath as mp
+
+def N_for(eps):
+    N = int(5/eps - 2)
+    while 5/(N+2) >= eps: N += 1
+    while N > 0 and 5/(N+2) < eps: N -= 1
+    return N
+
+print("== 1. N eksplisit untuk (3n+1)/(n+2) -> 3 ==")
+for eps in (1e-2, 1e-4):
+    N = N_for(eps)
+    print("eps=%.0e  N=%d  err(N)=%.6g  err(N+1)=%.6g"
+          % (eps, N, abs((3*N+1)/(N+2)-3), abs((3*N+4)/(N+3)-3)))
+
+print("== 2. (1+1/n)^n dalam float64 ==")
+for k in range(1, 8):
+    n = 10**k
+    print("n=1e%d  %.16f  e-y=%.3e" % (k, (1+1/n)**n, math.e-(1+1/n)**n))
+
+print("== 3. galat sebenarnya (mpmath, 40 digit) ==")
+mp.mp.dps = 40
+for k in (5, 6, 7):
+    n = 10**k
+    y = (1+mp.mpf(1)/n)**n
+    print("n=1e%d  e-y=%s  (float64: %.3e)"
+          % (k, mp.nstr(mp.e-y, 6), math.e-(1+1/n)**n))
+
+print("== 4. rekursi x_{n+1}=sqrt(2+x_n), x_1=1 ==")
+x, xs = 1.0, []
+for _ in range(30):
+    xs.append(x); x = math.sqrt(2+x)
+for n in (1, 2, 3, 4, 5, 6, 11, 12, 13, 14):
+    e = abs(xs[n-1]-2)
+    r = "" if n == 1 else "  rasio=%.6f" % (e/abs(xs[n-2]-2))
+    print("n=%2d  x=%.12f  galat=%.3e%s" % (n, xs[n-1], e, r))
+e6 = next(n for n in range(1, 31) if abs(xs[n-1]-2) < 1e-6)
+e9 = next(n for n in range(1, 31) if abs(xs[n-1]-2) < 1e-9)
+print("galat < 1e-6 pertama kali pada n=%d ; galat < 1e-9 pada n=%d" % (e6, e9))
+\end{verbatim}
+\end{lab}
+
+\newpage
+Keluarannya, apa adanya:
+
+\begin{verbatim}
+== 1. N eksplisit untuk (3n+1)/(n+2) -> 3 ==
+eps=1e-02  N=498  err(N)=0.01  err(N+1)=0.00998004
+eps=1e-04  N=49998  err(N)=0.0001  err(N+1)=9.9998e-05
+== 2. (1+1/n)^n dalam float64 ==
+n=1e1  2.5937424601000023  e-y=1.245e-01
+n=1e2  2.7048138294215285  e-y=1.347e-02
+n=1e3  2.7169239322355936  e-y=1.358e-03
+n=1e4  2.7181459268249255  e-y=1.359e-04
+n=1e5  2.7182682371922975  e-y=1.359e-05
+n=1e6  2.7182804690957534  e-y=1.359e-06
+n=1e7  2.7182816941320818  e-y=1.343e-07
+== 3. galat sebenarnya (mpmath, 40 digit) ==
+n=1e5  e-y=1.35913e-5  (float64: 1.359e-05)
+n=1e6  e-y=1.35914e-6  (float64: 1.359e-06)
+n=1e7  e-y=1.35914e-7  (float64: 1.343e-07)
+== 4. rekursi x_{n+1}=sqrt(2+x_n), x_1=1 ==
+n= 1  x=1.000000000000  galat=1.000e+00
+n= 2  x=1.732050807569  galat=2.679e-01  rasio=0.267949
+n= 3  x=1.931851652578  galat=6.815e-02  rasio=0.254333
+n= 4  x=1.982889722748  galat=1.711e-02  rasio=0.251074
+n= 5  x=1.995717846477  galat=4.282e-03  rasio=0.250268
+n= 6  x=1.998929174953  galat=1.071e-03  rasio=0.250067
+n=11  x=1.999998954179  galat=1.046e-06  rasio=0.250000
+n=12  x=1.999999738545  galat=2.615e-07  rasio=0.250000
+n=13  x=1.999999934636  galat=6.536e-08  rasio=0.250000
+n=14  x=1.999999983659  galat=1.634e-08  rasio=0.250000
+galat < 1e-6 pertama kali pada n=12 ; galat < 1e-9 pada n=17
+\end{verbatim}
+
+Tiga hal yang perlu dibaca dari keluaran itu. Pertama, galat pada $n=N$ tepat sama
+dengan $\varepsilon$ di kedua baris; itulah sebabnya definisi memakai syarat ketat
+$n>N$. Kedua, kolom $e-y$ berlipat sepersepuluh setiap kali $n$ berlipat sepuluh
+sampai $n=10^6$, lalu berhenti mengikuti pola; bagian 3 menunjukkan bahwa yang
+berhenti adalah ketelitian float64, bukan kekonvergenan barisan. Galat pemotongan
+terus mengecil seperti $e/(2n)$, tetapi galat pembulatan mengambil alih begitu
+keduanya bertemu. Ketiga, nisbah galat pada bagian 4 turun ke $0.250000$ dan tinggal
+di sana, tepat seperti perhitungan tangan sebelumnya. Program tidak membuktikan apa
+pun: ia hanya memeriksa klaim yang sudah kita buktikan.
+
+\begin{untukdosen}
+Urutan mengajar: mulai dari permainan $\varepsilon$-$N$ di kelas, bukan dari
+teorema. Tunjuk dua baris mahasiswa; satu menyebut $\varepsilon$, satu menjawab $N$
+untuk $x_n=(3n+1)/(n+2)$, dan dosen mencatat sampai rumusnya muncul sendiri.
+Sesudah itu ketunggalan, sifat aljabar, teorema apit, barisan monoton, lalu
+subbarisan dan Cauchy. Limit superior ditaruh di akhir, sebagai "limit untuk
+barisan yang tidak punya limit".
+
+Dua miskonsepsi khas. Pertama, mahasiswa menganggap $N$ boleh bergantung pada $n$,
+lalu menulis "untuk setiap $n$ ada $N=n$" dan menyangka definisi terpenuhi;
+gejalanya tampak ketika mereka tidak dapat menghasilkan satu $N$ untuk seluruh
+ekor. Kedua, mereka menyamakan "suku makin rapat" dengan "konvergen" dan memakai
+kriteria Cauchy tanpa memeriksa ruangnya; pemotongan desimal akar dua di dalam
+$\mathbb{Q}$ adalah penawar yang efektif.
+
+Aktivitas papan tulis: minta mahasiswa menuliskan negasi definisi limit, lalu
+buktikan divergensi $(-1)^n$ dengan negasi itu, bukan dengan kontradiksi. Kelas
+siap lanjut bila mereka dapat menghasilkan $N$ eksplisit tanpa diberi rumus dan
+menyebut satu barisan terbatas yang divergen.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item $x_n \to L$ berarti untuk setiap $\varepsilon>0$ ada $N$ sehingga
+        $|x_n-L|<\varepsilon$ untuk semua $n>N$. $\varepsilon$ dipilih lebih
+        dahulu; $N$ menjawab, dan boleh bergantung pada $\varepsilon$ saja.
+  \item Limit tunggal, dan barisan konvergen terbatas. Kebalikannya tidak berlaku:
+        keterbatasan hanya syarat perlu.
+  \item Limit menghormati $+$, $\times$, dan pembagian dengan penyebut tak nol;
+        urutan tidak pernah dilompati, hanya dipertahankan lemah.
+  \item Teorema apit mengubah pengurungan menjadi limit, dan lemma $q^n \to 0$
+        memberi pembanding yang dipakai berulang. Barisan monoton yang terbatas
+        selalu konvergen, dan limitnya supremum atau infimum.
+  \item Setiap barisan terbatas punya subbarisan konvergen; barisan real konvergen
+        jika dan hanya jika Cauchy, dan kesetaraan itu adalah kelengkapan.
+  \item $\liminf \le \limsup$, dan keduanya sama dengan $L$ tepat ketika barisan
+        konvergen ke $L$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Buktikan dengan definisi bahwa $x_n=(2n-1)/(3n+4)$ konvergen ke $2/3$, dan
+        berikan $N$ eksplisit sebagai fungsi $\varepsilon$. Bandingkan dengan
+        ambang $n$ terkecil yang memenuhi.
+  \item Buktikan: jika $x_n \to L$ maka $|x_n| \to |L|$. Tunjukkan dengan contoh
+        bahwa kebalikannya salah.
+  \item Hitung $\limsup$ dan $\liminf$ dari $x_n=1+(-1)^n+1/n$ dan dari
+        $y_n=(-1)^n(1+1/n)$. Periksa jawabanmu dengan Python untuk $n$ sampai
+        $1000$.
+  \item Nilai klaim ini: "Karena $(1+1/n)^n$ naik dan terbatas di atas oleh $3$,
+        limitnya adalah $3$." Benar, salah, atau belum cukup bukti? Sebutkan
+        bagian mana yang benar dan bagian mana yang keliru.
+  \item Buktikan bahwa $(2^n+3^n)^{1/n} \to 3$ dengan menuliskan kedua pagar
+        secara lengkap, termasuk bukti $2^{1/n} \to 1$.
+  \item Untuk rekursi $x_{n+1}=\sqrt{2+x_n}$ dengan $x_1=1$, hitung dengan Python
+        suku terkecil dengan galat di bawah $10^{-6}$ dan $10^{-12}$. Bandingkan
+        dengan tebakan dari nisbah $1/4$.
+  \item Buktikan bahwa barisan Cauchy terbatas, tanpa memakai Bolzano--Weierstrass.
+        Lalu buktikan bahwa barisan monoton yang terbatas adalah Cauchy.
+  \item Untuk $x_n=(3n+1)/(n+2)$ dan $\varepsilon=10^{-3}$, tentukan $N$ terkecil
+        yang sah, lalu hitung galat pada $n=N$, $N+1$, dan $N+2$ dengan Python.
+        Jelaskan mengapa $N-1$ tidak sah.
+  \item Buktikan: jika setiap subbarisan dari $(x_n)$ mempunyai subbarisan yang
+        konvergen ke $L$, maka $x_n \to L$.
+\end{enumerate}
+
+Petunjuk untuk tiga butir tersulit. Butir 5: gunakan
+$1 \le (1+(2/3)^n)^{1/n} \le 2^{1/n}$ lalu lemma $2^{1/n} \to 1$ lewat
+ketaksamaan Bernoulli. Butir 7: untuk bagian kedua, bandingkan $|x_n-x_m|$ dengan
+$x_m-x_n$ ketika $m>n$ dan gunakan kekonvergenan monoton. Butir 9: andaikan
+$x_n$ tidak menuju $L$, bentuk subbarisan yang berjarak tetap dari $L$, lalu pakai
+Bolzano--Weierstrass.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di sini hanyalah kesetaraan berikut, dan semuanya
+bersandar pada satu aksioma: sifat supremum. Dalam lapangan terurut, pernyataan
+berikut ekuivalen: setiap himpunan tak kosong yang terbatas di atas punya
+supremum; setiap barisan naik yang terbatas konvergen; setiap barisan Cauchy
+konvergen; setiap barisan terbatas punya subbarisan konvergen. Rantai buktinya ada
+di Rudin, \emph{Principles of Mathematical Analysis}, Bab 3 (bagian Convergent
+Sequences, Subsequences, Cauchy Sequences) dan Abbott, \emph{Understanding
+Analysis}, Bab 2 (bagian 2.2 sampai 2.6). Yang populer tetapi tidak terbukti:
+"barisan Cauchy selalu konvergen". Itu salah tanpa kelengkapan, dan contoh
+pemotongan desimal akar dua di dalam $\mathbb{Q}$ adalah penyangkalnya.
+
+Pertanyaan yang masih terbuka: seberapa cepat sebuah barisan konvergen, dan apakah
+laju itu selalu dapat dihitung. Jawabannya tidak. Hasil klasik Specker (1949)
+memberi barisan rasional yang dapat dihitung, naik, dan terbatas, tetapi limitnya
+tidak dapat dihitung; jadi "konvergen" tidak otomatis memberi batas galat yang bisa
+diprogram.
+
+Batas keberlakuan: seluruh bab ini bekerja di $\mathbb{R}$ dengan jarak biasa.
+Di ruang metrik umum, Bolzano--Weierstrass berubah menjadi pernyataan tentang
+kekompakan, dan kriteria Cauchy tetap menjadi syarat perlu tetapi belum cukup.
+Teorema apit juga diam bila kedua pagar tidak menuju nilai yang sama; di situ kita
+butuh pembanding yang lebih halus, dan itulah bahan Bab 5.
+\end{untukpeneliti}
+
+\peta{Bab 4 pada Rudin, \emph{Principles of Mathematical Analysis}: Bab 3 (Numerical
+Sequences and Series, dengan bagian Convergent Sequences, Subsequences, Cauchy
+Sequences, Upper and Lower Limits, dan Some Special Sequences). Pada Abbott,
+\emph{Understanding Analysis}: Bab 2 (The Limit of a Sequence, The Algebraic and
+Order Limit Theorems, The Monotone Convergence Theorem and a First Look at Infinite
+Series, Subsequences and the Bolzano--Weierstrass Theorem, The Cauchy Criterion).
+Aksioma dan akibat kelengkapan yang dipakai di sini dibangun di Bab 3 buku ini,
+bukan diulang.}

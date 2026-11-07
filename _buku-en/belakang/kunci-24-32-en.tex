@@ -1,0 +1,577 @@
+% Answer keys for Chapters 24--32. This file is \input directly inside the document.
+% Every number is tested by an assert script outside the repo (see the report).
+
+\section*{Chapter 24: Linear and Integer Programming}
+\begin{enumerate}[label=\textbf{24.\arabic*}]
+  \item Maximize $30x_{1}+20x_{2}$ subject to $2x_{1}+x_{2}\le10$, $x_{1}+2x_{2}\le8$,
+        $x\ge0$. The vertices $(0;0)$, $(5;0)$, $(0;4)$, $(4;2)$ give profit
+        $0;\,150;\,80;\,160$. The continuous optimum is $(4;2)$ with profit $160$; integer
+        enumeration also gives $160$, so here rounding down happens to be exact and
+        the gap is $0$.
+
+  \item For $x,y\in P$ and $\lambda\in[0,1]$:
+        $A(\lambda x+(1-\lambda)y)=\lambda Ax+(1-\lambda)Ay\le\lambda b+(1-\lambda)b=b$,
+        using $A$ linear and $\lambda\ge0$. On integer sets that argument collapses:
+        a convex combination of two integer points need not be integer, for example $0$
+        and $1$ are feasible while their midpoint is not a member of $\mathbb{Z}^{n}$.
+
+  \item Profit $x_{1}+2x_{2}$ at the vertices: $0$; $4$; $6$; $6$. The optima $(0;3)$ and
+        $(3;1{,}5)$ both equal $6$, and the whole segment $x_{1}+2x_{2}=6$ is optimal because
+        the objective is constant there; the midpoint $(1{,}5;\,2{,}25)$ is not a vertex.
+        The dual is $y=(0;1)$: the price of an hour is $1$, of plywood $0$.
+
+  \item Initial table with basis $s_{1},s_{2},s_{3}=(4;3;3)$. First pivot: $x_{1}$ enters
+        (reduced cost $3$), ratios $4$ and $3$, so $s_{2}$ leaves; value $9$.
+        Second pivot: $x_{2}$ enters, $s_{1}$ leaves (ratio $1$), optimum $(3;1)$
+        with $z=11$. The dual prices from the final table: $(2;1;0)$, and
+        $4(2)+3(1)+3(0)=11$.
+
+  \item The dual minimizes $10y_{1}+8y_{2}$ subject to $2y_{1}+y_{2}\ge30$,
+        $y_{1}+2y_{2}\ge20$, $y\ge0$; the solution $y=(40/3;\,10/3)$ has value
+        $160$, the same as the primal. Meaning: one extra kg of flour is worth
+        $13{,}333$ and one extra oven hour $3{,}333$.
+
+  \item False. Rounding down is not always feasible once there are equality
+        constraints or constraints with sign $\ge$. Example: maximize $x_{1}+x_{2}$ with
+        $2x_{1}+2x_{2}=5$; the continuous answer $(2{,}5;\,0)$ rounds to
+        $(2;0)$, which gives $4\ne5$ and is therefore infeasible.
+
+  \item True for the forward direction, and only for optimal pairs. Complementary
+        slackness $y_{i}(b_{i}-\mathbf{a}_{i}^{\top}\mathbf{x})=0$ gives:
+        $y_{i}>0$ forces that constraint to be active. The converse does not hold; at a
+        degenerate point there is an active constraint with $y_{i}=0$, so a zero price
+        does not mean the constraint is slack.
+
+  \item Densities $2{,}0$; $1{,}75$; $1{,}667$; $1{,}5$. The first item fills up
+        ($5$ kg, $10$), then $3/4$ of the second, total weight $8$: the LP bound
+        is $15{,}25$. Enumeration gives $15$ (items $1$ and $3$). Gap $0{,}25$,
+        that is $1{,}639$ percent of the bound.
+
+  \item 
+Capacity $7$: the first item fills the sack, then $1/2$ of the second, so
+        the LP bound is $13{,}5$; the best integer answer is $13$ (items $1$ and
+        $4$, weight $7$). The gap is $0{,}5$, i.e. $3{,}704$ percent. The gap
+        changes because capacity $7$ rules out the pair $(1,3)$, whose weight
+        $5+3=8$ used to fit, so the best integer answer moves to items $1$ and $4$;
+        the fractional and integer optima do not move in step.
+
+  \item $x_{v}=1/2$ for every $v$ is feasible ($x_{u}+x_{v}=1$) and gives $n/2$;
+        every cover must contain $n-1$ vertices, since leaving out two vertices
+        means the edge between them is uncovered. Ratio of LP to integer:
+        $0{,}6667$; $0{,}625$; $0{,}5556$ for $n=4,5,10$. The ratio tends to
+        $1/2$, so the relaxation bound can be off by a factor of two and rounding is not
+        a general method.
+\end{enumerate}
+
+\section*{Chapter 25: Neural Networks and Backpropagation}
+\begin{enumerate}[label=\textbf{25.\arabic*}]
+  \item The bound is $\lfloor1/\gamma^{2}\rfloor$: for $\gamma=0{,}2$ we get $25$,
+        for $\gamma=0{,}05$ we get $400$. That bound only counts mistakes,
+        and each mistake consumes margin, which is why $n$ does not appear. For
+        small $\gamma$ the bound blows up like $1/\gamma^{2}$ and is therefore useless.
+
+  \item Write $\mathbf{W}=\mathbf{W}_{2}\mathbf{W}_{1}$ and
+        $\mathbf{b}=\mathbf{W}_{2}\mathbf{b}_{1}+\mathbf{b}_{2}$; then the output is
+        $\mathbf{W}\mathbf{x}+\mathbf{b}$, that is, one linear threshold. Adding the next
+        identity layer only multiplies matrices, so the capacity does not
+        increase at all.
+
+  \item With $\mathbf{x}=(0{,}5;-1;\,0{,}25;2)$ and $y=0$: $\mathbf{z}_{1}=(2{,}9125;\,
+        0{,}375)$, $a=0{,}8961350845$, $\bar{z}_{2}=0{,}8961350845$, hence
+        $\bar{\mathbf{z}}_{1}=(0{,}7169081;\,-0{,}5376810)$ and
+        \[
+          \nabla_{\mathbf{W}_{1}}L=
+          \begin{pmatrix}
+            0{,}3584540 & -0{,}7169081 & 0{,}1792270 & 1{,}4338161\\
+            -0{,}2688405 & 0{,}5376810 & -0{,}1344203 & -1{,}0753621
+          \end{pmatrix},
+        \]
+        that is, the second row equals $-0{,}75$ times the first row. This item is
+        ambiguous: both gates are open, so there is no row with zero gradient.
+
+  \item Not enough evidence. Finite differences only check thirteen scalars at one
+        point, and at $h=10^{-6}$ an error of $10^{-10}$ is exactly what is expected; a
+        shared bug in both computations would not show up. What is needed: several points,
+        both gate states, the cases $y=0$ and $y=1$, gradients with respect to the input, and
+        an automatic differentiation comparison.
+
+  \item False. The theorem is about density of continuous functions on a
+        compact domain: there exist parameters that approximate, not that those parameters
+        are reachable by optimization. Two things are not stated: how many units are
+        needed, and the error on test data (generalization), not only on the target
+        function.
+
+  \item At $t=1$, $\hat m=g$ and $\hat v=g^{2}$, so the step is
+        $\eta g/(|g|+\epsilon)=-0{,}01$ and $b_{2}$ becomes $0{,}06$. With a gradient
+        $100$ times larger the step stays $-0{,}01$, because Adam only
+        uses the ratio to the gradient scale; $b_{2}$ stays $0{,}06$.
+
+  \item 
+The output $w_{2}\max(\mathbf{W}_{1}\mathbf{x}+\mathbf{b}_{1},0)$ is a sum
+        of two linear functions, each active on one half-plane, hence piecewise
+        linear; two lines $z_{1}[i]=0$ cut the plane into at most four cells, each
+        with its own linear formula. For $k$ units in general position, $k$ lines
+        cut the plane into $1+k+k(k-1)/2$ regions, that is $2,4,7$ for $k=1,2,3$
+        (not $8$: the third line adds only three regions, not four).
+
+  \item $\nabla_{\mathbf{x}}L=(-0{,}0868370;\,0{,}1328096;\,-0{,}0970532;\,
+        -0{,}1430257)$, so $\boldsymbol{\delta}=0{,}05\,\mathrm{sign}(\nabla)
+        =(-0{,}05;0{,}05;-0{,}05;-0{,}05)$. The loss at $\mathbf{x}+\boldsymbol{\delta}$
+        is $0{,}3186800$, whereas the linear prediction
+        $0{,}2949123+0{,}0229863=0{,}3178985$; a difference of $7{,}81\times10^{-4}$ from
+        curvature.
+
+  \item 
+Prediction: the second lab block uses ReLU, and ReLU saturates only on the
+        negative side. Saturation table ($8$ units, random He $\mathbf{W}_{1}$,
+        $\mathbf{b}_{2}=0$):
+        \begin{center}
+        \begin{tabular}{lrrrr}
+        & range of $Z_{1}$ (initial) & dead units & final $L$ & accuracy \\ \hline
+        $\mathbf{b}_{1}=0$   & $[-2.43;\,2.40]$   & $0/8$ & $0.0163$ & $1.0000$ \\
+        $\mathbf{b}_{1}=+10$ & $[7.57;\,12.41]$   & $0/8$ & $0.3225$ & $0.8375$ \\
+        $\mathbf{b}_{1}=-10$ & $[-12.43;\,-7.60]$ & $8/8$ & $0.6909$ & $0.5333$
+        \end{tabular}
+        \end{center}
+        So $\mathbf{b}_{1}=+10$ indeed does not kill the hidden units ($Z_{1}$ far
+        above zero passes through unchanged), but it is not free: $H\cdot\mathbf{w}_{2}$
+        becomes very large, the output sigmoid sticks at $0$ or $1$, and $L$ starts
+        at $4.04$; after $3000$ steps it stops at $L=0.3225$ with accuracy $0.8375$,
+        worse than $\mathbf{b}_{1}=0$. For $\mathbf{b}_{1}=-10$ every unit is dead
+        from the start ($Z_{1}$ below zero, the derivative exactly $0$, not merely
+        small), $\partial L/\partial b_{1}=\mathbf{0}$ exactly, and training stops at
+        $L=0.6909$ -- the label entropy -- with majority-class accuracy $0.5333$.
+  \end{enumerate}
+
+\section*{Chapter 26: Generalization, Regularization, and Training}
+\begin{enumerate}[label=\textbf{26.\arabic*}]
+  \item Not enough evidence, and what is wrong is equating training error with
+        generalization error. Zero training error only means the training data has been
+        memorized. The additional numbers needed: validation (or test) error on data not
+        used for training, together with its interval width.
+
+  \item With $\hat f=\hat f_{D}$ and $\bar f=\mathbb{E}_{D}\hat f$:
+        $\mathbb{E}(y-\hat f)^{2}=\sigma^{2}+(\bar f-f)^{2}+\operatorname{Var}(\hat f)$.
+        The cross term vanishes because $\mathbb{E}[\varepsilon]=0$ and $\varepsilon$
+        is independent of $D$, so $\mathbb{E}[\varepsilon(\hat f-f)]=0$; independence
+        is used precisely at this step, on $\varepsilon$, not on $\hat f$. The second
+        cross term vanishes for a different reason: $\mathbb{E}[\hat f-\bar f]=0$ by
+        the definition of $\bar f$, so $2(f-\bar f)\,\mathbb{E}[\hat f-\bar f]=0$
+        without needing any independence.
+
+  \item From $\frac{d}{dw}\bigl[\frac12\sum(y_{i}-wx_{i})^{2}\bigr]=0$ we get
+        $w(\lambda)=\sum x_{i}y_{i}/(\sum x_{i}^{2}+\lambda)=64/(30+\lambda)$.
+        Its derivative $-64/(30+\lambda)^{2}<0$ but never zero, so $w$ shrinks
+        without touching zero. In L1, the subgradient at $w=0$ contains zero when
+        $\lambda\ge|\sum x_{i}y_{i}|=64$; so $w=0$ exactly at $\lambda=64$.
+
+  \item $\operatorname{MSE}(c)=(c-1)^{2}\mu^{2}+c^{2}\sigma^{2}/n$: for
+        $c=0{,}95$ we get $0{,}01+0{,}0361=0{,}0461$; for $c=1{,}05$ we get
+        $0{,}01+0{,}0441=0{,}0541$; for $c=1$ we get $0{,}04$. An equally large deviation
+        is not an equally large loss, because the variance term grows like $c^{2}$, so
+        exceeding the budget costs more than shrinking.
+
+  \item Fix: that cross-validation number is an estimate of the error of the selection
+        procedure, not of the selected model's error in the field, and it is
+        optimistically biased because $\lambda$ was chosen on the same folds. Two
+        things are needed: nested cross-validation (or a test set never seen during
+        selection), and repetition with several partitions along with intervals.
+
+  \item For $a<0$: with $u<0$ the derivative is $u-a-t$, zero at $u=a+t$, which is valid
+        only when $a<-t$. For $u=0$ the subgradient is $[-a-t,\,-a+t]$, which contains
+        zero when $|a|\le t$, so $u=0$ is optimal. Symmetric because the objective
+        $\frac12(u-a)^{2}+t|u|$ is unchanged when $u$ and $a$ are both sign-flipped.
+
+  \item The half-life is $\ln2/(\eta\lambda)=0{,}693147/0{,}002=346{,}57$ steps;
+        a quarter of the initial value means two half-lives, $693{,}15$ steps, and
+        $(1-\eta\lambda)^{693}=0{,}24973$. A numpy simulation with zero gradient
+        gives the same numbers, because $w_{k}=w_{0}(1-\eta\lambda)^{k}$.
+
+  \item The gap is $0{,}2406-0{,}1500=0{,}0906$; at $\lambda=0$ the gap is
+        $0{,}3262-0=0{,}3262$, at $\lambda=10$ only $0{,}3395-0{,}3333=0{,}0062$.
+        A small gap is not enough: at $\lambda=10$ the gap is smallest precisely because
+        both are equally bad, close to the majority-class error $0{,}3419$.
+
+  \item With $m$ hypotheses, $P(\exists i:|\hat R_{i}-R_{i}|>\epsilon)\le
+        2m e^{-2n\epsilon^{2}}$, so $\epsilon=\sqrt{(\ln m+\ln(2/\delta))/(2n)}$.
+        For $m=2^{10}$, $n=200$, $\delta=0{,}01$: $\epsilon=0{,}1749$. Halving it
+        demands four times the $n$, namely $800$.
+\end{enumerate}
+
+\section*{Chapter 27: Honest Model Evaluation}
+\begin{enumerate}[label=\textbf{27.\arabic*}]
+  \item Not enough evidence. A difference of $0{,}4$ points on a single test set is not
+        necessarily beyond noise; what is wrong is treating two paired proportions
+        as independent. Two additional numbers: the size of the test set, and the count of
+        paired disagreements (for McNemar's test) or the interval width.
+
+  \item For hard labels $s,y\in\{0,1\}$ we have $(s-y)^{2}=1$ exactly at
+        mistakes and $0$ at correct predictions, so the average is
+        $(\mathrm{FP}+\mathrm{FN})/n$. For scores that are probabilities, $(s-y)^{2}$
+        takes intermediate values, so the average is no longer a count of mistakes
+        but a calibration penalty.
+
+  \item $\mathbb{E}[(s-y)^{2}]=s^{2}-2s\pi+\pi$ with $\pi=\mathbb{E}[y]$.
+        The derivative is $2s-2\pi$, zero at $s=\pi$; the minimum value is
+        $\pi^{2}-2\pi^{2}+\pi=\pi(1-\pi)$, and the second derivative $2>0$ confirms
+        that it is a minimum.
+
+  \item Precision $180/225=0{,}8$; recall $180/200=0{,}9$; $F_{1}=0{,}847059$;
+        accuracy $1935/2000=0{,}9675$; specificity $1755/1800=0{,}975$; balanced accuracy
+        $(0{,}9+0{,}975)/2=0{,}9375$. \texttt{sklearn.metrics} gives the
+        same numbers to six decimals.
+
+  \item Wilson $95/100$: $[0{,}8882;\,0{,}9785]$, width $0{,}0902$; for
+        $950/1000$: $[0{,}9347;\,0{,}9619]$, width $0{,}0272$, that is $3{,}318$
+        times narrower even though $n$ is ten times larger. Width is not a measure of
+        model quality: it depends on $n$ and on the data, and the two experiments are
+        not paired.
+
+  \item 
+Out of $25$ pairs, $19$ are correct: the positive $0{,}95$ beats five
+        negatives, $0{,}88$ also five (it sits above $0{,}75$), $0{,}70$ four,
+        $0{,}60$ three, $0{,}40$ two. Hence $\mathrm{AUC}=19/25=0{,}76$;
+        \texttt{roc\_auc\_score} reports $0{,}76$.
+
+  \item Precision $=0{,}8\pi/(0{,}8\pi+0{,}01(1-\pi))$: at $\pi=0{,}002$ we get
+        $0{,}138169$, at $\pi=0{,}2$ we get $0{,}952381$. The requirement precision
+        $\ge0{,}5$ gives $0{,}4\pi\ge0{,}005-0{,}005\pi$, that is
+        $\pi\ge0{,}005/0{,}405=0{,}012346$.
+
+  \item Split by host, not by record: $60/20/20$ becomes $180$ training hosts,
+        $60$ validation, $60$ test, each about $20$ records. Preprocessing is
+        computed inside the training fold only. The choice among $40$ settings goes
+        through nested cross-validation in the training part. The test set is touched
+        once, at the end.
+
+  \item False. AUC measures ranking, not usefulness at a particular threshold. With
+        sensitivity $0{,}8$ and specificity $0{,}99$, at prevalence $0{,}002$ the
+        precision is only $0{,}138169$: of ten alarms, $8{,}62$ are wrong, so about
+        nine. The chosen
+        threshold still has to be checked for precision and recall.
+\end{enumerate}
+
+\section*{Chapter 28: Formal Methods with Lean 4}
+\begin{enumerate}[label=\textbf{28.\arabic*}]
+  \item False. A file that is accepted means every theorem has a proof that is
+        checked, but \texttt{sorry} passes with a warning, and
+        \texttt{axiom} as well as \texttt{native\_decide} extend the trusted base.
+        The checking command: \texttt{\#print axioms} on every theorem that is
+        claimed.
+
+  \item 
+Helper lemma: for every $k$, $k(2k)+2(2k+1)=(k+1)\cdot2(k+1)$. That goal
+        contains $k\cdot k$, so it is not a linear goal: \texttt{omega} will not
+        close it on its own and a rewrite is needed first. Then \texttt{induction n
+        with}: base case \texttt{rfl}; the \texttt{succ k ih} step uses \texttt{rw
+        [oddSum, Nat.mul\_add, ih]}, which leaves exactly that helper lemma, then
+        \texttt{exact bantu k}. The helper lemma itself is closed by
+        \texttt{simp only [Nat.mul\_add, Nat.add\_mul, Nat.mul\_one, Nat.one\_mul]}
+        followed by \texttt{omega}: \texttt{omega} cannot close
+        $k\cdot(2k)+2(2k+1)=(k+1)\cdot2(k+1)$ on its own, because that goal contains
+        $k\cdot k$ and is not linear (tried: \texttt{omega could not prove the goal}).
+
+  \item Informal: for $n=0$ both sides are $0$; if $\sum_{i<n}2i=n(n-1)$, then
+        adding $2n$ gives $n(n-1)+2n=(n+1)n$. The Lean version defines
+        \texttt{evenSum : Nat -> Nat} recursively (\texttt{evenSum 0 = 0},
+        \texttt{evenSum (n+1) = evenSum n + 2*n}) and states the form without
+        truncated subtraction, $E(n)+n=n\cdot n$. The steps: \texttt{induction},
+        base \texttt{rfl}, then \texttt{rw [evenSum]}. Note that
+        \texttt{rw [evenSum, ih]} fails outright (\texttt{did not find instance of
+        the pattern evenSum k + k}), because the goal afterwards reads
+        $E(k)+2k+(k+1)=(k+1)(k+1)$. Insert the regrouping
+        \texttt{have h : evenSum k + 2 * k + (k + 1) = (evenSum k + k) + (2 * k + 1) := by omega}
+        first, continue with \texttt{rw [h, ih]}, and close with
+        \texttt{simp only [Nat.mul\_add, Nat.add\_mul, Nat.mul\_one, Nat.one\_mul]}
+        then \texttt{omega}.
+
+  \item The sum of the first $37$ odd numbers $=37^{2}=1369$; the sum of the first $250$
+        $=250^{2}=62500$. Script: \texttt{sum(2*i+1 for i in range(n))} gives
+        both numbers, and both are perfect squares.
+
+  \item        A direct check for all $n\le1000$ demands $1001$ cases, namely $n=0$
+        through $n=1000$; the bound $n\ge1$ would give $1000$, but the exercise
+        does not say that, and the \texttt{zero} base case above really does check
+        $n=0$. An induction proof generates only two goals, \texttt{zero} and
+        \texttt{succ}, then concludes for all $n$; so $1001$ against $2$.
+
+  \item \texttt{Nat.add} is defined by recursion on the second argument, so
+        $n+0$ reduces straight to $n$ and \texttt{rfl} closes it. On $0+n$
+        the recursion gets stuck on the unknown $n$, so there is nothing
+        to reduce and \texttt{induction n} is needed.
+
+  \item 
+Weak: for fixed $x$, $\exists\delta,\ |\delta|\le1\wedge f(x+\delta)=f(x)$;
+        the witness $\delta=0$ makes both sides equal and \texttt{rfl} closes it.
+        Strong: $\forall x\,\forall\delta,\ |\delta|\le1\to f(x+\delta)=f(x)$, and
+        that is false for the identity $f$ at $\delta=1$.
+
+  \item 
+\texttt{decide}: no axioms, pure kernel computation. \texttt{omega}:
+        \texttt{propext} and \texttt{Quot.sound}, because it proves goals by
+        contradiction inside the integers; \texttt{Classical.choice} does not
+        appear, and this chapter prints the same list. \texttt{sorry}:
+        \texttt{sorryAx}, the axiom added specifically to close a skipped goal.
+
+  \item First mistake: \texttt{delta} is already free in the context and then bound again
+        by \texttt{exists}, so the reader of the statement determines its value,
+        not the attacker; robustness is not implied. Second: there is no quantifier over $x$,
+        so $x$ is free too. Correct version:
+        $\forall x,\ \exists\delta,\ \lVert\delta\rVert\le1\wedge f(x+\delta)=f(x)$.
+
+  \item \texttt{intro h} gives $h:P\wedge\neg P$. Its components \texttt{h.1} have type
+        $P$ and \texttt{h.2} have type $\neg P$; then \texttt{exact h.2 h.1} closes
+        the goal, because $\neg P$ is $P\to$ false.
+\end{enumerate}
+
+\section*{Chapter 29: Adversarial Machine Learning: Attacks and Defenses}
+\begin{enumerate}[label=\textbf{29.\arabic*}]
+  \item $\mathbf{s}_{A}=1$, $\mathbf{s}_{B}=3$, so the margin is already $-2$ (the example
+        leans toward $B$); $\mathbf{d}=(1;-2;1)$ with $\lVert\mathbf{d}\rVert_{1}=4$
+        and $\lVert\mathbf{d}\rVert_{2}=\sqrt6\approx2{,}449$. Hence
+        $\varepsilon^{*}_{\infty}=2/4=0{,}5$ and
+        $\varepsilon^{*}_{2}=2/2{,}449=0{,}8165$; the ratio is $\sqrt{8/3}=1{,}633$.
+
+  \item The derivative of the objective with respect to $\boldsymbol{\delta}$ is $\mathbf{w}$, so
+        the maximum is $\varepsilon\lVert\mathbf{w}\rVert_{2}$, attained uniquely at
+        $\boldsymbol{\delta}=\varepsilon\mathbf{w}/\lVert\mathbf{w}\rVert_{2}$
+        (Cauchy--Schwarz, with equality when parallel). In
+        $\ell_\infty$ the maximum is $\varepsilon\lVert\mathbf{w}\rVert_{1}$ at
+        $\varepsilon\,\mathrm{sign}(\mathbf{w})$, a vertex; the form differs
+        because the dual norm differs.
+
+  \item The error $\mathbf{d}^{\top}\boldsymbol{\delta}$ is linear on a compact convex
+        set, so the maximum is at an extreme point. The extreme points of the
+        $\ell_\infty$ ball are $\pm\varepsilon$ in each coordinate, and FGSM picks
+        exactly that point; hence the PGD path, which always stays inside the ball,
+        cannot exceed it.
+
+  \item False. In this chapter a random signed perturbation at $\varepsilon=0{,}15$ only
+        drops accuracy to $95{,}48$ percent, whereas PGD 40 steps
+        brings it down to $10{,}72$ percent. Robustness to random noise
+        says nothing about an attack that chooses the direction.
+
+  \item 
+Untargeted success (PGD with 40 steps, clean accuracy as the reference) for
+        $A$: $14{,}02$, $53{,}16$, $89{,}06$ percent at $\varepsilon=
+        0{,}05;0{,}10;0{,}15$. For $D$: $5{,}38$, $15{,}28$, $35{,}06$ percent. Over
+        that range the gap actually widens ($8{,}64$, $37{,}88$, $54{,}00$
+        percentage points), because $A$ is already close to the $100$ percent
+        ceiling while $D$ is still far; the narrowing only happens outside that
+        range, at $\varepsilon\ge0{,}20$, once both models run out of margin.
+
+  \item One coordinate suffices: projection onto an interval is clipping, and
+        $[x_{j}-\varepsilon,x_{j}+\varepsilon]\cap[0,1]$ equals
+        $[\max(0,x_{j}-\varepsilon),\ \min(1,x_{j}+\varepsilon)]$. Clipping to the
+        $\varepsilon$ box and then to $[0,1]$, or the other way round, yields the
+        same interval because interval intersection is commutative; the Cartesian product
+        then gives the same point.
+
+  \item $D$ loses $97{,}99-96{,}48=1{,}51$ points of clean accuracy to
+        gain $62{,}65-10{,}72=51{,}93$ points of robustness, so the price is
+        $1{,}51/51{,}93=0{,}0291$ clean points per point of robustness. That ratio is not
+        complete: it depends on one $\varepsilon$, on one attacker that is
+        not an upper bound, and it ignores the clean accuracy of the comparison model.
+
+  \item Protocol: attack with PGD with more steps and several random starts,
+        with EOT over the defense's randomness, then repeat with attacks without
+        gradients (imitation/transfer, finite-difference estimation). Report the curve of accuracy
+        against $\varepsilon$, not a single point. Easiest symptom: success
+        jumps as soon as the gradient is replaced by BPDA or EOT, while naive attacks
+        report zero.
+
+  \item White box $89{,}06$ percent, transfer $1-0{,}2379/0{,}9849=75{,}85$
+        percent, a difference of $13{,}21$ points. That is not evidence that $B$ is safer:
+        an attack built specifically for $B$ will be stronger, and in this chapter the
+        white-box versus transfer difference does shrink when the attacker is adapted.
+        This item is ambiguous: the lab output does not contain a PGD row for model $B$.
+
+  \item Untargeted only needs a label change; targeted must reach a particular
+        class, so the set of targets that must be met is far smaller. At
+        $\varepsilon=0{,}15$ the target is reached $33{,}00$ percent of the time, whereas
+        untargeted is $89{,}06$ percent; with $\varepsilon=0{,}30$ the target is reached
+        $99{,}50$ percent. So the difficulty is a matter of budget, not of attack type.
+\end{enumerate}
+
+\section*{Chapter 30: The Limits of Attack: Obfuscated Gradients and NIDS Evasion}
+\begin{enumerate}[label=\textbf{30.\arabic*}]
+  \item Three checks: (a) repeat with adaptive attacks (BPDA, EOT), (b)
+        report the curve of accuracy against $\varepsilon$, not a single point, (c) check
+        gradient quality (cosine against finite differences or against the weight direction). If
+        what is happening is gradient masking: success collapses only for attacks
+        based on gradients, while random search and transfer still succeed, and
+        the curve is flat.
+
+  \item For $f(x)=w\cdot x+b$ the gradient is constant and the Hessian zero, so the
+        Lipschitz constant is $L=0$ and the bound $L\delta$ gives zero error: BPDA is exact. With two
+        ReLU layers, $f$ is piecewise linear so the gradient jumps at the
+        kinks and the Lipschitz-gradient hypothesis fails; the bound is then
+        meaningless.
+
+  \item 
+As the program shows, the label flips up to $q=0{,}6$ (score $-1{,}2$) and
+        fails at $q\ge0{,}70$, when every coordinate rounds to zero so the score is
+        $0$, a tie rather than a flip. Hence
+        $q^{*}=2\max_{j}|x_{j}-\varepsilon|=2(\varepsilon+|\min_{j}x_{j}|)=0{,}70$.
+        Analytic safety bound: the rounding error is at most $4q$, so the attack is
+        only guaranteed to succeed when $q<(8\varepsilon-m)/4=0{,}345$; at $q=0{,}345$
+        the label still flips, so the direction of the inequality matters.
+
+  \item Probability of rejection $=P(\text{lebih dari }10\text{ dari }20\text{ hilang})
+        =0{,}411901$, so what is answered is $588$ of $1000$ queries: $588/20=29$
+        PGD steps with $m=20$. With $m=1$ the rejection probability is $0{,}5$, so $500$
+        steps. What is paid: the gradient becomes noisier and its direction further from the true one.
+
+  \item What can be predicted without running: clean accuracy is about the same,
+        naive success stays near zero, and BPDA success is near the baseline for $q=0$
+        and $q=0{,}05$ but falls for large $q$. The cosine no longer approaches one
+        because the ReLU gate adds kinks on top of rounding, so the BPDA approximation
+        only approaches the direction. The numbers for the third value of $q$ must be taken from execution,
+        not invented.
+
+  \item Binary flags and protocol numbers are assumed not to be changeable by the attacker:
+        $7+3=10$ locked features, the remaining $40$ features can really be shifted (out of
+        $50$). A $32\times32$ image with three channels has $3072$ values, so
+        $3072/40=76{,}8$ times more.
+
+  \item Daily retraining changes the parameters that a gradient-based attack uses,
+        so old directions go stale quickly; a blind attack does not use those parameters, so
+        it keeps working. According to the EOT lemma what must be checked is the expectation over
+        transformations, and an adaptive attack must be defined against that defense
+        itself, including its retraining schedule.
+
+  \item Metric: success of the adaptive attack against $\varepsilon$, with
+        at least $5$ seeds and an interval. The curve shape that accepts (a): the curve
+        is shifted to the right or downward systematically at all $\varepsilon$,
+        not only at one point. If after BPDA and EOT the success returns
+        to the baseline, then only the measurement was broken, so (b).
+\end{enumerate}
+
+\section*{Chapter 31: Cryptography: Modular Integers to the Quantum Threat}
+\begin{enumerate}[label=\textbf{31.\arabic*}]
+  \item False. $2^{100}\equiv1\pmod{101}$ only says the order of $2$ divides $100$,
+        that is, $101$ passes the Fermat test to base $2$; pseudoprimes (and
+        Carmichael numbers) also pass. What that congruence proves is only $101\nmid2$
+        and $2^{100}\equiv1$, not the absence of divisors.
+
+  \item If $\gcd(a,n)=\gcd(b,n)=1$, Bezout's theorem gives $ax+ny=1$ and
+        $bz+nw=1$; the product of the two gives $(ab)(xz)+n(\cdot)=1$, so $ab$ is a unit
+        and $U(n)$ is closed. If $a$ is not a unit, $d=\gcd(a,n)>1$ and
+        $b=n/d\ne0$ satisfies $ab=n(a/d)\equiv0$.
+
+  \item $a^{2}-1=(a-1)(a+1)\equiv0\pmod p$; since $p$ is prime, Euclid's lemma gives
+        $p\mid a-1$ or $p\mid a+1$, so $a\equiv\pm1$. For modulus $8$ that lemma
+        fails because $8$ is not prime: the square roots of one are $1,3,5,7$, since
+        $3^{2}=5^{2}=7^{2}=49\equiv1$.
+
+  \item The classes $0\le a<pq$ that share a factor with $pq$ are $q$ multiples of $p$
+        plus $p$ multiples of $q$, and $0$ is counted twice; so
+        $\varphi(pq)=pq-p-q+1=(p-1)(q-1)$. For $p=1019$, $q=1031$:
+        $\varphi=1018\cdot1030=1\,048\,540$.
+
+  \item Extending Euclid backwards gives $17^{-1}\equiv2753\pmod{3120}$ (since
+        $17\cdot2753=46\,801=15\cdot3120+1$), and
+        $65\,537^{-1}\equiv60\,493\pmod{1\,048\,540}$. The division takes $4$ steps against $5$,
+        so adding one digit to the modulus adds only a few
+        steps.
+
+  \item Fermat's little theorem: $a^{100}\equiv1\pmod{101}$ for $101\nmid a$. Hence
+        $5^{100}\equiv1$, $3^{200}=(3^{100})^{2}\equiv1$, and
+        $2^{1000}=(2^{100})^{10}\equiv1$. All three are checked by
+        \texttt{pow(a,k,101)} and match.
+
+  \item $A=5^{7}\equiv17$, $B=5^{15}\equiv19$, shared key $19^{7}\equiv15$
+        (the same as $17^{15}$). If an eavesdropper replaces $A$ with $11$, Bob
+        computes $11^{15}\equiv10$ while Alice still holds $15$; two different
+        keys appear because the paired exponents are no longer a legitimate
+        Diffie--Hellman pair.
+
+  \item With $e=3$ and $m<n^{1/3}$ we have $m^{3}<n$, so $c=m^{3}$ with no
+        modular reduction and the integer cube root returns $m$.
+        For $n=1\,050\,589$ the bound is $n^{1/3}\approx101{,}66$, so the longest
+        message is $m=101$. Random padding makes $m^{3}>n$ so that integer root
+        does not exist.
+
+  \item Two things must be true: (i) the parameters and implementation really
+        meet the claimed security guarantee, that is, the reduction to a lattice
+        problem that is still hard; (ii) the hardness assumption underneath still
+        holds and the proof model covers the attacks that are actually used.
+        Widespread adoption is not a condition for the claim to be true: a scheme
+        used everywhere is still not proven secure if its assumption fails.
+        The second sentence remains wrong: RSA is still embedded in legacy systems,
+        and migration is done hybrid, so it takes years. (Post-quantum signatures
+        already exist: ML-DSA, FIPS 204.)
+
+  \item About $1{,}1774\sqrt{2^{48}}=1{,}1774\cdot2^{24}$, that is $19\,753\,662$
+        samples for a one-half collision probability; for $32$ bits
+        $1{,}1774\cdot2^{16}=77\,163$. The numbers $2^{24}$ and $2^{16}$ are rough
+        square-root guesses, not the exact values.
+\end{enumerate}
+
+\section*{Chapter 32: Differential Privacy and the Mathematical Foundations of QML}
+\begin{enumerate}[label=\textbf{32.\arabic*}]
+  \item False as a sentence. $\varepsilon=0{,}5$ bounds the probability ratio per
+        record, it does not remove leakage; it is also a worst-case guarantee. Two things
+        that must be true: the mechanism really satisfies $(\varepsilon,\delta)$ for
+        the adjacency relation and sensitivity used, and all outputs
+        (queries, budget remainder, post-processing) are counted within that budget.
+
+  \item The $d$-dimensional Laplace density is a product, so the ratio is
+        $\prod_{j}\exp\bigl((|y_{j}-a'_{j}|-|y_{j}-a_{j}|)/b\bigr)$, and by the
+        triangle inequality each factor is at most
+        $\exp(|a_{j}-a'_{j}|/b)$. The product is
+        $\exp(\sum_{j}|a_{j}-a'_{j}|/b)\le\exp(\Delta f/b)=e^{\varepsilon}$.
+        The one-dimensional argument is replaced by the product of per-coordinate ratios, and
+        $\ell_1$ takes the place of the single absolute value.
+
+  \item Take $D\sim D'$ differing in one record. That record exists in only
+        one of $D_{1},D_{2}$, so only one mechanism has its input changed;
+        its ratio is bounded by $e^{\varepsilon_{i}}$, while the others have ratio $1$.
+        Hence $\varepsilon=\max_{i}\varepsilon_{i}$ and
+        $\delta=\max_{i}\delta_{i}$, not the sum.
+
+  \item The probability of answering ``yes'' is $p+(1-p)/2$ if the truth is ``yes'' and $(1-p)/2$
+        if the truth is ``no''; the ratio is $(1+p)/(1-p)$. Hence
+        $p=(e^{\varepsilon}-1)/(e^{\varepsilon}+1)$, and for $\varepsilon=2$
+        we get $p=0{,}761594$, that is $\tanh1$.
+
+  \item Count query: $b=2$, so $P(|Y|>10)=e^{-5}=0{,}006738$. Mean query
+        with $R=1$: $b=10^{-4}/0{,}5=2\times10^{-4}$; an error of $10$ people means
+        $10^{-3}$ on the mean scale, which again gives $e^{-5}$, whereas an
+        absolute error of $10$ on that scale gives $e^{-50000}\approx0$. This item is
+        ambiguous about the units of the error.
+
+  \item $H|0\rangle=(|0\rangle+|1\rangle)/\sqrt2$; $S$ gives
+        $(|0\rangle+i|1\rangle)/\sqrt2$; then $H$ gives
+        $\frac{1+i}{2}|0\rangle+\frac{1-i}{2}|1\rangle$. The probabilities are $1/2$ and $1/2$,
+        the same as $H|0\rangle$, because measurement in the computational basis only sees the modulus
+        of the amplitude. What distinguishes them is the relative phase, and the gate is $S^{\dagger}$
+        (it multiplies $|1\rangle$ by $-i$). $Z$ after $H$ is no substitute: $HZH=X$,
+        which swaps $|0\rangle$ with $|1\rangle$ instead of rotating the phase.
+
+  \item $|\Phi^{+}\rangle=(|00\rangle+|11\rangle)/\sqrt2$. If the second qubit is measured
+        first and the result is $0$, the first qubit collapses to $|0\rangle$, so the
+        probability of the outcome $01$ is $0$; if the result is $1$, the first qubit collapses
+        to $|1\rangle$, so the outcome $11$ is certain and the probability of $01$ is also $0$.
+        Both show perfect correlation: the outcomes of the two qubits are always the same.
+
+  \item $U^{\dagger}U=\operatorname{diag}(1,e^{-i\varphi})
+        \operatorname{diag}(1,e^{i\varphi})=I$, so it is unitary for every
+        $\varphi$. In the computational basis $|1\rangle$ only picks up a phase, its
+        amplitude modulus stays the same, so probabilities do not change; but that relative phase
+        changes the interference at the next $H$ gate, so the result can
+        differ.
+
+  \item 
+$n=40$: $2^{40}=1{,}0995\times10^{12}$ amplitudes, times $16$ bytes, gives
+        $16$ TiB (not GiB: $2^{40}$ bytes is already one TiB). $n=60$:
+        $2^{60}=1{,}1529\times10^{18}$ amplitudes, that is $16$ EiB or
+        $1{,}8447\times10^{19}$ bytes, far beyond any storage that exists.
+
+  \item Three questions: whether all the amplitudes are really used, whether
+        the output can be extracted with a number of measurements that is not exponential,
+        and whether there is a classical comparison on the same task and data. What makes
+        me accept: a proven separation or measurable scaling on that task,
+        a polynomial number of measurements, and an advantage over a seriously tuned
+        classical baseline.
+\end{enumerate}

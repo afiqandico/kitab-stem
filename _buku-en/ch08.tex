@@ -1,0 +1,1116 @@
+\chapter{Linear Systems, Determinants, and Inverses}
+
+A threat scorer adds three features with unknown weights,
+$s=w_{1}f_{1}+w_{2}f_{2}+w_{3}f_{3}$. Calibration on three labeled examples gives three
+linear equations at once:
+\[
+  2w_{1}+w_{2}-w_{3}=8,\qquad
+  -3w_{1}-w_{2}+2w_{3}=-11,\qquad
+  -2w_{1}+w_{2}+2w_{3}=-3 .
+\]
+The answer is $w=(2,3,-1)$, and nothing about it is surprising.
+
+Then the coefficient matrix is replaced by the result of another measurement,
+\[
+  S=\begin{pmatrix}1&2&3\\ 4&5&6\\ 7&8&9.001\end{pmatrix}.
+\]
+The second row minus the first gives $(3,3,3)$, while the third row minus the second gives
+$(3,3,3.001)$: the three rows are nearly dependent. The weights $w=(1,1,1)$ produce the
+right-hand side $(6,\,15,\,24.001)$, so the system is consistent and the answer is exactly
+$w=(1,1,1)$. Raise the third measurement by $0.001$, and the answer moves to
+$(2,-1,2)$. A relative change in the data of $3.46\times10^{-5}$ produces a relative change
+in the answer of $1.41$.
+
+There are four questions here, not one: does the system have an answer, how many answers does
+it have, which number decides that without solving anything, and how far does the answer shift
+when the data shift. Chapter 7 already supplied rank and nullity for the first. Three are still
+missing: a procedure that is written down and can be checked by someone else, one number that
+decides invertibility and at the same time yields a formula for the answer, and a measure of
+sensitivity; those three are the content of this chapter.
+
+The determinant is usually introduced as the cofactor formula, and then its properties are
+proved one by one. We reverse that: definition first, through three properties, uniqueness
+proved, the cofactor formula appearing as a consequence. The reason is not style: the cofactor
+formula hides the fact that the determinant is the only normalized alternating function, and
+that fact is what makes the proofs in this chapter short.
+
+\begin{untukanak}
+Three friends weigh three boxes on three different scales. Each friend writes down three
+numbers, and from those numbers we want to know the weight of each box. As long as the three
+scales measure different things, the answer is easy: every new number supplies one new piece
+of information.
+
+Here is the trouble. The second scale turns out to nearly copy the first one. The numbers are
+not exactly the same, only slightly different, perhaps because of dust on the pan. The third
+scale also nearly copies the other two. Now the three pieces of information have nearly the
+same content. We feel we hold three pieces of information, when only one or two of them are
+really new.
+
+This is where the strangeness begins. If one number changes by a thousandth, the box weights
+we compute can change by almost half. Not because the arithmetic is wrong, but because the
+information really is nearly identical. There is one number that can tell us in advance
+whether this will happen, before we compute anything at all.
+
+Have you ever asked the same question of three people, received three answers with similar
+content, and still felt unsure? In this chapter we will learn why similar answers actually
+weaken the information, and how to recognize that from the numbers.
+\end{untukanak}
+
+\section{Gaussian elimination and three fates of a system}
+\tingkat{basic}
+
+A linear system is written as a single unit, not as a list of separate equations. The way to
+do it is to attach the right-hand side column to the coefficient matrix. The solution is then
+carried out on that arrangement, and every step replaces one system by another system with the
+same solution set.
+
+\kamus{elimination}{eliminasi}{Replacing a question by a simpler question without changing the
+answer, like simplifying a fraction without changing its value.}
+
+\begin{definisi}[Augmented matrix and elementary row operations]
+For the system $A\mathbf{x}=\mathbf{b}$ with $A$ of size $m\times n$, the \emph{augmented
+matrix} is the matrix $\bigl(A\mid\mathbf{b}\bigr)$ of size $m\times(n+1)$. The three
+\emph{elementary row operations} are: interchanging two rows; multiplying one row by a
+nonzero scalar; adding a multiple of one row to another row. Two matrices are called
+\emph{row equivalent} if one can be reached from the other by those operations.\index{elimination}
+\end{definisi}
+
+Those operations are chosen because each of them can be undone. Interchanging two rows undoes
+itself, multiplying by $c\neq0$ is undone by multiplying by $1/c$, and adding $c$ times row $i$
+to row $j$ is undone by subtracting $c$ times row $i$. No information is therefore lost.
+
+\begin{teorema}
+If two linear systems have row equivalent augmented matrices, the two systems have the same
+solution set.
+\end{teorema}
+
+\begin{proof}
+It is enough to check one operation, because repeated operations follow. Let $S$ be the
+original system and $S'$ the system after one operation. Every equation of $S'$ is a linear
+combination of the equations of $S$, so every answer of $S$ also answers $S'$. Conversely,
+because the operation can be undone by an operation of the same kind, every equation of $S$ is
+a linear combination of the equations of $S'$, so every answer of $S'$ also answers $S$. The two
+solution sets therefore contain each other.
+\end{proof}
+
+The form we aim at is the staircase form. Every nonzero row starts further to the right than
+the nonzero row above it, and all entries below that first position are zero. The column where
+the first number of a nonzero row sits is called the pivot column, and that number itself is
+called a pivot.
+
+\begin{definisi}[Row echelon form]
+A matrix is in \emph{row echelon form} if all zero rows lie at the bottom, and the first
+nonzero entry of every nonzero row is located further right than the first nonzero entry of the
+row above it. The form is called \emph{reduced} if every pivot equals $1$ and is the only
+nonzero entry in its column.\index{echelon}\index{pivot}
+\end{definisi}
+
+The reduced form is unique. This fact is used every time we speak of ``the rank computed by
+elimination'', and its proof is not as short as it looks.
+
+\begin{teorema}[Uniqueness of the reduced echelon form]
+Every matrix is row equivalent to exactly one matrix in reduced row echelon form.
+\end{teorema}
+
+\begin{proof}
+The proof is skipped here. The statement is proved in full in Hoffman and Kunze,
+\emph{Linear Algebra} 2nd edition, section 1.4, by showing that the solution space of
+$A\mathbf{x}=\mathbf{0}$ determines the position of the pivots uniquely. What we use in this
+chapter is only the consequence: the number of pivots and their positions do not depend on the
+order of operations chosen.
+\end{proof}
+
+With the reduced form, every question about the number of answers can be settled by counting
+pivots. These are the three fates of a system.
+
+\begin{teorema}[Three cases]
+Suppose $\bigl(A\mid\mathbf{b}\bigr)$ is row equivalent to the reduced echelon form
+$\bigl(R\mid\mathbf{c}\bigr)$, with $A$ of size $m\times n$.
+\begin{enumerate}
+  \item The system is \emph{inconsistent} exactly when there is a pivot in column $(n+1)$.
+  \item If it is consistent, the system has a \emph{unique answer} exactly when every column
+        of $A$ contains a pivot.
+  \item If it is consistent, the system has \emph{many answers} exactly when some column of $A$
+        has no pivot, and the number of free parameters equals the number of columns without a
+        pivot.
+\end{enumerate}
+\end{teorema}
+
+\begin{proof}
+A pivot in the last column means there is a row of the form $0=\text{nonzero constant}$, which
+cannot possibly be satisfied. If there is no such pivot, every nonzero row gives one equation
+expressing a pivot variable in terms of the other variables, so the system is consistent.
+
+If every column contains a pivot, the number of pivots equals $n$, so there is no free variable
+and every pivot variable is uniquely determined. If some column has no pivot, the variable in
+that column is free: it may take any value, and every choice determines the pivot variables
+uniquely. The answer is therefore infinite in number, and the number of free parameters is
+exactly the number of columns without a pivot.
+\end{proof}
+
+Figure~\ref{fig:tiga-nasib} places those three fates in a single plane. The line $x+y=2$ does
+not change; only the second line changes. Left panel: $x-y=0$ cuts it at $(1,1)$, two pivots,
+a unique answer. Middle panel: $x+y=0$ is parallel, and the last column of the augmented matrix
+contains a pivot. Right panel: $2x+2y=4$ is the same line written with different numbers, one
+pivot and one free parameter.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.66,>=Stealth]
+  \begin{scope}
+    \draw[layergrey!28,step=1] (-2.2,-2.2) grid (2.2,2.2);
+    \draw[->,ink] (-2.3,0)--(2.4,0) node[right,font=\scriptsize]{$x$};
+    \draw[->,ink] (0,-2.3)--(0,2.4) node[above,font=\scriptsize]{$y$};
+    \draw[very thick,layerindigo] (-1.2,3.2)--(3.2,-1.2);
+    \draw[very thick,layerteal] (-1.6,-1.6)--(2.2,2.2);
+    \fill[accent] (1,1) circle (2.4pt);
+    \node[font=\scriptsize,below right] at (1,1) {$(1,1)$};
+    \node[font=\scriptsize] at (0,-2.9) {(a) intersecting};
+  \end{scope}
+  \begin{scope}[xshift=6.4cm]
+    \draw[layergrey!28,step=1] (-2.2,-2.2) grid (2.2,2.2);
+    \draw[->,ink] (-2.3,0)--(2.4,0) node[right,font=\scriptsize]{$x$};
+    \draw[->,ink] (0,-2.3)--(0,2.4) node[above,font=\scriptsize]{$y$};
+    \draw[very thick,layerindigo] (-1.2,3.2)--(3.2,-1.2);
+    \draw[very thick,accent,dashed] (-2.2,2.2)--(2.2,-2.2);
+    \node[font=\scriptsize] at (0,-2.9) {(b) parallel};
+  \end{scope}
+  \begin{scope}[xshift=12.8cm]
+    \draw[layergrey!28,step=1] (-2.2,-2.2) grid (2.2,2.2);
+    \draw[->,ink] (-2.3,0)--(2.4,0) node[right,font=\scriptsize]{$x$};
+    \draw[->,ink] (0,-2.3)--(0,2.4) node[above,font=\scriptsize]{$y$};
+    \draw[very thick,layerindigo] (-1.2,3.2)--(3.2,-1.2);
+    \draw[line width=2.6pt,accent,densely dotted] (-1.2,3.2)--(3.2,-1.2);
+    \node[font=\scriptsize] at (0,-2.9) {(c) coincident};
+  \end{scope}
+\end{tikzpicture}
+\caption{Three fates of a $2\times2$ system with the first line $x+y=2$ held fixed. Left: the
+second line $x-y=0$ cuts it at $(1,1)$, two pivots, a unique answer. Middle: the second line
+$x+y=0$ is parallel, the right-hand side column contains a pivot, there is no answer. Right: the
+second line $2x+2y=4$ coincides with the first line, one pivot, infinitely many answers.}
+\label{fig:tiga-nasib}
+\end{figure}
+
+\begin{bacakeras}
+Two voices. The first voice names the situation, the second voice names the consequence. Read
+them alternately, then swap roles.
+
+One system. Two lines. Three fates.
+
+Intersecting: one point, one answer.
+
+Parallel: they never meet, there is no answer.
+
+Coincident: one line disguised as two, infinitely many answers.
+
+Who decides, before we compute anything? The pivots decide.
+
+Two pivots, two columns: a unique answer.
+
+A pivot in the last column: some row reads zero equals nonzero.
+
+A column without a pivot: one free parameter, and the answers line up in one direction.
+
+Repeat the last line together: count the pivots first, then talk about answers.
+\end{bacakeras}
+
+The matrix from Chapter 7 displays two fates at once,
+\[
+  A=\begin{pmatrix}1&2&1\\ 2&5&3\\ 3&7&4\end{pmatrix},
+  \qquad \text{third row}=\text{first row}+\text{second row}.
+\]
+For $\mathbf{b}=(4,9,13)$ elimination gives
+\[
+  \left(\begin{array}{ccc|c}1&2&1&4\\ 2&5&3&9\\ 3&7&4&13\end{array}\right)
+  \longrightarrow
+  \left(\begin{array}{ccc|c}1&0&-1&2\\ 0&1&1&1\\ 0&0&0&0\end{array}\right).
+\]
+There are two pivots and three columns, so there is one free variable. The answer is
+$(2,1,0)+t\,(1,-1,1)$ for $t\in\mathbb{R}$, and the check is immediate:
+$A(2,1,0)^{\top}=(4,9,13)^{\top}$ while $A(1,-1,1)^{\top}=\mathbf{0}$, so the direction of that
+shift really is the blind direction of the matrix from Chapter 7.
+
+For $\mathbf{b}=(4,9,14)$ the last row becomes $0=1$, and the system is inconsistent. The
+coefficient matrix is exactly the same; one number on the right-hand side moves the fate of the
+system from ``many answers'' to ``no answer''. The question of consistency therefore cannot be
+answered from $A$ alone.
+
+The case that appears most often in practice is $m=n$. There the three fates rest on a single
+number, and that number is what we look for in the next section.
+
+\begin{akibat}
+Suppose $A$ is of size $n\times n$. The system $A\mathbf{x}=\mathbf{b}$ has a unique answer for
+every $\mathbf{b}\in\mathbb{R}^{n}$ exactly when $\operatorname{rank}A=n$.
+\end{akibat}
+
+\begin{proof}
+If $\operatorname{rank}A=n$, the reduced echelon form of $A$ is $I_{n}$, so elimination on
+$\bigl(A\mid\mathbf{b}\bigr)$ always ends with a pivot in every column of $A$ and no pivot in
+the last column; the previous theorem gives a unique answer. Conversely, if
+$\operatorname{rank}A<n$, some column has no pivot, and for a consistent $\mathbf{b}$ the answer
+is not unique. Since the rank is less than $n$, the column space of $A$ does not fill
+$\mathbb{R}^{n}$, so some $\mathbf{b}$ lies outside it; for that $\mathbf{b}$ the system is
+inconsistent.
+\end{proof}
+
+\section{The determinant as an alternating function}
+\tingkat{intermediate}
+
+We want one number that answers the question of the preceding corollary without solving any
+system. That number must be zero exactly when the columns of $A$ are not linearly independent,
+must change sign when two columns are interchanged, and must equal one for the identity matrix.
+Those three conditions turn out to determine the number uniquely.
+
+\kamus{determinant}{determinan}{The volume factor: how many times space is stretched or
+flattened by the matrix.}
+
+\begin{definisi}[Determinant]
+A function $D$ from $n\times n$ matrices to $\mathbb{R}$ is called a \emph{determinant} if
+\begin{enumerate}
+  \item \emph{multilinear in each row}: for scalars $\alpha,\beta$ and rows
+        $\mathbf{u},\mathbf{v}$,
+        $D(\dots,\alpha\mathbf{u}+\beta\mathbf{v},\dots)
+         =\alpha D(\dots,\mathbf{u},\dots)+\beta D(\dots,\mathbf{v},\dots)$;
+  \item \emph{alternating}: $D(\dots,\mathbf{u},\dots,\mathbf{u},\dots)=0$ if two rows are
+        equal;
+  \item \emph{normalized}: $D(I_{n})=1$.
+\end{enumerate}
+The value $D(A)$ is written $\det A$.\index{determinant}
+\end{definisi}
+
+Multilinearity means the determinant is linear in one row while the other rows are held fixed.
+The alternating property is the strongest condition, and its consequences are long.
+
+\begin{lemma}
+Interchanging two rows changes the sign of the determinant. If one row is a scalar multiple of
+another row, or if there is a zero row, the determinant is zero.
+\end{lemma}
+
+\begin{proof}
+Suppose two adjacent rows both contain $\mathbf{u}+\mathbf{v}$. Since the two rows are equal,
+the value is zero. Multilinearity splits that zero into four terms,
+\[
+  0=D(\dots,\mathbf{u},\mathbf{u},\dots)+D(\dots,\mathbf{u},\mathbf{v},\dots)
+   +D(\dots,\mathbf{v},\mathbf{u},\dots)+D(\dots,\mathbf{v},\mathbf{v},\dots),
+\]
+and the first and fourth terms vanish. Interchanging two adjacent rows therefore reverses the
+sign:
+\[
+  D(\dots,\mathbf{v},\mathbf{u},\dots)=-D(\dots,\mathbf{u},\mathbf{v},\dots).
+\]
+An interchange of rows that are not adjacent is achieved by several adjacent interchanges, and
+every step reverses the sign.
+
+For a multiple, $D(\dots,c\mathbf{u},\dots,\mathbf{u},\dots)
+=c\,D(\dots,\mathbf{u},\dots,\mathbf{u},\dots)=0$ by multilinearity and the alternating
+property. A zero row is the case $c=0$ of the same form.
+\end{proof}
+
+Now uniqueness. The formula that appears in the middle of the proof is the Leibniz formula, and
+that formula will later yield the cofactor expansion as a consequence.
+
+\begin{teorema}[Uniqueness and the Leibniz formula]
+There is only one function satisfying the three conditions of the definition, and its value is
+\[
+  \det A=\sum_{\sigma}\operatorname{sgn}(\sigma)\,
+  a_{\sigma(1)1}a_{\sigma(2)2}\cdots a_{\sigma(n)n},
+\]
+where the sum is taken over all permutations $\sigma$ of $\{1,\dots,n\}$ and
+$\operatorname{sgn}(\sigma)=(-1)^{k}$ if $\sigma$ is reached by $k$ interchanges.
+\end{teorema}
+
+\begin{proof}
+Write row $i$ as $\mathbf{a}_{i}=\sum_{j}a_{ij}\mathbf{e}_{j}$. Multilinearity allows every row
+to be pulled out into a sum,
+\[
+  D(A)=\sum_{j_{1},\dots,j_{n}}a_{1j_{1}}a_{2j_{2}}\cdots a_{nj_{n}}\,
+  D(\mathbf{e}_{j_{1}},\dots,\mathbf{e}_{j_{n}}).
+\]
+Terms with $j_{p}=j_{q}$ for $p\neq q$ vanish because $D$ is alternating, so only
+$(j_{1},\dots,j_{n})$ that form a permutation $\sigma$ survive. By the previous lemma,
+$D(\mathbf{e}_{\sigma(1)},\dots,\mathbf{e}_{\sigma(n)})
+=\operatorname{sgn}(\sigma)D(I_{n})=\operatorname{sgn}(\sigma)$.
+
+For uniqueness, suppose $D$ satisfies the three conditions. The same computation gives
+$D(A)=\bigl(\sum_{\sigma}\operatorname{sgn}(\sigma)a_{\sigma(1)1}\cdots
+a_{\sigma(n)n}\bigr)D(I_{n})=\det A$. Every function satisfying the three conditions therefore
+equals that formula.
+\end{proof}
+
+The Leibniz formula is correct but impractical: it sums $n!$ terms, and for $n=12$ there are
+$479\,001\,600$ of them. What people use is another form of the same formula.
+
+\begin{akibat}[Cofactor expansion]
+For every fixed row $i$,
+\[
+  \det A=\sum_{j=1}^{n}(-1)^{i+j}a_{ij}M_{ij},
+\]
+where $M_{ij}$ is the determinant of the $(n-1)\times(n-1)$ submatrix obtained by deleting row
+$i$ and column $j$. The number $C_{ij}=(-1)^{i+j}M_{ij}$ is called the \emph{cofactor} of the
+entry $a_{ij}$. The same formula holds if the expansion is carried out along a column.
+\end{akibat}
+
+\begin{proof}
+In the Leibniz formula, group the terms by the value of $j$ at position row $i$. Every term
+containing $a_{ij}$ has the form $a_{ij}$ times a sign times the product of $n-1$ other
+entries, one from each row other than $i$ and one from each column other than $j$. That product
+is exactly the Leibniz term for the minor $M_{ij}$, and its sign is $(-1)^{i+j}$ because moving
+row $i$ to the last position requires $n-i$ interchanges and moving column $j$ to the last
+position requires $n-j$ interchanges, so the sign is $(-1)^{2n-i-j}=(-1)^{i+j}$. Summing over
+$j$ gives the formula as written.
+
+For expansion along a column, we use $\det A=\det A^{\top}$. That equality itself follows from
+the Leibniz formula: every term for $A^{\top}$ has the form
+$a_{\sigma(1)1}\cdots a_{\sigma(n)n}$ with the index order reversed, and the map
+$\sigma\mapsto\sigma^{-1}$ preserves the sign because the number of interchanges is the same.
+\end{proof}
+
+\begin{contoh}
+For
+$A=\begin{pmatrix}2&1&-1\\ -3&-1&2\\ -2&1&2\end{pmatrix}$ expansion along the first row gives the
+cofactors
+\[
+  C_{11}=\begin{vmatrix}-1&2\\ 1&2\end{vmatrix}=-4,\qquad
+  C_{12}=-\begin{vmatrix}-3&2\\ -2&2\end{vmatrix}=2,\qquad
+  C_{13}=\begin{vmatrix}-3&-1\\ -2&1\end{vmatrix}=-5,
+\]
+so that $\det A=2(-4)+1(2)+(-1)(-5)=-8+2+5=-1$. The alternating sign is not decoration: without
+the sign, the result would be $-8+2-5=-11$, and every conclusion afterwards would be wrong.
+\end{contoh}
+
+The determinant is useful for product matrices because it is multiplicative.
+
+\begin{teorema}
+For $n\times n$ matrices, $\det(AB)=\det A\,\det B$.
+\end{teorema}
+
+\begin{proof}
+Fix $A$ and define $f(B)=\det(AB)$. Row $i$ of $AB$ is a linear combination of the rows of $B$
+with coefficients from row $i$ of $A$, so $f$ is multilinear in the rows of $B$. If two rows of
+$B$ are equal, two rows of $AB$ are also equal, so $f$ is alternating. By uniqueness, every
+multilinear alternating function $f$ satisfies $f(B)=\det(B)\,f(I_{n})$. Here $f(I_{n})=\det A$,
+so $f(B)=\det B\,\det A$.
+\end{proof}
+
+\begin{akibat}
+$A$ is invertible if and only if $\det A\neq0$. If it is invertible, $\det(A^{-1})=1/\det A$.
+Moreover $\det(cA)=c^{n}\det A$, and the determinant of a triangular matrix is the product of
+its diagonal entries.
+\end{akibat}
+
+\begin{proof}
+If $A$ is invertible, $\det A\,\det(A^{-1})=\det I_{n}=1$, so $\det A\neq0$ and its inverse is
+$1/\det A$. If $A$ is not invertible, its columns are linearly dependent by Chapter 7, so one
+column is a linear combination of the others. Multilinearity splits $\det A$ into a sum of
+determinants with two equal columns, so all of them are zero. The formula $\det(cA)=c^{n}\det A$
+is obtained by pulling a factor $c$ out of every row. For a triangular matrix, cofactor
+expansion along a row that borders only one diagonal entry, repeated $n$ times, leaves the
+product of the diagonal.
+\end{proof}
+
+That corollary makes elimination and the determinant meet. Elimination brings $A$ to an upper
+triangular matrix $U$ by interchanges and additions of row multiples. Additions do not change
+the determinant; interchanges reverse its sign. Hence $\det A=(-1)^{s}\det U$ with $s$ the
+number of interchanges, and $\det U$ is the product of the pivots: the determinant comes free
+after elimination, and that is how libraries compute it.
+
+The other side of the determinant, just as important, is area. The columns of
+$B=\begin{pmatrix}3&1\\ 1&2\end{pmatrix}$ are two arrows, $(3,1)$ and $(1,2)$. The unit square
+whose sides are carried by those two arrows turns into a parallelogram, and its area is five,
+exactly $\det B=3\cdot2-1\cdot1=5$. Figure~\ref{fig:luas-determinan} shows that mapping. If the
+two columns are collinear, the parallelogram flattens into a single segment, its area is zero,
+and the determinant is zero as well.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.95,>=Stealth]
+  \draw[layergrey!28,step=1] (-0.4,-0.4) grid (4.4,3.4);
+  \draw[->,ink] (-0.5,0)--(4.6,0) node[right,font=\scriptsize]{$x$};
+  \draw[->,ink] (0,-0.5)--(0,3.5) node[above,font=\scriptsize]{$y$};
+  \fill[layerteal!16] (0,0)--(3,1)--(4,3)--(1,2)--cycle;
+  \draw[thick,layerteal] (0,0)--(3,1)--(4,3)--(1,2)--cycle;
+  \fill[layerorange!22] (0,0)--(1,0)--(1,1)--(0,1)--cycle;
+  \draw[thick,layerorange] (0,0)--(1,0)--(1,1)--(0,1)--cycle;
+  \draw[very thick,accent,->] (0,0)--(3,1)
+    node[below right,font=\scriptsize]{$(3,1)$};
+  \draw[very thick,accent,->] (0,0)--(1,2)
+    node[above left,font=\scriptsize]{$(1,2)$};
+  \foreach \t in {1,2,3,4} {\node[font=\tiny,below] at (\t,-0.02) {\t};}
+  \foreach \t in {1,2,3} {\node[font=\tiny,left] at (-0.02,\t) {\t};}
+  \node[font=\tiny,fill=white,inner sep=0.5pt] at (0.5,0.5) {1};
+  \node[font=\scriptsize,fill=white,inner sep=1.5pt] at (2,1.5) {area $5$};
+\end{tikzpicture}
+\caption{The determinant as area. The unit square (orange, area $1$) is mapped by
+$B=\begin{pmatrix}3&1\\ 1&2\end{pmatrix}$ to the parallelogram (teal) spanned by
+$(3,1)$ and $(1,2)$. Its area is $5$, the same as $\det B=3\cdot2-1\cdot1=5$: the determinant
+multiplies area by five, and its sign records whether the direction of rotation is reversed.}
+\label{fig:luas-determinan}
+\end{figure}
+
+\begin{tangan}
+Materials: graph paper, scissors, ruler, glue.
+\begin{enumerate}
+  \item Draw a rectangle three squares by one square. Its area is three squares.
+  \item Cut out the rectangle. From the left end, cut off a right triangle with base two squares
+        and height one square, then glue that piece onto the right end.
+  \item The new shape is a slanted parallelogram. Its area is still three squares, because no
+        paper was thrown away and none was added.
+  \item Repeat with a slant of one square, then two, then three. Each time compute base times
+        height, not the length of the slanted side.
+\end{enumerate}
+What the reader should see: the shape changes, the area does not. A slant only shifts, it does
+not stretch, so the determinant does not grow.
+\end{tangan}
+
+\begin{untukanak}
+Take a rectangular sheet of paper, then slant it by pushing its top edge sideways without
+shortening or lengthening anything. Its height stays the same, its width stays the same, its
+area stays the same, even though the shape is no longer a rectangle. Only the direction of
+rotation changes: trace the bottom edge and then the right edge starting from the lower left
+corner, and the slanted sheet still turns the same way; swap the two edges, and the direction
+reverses like a left shoe on a right foot.
+
+In this chapter we will learn why a single number can report both area and orientation, and why
+that number becomes zero exactly when the sheet is folded into a line. In your opinion, if the
+sheet is folded in half, is there still a way to compute its area with the same number?
+\end{untukanak}
+
+\section{Cramer's rule and the adjugate}
+\tingkat{intermediate}
+
+The determinant answers whether a unique answer exists. The next question: can that answer be
+written as a formula, rather than as the result of steps? For small systems it can, and the
+formula is tidy.
+
+\kamus{adjugate}{adjoin}{The cofactor map arranged as a transpose, used to write the inverse as
+a single formula.}
+
+\begin{definisi}[Adjugate]
+For $A$ of size $n\times n$ with cofactors $C_{ij}$, the \emph{cofactor matrix} is the matrix
+with entry $C_{ij}$ at position $(i,j)$, and the \emph{adjugate} $\operatorname{adj}A$ is its
+transpose, that is, the matrix with entry $C_{ji}$ at position $(i,j)$.
+\index{cofactor}\index{adjugate}
+\end{definisi}
+
+Note the reversal of the indices: the cofactor $C_{ij}$ comes from deleting row $i$ and column
+$j$, but is placed at position $(j,i)$. This is the most frequent source of error when
+computing an adjugate by hand.
+
+\begin{teorema}
+For every $n\times n$ matrix, $A\operatorname{adj}A
+=(\det A)I_{n}=\operatorname{adj}A\,A$.
+\end{teorema}
+
+\begin{proof}
+Entry $(i,j)$ of $A\operatorname{adj}A$ is $\sum_{k}a_{ik}C_{jk}$. If $i=j$, that sum is exactly
+the cofactor expansion along row $i$, namely $\det A$. If $i\neq j$, that sum is the expansion
+along row $j$ of the matrix obtained from $A$ by replacing row $j$ with row $i$. That matrix has
+two equal rows, so its determinant is zero. Hence $A\operatorname{adj}A=(\det A)I_{n}$. The
+second equality is obtained by the same argument on columns, or from
+$\operatorname{adj}(A^{\top})=(\operatorname{adj}A)^{\top}$.
+\end{proof}
+
+\begin{akibat}
+If $\det A\neq0$, then $A^{-1}=\dfrac{1}{\det A}\operatorname{adj}A$.
+\end{akibat}
+
+\begin{proof}
+From the previous theorem, $A\bigl(\operatorname{adj}A/\det A\bigr)=I_{n}$ and
+$\bigl(\operatorname{adj}A/\det A\bigr)A=I_{n}$. The inverse of a matrix is unique, so that
+matrix is $A^{-1}$.
+\end{proof}
+
+That formula holds for all $n$, but the price is high: $\operatorname{adj}A$ contains $n^{2}$
+cofactors, and every cofactor is an $(n-1)\times(n-1)$ determinant.
+
+With that inverse formula, the answer of a system can be written as a ratio of two determinants.
+
+\begin{teorema}[Cramer's rule]
+Suppose $A$ is of size $n\times n$ with $\det A\neq0$, and $\mathbf{b}\in\mathbb{R}^{n}$. The
+unique answer of $A\mathbf{x}=\mathbf{b}$ is
+\[
+  x_{j}=\frac{\det A_{j}}{\det A},\qquad j=1,\dots,n,
+\]
+where $A_{j}$ is the matrix obtained from $A$ by replacing column $j$ with $\mathbf{b}$.
+\index{Cramer}
+\end{teorema}
+
+\begin{proof}
+Since $\det A\neq0$, the previous corollary gives
+$\mathbf{x}=A^{-1}\mathbf{b}=(\operatorname{adj}A)\,\mathbf{b}/\det A$. Entry $j$ of that product
+is $\sum_{i}b_{i}C_{ji}/\det A$. The sum $\sum_{i}b_{i}C_{ji}$ is the cofactor expansion along
+column $j$ of the matrix whose column $j$ has been replaced by $\mathbf{b}$, namely $A_{j}$.
+Hence $x_{j}=\det A_{j}/\det A$.
+\end{proof}
+
+\begin{contoh}
+Back to the opening system, $A\mathbf{x}=\mathbf{b}$ with $\mathbf{b}=(8,-11,-3)^{\top}$. We
+already computed $\det A=-1$, and
+\[
+  \det A_{1}=\begin{vmatrix}8&1&-1\\ -11&-1&2\\ -3&1&2\end{vmatrix}=-2,\qquad
+  \det A_{2}=-3,\qquad \det A_{3}=1 .
+\]
+So $x_{1}=(-2)/(-1)=2$, $x_{2}=(-3)/(-1)=3$, and $x_{3}=1/(-1)=-1$. Check:
+$A(2,3,-1)^{\top}=(4+3+1,\,-6-3-2,\,-4+3-2)^{\top}=(8,-11,-3)^{\top}$.
+
+The adjugate of that matrix, with the cofactors of its first row already computed above, is
+\[
+  \operatorname{adj}A=\begin{pmatrix}-4&-3&1\\ 2&2&-1\\ -5&-4&1\end{pmatrix},
+  \qquad
+  A^{-1}=\frac{1}{-1}\operatorname{adj}A
+  =\begin{pmatrix}4&3&-1\\ -2&-2&1\\ 5&4&-1\end{pmatrix}.
+\]
+The first row of $A^{-1}$ times $\mathbf{b}$ gives $4(8)+3(-11)-1(-3)=32-33+3=2$, matching
+$x_{1}$.
+\end{contoh}
+
+Cramer's rule is beautiful and rarely used for computing. Its value lies elsewhere: the formula
+shows that the answer depends smoothly on $\mathbf{b}$ and on the entries of $A$, and that
+dependence is what we measure through cost and sensitivity.
+
+\section{Elementary matrices, inverses, and equivalent conditions}
+\tingkat{advanced}
+
+Row elimination can be seen as matrix multiplication. That view turns the question ``is $A$
+invertible'' into a question about a list of factors, and that list of factors yields an
+algorithm for the inverse.
+
+\kamus{elementary matrix}{matriks elementer}{The identity matrix with one of its steps already
+carried out, so that it records a single row operation.}
+
+\begin{definisi}[Elementary matrix]
+An \emph{elementary matrix} is a matrix obtained from $I_{n}$ by one elementary row operation.
+There are three kinds, matching the three operations: interchanging two rows, multiplying one
+row by a nonzero scalar, and adding a multiple of one row to another row.
+\end{definisi}
+
+\begin{lemma}
+If $E$ is an $m\times m$ elementary matrix and $A$ an $m\times n$ matrix, then $EA$ is the
+result of performing the same row operation on $A$. Every elementary matrix is invertible, and
+its inverse is an elementary matrix of the same kind.
+\end{lemma}
+
+\begin{proof}
+Row $i$ of $EA$ is a linear combination of the rows of $A$ with coefficients from row $i$ of
+$E$. For $E$ of the third kind, that row is $\mathbf{a}_{i}+c\mathbf{a}_{j}$, exactly as in the
+row operation; for the other two kinds the check is equally direct. The inverse is obtained by
+undoing the operation: interchanging rows undoes itself, and
+$\operatorname{diag}(1,\dots,c,\dots,1)^{-1}=\operatorname{diag}(1,\dots,1/c,\dots,1)$.
+\end{proof}
+
+Figure~\ref{fig:tiga-gerakan} runs the three operations on the system $x+2y=4$, $3x+4y=10$,
+which intersect at $(2,1)$. Interchanging rows only interchanges names; multiplying the first
+row by $2$ writes the same line with numbers twice as large; adding the second row to the first
+gives $4x+6y=14$, which still passes through $(2,1)$. The intersection point does not move, but
+the determinant of the coefficient matrix changes sign, doubles, then stays fixed. The solution
+set is preserved; the number that measures area is not.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.58,>=Stealth]
+  \begin{scope}
+    \draw[layergrey!28,step=1] (-0.4,-0.4) grid (4.4,3.2);
+    \draw[->,ink] (-0.5,0)--(4.6,0) node[right,font=\scriptsize]{$x$};
+    \draw[->,ink] (0,-0.5)--(0,3.4) node[above,font=\scriptsize]{$y$};
+    \draw[very thick,layerindigo] (0,2)--(4,0) node[pos=0.15,above,font=\scriptsize]{$R_{1}$};
+    \draw[very thick,layerteal] (0,2.5)--(3.33,0) node[pos=0.85,above left,font=\scriptsize]{$R_{2}$};
+    \fill[accent] (2,1) circle (2.6pt);
+    \node[font=\scriptsize,below right] at (2,1) {$(2,1)$};
+    \node[font=\scriptsize] at (2,-1.1) {(i) interchange rows};
+  \end{scope}
+  \begin{scope}[xshift=5.6cm]
+    \draw[layergrey!28,step=1] (-0.4,-0.4) grid (4.4,3.2);
+    \draw[->,ink] (-0.5,0)--(4.6,0) node[right,font=\scriptsize]{$x$};
+    \draw[->,ink] (0,-0.5)--(0,3.4) node[above,font=\scriptsize]{$y$};
+    \draw[very thick,layerindigo] (0,2)--(4,0) node[pos=0.15,above,font=\scriptsize]{$R_{1}$};
+    \draw[very thick,layerindigo,densely dashed] (0,2)--(4,0);
+    \draw[very thick,layerteal] (0,2.5)--(3.33,0) node[pos=0.85,above left,font=\scriptsize]{$R_{2}$};
+    \fill[accent] (2,1) circle (2.6pt);
+    \node[font=\scriptsize,below right] at (2,1) {$(2,1)$};
+    \node[font=\scriptsize] at (2,-1.1) {(ii) multiply a row};
+  \end{scope}
+  \begin{scope}[xshift=11.2cm]
+    \draw[layergrey!28,step=1] (-0.4,-0.4) grid (4.4,3.2);
+    \draw[->,ink] (-0.5,0)--(4.6,0) node[right,font=\scriptsize]{$x$};
+    \draw[->,ink] (0,-0.5)--(0,3.4) node[above,font=\scriptsize]{$y$};
+    \draw[very thick,layergrey,dash pattern=on 3pt off 2pt] (0,2)--(4,0);
+    \draw[very thick,layerteal] (0,2.5)--(3.33,0)
+      node[pos=0.8,below right,font=\scriptsize]{$R_{2}$};
+    \draw[very thick,layerplum] (0,2.33)--(3.5,0)
+      node[pos=0.2,above,font=\scriptsize]{$R_{1}+R_{2}$};
+    \fill[accent] (2,1) circle (2.6pt);
+    \node[font=\scriptsize,below right] at (2,1) {$(2,1)$};
+    \node[font=\scriptsize] at (2,-1.1) {(iii) add a multiple};
+  \end{scope}
+\end{tikzpicture}
+\caption{The three elementary row operations on the system $x+2y=4$, $3x+4y=10$. Interchanging
+rows only swaps the names $R_{1}$ and $R_{2}$; multiplying $R_{1}$ by $2$ writes the same line;
+adding $R_{2}$ to $R_{1}$ rotates the first line into $4x+6y=14$. In all three panels, both
+lines pass through the same intersection point, $(2,1)$.}
+\label{fig:tiga-gerakan}
+\end{figure}
+
+\begin{teorema}
+An $n\times n$ matrix $A$ is invertible if and only if $A$ is a product of elementary matrices.
+\end{teorema}
+
+\begin{proof}
+A product of invertible matrices is also invertible, so one direction is clear.
+
+For the other direction, suppose $A$ is invertible and bring $A$ to reduced echelon form by row
+operations, which is the same as multiplying from the left by elementary matrices
+$E_{1},\dots,E_{k}$. By the theorem of three cases, $A$ invertible means every column of $A$
+contains a pivot, so the reduced form of $A$ is $I_{n}$, since $A$ is square with $n$ pivots.
+Hence $E_{k}\cdots E_{1}A=I_{n}$, and therefore $A=E_{1}^{-1}\cdots E_{k}^{-1}$, a product of
+elementary matrices.
+\end{proof}
+
+That proof is also an algorithm: performing the same operations on $I_{n}$ gives $A^{-1}$, so
+$\bigl(A\mid I_{n}\bigr)\to\bigl(I_{n}\mid A^{-1}\bigr)$ produces the inverse without a single
+determinant, far cheaper than the adjugate.
+
+We collect what has been proved into one list. This is the list people use every day, and its
+content is another face of a single statement.
+
+\begin{teorema}[Equivalent conditions]
+For an $n\times n$ matrix $A$, the following statements are equivalent.
+\begin{enumerate}
+  \item $A$ is invertible.
+  \item $A\mathbf{x}=\mathbf{0}$ has only the trivial answer $\mathbf{x}=\mathbf{0}$.
+  \item The reduced echelon form of $A$ is $I_{n}$.
+  \item $A$ is a product of elementary matrices.
+  \item $A\mathbf{x}=\mathbf{b}$ is consistent for every $\mathbf{b}\in\mathbb{R}^{n}$.
+  \item $A\mathbf{x}=\mathbf{b}$ has exactly one answer for every $\mathbf{b}\in\mathbb{R}^{n}$.
+  \item $\det A\neq0$.
+\end{enumerate}
+\end{teorema}
+
+\begin{proof}
+We chain the implications $(1)\Rightarrow(2)\Rightarrow(3)\Rightarrow(4)\Rightarrow(1)$,
+then $(1)\Rightarrow(5)\Rightarrow(6)\Rightarrow(1)$ and $(1)\Leftrightarrow(7)$.
+
+$(1)\Rightarrow(2)$: multiply $A\mathbf{x}=\mathbf{0}$ from the left by $A^{-1}$.
+$(2)\Rightarrow(3)$: the kernel of $A$ is only $\{\mathbf{0}\}$, which means nullity zero, so by
+rank-nullity in Chapter 7, $\operatorname{rank}A=n$; hence there are $n$ pivots and the reduced
+form is $I_{n}$. $(3)\Rightarrow(4)$: the elimination steps give $E_{k}\cdots E_{1}A=I_{n}$.
+$(4)\Rightarrow(1)$: a product of invertible matrices is also invertible.
+$(1)\Rightarrow(5)$: take $\mathbf{x}=A^{-1}\mathbf{b}$. $(5)\Rightarrow(6)$: suppose some
+$\mathbf{b}$ has two different answers $\mathbf{x}\neq\mathbf{y}$. Then
+$\mathbf{x}-\mathbf{y}\neq\mathbf{0}$ and $A(\mathbf{x}-\mathbf{y})=\mathbf{0}$, so the columns
+of $A$ are linearly dependent and $\operatorname{rank}A<n$. The column space of $A$ therefore
+has dimension less than $n$, so some $\mathbf{b}'$ is out of reach, contradicting (5).
+$(6)\Rightarrow(1)$: if $A$ is not invertible, its columns are dependent, so some
+$\mathbf{x}\neq\mathbf{0}$ satisfies $A\mathbf{x}=\mathbf{0}$, and the answer for
+$\mathbf{b}=\mathbf{0}$ is not unique. Finally $(1)\Leftrightarrow(7)$ is the corollary of the
+previous section.
+\end{proof}
+
+That list explains why four questions that look different, about solutions, echelon form,
+factorization, and the determinant, are in fact one question; only the measuring tool changes.
+But the list is silent about cost and sensitivity, and those two things decide whether the
+answer obtained can be trusted.
+
+\begin{tantangan}
+The following system looks ordinary: three equations for three numbers, no conspicuous
+duplicate row, so the answer seems to be unique.
+\[
+  x+y+z=3,\qquad x+2y+3z=6,\qquad 2x+3y+4z=9 .
+\]
+Find all its answers. How many answers are there, and why is counting equations misleading here?
+
+Hint 1: add the first two equations, then compare the result with the third equation.
+
+Hint 2: the third equation adds no information at all, so only two pieces of information are
+independent. Once $z$ is chosen, $y$ and then $x$ are determined; write the answer as one family
+with one parameter.
+
+If you get stuck, go back to the section on three fates and count the pivots.
+\end{tantangan}
+
+\subsection*{Cost and sensitivity}
+
+Elimination on an $n\times n$ matrix uses about $n^{3}/3$ multiplications: for $n=1000$ about
+$3.33\times10^{8}$, which is still fast. Cramer's rule with cofactors uses $n\cdot n!$
+multiplications, about $5.75\times10^{9}$ for $n=12$ and above $10^{19}$ for $n=20$; that is
+why it is used only for small $n$ or for theoretical purposes.
+
+The subtler matter is sensitivity. Suppose $A$ is invertible and $\mathbf{b}\neq\mathbf{0}$, and
+suppose $\mathbf{b}$ changes to $\mathbf{b}+\delta\mathbf{b}$ so that the answer changes to
+$\mathbf{x}+\delta\mathbf{x}$.
+
+\begin{teorema}
+With the notation above, for any subordinate matrix norm,
+\[
+  \frac{\lVert\delta\mathbf{x}\rVert}{\lVert\mathbf{x}\rVert}
+  \le\kappa(A)\,
+  \frac{\lVert\delta\mathbf{b}\rVert}{\lVert\mathbf{b}\rVert},
+  \qquad \kappa(A)=\lVert A\rVert\,\lVert A^{-1}\rVert .
+\]
+\end{teorema}
+
+\begin{proof}
+From $A\,\delta\mathbf{x}=\delta\mathbf{b}$ we get $\delta\mathbf{x}=A^{-1}\delta\mathbf{b}$, so
+$\lVert\delta\mathbf{x}\rVert\le\lVert A^{-1}\rVert\lVert\delta\mathbf{b}\rVert$. From
+$\mathbf{b}=A\mathbf{x}$ we get $\lVert\mathbf{b}\rVert\le\lVert A\rVert\lVert\mathbf{x}\rVert$,
+that is, $1/\lVert\mathbf{x}\rVert\le\lVert A\rVert/\lVert\mathbf{b}\rVert$. Multiplying the two
+inequalities gives the required result.
+\end{proof}
+
+The number $\kappa(A)$ is called the \emph{condition number}. It does not depend on scale:
+multiplying $A$ by $c$ does not change it, because $\lVert cA\rVert\lVert (cA)^{-1}\rVert
+=|c|\lVert A\rVert\cdot|c|^{-1}\lVert A^{-1}\rVert$. The determinant has no such property, and
+this is why we do not use the determinant as a measure of sensitivity. A small determinant only
+means a small volume; it can be small because the whole matrix was scaled down, while the
+sensitivity does not change.
+
+For the opening system, $\kappa(S)\approx1.01\times10^{5}$. With machine precision around
+$10^{-16}$, the digits that can be trusted in the answer are about $10^{-11}$ relative: enough
+for this example, exhausted for a worse matrix. Chapter 22 discusses thresholds and how to
+recognize a matrix that can no longer be trusted.
+\index{condition}
+
+\begin{untukanak}
+Imagine a long plank used as a base for measuring the height of a hill. The plank is almost
+horizontal, only slightly tilted. If the lower end is lifted by a finger, the other end rises
+far more, because the plank rests on a very small slope. A finger in one place becomes a
+hand-span in another.
+
+Now imagine the plank is made very steep. Lift its lower end by a finger, and its upper end
+rises only a tiny bit. The same work produces two very different effects, only because the base
+is different.
+
+Our computations work like that plank. There are arrangements of numbers in which a small change
+in the input produces a small change in the answer; there are also arrangements in which a
+change the size of a speck of dust produces a completely different answer. What decides is not
+how large the numbers are, but the shape of the arrangement.
+
+In this chapter we will learn why one number can predict that before we compute, and why that
+number does not change when all the numbers are enlarged or reduced by the same ratio.
+
+If you weigh on a scale whose base is tilted, is the result wrong, or merely untrustworthy?
+\end{untukanak}
+
+\section{A worked example}
+\tingkat{intermediate}
+
+We work one system in two ways, compute one $4\times4$ determinant, then measure the sensitivity
+of two matrices.
+
+\begin{resep}
+\begin{enumerate}
+  \item Write the augmented matrix $\bigl(A\mid\mathbf{b}\bigr)$: coefficient columns first, the
+        right-hand side column last.
+  \item Work on the leftmost column. Choose one nonzero entry as the pivot; if the top entry is
+        zero, interchange rows first.
+  \item Zero out all entries below the pivot: for each row $j$ below it,
+        $R_{j}\leftarrow R_{j}-\frac{a_{ji}}{a_{ii}}R_{i}$.
+  \item Shift one column to the right and repeat; stop when there are no nonzero rows left, then
+        read the fate of the system from the pivot positions.
+\end{enumerate}
+Warning about the order: the pivots are zeroed from top to bottom, column by column, before back
+substitution begins. Reversing that order destroys the pivots already obtained and forces the
+work to be repeated.
+\end{resep}
+
+The system is $A\mathbf{x}=\mathbf{b}$ with
+\[
+  A=\begin{pmatrix}2&1&-1\\ -3&-1&2\\ -2&1&2\end{pmatrix},
+  \qquad \mathbf{b}=\begin{pmatrix}8\\ -11\\ -3\end{pmatrix}.
+\]
+
+First way, elimination, with the steps written in full:
+\[
+  \left(\begin{array}{ccc|c}2&1&-1&8\\ -3&-1&2&-11\\ -2&1&2&-3\end{array}\right)
+  \xrightarrow[R_{3}\leftarrow R_{3}+R_{1}]{R_{2}\leftarrow R_{2}+\tfrac{3}{2}R_{1}}
+  \left(\begin{array}{ccc|c}2&1&-1&8\\ 0&\tfrac{1}{2}&\tfrac{1}{2}&1\\
+  0&2&1&5\end{array}\right),
+\]
+then $R_{3}\leftarrow R_{3}-4R_{2}$ gives
+\[
+  \left(\begin{array}{ccc|c}2&1&-1&8\\ 0&\tfrac{1}{2}&\tfrac{1}{2}&1\\
+  0&0&-1&1\end{array}\right).
+\]
+Back substitution: from the third row $-x_{3}=1$, so $x_{3}=-1$. The second row
+$\tfrac{1}{2}x_{2}+\tfrac{1}{2}(-1)=1$ gives $x_{2}=3$. The first row $2x_{1}+3+1=8$ gives
+$x_{1}=2$. The result is $\mathbf{x}=(2,3,-1)$. The pivots that appear are $2$, $\tfrac{1}{2}$,
+and $-1$, so the product of the pivots is $\det A=2\cdot\tfrac{1}{2}\cdot(-1)=-1$, matching the
+cofactor expansion above. Here there was no row interchange, so the sign did not change.
+
+The second way, Cramer's rule, we already ran on the same system in the previous section. The
+three replacement determinants give $\det A_{1}=-2$, $\det A_{2}=-3$, and $\det A_{3}=1$, so
+$\mathbf{x}=(-2,-3,1)/(-1)=(2,3,-1)$. Two roads, one answer; a check like this is cheap and
+should always be carried out.
+
+Now the $4\times4$ determinant. Take
+\[
+  M=\begin{pmatrix}2&0&1&3\\ 1&4&0&2\\ 3&1&2&1\\ 0&2&1&5\end{pmatrix}.
+\]
+Expansion along the first row uses four minors, and one of them we compute in full:
+\[
+  M_{11}=\begin{vmatrix}4&0&2\\ 1&2&1\\ 2&1&5\end{vmatrix}
+  =4(10-1)-0(5-2)+2(1-4)=36-6=30 .
+\]
+In a similar way $M_{12}=15$, $M_{13}=-45$, and $M_{14}=-15$. Hence
+\[
+  \det M=2(30)-0(15)+1(-45)-3(-15)=60-45+45=60 .
+\]
+The number of terms summed is $4!=24$, and for $5\times5$ it is already $120$: the growth is
+factorial. This is why libraries do not use this method.
+
+Now sensitivity. The $4\times4$ Hilbert matrix is defined by $h_{ij}=1/(i+j-1)$. Its determinant
+is exactly $1/6\,048\,000\approx1.65\times10^{-7}$, very small, so one easily concludes that
+this matrix is dangerous. Its condition number is $15\,513.74$. The opening matrix had
+$\det S=-0.003$ and $\kappa(S)\approx1.01\times10^{5}$, so its determinant is eighteen
+thousand times larger, while its sensitivity is about six and a half times worse. The determinant
+is not a measure of sensitivity; the condition number is.
+
+The jump test for $S$ uses $\mathbf{x}=(1,1,1)$, so that $\mathbf{b}=(6,\,15,\,24.001)$.
+Changing the third component to $24.002$ changes the answer to $(2,-1,2)$. The relative change
+in the data is $3.46\times10^{-5}$, the relative change in the answer is
+$\sqrt{2}\approx1.414$, and the ratio is $40\,916$: below $\kappa(S)$ as the theorem promises,
+but only by a factor of two and a half.
+
+\kertas{Which is more sensitive, $M$ or the $4\times4$ Hilbert matrix? Predict by comparing their
+determinants, then compute the condition number of both with \texttt{numpy.linalg.cond}. Compare
+also with $10^{-3}I_{4}$, whose determinant is far smaller, then explain why the rule ``small
+determinant means sensitive'' fails. Finally, multiply $M$ by $10^{-4}$: its condition number
+does not change, while its determinant shrinks by a factor of $10^{-16}$.}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np, math
+
+def det_kofaktor(A):
+    n = A.shape[0]
+    if n == 1:
+        return A[0, 0]
+    return sum((-1) ** j * A[0, j] *
+               det_kofaktor(np.delete(np.delete(A, 0, 0), j, 1))
+               for j in range(n))
+
+A = np.array([[2., 1., -1.], [-3., -1., 2.], [-2., 1., 2.]])
+b = np.array([8., -11., -3.])
+x = np.linalg.solve(A, b)
+print("det A    :", np.linalg.det(A))
+print("det cof  :", det_kofaktor(A))
+print("rank A   :", np.linalg.matrix_rank(A))
+print("x        :", x)
+print("residual :", np.linalg.norm(A @ x - b))
+for j in range(3):
+    Aj = A.copy(); Aj[:, j] = b
+    print("det A%d   : %.1f  -> x%d = %.6f" % (j + 1, np.linalg.det(Aj),
+          j + 1, np.linalg.det(Aj) / np.linalg.det(A)))
+
+M = np.array([[2., 0., 1., 3.], [1., 4., 0., 2.],
+              [3., 1., 2., 1.], [0., 2., 1., 5.]])
+print("det M    :", det_kofaktor(M), np.linalg.det(M))
+
+H = np.array([[1. / (i + j + 1) for j in range(4)] for i in range(4)])
+print("det H4   :", np.linalg.det(H))
+print("cond H4  : %.2f" % np.linalg.cond(H))
+
+S = np.array([[1., 2., 3.], [4., 5., 6.], [7., 8., 9.001]])
+bs = S @ np.array([1., 1., 1.])
+print("det S    :", np.linalg.det(S), " cond S: %.1f" % np.linalg.cond(S))
+print("x        :", np.linalg.solve(S, bs))
+bs2 = bs.copy(); bs2[2] += 0.001
+print("x'       :", np.linalg.solve(S, bs2))
+print("cost     :", math.factorial(12) * 12, round(1000 ** 3 / 3))
+\end{verbatim}
+Actual output:
+\begin{verbatim}
+det A    : -1.0
+det cof  : -1.0
+rank A   : 3
+x        : [ 2.  3. -1.]
+residual : 1.9860273225978185e-15
+det A1   : -2.0  -> x1 = 2.000000
+det A2   : -3.0  -> x2 = 3.000000
+det A3   : 1.0  -> x3 = -1.000000
+det M    : 60.0 60.000000000000036
+det H4   : 1.6534391534390412e-07
+cond H4  : 15513.74
+det S    : -0.0030000000000036655  cond S: 101072.3
+x        : [1. 1. 1.]
+x'       : [ 2. -1.  2.]
+cost     : 5748019200 333333333
+\end{verbatim}
+\end{lab}
+
+Four things must be read from that output.
+
+First, $x=(2,3,-1)$ appears with residual $1.99\times10^{-15}$, which is zero to machine
+precision. The residual is computed on purpose: a library answer is never exact, and the residual
+is the cheapest way to check whether that answer satisfies its system. For a bad matrix, a small
+residual does not guarantee a small error; that is the topic of Chapter 22.
+
+Second, the determinant from the cofactor expansion and the one from the library are both $-1$,
+and for $M$ both are $60$. The library does not use cofactors; it uses a factorization and
+multiplies the pivots. The difference of $3.6\times10^{-14}$ on $\det M$ is rounding, not a
+difference of definition.
+
+Third, $\det H_{4}$ is reported as $1.65\times10^{-7}$ while its exact value is
+$1/6\,048\,000$, so the machine number is correct to seven digits. For higher orders, $1/\det$
+passes $10^{12}$ quickly, and that is where the determinant stops being useful as a marker.
+
+Fourth, the jump of the answer for $S$ shows up intact: from $(1,1,1)$ to $(2,-1,2)$ only
+because one number changed by a thousandth. The number reported for $\det S$ is not exactly
+$-0.003$ either; the difference $3.7\times10^{-15}$ appears because $9.001$ is not
+represented exactly in binary fractions.
+
+Finally, cost: $5.748\times10^{9}$ multiplications for Cramer's rule at $n=12$ against
+$3.33\times10^{8}$ for elimination at $n=1000$. A far larger matrix is handled with far less
+work; that is the difference between a cube and a factorial.
+
+\begin{untukdosen}
+A teaching order that has worked: elimination first, with the three cases shown on one fixed
+coefficient matrix and three different right-hand sides. Students who see consistency change
+because of one number in $\mathbf{b}$ usually accept at once that the question about $A$ and the
+question about $\mathbf{b}$ must be separated. Only after that does the determinant enter, as the
+answer to the question about $A$ alone.
+
+Two typical misconceptions. First, ``a small determinant means the system is unstable''. The
+matrix $10^{-6}I$ has determinant $10^{-18}$ and condition number one; conversely $H_{4}$ has
+determinant $1.65\times10^{-7}$ and condition $1.5\times10^{4}$. This mistake appears every
+year, and the way to dismantle it is to ask students to multiply one matrix by a scalar and then
+compare the two numbers. Second, ``Cramer's rule is the way to solve a system''. Theoretically
+true; in cost, false. Give one $12\times12$ system and ask them to estimate the cost of both
+ways before computing.
+
+A useful class activity: hand out three systems with the same coefficient matrix and right-hand
+sides $(4,9,13)$, $(4,9,14)$, and $(0,0,0)$. Ask each group to determine the fate of its system
+from the echelon form alone, then to conclude what can and cannot be concluded from $A$ by
+itself.
+
+A sign of readiness for advanced work: students can list the seven equivalent conditions
+without memorizing the order, and can explain why the condition about the determinant belongs in
+the same list as the conditions about pivots.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Elementary row operations do not change the solution set, because every operation can be
+        undone. Because the reduced form is unique, the pivot positions determine three fates:
+        inconsistent if a pivot appears in the last column, unique if every coefficient column
+        has a pivot, many if some column has no pivot.
+  \item The determinant is the only multilinear, alternating, normalized function. The Leibniz
+        formula and the cofactor expansion are consequences of it, not its definition.
+  \item $\det(AB)=\det A\det B$, so $A$ is invertible exactly when $\det A\neq0$; and $\det A$
+        equals the product of the pivots after elimination, times the sign of the interchanges.
+  \item The adjugate gives $A\operatorname{adj}A=(\det A)I$ and
+        $A^{-1}=\operatorname{adj}A/\det A$; Cramer's rule writes $x_{j}=\det A_{j}/\det A$.
+  \item Seven conditions for invertibility are equivalent: trivial kernel, reduced form $I_{n}$,
+        product of elementary matrices, consistent and unique for all $\mathbf{b}$, and
+        $\det A\neq0$.
+  \item The cost of elimination is proportional to $n^{3}/3$, the cost of cofactors to
+        $n\cdot n!$. Sensitivity is measured by $\kappa(A)=\lVert A\rVert\lVert A^{-1}\rVert$,
+        not by $\det A$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Solve by elimination, then check with Cramer's rule:
+        \[
+          \begin{pmatrix}1&2&3\\ 2&5&3\\ 1&0&8\end{pmatrix}\mathbf{x}
+          =\begin{pmatrix}9\\ 8\\ 26\end{pmatrix}.
+        \]
+        Write down the pivots that appear, record how many times rows were interchanged, then
+        conclude $\det A$ from the product of the pivots.
+
+  \item Compute $\det M$ for
+        $M=\begin{pmatrix}0&1&2&3\\ 1&0&3&2\\ 2&3&0&1\\ 3&2&1&0\end{pmatrix}$
+        by cofactor expansion along one row, then compute it with
+        \texttt{numpy.linalg.det}. The two results are not exactly equal: the first is exact, the
+        second $5.3\times10^{-15}$. Explain why. Afterwards find a nonzero vector
+        $\mathbf{v}$ with $M\mathbf{v}=\mathbf{0}$ and conclude $\det M=0$ without any
+        expansion.
+
+  \item Prove that if two columns of $A$ are equal, then $\det A=0$, without using
+        $\det A=\det A^{\top}$.
+        (Hint: use the Leibniz formula, group the terms by pairs of permutations that swap on
+        those two columns, and show that their signs are opposite.)
+
+  \item Prove that $\det(\operatorname{adj}A)=(\det A)^{n-1}$ for $n\ge2$.
+        (Hint: take determinants in $A\operatorname{adj}A=(\det A)I$ and use
+        $\det(cI)=c^{n}$.)
+
+  \item Evaluate this claim: \emph{if $\det A$ is very small, then the answer of $A\mathbf{x}
+        =\mathbf{b}$ is very sensitive to changes in $\mathbf{b}$}. Decide true, false, or not
+        yet enough evidence, and include a counterexample or an additional reason that makes it
+        true.
+
+  \item For $A=\begin{pmatrix}1&1\\ 1&1+\varepsilon\end{pmatrix}$ with
+        $\varepsilon>0$, compute $\kappa(A)$ in the $1$-norm as a function of
+        $\varepsilon$. Determine the value of $\varepsilon$ that makes $\kappa(A)>10^{6}$, then
+        check it with \texttt{numpy.linalg.cond}.
+
+  \item Prove: if $A$ is invertible and $B$ is obtained from $A$ by adding a multiple of one row
+        to another row, then $\det B=\det A$ and $B^{-1}$ can be expressed through $A^{-1}$ and
+        one elementary matrix.
+
+  \item Suppose $D=\operatorname{diag}(d_{1},\dots,d_{n})$ and $A$ is of size $n\times n$.
+        Show that $\det(A+AD)=\det(A)\prod_{i=1}^{n}(1+d_{i})$, then determine the condition on
+        $d_{1},\dots,d_{n}$ for $A+AD$ to be invertible. Check your answer with a $3\times3$
+        matrix in Python.
+
+  \item Choose a $3\times3$ matrix with small integer entries and $\det A=1$, compute $A^{-1}$
+        through the adjugate and through \texttt{numpy.linalg.inv}, then compare the two. Repeat
+        for a matrix with $\det A=7$ and explain why the entries of $A^{-1}$ become fractions.
+\end{enumerate}
+
+Hints for the three hardest items. Item 4: take determinants of both sides, remember
+$\det(cI)=c^{n}$, and note that $\det A$ may be zero, so the conclusion about
+$\operatorname{adj}A$ must be read as a matrix, not as an inverse. Item 6: in the $1$-norm,
+$\lVert A\rVert_{1}$ is the largest column sum, and for this matrix the second column is the
+largest; compute $\lVert A^{-1}\rVert_{1}$ from the $2\times2$ formula and note that the answer
+is proportional to $1/\varepsilon$. Item 8: write $A+AD$ as $A(I+D)$ before pulling out the
+determinant, and remember that $I+D$ is diagonal, so its determinant is the product of its
+diagonal entries.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is really proved in this chapter, for the field $\mathbb{R}$ and finite dimension: the
+uniqueness of the determinant as a normalized alternating $n$-linear function together with the
+permutation formula, in Hoffman and Kunze, \emph{Linear Algebra} 2nd edition, sections 5.2 and
+5.3, which hold more generally over a commutative ring with identity (section 5.1);
+multiplicativity and the equivalence of invertibility with $\det\neq0$, in Axler,
+\emph{Linear Algebra Done Right} 4th edition, section 9C, statements 9.49 and 9.50, with a
+basis-free determinant of an operator; and the list of seven equivalent conditions, in Anton
+11th edition, Theorem 2.3.8.
+
+What is popularized: ``the determinant is volume''. What is proved is that $|\det A|$ equals the
+volume of the parallelepiped spanned by its columns; without the absolute value, the claim is
+false for a negative determinant. Also wrong numerically: Cramer's rule as a way to solve
+systems above $n=11$, where the cost is factorial.
+
+An open question. The sensitivity bound in the theorem above is normwise and worst-case, often
+too pessimistic compared with a componentwise analysis. More fundamentally: the maximum growth
+factor of Gaussian elimination with partial pivoting is not known for general $n$. The proved
+bound is $2^{n-1}$, while numerical experiments give far less, and that gap is open.
+
+Limits of validity. The argument collapses when the field is not a field, because modules do not
+always have a basis and elimination cannot always divide. For very large $n$, the determinant
+overflows or underflows long before the rank is lost, so libraries report the logarithm of the
+determinant. The sensitivity statements also depend on the norm, and no choice is canonical.
+\end{untukpeneliti}
+
+\peta{This chapter follows Anton, \emph{Elementary Linear Algebra} 11th edition, sections 1.1
+through 1.6 (linear systems, Gauss-Jordan elimination, inverses, elementary matrices) and 2.1
+through 2.3 (cofactors, the determinant through row reduction, Cramer's rule, including Theorem
+2.3.8 on equivalent conditions). The axiomatic treatment follows Hoffman and Kunze,
+\emph{Linear Algebra} 2nd edition, sections 5.2 and 5.3, with section 1.4 for the uniqueness of
+the reduced echelon form. The basis-free view is in Axler, \emph{Linear Algebra Done Right} 4th
+edition, section 9C. For elimination as factorization and the view $A=CR$, see Strang,
+\emph{Introduction to Linear Algebra} 6th edition, Chapter 2 and the note ``Elimination and
+Factorization''. The numerical side, namely condition numbers, rounding error, and cost, is
+treated in Chapter 22 of this book.}

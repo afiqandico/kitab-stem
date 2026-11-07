@@ -1,0 +1,139 @@
+% Edisi Inggris: 32 bab + seluruh materi belakang (materi depan, lampiran A--D,
+% indeks, kolofon, daftar rujukan). Materi belakang ada di belakang/*-en.tex;
+% sumber Indonesianya disalin apa adanya ke belakang/_sumber/ untuk gerbang paritas.
+\input{preamble-en.tex}
+
+\begin{document}
+
+\frontmatter
+
+% ---------------------------- title page ----------------------------
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+\centering
+\vspace*{1.6cm}
+{\color{accent}\rule{\textwidth}{1.2pt}}\\[0.45cm]
+{\large\scshape Layered Textbook}\\[0.15cm]
+{\itshape Mathematics $\cdot$ Computation $\cdot$ Machine Learning $\cdot$ Security}\\[0.45cm]
+{\color{accent}\rule{\textwidth}{0.6pt}}\\[1.8cm]
+{\Huge\bfseries Why Machines\\[0.25cm] Can Be Wrong?}\\[0.7cm]
+{\Large\itshape From Linear Algebra\\[0.18cm] to Machine-Learning Security}\\[0.7cm]
+{\large\itshape First Edition}\\[0.5cm]
+{\large Six parts, thirty-two chapters, four reading tracks}\\[0.35cm]
+{\normalsize\itshape for readers aged 10, students, lecturers, and researchers}\\[2.0cm]
+{\large Compiled by Afiq Andico Pangimpian}\\[0.3cm]
+{\large October 2026}
+\vfill
+{\footnotesize\itshape A textbook about how we know that an answer is true --- and
+how machines fail to know. Full sources are in the References.}
+\end{titlepage}
+\hypersetup{pageanchor=true}
+
+\tableofcontents
+
+% ---------------------------- front matter ----------------------------
+\input{belakang/depan-a-en}
+\input{belakang/depan-b-en}
+\input{belakang/depan-c-en}
+
+\mainmatter
+
+% ---------------------------- part I ----------------------------
+\part{Foundations: Language, Sets, and Numbers}
+
+This part answers a question that is usually skipped: what the words ``holds for all''
+mean, and how a sentence can be proved rather than merely believed. The only prerequisite
+is school algebra. After five chapters you can write direct proofs, proofs by contradiction,
+and induction, and you know when an argument is still incomplete.
+\input{ch01}
+\input{ch02}
+\input{ch03}
+\input{ch04}
+\input{ch05}
+
+% ---------------------------- part II ----------------------------
+\part{Linear Algebra}
+
+This part installs the framework used by almost every later chapter: vector spaces, bases,
+determinants, eigenvalues, and the singular value decomposition. The prerequisite is
+Chapters~1--2. After five chapters you can turn a problem into a matrix, solve it, and
+explain why its answer is unique or not.
+\input{ch06}
+\input{ch07}
+\input{ch08}
+\input{ch09}
+\input{ch10}
+
+% ---------------------------- part III ----------------------------
+\part{Analysis and Calculus}
+
+This part turns the words ``close'', ``smooth'', and ``shrinking'' into statements that can
+be checked with numbers. The prerequisites are Chapters~3--5 and~7. After six chapters you
+can prove continuity, differentiate and integrate, exchange a limit with an integral, and
+solve first-order differential equations and two-dimensional systems.
+\input{ch11}
+\input{ch12}
+\input{ch13}
+\input{ch14}
+\input{ch15}
+\input{ch16}
+
+% ---------------------------- part IV ----------------------------
+\part{Probability, Statistics, and Computer Arithmetic}
+
+This part prepares two things that look unrelated: how to measure uncertainty and how a
+computer stores numbers. The prerequisites are Chapters~2, 5, and~10. After six chapters you
+can compute probabilities, estimate parameters, test claims, fit a regression, and explain
+why $0.1+0.2$ does not equal $0.3$.
+\input{ch17}
+\input{ch18}
+\input{ch19}
+\input{ch20}
+\input{ch21}
+\input{ch22}
+
+% ---------------------------- part V ----------------------------
+\part{Optimization}
+
+This part turns ``find the best'' into a problem with a stopping condition. The prerequisites
+are Chapters~6 and~12. After two chapters you can separate a local minimum from a global one,
+use duality to prove bounds, and recognise when a linear problem can be solved in polynomial
+time and when it cannot.
+\input{ch23}
+\input{ch24}
+
+% ---------------------------- part VI ----------------------------
+\part{Machine Learning, Security, and Privacy}
+
+This part closes the book with the question most often avoided: when is a machine that looks
+clever actually fragile, and how is its fragility proved with numbers. The prerequisites are
+Chapters~10, 12, 18, and~23. After eight chapters you can train and evaluate a model honestly,
+attack it, prove limits on attacks, and explain cryptography and differential privacy well
+enough to read the original papers.
+\input{ch25}
+\input{ch26}
+\input{ch27}
+\input{ch28}
+\input{ch29}
+\input{ch30}
+\input{ch31}
+\input{ch32}
+
+% ---------------------------- appendices ----------------------------
+\appendix
+\input{belakang/lampA-en}
+\input{belakang/lampB-en}
+\input{belakang/lampC-en}
+\input{belakang/lampD-en}
+
+% ---------------------------- index ----------------------------
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Index}
+\printindex
+
+% ---------------------------- colophon and references ----------------------------
+\input{belakang/kolofon-en}
+\input{belakang/rujukan-en}
+
+\end{document}

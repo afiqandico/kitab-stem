@@ -1,0 +1,1252 @@
+\chapter[Adversarial Machine Learning]{Adversarial Machine Learning: Serangan dan Pertahanan}
+
+Pada 2014 Goodfellow, Shlens, dan Szegedy menunjukkan satu gambar panda. Jaringan
+GoogLeNet menyebutnya panda dengan keyakinan $57{,}7$ persen. Mereka menambahkan
+gangguan yang tidak terlihat mata, sebesar $0{,}007$ pada skala $[0,1]$, yaitu sekitar
+dua satuan dari 255 tingkat keabuan. Jaringan yang sama lalu menyebut gambar itu gibon
+dengan keyakinan $99{,}3$ persen. Tidak ada yang berubah bagi manusia. Yang berubah
+hanya arah gangguan: setiap piksel digeser sedikit, dan arah geseran itu dipilih dari
+tanda turunan galat terhadap piksel.
+
+Angka seperti itu bukan keanehan satu model. Pada bab ini kita menghitung sendiri
+kasus kecil yang bisa diperiksa ulang. Sebuah jaringan dua lapis dengan 64 masukan
+mencapai akurasi $97{,}99$ persen pada 597 citra angka uji. Dengan anggaran gangguan
+$0{,}15$ per piksel, serangan berulang 40 langkah menurunkan akurasi itu menjadi
+$10{,}72$ persen; pada anggaran yang sama, gangguan acak tanpa arah hanya
+menurunkannya menjadi $95{,}48$ persen. Jadi arah yang dipilih gradien bukan hiasan:
+ia membeli sekitar delapan puluh poin akurasi bagi penyerang.
+
+Bab 25 mengajari kita menghitung turunan galat terhadap bobot, dan Bab 27 mengajari
+kita mengukur akurasi dengan jujur. Keduanya belum cukup. Akurasi adalah rata-rata
+atas satu distribusi data; keamanan adalah pertanyaan tentang titik terburuk di dalam
+satu himpunan yang diizinkan. Rata-rata yang tinggi dan titik terburuk yang buruk bisa
+hidup bersama, dan itulah yang membuat laporan evaluasi biasa menyesatkan. Bab ini
+membangun kosakata untuk pertanyaan terburuk itu, menghitung serangan pertamanya, lalu
+memisahkan pertahanan yang menaikkan standar dari yang hanya menyembunyikan gradien.
+
+\begin{untukanak}
+Bayangkan seorang penjaga gedung yang mengenali orang dari kebiasaan kecil: berapa
+tombol baju yang dikancing, tas di tangan kiri atau kanan, dan topi atau tidak.
+Selama ini cara itu berhasil. Semua orang yang berhak masuk memang berbeda pada tiga
+hal tersebut. Lalu datang seseorang yang tahu persis cara penjaga itu melihat. Ia
+membuka satu tombol, memindahkan tas ke tangan yang lain, dan memakai topi. Wajahnya
+sama, namanya sama, ia orang yang sama. Penjaga tetap mempersilakannya masuk, karena
+menurut catatannya orang dengan tiga tanda itu adalah petugas kebersihan.
+
+Pertanyaan yang membuat kisah ini penting bukan "bagaimana menipu penjaga", melainkan
+"bagaimana kita tahu penjaga itu bisa ditipu". Kalau kita hanya menguji dengan orang
+acak yang berpakaian acak, penjaga akan lulus hampir selalu. Kesalahannya baru muncul
+kalau ada orang yang sengaja memilih tiga tanda itu. Menguji dengan kebetulan tidak
+sama dengan menguji dengan niat jahat.
+
+Komputer pengenal gambar bekerja seperti penjaga itu, hanya dengan ribuan ciri kecil
+sekaligus. Di bab ini kita akan tahu mengapa ciri yang tampak sepele bisa dipilih
+dengan sengaja, mengapa perubahan yang tidak terlihat mata bisa membalik jawaban,
+dan bagaimana membedakan pertahanan yang sungguh kuat dari pertahanan yang hanya
+membuat penyerang bingung.
+\end{untukanak}
+
+\section{Model ancaman: apa yang boleh dilakukan penyerang}
+\tingkat{dasar}
+
+Kalimat "penyerang mengubah masukan sedikit" belum bisa diuji sebelum kita sepakat
+tentang arti "sedikit". Setiap klaim ketahanan selalu relatif terhadap pilihan itu,
+sehingga pilihan tersebut adalah bagian dari klaim, bukan catatan kaki.
+
+\kamus{model ancaman}{threat model}{Daftar lengkap tentang apa yang boleh dilakukan
+penyerang: seberapa besar gangguannya, apa yang ia ketahui, dan apa tujuannya.}
+\index{model ancaman}
+
+\begin{definisi}[Serangan adversarial dan model ancaman]
+Misalkan $f:\mathbb{R}^{d}\to\{1,\dots,K\}$ adalah pengklasifikasi dan
+$(\mathbf{x},y)$ adalah contoh yang diklasifikasikan benar. Sebuah
+\emph{contoh adversarial} adalah $\mathbf{x}'=\mathbf{x}+\boldsymbol{\delta}$ dengan
+$f(\mathbf{x}')\neq y$ tetapi $\boldsymbol{\delta}$ kecil menurut ukuran yang
+disepakati. Model ancaman ditentukan oleh empat hal:
+\begin{enumerate}
+  \item himpunan gangguan yang diizinkan
+        $S(\mathbf{x})=\{\mathbf{x}+\boldsymbol{\delta}:
+        \lVert\boldsymbol{\delta}\rVert\le\varepsilon\}$, dengan
+        $\lVert\cdot\rVert$ biasanya norma $\ell_\infty$ dan $\varepsilon>0$
+        adalah \emph{anggaran};
+  \item pengetahuan penyerang: akses penuh pada $f$ dan gradiennya
+        (\emph{kotak putih}) atau hanya pada keluaran $f$ (\emph{kotak hitam});
+  \item tujuan: salah klasifikasi apa saja (\emph{tak bersasaran}) atau kelas
+        tertentu (\emph{bersasaran});
+  \item batasan lain, misalnya gangguan harus tetap berupa objek yang sah.
+\end{enumerate}
+Serangan berhasil bila ada $\boldsymbol{\delta}\in S(\mathbf{x})$ yang mengubah label.
+\end{definisi}
+
+Norma $\ell_\infty$ dipilih karena ia membatasi setiap koordinat secara terpisah:
+$\lVert\boldsymbol{\delta}\rVert_\infty\le\varepsilon$ berarti setiap piksel bergeser
+paling jauh $\varepsilon$. Untuk citra 8-bit dengan nilai $0$ sampai $255$, anggaran
+$\varepsilon=1/255$ berarti setiap piksel boleh berubah paling banyak satu tingkat.
+Norma $\ell_2$ membatasi panjang total vektor dan membolehkan satu piksel berubah
+banyak asalkan yang lain hampir tidak berubah. Keduanya menjawab pertanyaan berbeda,
+dan klaim ketahanan yang tidak menyebut normanya tidak bisa dibandingkan dengan klaim
+lain.
+\index{norma tak hingga}
+\index{anggaran perturbasi}
+
+Ukuran ketahanan yang paling jujur adalah jarak ke titik salah klasifikasi terdekat,
+\[
+  r(\mathbf{x})=\inf\{\lVert\boldsymbol{\delta}\rVert:
+  f(\mathbf{x}+\boldsymbol{\delta})\neq y\}.
+\]
+Besaran ini tidak bergantung pada algoritme penyerang mana pun. Sayangnya $r$ sulit
+dihitung: mencarinya berarti memaksimalkan fungsi tak konveks pada himpunan yang
+besar. Untuk jaringan dengan unit ReLU, $r$ dapat dihitung eksak dengan mengubah
+persoalan menjadi program linear campuran-bulat, dan biayanya tumbuh cepat terhadap
+jumlah unit. Karena itu hampir semua laporan di bidang ini menyebut apa yang berhasil
+dicapai oleh penyerang tertentu, bukan nilai $r$. Selisih antara keduanya adalah
+sumber sebagian besar kesimpulan yang terlalu optimistis.
+
+Satu kejadian layak dicatat sejak awal. Pada data tabular, bola $\ell_\infty$ memuat
+titik yang mustahil: usia negatif, jumlah paket yang tidak bulat, kombinasi bendera
+TCP yang tidak pernah muncul di jaringan nyata. Contoh seperti itu menipu model tetapi
+tidak dapat diwujudkan, sehingga keberhasilannya tidak memberi tahu apa pun tentang
+risiko sebenarnya. Anggaran yang terlalu longgar menghasilkan serangan yang
+spektakuler dan tidak berarti.
+
+\section{Mengapa tanda gradien cukup}
+\tingkat{menengah}
+
+Sekarang kita serang. Misalkan galat model dinyatakan oleh fungsi
+$L(\mathbf{x},y)$, misalnya entropi silang. Kita ingin menaikkan galat itu sebesar
+mungkin sambil menjaga setiap koordinat tetap di dalam kotak. Untuk fungsi linear,
+jawabannya bisa ditulis rapat.
+
+\kamus{metode tanda gradien}{fast gradient sign method}{Serangan satu langkah yang
+menggeser setiap koordinat sebesar anggaran, dengan arah mengikuti tanda turunan
+galat.}
+\index{FGSM}
+
+\begin{lemma}[Maksimum bentuk linear pada bola $\ell_\infty$]
+Untuk $\mathbf{w}\in\mathbb{R}^{d}$ dan $\varepsilon>0$,
+\[
+  \max_{\lVert\boldsymbol{\delta}\rVert_\infty\le\varepsilon}
+  \mathbf{w}^{\top}\boldsymbol{\delta}
+  =\varepsilon\lVert\mathbf{w}\rVert_1,
+\]
+dan maksimum tercapai pada $\delta_j=\varepsilon\,\mathrm{sign}(w_j)$ untuk setiap
+koordinat dengan $w_j\neq0$.
+\end{lemma}
+
+\begin{proof}
+Tulis $\mathbf{w}^{\top}\boldsymbol{\delta}=\sum_j w_j\delta_j$. Karena
+$|\delta_j|\le\varepsilon$,
+\[
+  \sum_j w_j\delta_j\le\sum_j|w_j|\,|\delta_j|\le\varepsilon\sum_j|w_j|.
+\]
+Bila $\delta_j=\varepsilon\,\mathrm{sign}(w_j)$, maka $w_j\delta_j=\varepsilon|w_j|$
+untuk setiap $j$, sehingga batas itu tercapai. Koordinat dengan $w_j=0$ tidak
+memengaruhi nilai, jadi pilihannya bebas.
+\end{proof}
+
+Untuk fungsi mulus, kita memakai hampiran orde pertama $L$ di sekitar $\mathbf{x}$
+bersama lemma tadi. Hasilnya resep yang oleh Goodfellow dan rekan disebut
+\emph{fast gradient sign method}:
+\[
+  \mathbf{x}^{\mathrm{adv}}
+  =\mathbf{x}+\varepsilon\,\mathrm{sign}\bigl(\nabla_{\mathbf{x}}L(\mathbf{x},y)\bigr).
+\]
+Kalimat sehari-harinya begini. Gradien memberi tahu ke arah mana galat naik paling
+cepat, tetapi kita hanya boleh berjalan sejauh $\varepsilon$; yang dipakai hanya tanda
+tiap komponennya, sedangkan besarnya ditetapkan anggaran. Karena itu metode ini disebut
+serangan tanda. Untuk fungsi linear, langkah itu tepat optimal; Gambar~\ref{fig:batas}
+memperlihatkan hasilnya pada satu model dua ciri.
+
+\begin{figure}[htbp]
+\centering
+{\scriptsize
+\begin{tikzpicture}
+\node[at={(0.000cm,0.000cm)},inner sep=0pt,minimum size=0pt] (o) {};
+\node[at={(8.400cm,0.000cm)},inner sep=0pt,minimum size=0pt] (ex) {};
+\node[at={(0.000cm,8.400cm)},inner sep=0pt,minimum size=0pt] (ey) {};
+\draw[-latex,black!75] (o) -- (ex);
+\draw[-latex,black!75] (o) -- (ey);
+\node[anchor=north,at={(4.200cm,-1.120cm)}]{tinta paruh atas};
+\node[rotate=90,anchor=south,at={(-1.15cm,5.10cm)}]{tinta paruh bawah};
+\node[anchor=north,at={(2.380cm,-0.280cm)}]{0,20};
+\node[anchor=north,at={(6.580cm,-0.280cm)}]{0,35};
+\node[anchor=east,at={(-0.224cm,2.660cm)}]{0,35};
+\node[anchor=east,at={(-0.224cm,6.860cm)}]{0,50};
+\node[at={(1.439cm,0.000cm)},inner sep=0pt,minimum size=0pt] (b0) {};
+\node[at={(8.400cm,7.224cm)},inner sep=0pt,minimum size=0pt] (b1) {};
+\draw[black,line width=1.2pt] (b0) -- (b1);
+\node[circle,fill=black!55,inner sep=1.35pt,at={(2.358cm,4.399cm)}]{};
+\node[circle,fill=black!55,inner sep=1.35pt,at={(3.014cm,5.602cm)}]{};
+\node[circle,fill=black!55,inner sep=1.35pt,at={(2.796cm,2.376cm)}]{};
+\node[circle,fill=black!55,inner sep=1.35pt,at={(3.178cm,5.274cm)}]{};
+\node[circle,fill=black!55,inner sep=1.35pt,at={(0.444cm,3.524cm)}]{};
+\node[circle,fill=black!55,inner sep=1.35pt,at={(1.975cm,4.290cm)}]{};
+\node[circle,draw=black!55,line width=0.5pt,inner sep=1.15pt,at={(5.585cm,2.649cm)}]{};
+\node[circle,draw=black!55,line width=0.5pt,inner sep=1.15pt,at={(5.749cm,2.868cm)}]{};
+\node[circle,draw=black!55,line width=0.5pt,inner sep=1.15pt,at={(5.147cm,1.391cm)}]{};
+\node[circle,draw=black!55,line width=0.5pt,inner sep=1.15pt,at={(3.780cm,0.844cm)}]{};
+\node[circle,draw=black!55,line width=0.5pt,inner sep=1.15pt,at={(6.678cm,3.032cm)}]{};
+\node[circle,draw=black!55,line width=0.5pt,inner sep=1.15pt,at={(5.803cm,2.868cm)}]{};
+\node[circle,draw=black,line width=1pt,inner sep=2.8pt,at={(2.303cm,7.079cm)}]{};
+\node[circle,fill=black,inner sep=0.9pt,at={(2.303cm,7.079cm)}]{};
+\node[rectangle,fill=accent,inner sep=2.3pt,at={(5.663cm,3.719cm)}]{};
+\node[at={(2.303cm,7.079cm)},inner sep=0pt,minimum size=0pt] (x0) {};
+\node[at={(5.663cm,3.719cm)},inner sep=0pt,minimum size=0pt] (xa) {};
+\draw[-latex,accent,line width=1.1pt] (x0) -- (xa);
+\node[anchor=south east,at={(2.135cm,7.443cm)}]{bersih};
+\node[anchor=north west,at={(5.943cm,3.551cm)}]{adversarial};
+\node[anchor=east,at={(2.660cm,5.600cm)}]{kelas 6};
+\node[anchor=south west,at={(5.684cm,1.260cm)}]{kelas 0};
+\node[anchor=south east,at={(5.475cm,4.647cm)}]{batas};
+\end{tikzpicture}}
+\caption{Batas keputusan model dua ciri pada angka $0$ lawan $6$ ($236$ data
+latih, $123$ uji, akurasi $98{,}37$ persen). Lingkaran tebal: contoh bersih
+$(0{,}197;0{,}508)$ dengan skor $+1{,}936$. Kotak merah: hasil FGSM
+$\varepsilon=0{,}12$ di $(0{,}317;0{,}388)$ dengan skor $-0{,}208$. Panahnya
+gangguan $(0{,}12;-0{,}12)$, $\lVert\boldsymbol{\delta}\rVert_\infty=0{,}12$
+dan $\lVert\boldsymbol{\delta}\rVert_2=0{,}1697$.}
+\label{fig:batas}
+\end{figure}
+
+\begin{teorema}[Linearisasi dan sisanya]
+Misalkan $L:\mathbb{R}^{d}\to\mathbb{R}$ terturunkan dan gradiennya $M$-Lipschitz
+pada segmen antara $\mathbf{x}$ dan $\mathbf{x}+\boldsymbol{\delta}$. Untuk setiap
+$\lVert\boldsymbol{\delta}\rVert_\infty\le\varepsilon$,
+\[
+  \left|L(\mathbf{x}+\boldsymbol{\delta})-L(\mathbf{x})
+  -\nabla L(\mathbf{x})^{\top}\boldsymbol{\delta}\right|
+  \le\frac{M}{2}\lVert\boldsymbol{\delta}\rVert_2^2
+  \le\frac{Md}{2}\varepsilon^2 .
+\]
+\end{teorema}
+
+\begin{proof}
+Dengan bentuk integral dari teorema nilai rata-rata,
+\[
+  L(\mathbf{x}+\boldsymbol{\delta})-L(\mathbf{x})
+  =\int_0^1\nabla L(\mathbf{x}+t\boldsymbol{\delta})^{\top}\boldsymbol{\delta}\,dt .
+\]
+Kurangkan $\nabla L(\mathbf{x})^{\top}\boldsymbol{\delta}
+=\int_0^1\nabla L(\mathbf{x})^{\top}\boldsymbol{\delta}\,dt$, lalu gunakan
+ketaksamaan Cauchy--Schwarz dan sifat Lipschitz:
+\[
+  \left|\int_0^1\bigl(\nabla L(\mathbf{x}+t\boldsymbol{\delta})
+  -\nabla L(\mathbf{x})\bigr)^{\top}\boldsymbol{\delta}\,dt\right|
+  \le\int_0^1 Mt\lVert\boldsymbol{\delta}\rVert_2^2\,dt
+  =\frac{M}{2}\lVert\boldsymbol{\delta}\rVert_2^2 .
+\]
+Karena $\lVert\boldsymbol{\delta}\rVert_2^2\le d\,\varepsilon^2$, ketaksamaan kedua
+mengikuti.
+\end{proof}
+
+Untuk model linear, sisa itu nol dan FGSM bukan hampiran melainkan jawaban eksak.
+Goodfellow dan rekan memakai kasus regresi logistik untuk menunjukkan hal ini. Di
+situ tanda gradien galat terhadap masukan adalah $-\mathrm{sign}(\mathbf{w})$ dikali
+label, sehingga
+$\mathbf{w}^{\top}\mathrm{sign}(\mathbf{w})=\lVert\mathbf{w}\rVert_1$ dan margin
+model menyusut tepat sebesar $\varepsilon\lVert\mathbf{w}\rVert_1$. Karena itu
+pelatihan adversarial pada regresi logistik bisa ditulis sebagai penalti
+$\zeta\bigl(y(\varepsilon\lVert\mathbf{w}\rVert_1-\mathbf{w}^{\top}\mathbf{x}-b)\bigr)$,
+yaitu penalti mirip regularisasi $\ell_1$ yang masuk ke margin, bukan ke biaya;
+bentuk eksak ini dipakai di contoh hitung nanti.
+
+Yang perlu dinyatakan jujur: teorema di atas membenarkan \emph{arah} langkah, bukan
+\emph{jarak} langkah. Sisa $Md\varepsilon^{2}/2$ bergantung pada konstanta Lipschitz
+gradien, dan untuk jaringan ReLU konstanta itu bisa sangat besar. Pada percobaan kita,
+prediksi kenaikan galat dari suku linear untuk $\varepsilon=0{,}15$ adalah
+$0{,}0008$ nats, sedangkan kenaikan yang sungguh terjadi $4{,}862$ nats. Jadi
+linearisasi tidak menjelaskan besarnya kerusakan; ia hanya menjelaskan mengapa arah
+yang dipilih masuk akal.
+
+Sisi lain cerita justru menguat. Gangguan dengan besar yang sama tetapi tanda acak
+hanya menurunkan akurasi dari $97{,}99$ menjadi $95{,}48$ persen, sedangkan FGSM
+menurunkannya menjadi $14{,}91$ persen. Jadi yang berharga adalah pola tandanya,
+walaupun galat di titik awal hampir datar sehingga panjang gradien dan ramalan
+linearnya kecil.
+\index{gradien masukan}
+
+Jadi tanda gradien cukup bukan karena suku linearnya besar, melainkan karena tanda
+lebih tahan terhadap penjenuhan galat. Angka $0{,}0008$ melawan $4{,}862$
+memperingatkan bahwa linearitas hanya berlaku sebagai argumen arah.
+
+\begin{bacakeras}
+Dua suara, dibaca bergantian dengan teman. Ketuk meja setiap kali kata ``sedikit''
+diucapkan.
+
+``Geser sedikit.'' ``Berapa sedikit?'' ``Seujung jari. Tidak lebih.''
+``Jawabannya berubah?'' ``Berubah seluruhnya. Bukan ragu, bukan meleset: berubah.''
+``Mata kita melihat apa?'' ``Tidak ada. Gambar yang sama persis.''
+``Kalau digeser sejauh itu ke arah lain?'' ``Jawabannya kembali benar.''
+``Jadi yang bekerja apa?'' ``Arahnya. Bukan besarnya.''
+``Dari mana ia tahu arah?'' ``Ia membaca lereng, bertanya pada tiap piksel: naik atau
+turun? Lalu semua jawaban dipakai sekaligus.''
+``Kalau lerengnya salah baca?'' ``Tidak terjadi apa-apa. Gambar tetap, jawaban tetap.''
+
+Ulangi tiga kali, makin cepat: yang bekerja arahnya, bukan besarnya.
+\end{bacakeras}
+
+\section{Serangan berulang dan permainan min-max}
+\tingkat{menengah}
+
+Satu langkah adalah kompromi. Bila gradien boleh dihitung berkali-kali, kita bisa
+mendaki lebih jauh: setiap langkah kecil ke arah tanda gradien, lalu tarik kembali
+ke dalam kotak.
+
+\begin{definisi}[Serangan iteratif]
+Misalkan $\Pi$ adalah proyeksi ke $S(\mathbf{x})$. Serangan \emph{projected gradient
+descent} (PGD) menghitung
+\[
+  \mathbf{x}_{t+1}=\Pi\Bigl(\mathbf{x}_t+\alpha\,
+  \mathrm{sign}\bigl(\nabla_{\mathbf{x}}L(\mathbf{x}_t,y)\bigr)\Bigr),
+  \qquad \mathbf{x}_0=\mathbf{x},
+\]
+dengan $\alpha>0$ adalah ukuran langkah. Bila $\mathbf{x}_0$ diambil acak di dalam
+$S(\mathbf{x})$, serangan itu disebut PGD dengan \emph{mulai acak}.
+\end{definisi}
+
+\begin{resep}
+Empat langkah menjalankan serangan iteratif terbatas:
+\begin{enumerate}
+  \item Tetapkan norma, $\varepsilon$, $\alpha$, dan jumlah langkah; catat akurasi
+        bersih sebelum satu pun gangguan dibuat.
+  \item Mulai dari $\mathbf{x}$ atau dari titik acak di dalam bola, hitung gradien
+        galat terhadap masukan, lalu ambil tandanya saja.
+  \item Langkah: $\mathbf{x}_{t+1}=\mathbf{x}_t+\alpha\,\mathrm{sign}(\mathbf{g})$,
+        proyeksikan ke bola $\varepsilon$, lalu ke $[0,1]$.
+  \item Ulangi, lalu laporkan akurasi pada beberapa jumlah langkah dan beberapa
+        $\varepsilon$; bandingkan dengan FGSM yang memakai $\alpha=\varepsilon$.
+\end{enumerate}
+Peringatan urutan: proyeksi selalu terhadap $\mathbf{x}$ yang asli, bukan terhadap
+titik langkah sebelumnya, dan selalu sesudah langkah gradien. Bila acuannya tertukar,
+bola ikut berjalan dan gangguan melebihi anggaran yang dilaporkan.
+\end{resep}
+
+Proyeksi pada kotak $\ell_\infty$ yang dipotong ke $[0,1]^d$ punya bentuk yang sangat
+mudah: potong setiap koordinat, satu per satu.
+
+\begin{proposisi}[Proyeksi ke kotak]
+Untuk $S=\{\mathbf{z}:\lVert\mathbf{z}-\mathbf{x}\rVert_\infty\le\varepsilon\}
+\cap[0,1]^{d}$,
+\[
+  \Pi(\mathbf{z})_j=\min\bigl\{\max\{z_j,\,x_j-\varepsilon,\,0\},\,
+  x_j+\varepsilon,\,1\bigr\}
+\]
+untuk setiap $j$.
+\end{proposisi}
+
+\begin{proof}
+Fungsi tujuan $\lVert\mathbf{y}-\mathbf{z}\rVert_2^2$ terpisah per koordinat, dan
+himpunan yang diizinkan juga terpisah: setiap $y_j$ harus berada di selang
+$[\max\{0,x_j-\varepsilon\},\min\{1,x_j+\varepsilon\}]$. Untuk satu koordinat,
+meminimalkan $(y_j-z_j)^2$ pada selang tertutup berarti mengambil titik terdekat,
+yaitu $z_j$ bila ia di dalam selang, dan ujung selang yang terdekat bila di luar.
+Itu tepat rumus potong di atas.
+\end{proof}
+
+Dengan proyeksi semacam ini, PGD hanya menambah dua hal dibanding FGSM: langkah
+kecil berulang dan tarikan kembali ke kotak. Kenaikan biayanya sebanding dengan
+jumlah langkah, karena setiap langkah memerlukan satu lintasan mundur. Gambar~\ref{fig:langkah} memperlihatkan tiga
+langkah seperti itu pada model yang sama.
+
+\begin{figure}[htbp]
+\centering
+{\scriptsize
+\begin{tikzpicture}
+\node[at={(0.000cm,0.000cm)},inner sep=0pt,minimum size=0pt] (p) {};
+\node[at={(8.400cm,0.000cm)},inner sep=0pt,minimum size=0pt] (px) {};
+\node[at={(0.000cm,8.400cm)},inner sep=0pt,minimum size=0pt] (py) {};
+\draw[-latex,black!75] (p) -- (px);
+\draw[-latex,black!75] (p) -- (py);
+\node[anchor=north,at={(4.200cm,-1.344cm)}]{tinta paruh atas};
+\node[rotate=90,anchor=south,at={(-1.05cm,4.20cm)}]{tinta paruh bawah};
+\node[anchor=north,at={(1.848cm,-0.336cm)}]{0,20};
+\node[anchor=north,at={(6.888cm,-0.336cm)}]{0,35};
+\node[at={(2.661cm,0.000cm)},inner sep=0pt,minimum size=0pt] (c0) {};
+\node[at={(8.400cm,5.956cm)},inner sep=0pt,minimum size=0pt] (c1) {};
+\draw[black,line width=1.2pt] (c0) -- (c1);
+\node[at={(1.756cm,6.479cm)},inner sep=0pt,minimum size=0pt] (q0) {};
+\node[circle,fill=white,draw=accent,line width=0.9pt,inner sep=2.0pt,at={(1.756cm,6.479cm)}]{};
+\node[at={(3.100cm,5.135cm)},inner sep=0pt,minimum size=0pt] (q1) {};
+\node[circle,fill=white,draw=accent,line width=0.9pt,inner sep=2.0pt,at={(3.100cm,5.135cm)}]{};
+\node[at={(4.444cm,3.791cm)},inner sep=0pt,minimum size=0pt] (q2) {};
+\node[circle,fill=white,draw=accent,line width=0.9pt,inner sep=2.0pt,at={(4.444cm,3.791cm)}]{};
+\node[at={(5.788cm,2.447cm)},inner sep=0pt,minimum size=0pt] (q3) {};
+\node[circle,fill=white,draw=accent,line width=0.9pt,inner sep=2.0pt,at={(5.788cm,2.447cm)}]{};
+\draw[-latex,accent,line width=1.0pt,shorten >=5pt,shorten <=5pt] (q0) -- (q1);
+\draw[-latex,accent,line width=1.0pt,shorten >=5pt,shorten <=5pt] (q1) -- (q2);
+\draw[-latex,accent,line width=1.0pt,shorten >=5pt,shorten <=5pt] (q2) -- (q3);
+\node[anchor=south west,at={(1.891cm,6.613cm)}]{$\mathbf{x}_0$};
+\node[anchor=south west,at={(3.235cm,5.269cm)}]{$\mathbf{x}_1$};
+\node[anchor=south west,at={(4.579cm,3.925cm)}]{$\mathbf{x}_2$};
+\node[anchor=south west,at={(5.923cm,2.581cm)}]{$\mathbf{x}_3$};
+\node[anchor=south east,at={(5.616cm,3.444cm)}]{batas};
+\end{tikzpicture}}
+\caption{Tiga langkah tanda gradien dari $\mathbf{x}_0$, tiap langkah
+$\alpha=0{,}04$. Norma $\lVert\boldsymbol{\delta}\rVert_\infty$: $0{,}04$,
+$0{,}08$, $0{,}12$; norma $\lVert\boldsymbol{\delta}\rVert_2$: $0{,}0566$,
+$0{,}1131$, $0{,}1697$. Skor kelas $6$: $+1{,}936$, $+1{,}221$, $+0{,}506$,
+$-0{,}208$; batas dilewati pada langkah ketiga.}
+\label{fig:langkah}
+\end{figure}
+
+Ada satu peringatan yang sering terlewat. FGSM adalah PGD dengan satu langkah dan
+$\alpha=\varepsilon$, bukan PGD dengan satu langkah dan $\alpha=\varepsilon/10$.
+Pada percobaan kita, satu langkah dengan $\alpha=\varepsilon/10$ hanya menurunkan
+akurasi menjadi $94{,}64$ persen, sedangkan FGSM menurunkannya menjadi $14{,}91$
+persen. Jadi "satu langkah" bukan nama satu algoritme; ia baru berarti sesuatu
+setelah ukuran langkahnya disebut. Perbandingan yang adil memakai ukuran langkah yang
+sama; tabel berikut dihitung pada $\varepsilon=0{,}15$ dengan mulai acak.
+
+\begin{center}
+\begin{tabular}{rr}
+\hline
+langkah & akurasi (\%) \\
+\hline
+1  & $94{,}64$ \\
+2  & $88{,}78$ \\
+5  & $66{,}67$ \\
+10 & $24{,}79$ \\
+20 & $11{,}22$ \\
+40 & $10{,}72$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Kurva itu turun tajam sampai sepuluh langkah, lalu hampir mendatar; menambah langkah
+setelah titik itu jarang mengubah kesimpulan, dan itulah sebabnya PGD dipakai sebagai
+penyerang bawaan. Madry dan rekan membacanya sebagai tanda bahwa masalah dalam itu
+cukup mudah diselesaikan dengan metode orde pertama, meskipun secara umum tak konkaf.
+
+\begin{tangan}
+Bahan: sepuluh kartu, spidol, dan penggaris. Tulis satu angka antara nol dan satu pada
+tiap kartu, dua angka di belakang koma. Buat dua kartu yang angkanya berbeda hanya
+0,01, misalnya 0,62 dan 0,63.
+
+Aturan tambahan: bila dua angka berselisih kurang dari 0,02, kartu yang lebih tinggi di
+tumpukan yang menang. Letakkan dua kartu yang hampir seri itu di dua posisi teratas,
+lalu sebut kartu paling atas sebagai jawaban model.
+
+Sekarang geser kartu 0,62 satu milimeter ke atas, sampai ia melewati kartu 0,63. Tidak
+ada angka yang berubah, tidak ada kartu yang ditukar. Lihat kartu paling atas:
+jawabannya berganti, karena aturan penentu seri sekarang memilih kartu yang lain.
+
+Yang harus terlihat: jawaban berubah tanpa satu angka pun berubah, sebab yang
+menentukan hanya selisih, dan selisih tipis bisa dibalik oleh pergeseran yang tidak
+terlihat mata.
+\end{tangan}
+
+Dari sudut pandang pelatihan, serangan dan pertahanan adalah dua sisi satu masalah.
+Kalau penyerang memaksimalkan galat di dalam kotak, maka pelatih yang berhati-hati
+meminimalkan galat terburuk itu:
+\[
+  \min_{\boldsymbol{\theta}}\;
+  \mathbb{E}_{(\mathbf{x},y)\sim\mathcal{D}}
+  \Bigl[\max_{\boldsymbol{\delta}\in S(\mathbf{x})}
+  L(\boldsymbol{\theta},\mathbf{x}+\boldsymbol{\delta},y)\Bigr].
+\]
+Rumusan ini adalah masalah pelana: maksimum di dalam, minimum di luar. Suku dalam
+adalah persoalan penyerang, suku luar adalah persoalan pelatihan biasa. Inilah
+\emph{pelatihan adversarial}. Bila maksimum dalam dihampiri dengan FGSM, kita
+mendapat pelatihan yang murah; bila dihampiri dengan PGD beberapa langkah, kita
+mendapat pelatihan yang lebih mahal dan biasanya lebih tahan.
+\index{pelatihan adversarial}\index{PGD}
+
+Yang bisa dan tidak bisa dijanjikan rumusan itu perlu dipisahkan. Bila nilai pelana
+benar-benar tercapai dan nilainya nol, tidak ada gangguan di dalam kotak yang bisa
+menipu model, jadi kita punya jaminan. Tetapi masalah pelana itu tidak konkaf di dalam
+dan tidak konveks di luar, sehingga algoritme apa pun hanya memberi hampiran: nilai
+pelana yang kecil belum tentu tercapai, dan nilai yang diperoleh belum tentu nilai
+pelana. Karena itu pelatihan adversarial menghasilkan model yang \emph{lebih tahan
+terhadap penyerang yang dipakai saat berlatih}, bukan model yang terbukti tahan
+terhadap semua penyerang.
+
+Angka kita memperlihatkan kedua sisi itu. Model $D$ yang dilatih dengan FGSM
+$\varepsilon=0{,}15$ kehilangan $1{,}51$ poin akurasi bersih: dari $97{,}99$ menjadi
+$96{,}48$ persen. Sebagai gantinya, pada $\varepsilon=0{,}15$ akurasinya di bawah
+FGSM adalah $66{,}67$ persen dan di bawah PGD 40 langkah $62{,}65$ persen, sedangkan
+model biasa tinggal $14{,}91$ dan $10{,}72$ persen. Pertukaran itu nyata, tetapi
+$62{,}65$ persen juga bukan keamanan; ia hanya berarti penyerang harus bekerja lebih
+keras.
+
+\section{Transfer, kotak hitam, dan sasaran tertentu}
+\tingkat{lanjut}
+
+Sampai di sini penyerang kita tahu segalanya. Di dunia nyata ia sering hanya bisa
+mengirim masukan dan melihat jawabannya. Yang menyelamatkan tidak adanya gradien
+bukan rahasia model, melainkan kenyataan bahwa arah serangan cenderung berpindah
+antar model.
+
+\kamus{transferabilitas}{transferability}{Sifat contoh adversarial yang dibuat untuk
+satu model tetapi juga menipu model lain yang dilatih terpisah.}
+\index{transferabilitas}
+
+Fenomena ini dilaporkan Szegedy dan rekan pada 2014: contoh yang menipu satu jaringan
+sering menipu jaringan lain dengan arsitektur berbeda dan data latih berbeda.
+Goodfellow dan rekan mencatat versi kuantitatifnya pada MNIST: contoh yang dibuat
+dari model lama memberi galat $19{,}6$ persen pada model yang dilatih adversarial,
+sedangkan contoh dari model baru memberi galat $40{,}9$ persen pada model lama.
+Arah yang sama, kekuatan berbeda.
+
+Pada percobaan kita, model $A$ (64 unit tersembunyi) dan model $B$ (128 unit) dilatih
+pada data latih yang sama tetapi dengan inisialisasi berbeda. Pada
+$\varepsilon=0{,}15$, PGD 40 langkah buatan $A$ menurunkan akurasi $A$ sendiri menjadi
+$10{,}72$ persen, dan menurunkan akurasi $B$ menjadi $23{,}79$ persen. FGSM buatan
+$A$ memberi $14{,}91$ pada $A$ dan $25{,}96$ pada $B$. Jadi serangan pindah, tetapi
+melemah: sekitar setengah kekuatannya hilang saat melintasi model.
+
+Penjelasan yang paling ekonomis masih sama dengan bab ini: pada skala kecil kedua model
+belajar fungsi yang hampir linear, dan arah yang menaikkan galat pada satu fungsi linear
+juga menaikkannya pada fungsi linear lain yang normalnya berdekatan. Itu sebabnya
+transfer paling baik untuk serangan satu langkah. Angka kita konsisten: selisih antara
+kotak putih dan transfer lebih kecil untuk FGSM ($11$ poin) daripada untuk PGD 40
+langkah ($13$ poin).
+
+Untuk penyerang kotak hitam, transfer memberi jalan yang murah: latih model tiruan,
+serang model itu, lalu kirim hasilnya ke model korban. Jalur lain adalah menaksir
+gradien dari perbedaan keluaran atas banyak kueri, yang akurat tetapi mahal dan mudah
+terdeteksi. Kotak hitam lebih lemah karena informasinya kurang, bukan karena
+penyerangnya kurang pintar.
+
+Tujuan penyerang juga mengubah angka secara drastis. Serangan tak bersasaran cukup
+membuat label berubah; serangan bersasaran harus membuat label menjadi kelas tertentu.
+Pada $\varepsilon=0{,}15$, PGD 40 langkah kita mencapai sasaran pada $33{,}00$ persen
+contoh, sedangkan serangan tak bersasaran berhasil pada $89{,}06$ persen contoh
+(akurasi tinggal $10{,}72$ persen). Dengan $\varepsilon=0{,}30$, sasaran tercapai
+pada $99{,}50$ persen contoh. Karena itu angka "serangan berhasil 90 persen" tanpa
+keterangan bersasaran atau tidak tidak bisa dibandingkan dengan angka lain. Untuk
+penilai pertahanan, uji bersasaran lebih berat bagi penyerang, sedangkan uji tak
+bersasaran lebih berat bagi pembela.
+
+\section{Pertahanan: yang bekerja dan yang hanya tampak bekerja}
+\tingkat{lanjut}
+
+Pembela punya tiga keluarga jawaban. Yang pertama mengubah data: tambahkan contoh
+adversarial ke pelatihan. Yang kedua mengubah model: buat permukaannya lebih mulus,
+misalnya dengan masukan yang dikuantisasi atau keluaran yang dihaluskan. Yang ketiga
+menambah alat di luar model: deteksi masukan aneh, atau tolak jawaban yang tidak
+yakin. Hanya keluarga pertama yang punya dasar jelas, yaitu rumusan pelana tadi;
+keluarga kedua dan ketiga sering memberi angka bagus karena alasan yang salah.
+
+Kesalahan yang paling sering berulang punya nama.
+
+\begin{definisi}[Penyamaran gradien]
+Sebuah pertahanan melakukan \emph{penyamaran gradien} bila ia membuat gradien yang
+dipakai penyerang menjadi tidak berguna: hilang, salah arah, atau acak. Pertahanan
+seperti itu menurunkan keberhasilan serangan berbasis gradien tanpa menaikkan jarak
+ke batas keputusan.
+\end{definisi}
+
+Kalimat sehari-harinya: penjaga tadi bukan menjadi lebih jeli, melainkan memakai
+formulir yang tidak bisa dibaca penyerang. Athalye, Carlini, dan Wagner membedakan
+tiga cara penyamaran terjadi. Pertama, gradien \emph{hancur}: operasi yang tidak
+terdiferensialkan atau tidak stabil secara numerik membuat gradien tidak ada atau
+salah. Kedua, gradien \emph{acak}: pertahanan yang menambahkan keacakan membuat satu
+kali sampel gradien bukan gradien sebenarnya. Ketiga, gradien \emph{meledak atau
+menghilang}: pertahanan yang mengevaluasi jaringan berkali-kali secara berurutan,
+seperti pada kuantisasi berulang, berperilaku seperti jaringan sangat dalam saat
+diturunkan.
+\index{penyamaran gradien}
+
+Mengapa penyamaran bukan pertahanan? Karena ia tidak mengubah apa pun yang dilihat
+penyerang yang gigih. Bila gradien tidak berguna, penyerang memakai gradien pengganti
+dari model yang lebih mulus; bila keacakan menjadi penghalang, ia merata-ratakan
+gradien atas banyak sampel; bila gradien meledak, ia memakai aproksimasi beda hingga.
+
+Kita buat contoh kecilnya sendiri. Ambil model $A$ dan letakkan kuantisasi
+masukan di depannya: setiap piksel dibulatkan ke kelipatan $1/8$. Turunan pembulatan
+nol hampir di mana-mana, jadi penyerang yang menurunkan gradien lewat jalur itu
+mendapat vektor nol dan tidak bergerak. Hasilnya terlihat meyakinkan: akurasi bersih
+$97{,}82$ persen, dan setelah "PGD 40 langkah" akurasinya $96{,}98$ persen. Hampir
+tidak ada kerusakan. Tetapi bila penyerang memakai gradien model tanpa kuantisasi
+pada titik yang sudah dikuantisasi, akurasinya jatuh ke $13{,}23$ persen, hanya sedikit
+lebih tinggi daripada $10{,}72$ persen pada model tanpa kuantisasi. Pertahanan itu
+tidak menutup jalan; ia hanya menutup jalan yang paling lugu. Bentuk gambarnya ada
+pada Gambar~\ref{fig:kuantisasi-gradien}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.05,font=\scriptsize]
+  \fill[layerteal!8] (0,0.5) -- (4,2.9) -- (4,4) -- (0,4) -- cycle;
+  \fill[accent!6] (0,0) -- (4,0) -- (4,2.9) -- (0,0.5) -- cycle;
+  \draw[very thick,ink] (0,0.5)--(4,2.9);
+  \draw[->,layergrey] (-0.2,0)--(4.35,0) node[right]{$x_{1}$};
+  \draw[->,layergrey] (0,-0.2)--(0,4.35) node[above]{$x_{2}$};
+  \node[font=\scriptsize\bfseries] at (2,4.68) {model asli};
+  \node[layerteal] at (0.78,3.55) {kelas $+1$};
+  \node[accent] at (3.05,0.8) {kelas $-1$};
+  \node[layergrey,rotate=31] at (2.75,2.95) {batas};
+  \draw[-{Latex},very thick,accent] (1.2,2.6)--(1.92,1.4);
+  \node[accent,above left=-2pt] at (1.56,2.05) {$\boldsymbol{\delta}$};
+  \fill[ink] (1.2,2.6) circle (1.6pt);
+  \node[ink,above left=-2pt] at (1.2,2.6) {$\mathbf{x}$};
+  \draw[accent,thick,fill=accent!35] (1.92,1.4) ++(135:0.07) -- ++(-45:0.14)
+    -- ++(-135:0.14) -- ++(45:0.14) -- cycle;
+  \node[accent,below right=-2pt] at (1.92,1.4) {$\mathbf{x}+\boldsymbol{\delta}$};
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[scale=1.05,font=\scriptsize]
+  \fill[layerteal!8] (0,0.5) -- (4,2.9) -- (4,4) -- (0,4) -- cycle;
+  \fill[accent!6] (0,0) -- (4,0) -- (4,2.9) -- (0,0.5) -- cycle;
+  \foreach \g in {0.5,1,1.5,2,2.5,3,3.5}
+    {\draw[layergrey!30,very thin] (\g,0)--(\g,4);
+     \draw[layergrey!30,very thin] (0,\g)--(4,\g);}
+  \draw[very thick,ink] (0,0.5)--(4,2.9);
+  \draw[->,layergrey] (-0.2,0)--(4.35,0) node[right]{$x_{1}$};
+  \draw[->,layergrey] (0,-0.2)--(0,4.35) node[above]{$x_{2}$};
+  \node[font=\scriptsize\bfseries] at (2,4.68) {dengan pembulatan $1/8$};
+  \fill[ink] (1.2,2.6) circle (1.6pt);
+  \node[ink,above left=-2pt] at (1.2,2.6) {$\mathbf{x}$};
+  \draw[layerplum,thick] (1.2,2.6) circle (0.13);
+  \node[layerplum,anchor=west] at (1.4,2.78) {$\nabla$ jalur $=\mathbf{0}$};
+  \draw[-{Latex},very thick,dashed,layerplum] (1.2,2.6)--(1.92,1.4);
+  \node[layerplum,anchor=east] at (1.44,1.72) {$\nabla$ pengganti};
+  \draw[layerplum,thick,fill=layerplum!35] (1.92,1.4) ++(135:0.07)
+    -- ++(-45:0.14) -- ++(-135:0.14) -- ++(45:0.14) -- cycle;
+\end{tikzpicture}
+\caption{Kuantisasi masukan pada model yang sama. Kiri: gradien asli memberi arah
+$\boldsymbol{\delta}$ yang menyeberangkan $\mathbf{x}$ ke sisi lain batas, sehingga
+labelnya berubah. Kanan: pembulatan setiap ciri ke kelipatan $1/8$ membuat turunan
+jalur nol di hampir semua titik, jadi panah gradien yang dilaporkan berhenti;
+batas keputusannya sendiri tidak bergeser, dan gradien dari model tanpa pembulatan
+masih menyeberangkannya. Kotak menandai titik sesudah gangguan.}
+\label{fig:kuantisasi-gradien}
+\end{figure}
+
+Athalye dan rekan memeriksa sembilan pertahanan kotak putih di ICLR 2018. Tujuh
+di antaranya bergantung pada penyamaran gradien, dan serangan yang disesuaikan
+berhasil menembus enam sepenuhnya dan satu sebagian, pada model ancaman yang
+diklaim masing-masing. Ini bukan kesalahan kecil dalam satu makalah; ia pola yang
+berulang. Karena itu ada daftar gejala yang bisa dipakai sebelum percaya pada angka
+ketahanan. Bila serangan satu langkah lebih kuat daripada serangan berulang, ada yang
+salah: serangan berulang seharusnya selalu lebih kuat di kotak putih. Bila serangan
+kotak hitam lebih kuat daripada kotak putih, ada yang salah: kotak hitam adalah
+himpunan informasi yang lebih kecil. Bila serangan tanpa batas gangguan tidak
+mencapai seratus persen keberhasilan, ada yang salah. Bila pencarian acak menemukan
+contoh adversarial padahal serangan gradien tidak, ada yang salah. Bila memperbesar
+anggaran tidak menaikkan keberhasilan, ada yang salah.
+
+\begin{tantangan}
+Sebuah layanan menolak menjawab bila nilai mutlak margin skornya di bawah 0,50, dan
+baru menjawab bila ia cukup yakin. Pada contoh linear bagian sebelumnya, margin bersih
+1,500 dan $\lVert\mathbf{d}\rVert_1=6$. Serangan pada $\varepsilon=0{,}25$ mendorong
+margin ke nol, tepat di ambang pembalikan, jadi ditolak, dan layanan tampak aman.
+Tentukan anggaran terkecil yang membuat penyerang tetap dilayani, yaitu yang mematikan
+penolakan di sisi yang salah. Apakah aturan itu pertahanan atau penyamaran?
+
+Petunjuk 1: penolakan hanya melihat besar margin, bukan tandanya.
+
+Petunjuk 2: selesaikan $1{,}500-6\varepsilon=-0{,}500$.
+
+Kalau mentok, kembali ke bagian Contoh hitung: model linear yang bisa dihitung tangan.
+\end{tantangan}
+
+Seperti apa evaluasi yang benar? Ia bukan satu angka, melainkan satu protokol. Tetapkan
+model ancaman lebih dulu: norma, $\varepsilon$, kotak putih atau hitam, bersasaran atau
+tidak. Pakai penyerang terkuat yang sanggup dibayar, dan sesuaikan ia dengan pertahanan:
+kalau pertahanan mengkuantisasi, serang lewat gradien pengganti; kalau ia menambahkan
+keacakan, rata-ratakan atas beberapa sampel; kalau ia menyaring masukan, serang
+saringan itu juga. Laporkan akurasi di beberapa $\varepsilon$, bukan satu titik, dan
+periksa bahwa kurvanya turun monoton. Laporkan lebih dari satu benih acak dan sertakan
+serangan transfer dari model lain. Laporkan biayanya: jumlah lintasan mundur per contoh,
+waktu, dan perangkat keras. Bila ingin bicara jaminan, pakai sertifikasi, bukan
+pengujian; itu jalur lain yang tidak dibahas di sini.
+
+\begin{untukanak}
+Coba pikirkan soal ujian pilihan ganda yang diperiksa mesin. Mesin itu membaca jawaban
+dari posisi bulatan yang dihitamkan. Kalau kita hanya menguji mesin dengan jawaban yang
+dihitamkan rapi, mesin akan selalu benar. Lalu datang murid yang tahu cara mesin
+membaca: ia menghitamkan satu bulatan lain sedikit lebih tebal, dan mesin membacanya
+sebagai jawaban berbeda. Kertasnya masih kertas yang sama, tulisannya masih tulisan
+yang sama.
+
+Sekarang bagian yang menarik. Ada sekolah yang mencoba memperbaiki mesin itu dengan
+memindai kertas dua kali dan mengambil jawaban yang paling sering muncul. Murid yang
+sama tinggal menghitamkan dua bulatan, dan mesin tetap bisa ditipu. Sekolah lain
+menambahkan penggaris agar posisi bulatan bergeser sedikit; murid yang sabar tinggal
+mencoba beberapa posisi. Semua tambahan itu membuat penipuan lebih repot, tetapi tidak
+membuat mesin bisa membedakan jawaban yang jujur.
+
+Di bab ini kita akan tahu mengapa menambah kesulitan bagi penyerang tidak sama dengan
+menutup celah, dan bagaimana menguji sebuah perbaikan supaya kita tidak tertipu oleh
+perbaikan yang hanya tampak berhasil.
+\end{untukanak}
+
+\section{Contoh hitung: model linear yang bisa dihitung tangan}
+\tingkat{menengah}
+
+Sekarang kita tinggalkan jaringan dan kembali ke model yang bisa dihitung tanpa
+komputer: pengklasifikasi linear dengan dua kelas dan empat ciri. Semua angka di
+bagian ini bisa diperiksa dengan kalkulator.
+
+Misalkan kelas $A$ memakai bobot $\mathbf{w}_A=(1;-2;0{,}5;1{,}5)$ dan kelas $B$
+memakai $\mathbf{w}_B=(0;1;0{,}5;-0{,}5)$, tanpa bias. Contoh yang diperiksa adalah
+$\mathbf{x}=(1;0{,}5;1;1)$. Skor kedua kelas adalah
+\[
+  s_A=\mathbf{w}_A^{\top}\mathbf{x}=1-1+0{,}5+1{,}5=2{,}0,
+  \qquad
+  s_B=\mathbf{w}_B^{\top}\mathbf{x}=0+0{,}5+0{,}5-0{,}5=0{,}5 .
+\]
+Marginnya $m=s_A-s_B=1{,}5$, jadi model yakin tetapi tidak berlebihan. Selisih bobot
+adalah $\mathbf{d}=\mathbf{w}_A-\mathbf{w}_B=(1;-3;0;2)$, dengan
+$\lVert\mathbf{d}\rVert_1=1+3+0+2=6$ dan
+$\lVert\mathbf{d}\rVert_2=\sqrt{1+9+0+4}=\sqrt{14}\approx3{,}7417$.
+
+Serangan tak bersasaran harus menurunkan margin. Menurut lemma, penurunan terbesar
+dicapai oleh $\boldsymbol{\delta}=-\varepsilon\,\mathrm{sign}(\mathbf{d})
+=\varepsilon(-1;1;0;-1)$, dan besarnya penurunan adalah
+$\varepsilon\lVert\mathbf{d}\rVert_1=6\varepsilon$. Maka margin setelah serangan
+adalah $1{,}5-6\varepsilon$, dan label berubah ketika
+\[
+  \varepsilon>\varepsilon^{*}=\frac{1{,}5}{6}=0{,}25 .
+\]
+Pada $\varepsilon=0{,}25$ marginnya tepat nol, jadi kedua kelas seri dan
+$\arg\max$ memilih kelas pertama; pembalikan yang tegas baru terjadi sedikit di atas
+$0{,}25$. Tabel berikut memuat seluruh jalannya, dan setiap barisnya bisa diperiksa
+dengan mengalikan $\mathbf{d}$ dengan $\mathbf{x}+\boldsymbol{\delta}$.
+
+\begin{center}
+\begin{tabular}{rccc}
+\hline
+$\varepsilon$ & $s_A$ & $s_B$ & margin \\
+\hline
+$0$    & $2{,}000$ & $0{,}500$ & $+1{,}500$ \\
+$0{,}05$ & $1{,}775$ & $0{,}575$ & $+1{,}200$ \\
+$0{,}10$ & $1{,}550$ & $0{,}650$ & $+0{,}900$ \\
+$0{,}15$ & $1{,}325$ & $0{,}725$ & $+0{,}600$ \\
+$0{,}20$ & $1{,}100$ & $0{,}800$ & $+0{,}300$ \\
+$0{,}25$ & $0{,}875$ & $0{,}875$ & $0{,}000$ \\
+$0{,}30$ & $0{,}650$ & $0{,}950$ & $-0{,}300$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Bila penyerang dibatasi norma $\ell_2$ dan bukan $\ell_\infty$, jawabannya berubah.
+Maksimum $\mathbf{d}^{\top}\boldsymbol{\delta}$ pada bola $\ell_2$ berjari-jari
+$\varepsilon$ adalah $\varepsilon\lVert\mathbf{d}\rVert_2$, dicapai pada
+$\boldsymbol{\delta}=\varepsilon\mathbf{d}/\lVert\mathbf{d}\rVert_2$. Maka
+$\varepsilon^{*}=1{,}5/\sqrt{14}\approx0{,}4009$. Anggaran $\ell_2$ yang memberi
+kerusakan sama besarnya dengan $\varepsilon=0{,}25$ pada $\ell_\infty$ adalah
+$0{,}4009$; keduanya memindahkan contoh ke titik yang sama, yaitu titik potong
+$\mathbf{x}-\varepsilon\,\mathrm{sign}(\mathbf{d})$. Ini contoh kecil dari aturan
+umum: angka $\varepsilon$ tidak bisa dibandingkan antar norma.
+
+Sekarang bagian yang sering ditanyakan: apakah PGD lebih kuat pada model ini? Tiap
+langkah PGD menambah penurunan margin sebesar $\alpha\lVert\mathbf{d}\rVert_1
+=6\alpha$, tetapi seluruh lintasan tetap di dalam bola, jadi penurunan total tidak
+pernah melebihi $6\varepsilon$. Untuk model linear, titik terburuk di dalam bola
+memang titik yang dipilih FGSM, jadi iterasi tidak bisa mengalahkannya. Hitungan
+tangan memperlihatkannya: dengan $\varepsilon=0{,}10$ dan 40 langkah
+$\alpha=0{,}01$, margin akhir $0{,}900$ sama persis dengan hasil FGSM pada
+$\varepsilon=0{,}10$.
+
+\kertas{Ulangi contoh di atas untuk $\mathbf{w}_A=(2;1;-1;0{,}5)$,
+$\mathbf{w}_B=(0;1;1;-0{,}5)$, dan $\mathbf{x}=(1;1;0{,}5;1)$. Hitung $s_A$, $s_B$,
+$\mathbf{d}$, $\lVert\mathbf{d}\rVert_1$, dan $\varepsilon^{*}$ untuk norma
+$\ell_\infty$. Lalu hitung $\varepsilon^{*}$ untuk norma $\ell_2$ dan jelaskan
+mengapa kedua angka berbeda. Periksa dengan potongan Python tiga baris. Setelah itu
+putuskan, tanpa menjalankan program, apakah PGD 20 langkah dengan
+$\alpha=\varepsilon/10$ bisa mengubah label ketika $\varepsilon$ hanya setengah dari
+$\varepsilon^{*}$.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Lab ini melatih tiga jaringan kecil pada data angka tulisan tangan yang disediakan
+pustaka \texttt{scikit-learn}: 1797 contoh, 64 ciri, nilai $0$ sampai $16$ yang kita
+bagi $16$ sehingga masuk ke $[0,1]$. Dua belas ratus contoh dipakai untuk latih dan
+597 untuk uji. Model $A$ punya satu lapis tersembunyi 64 unit, model $B$ 128 unit,
+dan model $D$ sama dengan $A$ tetapi dilatih dengan FGSM $\varepsilon=0{,}15$
+(alasan memakai $D$ bukan $A$ adalah agar perbandingan bersih dan tahan serangan
+berasal dari model yang sama besarnya).
+
+Seluruh gradien dihitung tangan dengan NumPy, tanpa pustaka turunan otomatis, supaya
+setiap langkah bisa diperiksa. Fungsi \texttt{grad\_x} adalah turunan balik dari Bab 25
+yang berhenti di masukan, bukan di bobot.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np, time
+from sklearn.datasets import load_digits
+
+X, y = load_digits(return_X_y=True)
+X = X / 16.0                        # 0..16 -> 0..1
+perm = np.random.default_rng(0).permutation(len(X))
+tr, te = perm[:1200], perm[1200:]
+Xtr, ytr, Xte, yte = X[tr], y[tr], X[te], y[te]
+K = 10
+Ytr, Yte = np.eye(K)[ytr], np.eye(K)[yte]
+
+def init(dims, seed):
+    r = np.random.default_rng(seed); W, b = [], []
+    for i in range(len(dims) - 1):
+        W.append(r.normal(0, np.sqrt(2.0 / dims[i]),
+                          (dims[i], dims[i + 1])))
+        b.append(np.zeros(dims[i + 1]))
+    return W, b
+
+def fwd(W, b, X):
+    acts, pre, h = [X], [], X
+    for i in range(len(W) - 1):
+        z = h @ W[i] + b[i]; pre.append(z)
+        h = np.maximum(z, 0); acts.append(h)
+    z = h @ W[-1] + b[-1]; pre.append(z)
+    z = z - z.max(1, keepdims=True); p = np.exp(z)
+    return p / p.sum(1, keepdims=True), acts, pre
+
+def loss_grad(W, b, X, Y):
+    p, acts, pre = fwd(W, b, X); n = len(X)
+    loss = -np.mean(np.sum(Y * np.log(p + 1e-12), 1))
+    d = p - Y; gW = [None] * len(W); gb = [None] * len(W)
+    for i in range(len(W) - 1, -1, -1):
+        gW[i] = acts[i].T @ d / n + 1e-4 * W[i]; gb[i] = d.mean(0)
+        if i > 0:
+            d = (d @ W[i].T) * (pre[i - 1] > 0)
+    return loss, gW, gb
+
+def grad_x(W, b, X, Y):             # gradien galat terhadap masukan
+    p, acts, pre = fwd(W, b, X)
+    d = (p - Y) / len(X)
+    for i in range(len(W) - 1, 0, -1):
+        d = (d @ W[i].T) * (pre[i - 1] > 0)
+    return d @ W[0].T
+
+def train(dims, seed, Xa, Ya, epochs=350, lr=0.01, adv_eps=None):
+    W, b = init(dims, seed)
+    mW = [np.zeros_like(w) for w in W]
+    vW = [np.zeros_like(w) for w in W]
+    mb = [np.zeros_like(v) for v in b]
+    vb = [np.zeros_like(v) for v in b]
+    for t in range(1, epochs + 1):
+        if adv_eps is None:
+            Xb = Xa
+        else:
+            g = grad_x(W, b, Xa, Ya)
+            Xb = np.clip(Xa + adv_eps * np.sign(g), 0, 1)
+        _, gW, gb = loss_grad(W, b, Xb, Ya)
+        for i in range(len(W)):
+            mW[i] = 0.9 * mW[i] + 0.1 * gW[i]
+            vW[i] = 0.999 * vW[i] + 0.001 * gW[i] ** 2
+            mb[i] = 0.9 * mb[i] + 0.1 * gb[i]
+            vb[i] = 0.999 * vb[i] + 0.001 * gb[i] ** 2
+            mh = mW[i] / (1 - 0.9 ** t)
+            vh = vW[i] / (1 - 0.999 ** t)
+            W[i] -= lr * mh / (np.sqrt(vh) + 1e-8)
+            mh = mb[i] / (1 - 0.9 ** t)
+            vh = vb[i] / (1 - 0.999 ** t)
+            b[i] -= lr * mh / (np.sqrt(vh) + 1e-8)
+    return W, b
+
+def acc(W, b, X, y):
+    return float(np.mean(fwd(W, b, X)[0].argmax(1) == y))
+
+def fgsm(W, b, X, y, eps):
+    g = grad_x(W, b, X, np.eye(K)[y])
+    return np.clip(X + eps * np.sign(g), 0, 1)
+
+def pgd(W, b, X, y, eps, steps, Ylab=None, arah=1):
+    alpha = eps / 10
+    r = np.random.default_rng(1)
+    xa = np.clip(X + r.uniform(-eps, eps, X.shape), 0, 1)
+    Y = np.eye(K)[y] if Ylab is None else Ylab
+    for _ in range(steps):
+        g = arah * np.sign(grad_x(W, b, xa, Y))
+        xa = np.clip(np.clip(xa + alpha * g, X - eps, X + eps), 0, 1)
+    return xa
+\end{verbatim}
+\end{lab}
+
+Sisanya adalah pemanggilan dan pencetakan. Kita melatih $A$, $B$, dan $D$, lalu
+menyapu $\varepsilon$ dari $0{,}02$ sampai $0{,}30$.
+
+\begin{verbatim}
+WA, bA = train([64, 64, 10], 1, Xtr, Ytr)
+WB, bB = train([64, 128, 10], 2, Xtr, Ytr)
+WD, bD = train([64, 64, 10], 3, Xtr, Ytr, epochs=120, adv_eps=0.15)
+
+print(f"akurasi uji bersih: A {acc(WA,bA,Xte,yte):.4f}"
+      f"  B {acc(WB,bB,Xte,yte):.4f}  D {acc(WD,bD,Xte,yte):.4f}")
+print(f"{'eps':>5} {'A bersih':>9} {'A FGSM':>7} {'A PGD40':>8}"
+      f" {'D FGSM':>7} {'D PGD40':>8}")
+for eps in [0.02, 0.05, 0.10, 0.15, 0.20, 0.30]:
+    xf = fgsm(WA, bA, Xte, yte, eps)
+    xp = pgd(WA, bA, Xte, yte, eps, 40)
+    xd = fgsm(WD, bD, Xte, yte, eps)
+    xq = pgd(WD, bD, Xte, yte, eps, 40)
+    print(f"{eps:5.2f} {acc(WA,bA,Xte,yte):9.4f} {acc(WA,bA,xf,yte):7.4f}"
+          f" {acc(WA,bA,xp,yte):8.4f} {acc(WD,bD,xd,yte):7.4f}"
+          f" {acc(WD,bD,xq,yte):8.4f}")
+
+r = np.random.default_rng(7)
+rs = np.sign(r.normal(size=Xte.shape))          # kontrol: tanda acak
+print("tanda acak eps=0.15:",
+      f"{acc(WA,bA,np.clip(Xte+0.15*rs,0,1),yte):.4f}")
+print("langkah PGD, eps=0.15, alpha=eps/10, mulai acak")
+for k in [1, 2, 5, 10, 20, 40]:
+    print(f"  {k:2d} langkah:",
+          f"{acc(WA,bA,pgd(WA,bA,Xte,yte,0.15,k),yte):.4f}")
+print("  FGSM (1 langkah, alpha=eps):",
+      f"{acc(WA,bA,fgsm(WA,bA,Xte,yte,0.15),yte):.4f}")
+\end{verbatim}
+
+Keluaran yang sebenarnya, apa adanya, untuk blok di atas:
+
+\begin{verbatim}
+akurasi uji bersih: A 0.9799  B 0.9849  D 0.9648
+  eps  A bersih  A FGSM  A PGD40  D FGSM  D PGD40
+ 0.02    0.9799  0.9548   0.9548  0.9497   0.9497
+ 0.05    0.9799  0.8476   0.8425  0.9162   0.9129
+ 0.10    0.9799  0.4992   0.4590  0.8241   0.8174
+ 0.15    0.9799  0.1491   0.1072  0.6667   0.6265
+ 0.20    0.9799  0.0184   0.0050  0.4858   0.3719
+ 0.30    0.9799  0.0000   0.0000  0.0687   0.0201
+tanda acak eps=0.15: 0.9548
+langkah PGD, eps=0.15, alpha=eps/10, mulai acak
+   1 langkah: 0.9464
+   2 langkah: 0.8878
+   5 langkah: 0.6667
+  10 langkah: 0.2479
+  20 langkah: 0.1122
+  40 langkah: 0.1072
+  FGSM (1 langkah, alpha=eps): 0.1491
+\end{verbatim}
+
+Bacaan pertama tabel itu: akurasi bersih $97{,}99$ persen, dan pada
+$\varepsilon=0{,}15$ tinggal $14{,}91$ persen.
+
+Bacaan kedua: jarak FGSM dan PGD melebar di tengah, dari nol pada $0{,}02$ menjadi
+$4{,}19$ poin pada $0{,}15$. Pada anggaran kecil satu langkah sudah menyentuh dinding
+kotak; pada anggaran besar beberapa langkah diperlukan untuk menemukan arah yang lebih
+buruk.
+
+Bacaan ketiga, dan yang paling penting untuk bab ini: baris tanda acak. Kalau
+gangguan sebesar $\varepsilon=0{,}15$ diberikan dengan tanda acak di setiap piksel,
+akurasi hanya turun menjadi $95{,}48$ persen. FGSM dengan besar yang sama
+menurunkannya menjadi $14{,}91$ persen. Jadi pemilihan tanda oleh gradien bernilai
+sekitar delapan puluh poin akurasi: arahnya yang bekerja, bukan besarnya.
+
+Bacaan keempat: pada $\varepsilon=0{,}30$, $A$ sudah nol persen sedangkan $D$ masih
+$6{,}87$ persen di bawah FGSM dan $2{,}01$ persen di bawah PGD. Pelatihan adversarial
+tidak membuat model kebal; ia menggeser kurva ke kanan.
+
+Blok berikutnya mengukur dua hal yang tidak terlihat di tabel: apakah gradien yang
+kita hitung memang gradien, dan berapa biayanya.
+
+\begin{verbatim}
+i0 = int(np.argmax(np.abs(grad_x(WA, bA, Xte, Yte)).sum(1)))
+x0, y0 = Xte[i0:i0 + 1], Yte[i0:i0 + 1]
+g0 = grad_x(WA, bA, x0, y0)
+L1 = lambda z: loss_grad(WA, bA, z, y0)[0]
+print(f"beda hingga pada contoh i={i0}, h=1e-6")
+for j in np.argsort(-np.abs(g0[0]))[:3]:
+    e = np.zeros_like(x0); e[0, j] = 1e-6
+    fd = (L1(x0 + e) - L1(x0 - e)) / 2e-6
+    print(f"  j={j:2d} analitik {g0[0,j]:+.6e} beda-hingga {fd:+.6e}"
+          f" galat {abs(fd-g0[0,j])/abs(g0[0,j]):.0e}")
+g_all = grad_x(WA, bA, Xte, Yte)
+lin = 0.15 * np.abs(g_all).sum(1).mean()
+lc = loss_grad(WA, bA, Xte, Yte)[0]
+la = loss_grad(WA, bA, fgsm(WA, bA, Xte, yte, 0.15), Yte)[0]
+print(f"rata-rata |g|_1 {np.abs(g_all).sum(1).mean():.4f};"
+      f" ramalan linear {lin:.4f} nats; kenyataan {la-lc:.3f} nats")
+
+t0 = time.perf_counter(); fgsm(WA, bA, Xte, yte, 0.15)
+t1 = time.perf_counter(); pgd(WA, bA, Xte, yte, 0.15, 40)
+t2 = time.perf_counter()
+print(f"waktu 597 contoh: FGSM {t1-t0:.4f} s  PGD40 {t2-t1:.4f} s")
+\end{verbatim}
+
+Keluarannya:
+
+\begin{verbatim}
+beda hingga pada contoh i=145, h=1e-6
+  j=53 analitik -6.391833e+00 beda-hingga -6.391833e+00 galat 2e-11
+  j=38 analitik +6.211518e+00 beda-hingga +6.211518e+00 galat 1e-10
+  j=13 analitik -6.175321e+00 beda-hingga -6.175321e+00 galat 8e-11
+rata-rata |g|_1 0.0056; ramalan linear 0.0008 nats; kenyataan 4.862 nats
+waktu 597 contoh: FGSM 0.0006 s  PGD40 0.0302 s
+\end{verbatim}
+
+Tiga baris pertama memastikan bahwa turunan balik kita benar: gradien analitik dan
+beda hingga dengan $h=10^{-6}$ sepakat sampai sekitar sepuluh angka, dengan galat
+relatif $10^{-10}$ dan $10^{-11}$. Untuk jaringan yang memakai ReLU, kesepakatan
+sehalus itu masuk akal: pada skala $10^{-6}$ tidak ada unit yang berganti tanda,
+sehingga fungsinya benar-benar linear di sekitar titik itu. Kalau angka ini berbeda
+jauh, yang salah adalah kode turunan baliknya, bukan serangannya.
+
+Baris keempat adalah bagian yang mengejutkan. Rata-rata $\lVert\nabla L\rVert_1$ hanya
+$0{,}0056$, sehingga ramalan linear untuk $\varepsilon=0{,}15$ adalah $0{,}0008$
+nats. Kenaikan galat yang sesungguhnya $4{,}862$ nats. Jadi suku linear
+meremehkan kerusakan sekitar empat ribu kali. Ini bukan tanda bahwa gradiennya salah
+(tiga baris di atas membuktikan kebalikannya), melainkan tanda bahwa $L$ sangat
+melengkung pada jarak $0{,}15$: unit ReLU berganti tanda, dan hampiran orde pertama
+kehilangan makna. Yang tetap berguna adalah tandanya, seperti ditunjukkan baris
+tanda acak tadi.
+
+Baris terakhir soal waktu: pada 597 contoh, FGSM memerlukan $0{,}6$ milidetik dan
+PGD 40 langkah $30$ milidetik, sekitar lima puluh kali lebih mahal. Angka ini
+bergantung pada mesin dan pada vektorisasi, jadi yang layak diingat adalah
+ordenya, bukan angka tepatnya.
+
+Terakhir, demonstrasi penyamaran gradien. Kita menambahkan kuantisasi masukan ke
+kelipatan $1/8$ di depan model $A$, lalu menyerang dengan dua cara.
+
+\begin{verbatim}
+def q(z): return np.round(z * 8) / 8
+accq = lambda W, b, Z, yy: float(np.mean(fwd(W, b, q(Z))[0]
+                                        .argmax(1) == yy))
+def pgd_naif(W, b, Z, yy, eps, steps):
+    r = np.random.default_rng(1)
+    z = np.clip(Z + r.uniform(-eps, eps, Z.shape), 0, 1)
+    for _ in range(steps):          # gradien = nol, jadi diam
+        z = np.clip(np.clip(z, Z - eps, Z + eps), 0, 1)
+    return z
+def pgd_bpda(W, b, Z, yy, eps, steps):
+    r = np.random.default_rng(1)
+    z = np.clip(Z + r.uniform(-eps, eps, Z.shape), 0, 1)
+    for _ in range(steps):
+        g = np.sign(grad_x(W, b, q(z), np.eye(K)[yy]))
+        z = np.clip(np.clip(z + eps / 10 * g, Z - eps, Z + eps), 0, 1)
+    return z
+print("masukan dikuantisasi ke kelipatan 1/8")
+print(f"  bersih {accq(WA,bA,Xte,yte):.4f}"
+      f"  PGD40 naif {accq(WA,bA,pgd_naif(WA,bA,Xte,yte,0.15,40),yte):.4f}"
+      f"  PGD40 BPDA"
+      f" {accq(WA,bA,pgd_bpda(WA,bA,Xte,yte,0.15,40),yte):.4f}")
+\end{verbatim}
+
+Keluarannya:
+
+\begin{verbatim}
+masukan dikuantisasi ke kelipatan 1/8
+  bersih 0.9782  PGD40 naif 0.9698  PGD40 BPDA 0.1323
+\end{verbatim}
+
+Inilah bentuk paling ringkas dari pertahanan palsu. Angka bersihnya hanya $0{,}17$
+poin di bawah model asli, dan serangan naif tidak bergerak sama sekali: seandainya
+hanya itu yang dilaporkan, pertahanan ini tampak hampir sempurna. Gradien pengganti
+menjatuhkannya ke $13{,}23$ persen, nyaris sama dengan $10{,}72$ persen pada model
+tanpa kuantisasi. Yang berubah terutama keterbacaan gradiennya.
+
+\section{Biaya, keterbatasan, dan cara melaporkan}
+\tingkat{dasar}
+
+Anggaran komputasi menentukan serangan mana yang jujur dipakai. FGSM memerlukan satu
+lintasan mundur per contoh. PGD $k$ langkah memerlukan $k$ lintasan. Pada percobaan
+kita, biaya PGD 40 langkah sekitar lima puluh kali FGSM untuk hasil yang, pada
+$\varepsilon$ kecil, hampir sama. Untuk penilaian pertahanan, biaya itu wajar: angka
+ketahanan yang diukur dengan serangan lemah tidak berarti. Untuk pelatihan, biaya itu
+berlipat lagi: setiap epoch menuntut serangan baru.
+
+Pelatihan adversarial juga punya harga akurasi. Model $D$ kehilangan $1{,}51$ poin
+akurasi bersih untuk kenaikan sekitar lima puluh poin pada $\varepsilon=0{,}15$.
+Madry dan rekan melaporkan bahwa model yang lebih besar memberi ketahanan lebih baik,
+yang menunjukkan bahwa ketahanan bukan sifat cuma-cuma dari arsitektur, melainkan
+kapasitas yang harus dibayar.
+
+Ada tiga keterbatasan sebelum angka di bab ini dipakai.
+
+Pertama, skala. Data kita hanya 64 ciri dan 10 kelas, dengan 597 contoh uji. Pada
+citra besar, anggaran yang berarti jauh lebih kecil dari $0{,}15$; pada ImageNet,
+Goodfellow dan rekan memakai $0{,}007$ dan sudah membalik klasifikasi. Angka
+$\varepsilon$ tidak bisa dipindahkan antar data, karena artinya bergantung pada skala
+fitur. Pada data kita, piksel sudah terkuantisasi ke kelipatan $1/16$, sehingga
+$\varepsilon=0{,}05$ berarti kurang dari satu langkah kuantisasi per piksel.
+
+Kedua, cakupan serangan. Yang kita jalankan hanya dua keluarga: FGSM dan PGD
+$\ell_\infty$. Model yang tahan terhadap keduanya belum tentu tahan terhadap serangan
+$\ell_2$, serangan yang mengubah satu piksel saja, atau serangan yang menempelkan
+benda di dunia nyata. Setiap klaim ketahanan hanya berlaku untuk keluarga serangan
+yang diuji, dan itulah sebabnya protokol evaluasi di bagian sebelumnya menuntut
+beberapa jenis serangan sekaligus.
+
+Ketiga, tidak ada jaminan. Semua angka di sini adalah hasil pengujian, bukan batas
+bawah yang terbukti. Model $D$ yang mencapai $62{,}65$ persen pada PGD 40 langkah
+mungkin masih bisa ditembus serangan yang lebih baik; kita tidak tahu, karena yang
+tidak ditemukan bukan bukti tidak ada. Untuk pernyataan yang lebih kuat, diperlukan
+sertifikasi: misalnya dengan randomized smoothing atau dengan verifikasi formal pada
+jaringan kecil. Keduanya memberi jaminan pada radius tertentu, dengan harga akurasi
+dan komputasi yang jauh lebih besar, dan keduanya berada di luar cakupan bab ini.
+
+Cara melaporkan yang jujur memuat lima hal: model ancaman lengkap (norma,
+$\varepsilon$, pengetahuan penyerang, bersasaran atau tidak), penyerang yang dipakai
+beserta jumlah dan ukuran langkahnya, akurasi bersih dan akurasi di beberapa
+$\varepsilon$, jumlah benih dan sebaran hasilnya, serta biaya komputasi. Tanpa itu,
+angka "tahan 90 persen" tidak dapat diperiksa dan tidak dapat dibandingkan.
+Bab 27 sudah mengajari kita bahwa metrik bisa menipu; di sini metriknya menipu dengan
+cara yang lebih halus, karena penyebutnya benar dan hanya pembilangnya yang dipilih.
+
+\begin{untukdosen}
+Urutan mengajar yang berhasil dipakai: mulai dari tabel akurasi terhadap
+$\varepsilon$, bukan dari definisi. Mahasiswa melihat $97{,}99$ dan $14{,}91$ pada
+model yang sama, lalu bertanya mengapa. Setelah itu baru definisi model ancaman,
+lemma maksimum bentuk linear, dan FGSM. Baru sesudah FGSM berjalan, masuk ke PGD dan
+rumusan pelana. Urutan sebaliknya, yaitu definisi dulu lalu serangan, membuat
+mahasiswa menghafal notasi tanpa pernah melihat kerusakannya.
+
+Dua miskonsepsi khas. Pertama, mahasiswa menganggap serangan adversarial sama dengan
+menambahkan noise, sehingga mereka menyimpulkan bahwa model yang tahan noise akan
+tahan serangan. Baris tanda acak di lab membantahnya dengan satu angka: noise sebesar
+$\varepsilon=0{,}15$ hanya menurunkan akurasi ke $95{,}48$ persen, sedangkan FGSM
+dengan besar yang sama menurunkannya ke $14{,}91$ persen. Kedua, mereka menganggap
+satu angka akurasi di bawah serangan sudah merupakan bukti ketahanan. Demonstrasi
+kuantisasi di lab menunjukkan sebaliknya: $96{,}98$ persen terlihat aman sampai
+seseorang memakai gradien pengganti dan mendapat $13{,}23$ persen.
+
+Aktivitas papan tulis yang murah: tulis contoh linear empat ciri dari bagian contoh
+hitung, lalu minta kelas menghitung $\varepsilon^{*}$ untuk $\ell_\infty$ dan
+$\ell_2$. Setelah itu minta mereka memprediksi, tanpa menghitung, apakah menambah
+langkah PGD mengubah hasil pada model linear itu. Jawaban yang benar, beserta
+alasannya, memaksa mereka memahami bahwa iterasi hanya berguna karena $f$ tidak
+linear.
+
+Tanda kesiapan lanjut: mahasiswa dapat menjelaskan mengapa hanya tanda gradien yang
+dipakai, dapat menghitung $\varepsilon^{*}$ untuk model linear, dapat menyebutkan
+satu gejala penyamaran gradien, dan dapat merancang satu serangan yang disesuaikan
+untuk pertahanan yang mengkuantisasi masukan. Bila mereka menuntut angka di beberapa
+$\varepsilon$ sebelum percaya, mereka siap masuk Bab 30.
+\end{untukdosen}
+
+\section{Ringkasan}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Klaim ketahanan selalu relatif terhadap model ancaman: norma, anggaran
+        $\varepsilon$, pengetahuan penyerang, dan tujuan bersasaran atau tidak.
+        Tanpa itu, dua angka tidak bisa dibandingkan.
+  \item FGSM menggeser setiap koordinat sebesar $\varepsilon$ mengikuti tanda gradien
+        galat. Pada model linear ia eksak dan optimal, karena
+        $\max_{\lVert\boldsymbol{\delta}\rVert_\infty\le\varepsilon}
+        \mathbf{w}^{\top}\boldsymbol{\delta}=\varepsilon\lVert\mathbf{w}\rVert_1$.
+  \item Linearisasi membenarkan arah, bukan jarak. Pada percobaan kita ramalan linear
+        $0{,}0008$ nats, sedangkan kenaikan sebenarnya $4{,}862$ nats; yang tetap
+        berguna adalah pola tandanya.
+  \item PGD menambahkan iterasi dan proyeksi ke kotak. Pada $\varepsilon=0{,}15$
+        akurasi turun dari $94{,}64$ persen (1 langkah kecil) ke $10{,}72$ persen
+        (40 langkah), dan mendatar setelah sekitar dua puluh langkah.
+  \item Pelatihan adversarial ialah hampiran masalah pelana
+        $\min_\theta\mathbb{E}\max_\delta L$. Ia menaikkan ketahanan dengan harga
+        akurasi bersih: model kita kehilangan $1{,}51$ poin untuk naik dari $10{,}72$
+        ke $62{,}65$ persen.
+  \item Penyamaran gradien menurunkan keberhasilan serangan tanpa menaikkan jarak ke
+        batas keputusan. Contoh kita: $96{,}98$ persen di bawah serangan naif,
+        $13{,}23$ persen di bawah serangan dengan gradien pengganti.
+  \item Evaluasi yang jujur memakai serangan terkuat yang sanggup dibayar, disesuaikan
+        dengan pertahanan, di beberapa $\varepsilon$ dan beberapa benih, dengan biaya
+        yang dilaporkan.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Hitung $\varepsilon^{*}$ untuk model linear dengan
+        $\mathbf{w}_A=(1;-1;2)$, $\mathbf{w}_B=(0;1;1)$ dan
+        $\mathbf{x}=(1;2;1)$ pada norma $\ell_\infty$, lalu pada norma $\ell_2$.
+        Periksa kedua jawaban dengan Python. (Petunjuk: hitung
+        $\mathbf{d}=\mathbf{w}_A-\mathbf{w}_B$ lebih dulu, lalu bandingkan
+        $\lVert\mathbf{d}\rVert_1$ dengan $\lVert\mathbf{d}\rVert_2$.)
+
+  \item Buktikan bahwa $\max_{\lVert\boldsymbol{\delta}\rVert_2\le\varepsilon}
+        \mathbf{w}^{\top}\boldsymbol{\delta}=\varepsilon\lVert\mathbf{w}\rVert_2$,
+        dan tentukan semua $\boldsymbol{\delta}$ yang mencapai maksimum. Jelaskan
+        mengapa jawabannya berbeda bentuk dari kasus $\ell_\infty$.
+
+  \item Buktikan bahwa pada pengklasifikasi linear, PGD dengan sebarang jumlah
+        langkah tidak pernah menghasilkan galat yang lebih besar daripada FGSM
+        dengan $\varepsilon$ yang sama. (Petunjuk: galat adalah fungsi linear dari
+        $\boldsymbol{\delta}$ pada himpunan cembung; maksimum fungsi linear pada
+        himpunan cembung kompak tercapai di titik ekstrem. Tunjukkan bahwa titik
+        ekstrem bola $\ell_\infty$ berbentuk $\pm\varepsilon$ di setiap koordinat,
+        lalu bandingkan dengan titik FGSM.)
+
+  \item Nilai klaim ini: \emph{karena sebuah model mencapai akurasi $98$ persen pada
+        data uji dan tetap $95$ persen di bawah gangguan acak sebesar
+        $\varepsilon$, model itu tahan serangan adversarial.} Putuskan benar, salah,
+        atau belum cukup bukti, dan sebutkan satu angka dari bab ini yang mendukung
+        keputusanmu.
+
+  \item Dari tabel lab, hitung tingkat keberhasilan serangan tak bersasaran untuk
+        model $A$ pada $\varepsilon=0{,}05$, $0{,}10$, dan $0{,}15$, lalu untuk
+        model $D$ pada anggaran yang sama. Nyatakan hasilnya dalam persen dan
+        jelaskan mengapa selisih $A$ dan $D$ mengecil pada $\varepsilon$ besar.
+
+  \item Tunjukkan bahwa proyeksi ke
+        $\{\mathbf{y}:\lVert\mathbf{y}-\mathbf{x}\rVert_\infty\le\varepsilon\}
+        \cap[0,1]^{d}$ boleh dilakukan dengan memotong dulu ke kotak
+        $\varepsilon$ lalu ke $[0,1]$, atau sebaliknya, dan hasilnya sama.
+        (Petunjuk: kedua himpunan adalah hasil kali selang, jadi cukup periksa
+        satu koordinat.)
+
+  \item Pada model $D$, akurasi bersih $96{,}48$ persen dan akurasi di bawah PGD 40
+        langkah pada $\varepsilon=0{,}15$ adalah $62{,}65$ persen. Pada model $A$,
+        angkanya $97{,}99$ dan $10{,}72$. Hitung harga ketahanan dalam poin akurasi
+        bersih per poin ketahanan yang diperoleh, lalu jelaskan mengapa rasio itu
+        bukan ukuran yang lengkap.
+
+  \item Sebuah pertahanan membulatkan keluaran probabilitas menjadi $0$ atau $1$
+        sebelum keputusan diambil, sehingga gradien terhadap masukan menjadi nol.
+        Rancang satu protokol evaluasi untuk menguji klaim ketahanannya, dan sebutkan
+        gejala mana dari daftar di bab ini yang paling mudah terlihat bila pertahanan
+        itu hanya menyamarkan gradien.
+
+  \item Diberikan dua model dengan akurasi bersih $97{,}99$ dan $98{,}49$ persen.
+        Pada $\varepsilon=0{,}15$, PGD 40 langkah buatan model pertama menurunkan
+        akurasi model pertama ke $10{,}72$ persen dan model kedua ke $23{,}79$
+        persen. Hitung selisih keberhasilan serangan kotak putih dan serangan
+        transfer, lalu jelaskan mengapa selisih itu bukan bukti bahwa model kedua
+        lebih aman. (Petunjuk: serangan yang dibuat khusus untuk model kedua juga
+        tersedia; lihat baris B pada keluaran lab.)
+
+  \item Jelaskan mengapa serangan bersasaran lebih sulit daripada serangan tak
+        bersasaran, lalu pakai angka $33{,}00$ persen pada $\varepsilon=0{,}15$ dan
+        $99{,}50$ persen pada $\varepsilon=0{,}30$ untuk menunjukkan bahwa kesulitan
+        itu bergantung pada anggaran, bukan hanya pada jenis serangan.
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang terbukti di bab ini sedikit. Lemma maksimum bentuk linear adalah bukti satu baris.
+Ketaksamaan linearisasi dengan sisa $M\lVert\boldsymbol{\delta}\rVert_2^2/2$ adalah
+teorema nilai rata-rata bentuk integral, berlaku untuk setiap fungsi terturunkan dengan
+gradien Lipschitz. Ketepatan FGSM pada regresi logistik adalah hasil eksak Goodfellow,
+Shlens, dan Szegedy (ICLR 2015), bagian ``Adversarial Training of Linear Models versus
+Weight Decay''. Rumusan pelana dan klaim bahwa PGD dapat diandalkan berasal dari Madry,
+Makelov, Schmidt, Tsipras, dan Vladu (ICLR 2018), bagian 2 dan 3; yang terakhir itu
+klaim empiris, bukan teorema, dan penulisnya sendiri menyebut masalah dalamnya tak
+konkaf.
+
+Yang lebih sering dipopulerkan daripada dibuktikan adalah klaim bahwa linearitas
+menjelaskan contoh adversarial. Sebagai argumen arah ia berguna; sebagai penjelasan
+besarnya kerusakan ia gagal pada percobaan kita: ramalan $0{,}0008$ nats melawan
+kenyataan $4{,}862$ nats, dengan gradien yang sudah diverifikasi sampai $10^{-10}$.
+Yang bekerja adalah pola tanda, dan itu sebabnya FGSM mengalahkan tanda acak
+($14{,}91$ melawan $95{,}48$ persen). Klaim kedua yang dibesar-besarkan: pelatihan
+adversarial memberi ketahanan terhadap penyerang dan anggaran yang dipakai saat
+berlatih, dengan harga akurasi bersih, tanpa jaminan untuk serangan lain.
+
+Batas keberlakuan: 64 ciri, 597 contoh uji, satu lapis tersembunyi, satu benih, dua
+keluarga serangan $\ell_\infty$, tanpa sertifikasi. Angka di sini demonstrasi mekanisme,
+bukan peringkat ketahanan. Pertanyaan terbuka: seberapa besar radius yang bisa
+disertifikasi tanpa menghapus manfaat akurasi; mengapa transfer bekerja sebaik itu;
+dan model ancaman apa yang masuk akal untuk sistem nyata seperti detektor intrusi, yang
+menjadi pokok Bab 30.
+\end{untukpeneliti}
+
+\peta{Bab ini mengikuti Goodfellow, Shlens, dan Szegedy, \emph{Explaining and
+Harnessing Adversarial Examples} (ICLR 2015), bagian 3 (``The Linear Explanation of
+Adversarial Examples''), 4 (``The Fast Gradient Sign Method''), dan 5 (``Adversarial
+Training of Linear Models versus Weight Decay'') untuk derivasi FGSM, ketepatan pada
+regresi logistik, dan angka MNIST serta CIFAR-10. Rumusan pelana, algoritme PGD,
+serta angka ketahanan MNIST dan CIFAR-10 berasal dari Madry, Makelov, Schmidt,
+Tsipras, dan Vladu, \emph{Towards Deep Learning Models Resistant to Adversarial
+Attacks} (ICLR 2018), bagian 2, 3, dan 4, termasuk Algorithm 1. Pembahasan penyamaran
+gradien mengikuti Athalye, Carlini, dan Wagner, \emph{Obfuscated Gradients Give a
+False Sense of Security} (ICML 2018), bagian 2 sampai 4, termasuk tiga jenis
+penyamaran dan lima gejala yang dipakai di sini. Fenomena transferabilitas pertama
+dilaporkan oleh Szegedy dan rekan, \emph{Intriguing Properties of Neural Networks}
+(ICLR 2014). Seluruh angka pada tabel, lab, dan contoh hitung adalah perhitungan
+sendiri dengan Python 3.14, NumPy 2.5, dan himpunan data \texttt{load\_digits} dari
+scikit-learn 1.9: pelatihan Adam 350 epoch, pembagian latih-uji 1200/597 dengan benih
+0, dan gradien masukan yang diverifikasi dengan beda hingga.}
+

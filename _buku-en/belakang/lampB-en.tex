@@ -1,0 +1,226 @@
+\chapter{Glossary}
+\label{app:glosarium}
+
+The terms below are used with fixed technical meanings throughout the book. Indonesian
+equivalents are given in parentheses, because the Indonesian edition of this book uses those
+terms and much of the local literature follows it.
+
+\begin{description}[style=nextline,itemsep=0.35em]
+  \item[Absolute convergence] a series that still converges when all its terms are forced positive (\emph{konvergensi mutlak}).
+  \item[Absolute value] the distance of a number from zero on the number line, regardless of its sign (\emph{nilai mutlak}).
+  \item[Accumulation point] a point every neighborhood of which contains a member of the set other than itself (\emph{titik akumulasi}).
+  \item[Activation function] a nonlinear mapping on the output of a unit; it decides how much signal is passed on and the shape of its derivative (\emph{fungsi aktivasi}).
+  \item[Adaptive attack] an attack designed with knowledge of the defense being tested, including knowledge that its gradient is manipulated (\emph{serangan adaptif}).
+  \item[Adjoint] in the backward pass, the number that says how strongly the final loss is affected by one quantity in the middle of the network; one adjoint per quantity (\emph{adjoint}).
+  \item[Adjugate] the cofactor matrix arranged in transpose; used to write the inverse as a single formula, $A^{-1}=\operatorname{adj}(A)/\det A$ (\emph{adjoin}).
+  \item[Adversarial example] a small disturbance to the input, deliberately made to change the output of a model (\emph{serangan adversarial}).
+  \item[Adversarial learning] the study of examples deliberately designed to fool a model, and of how to defend against them (\emph{pembelajaran adversarial}).
+  \item[Antiderivative] a function whose derivative is the function being integrated; the way home from a derivative (\emph{antiturunan}).
+  \item[Asymptotically stable] stays close after being disturbed, and then actually returns to the equilibrium point (\emph{stabil asimtotik}).
+  \item[Axiom] a statement accepted without proof as a starting point; the whole content of a chapter rests on it (\emph{aksioma}).
+  \item[Backpropagation] an algorithm that computes the gradient of every parameter by applying the chain rule from the output back to the input (\emph{turunan balik}).
+  \item[Backward gradient] see backpropagation (\emph{gradien terbalik}).
+  \item[Backward pass differentiable approximation] a stand-in for the gradient on a piece that is not differentiable, using the gradient of the function at the point just after it, so that an attack can still be computed (\emph{BPDA}).
+  \item[Barren plateau] a region of the loss landscape of a variational circuit where the gradient shrinks exponentially with the number of qubits (\emph{plateau tandus}).
+  \item[Basic feasible solution] a point obtained by setting some variables to zero and then solving for the rest, and still satisfying every constraint (\emph{solusi layak basis}).
+  \item[Basis] a set of vectors that is linearly independent and spans the whole space (\emph{basis}).
+  \item[Bias-variance tradeoff] the split of model error into error from being too simple and error from being too sensitive to the data (\emph{bias-variansi}).
+  \item[Bijection] a perfect pairing of two sets: injective and surjective at once, with nothing left over on either side (\emph{bijeksi}).
+  \item[Bootstrap] estimating the distribution of a statistic by resampling from the data itself, many times, with replacement (\emph{bootstrap}).
+  \item[Born rule] the rule that turns an amplitude into a probability by squaring its modulus (\emph{aturan Born}).
+  \item[Calibration] the agreement between the numbers a model promises and the actual frequency in the group promised the same (\emph{kalibrasi}).
+  \item[Catastrophic cancellation] the loss of significant digits when two nearly equal numbers are subtracted, so that only error is left (\emph{pembatalan katastrofik}).
+  \item[Cauchy sequence] a sequence whose terms crowd closer and closer together, without needing to name the value they approach (\emph{barisan Cauchy}).
+  \item[Central limit theorem] the average of many independent random variables approaches the normal distribution once it is standardized (\emph{Teorema Limit Pusat}).
+  \item[Chain rule] the rate of change of a composed function equals the product of the rates at each link in the chain (\emph{aturan rantai}).
+  \item[Characteristic polynomial] $\det(A-\lambda I)$; its roots are the eigenvalues of $A$ (\emph{polinomial karakteristik}).
+  \item[Coefficient of determination] the share of variation explained by the model, stated as a fraction of the whole; written $R^2$ (\emph{koefisien determinasi}).
+  \item[Combination] a choice of several members without regard to their order; there are $\binom{n}{k}$ of them (\emph{kombinasi}).
+  \item[Compact] a closed and bounded set; every sequence in it has a subsequence that converges inside that set (\emph{kompak}).
+  \item[Completeness axiom] the promise that every nonempty set bounded above in $\mathbb{R}$ has a supremum; this is what leaves the number line with no holes (\emph{aksioma kelengkapan}).
+  \item[Condition number] a measure of how much the relative error of the output can grow compared with the relative error of the input (\emph{bilangan kondisi}).
+  \item[Conditional probability] the probability of an event given that another event is known to have occurred; written $P(A\mid B)$ (\emph{peluang bersyarat}).
+  \item[Confidence interval] a range of values that, if the sampling procedure were repeated, contains the true parameter with a given probability (\emph{interval kepercayaan}).
+  \item[Confusion matrix] a four-cell table that compares predictions with reality (\emph{matriks konfusi}).
+  \item[Continuous] a function whose graph can be drawn without lifting the pen at that point, that is, $\lim_{x\to c}f(x)=f(c)$ (\emph{kontinu}).
+  \item[Convergence in distribution] its distribution function tends to the limit distribution function at every point of continuity; what comes to resemble is the shape of the distribution, not its value (\emph{konvergensi dalam distribusi}).
+  \item[Convergence in probability] $P(|X_n-X|>\varepsilon)\to 0$ for every $\varepsilon>0$ (\emph{konvergensi dalam peluang}).
+  \item[Convex combination] a weighted mixture of vectors with nonnegative weights that sum to one (\emph{kombinasi konveks}).
+  \item[Convex function] a function whose graph always lies below the chord joining two of its points; every local minimum of it is a global minimum (\emph{fungsi konveks}).
+  \item[Coordinate vector] the list of coefficients that expresses a vector in a basis (\emph{koordinat}).
+  \item[Correlation] a measure of the strength of the linear relation between two variables; it does not state cause and effect (\emph{korelasi}).
+  \item[Countable] a set whose members can be numbered with nothing skipped; $\mathbb{Q}$ is countable, $\mathbb{R}$ is not (\emph{terhitung}).
+  \item[Countable set] a set whose members can be listed as first, second, third, and so on with nothing left behind (\emph{himpunan terhitung}).
+  \item[Counterexample] one example that breaks a statement of the form \"for all\" (\emph{lawan contoh}).
+  \item[Covariance] a measure of two quantities moving together, computed from the product of their deviations (\emph{kovarians}).
+  \item[Covariance] a measure of how far two variables move together; its unit is the product of their units (\emph{kovariansi}).
+  \item[Cross-entropy] a measure of surprise $-\sum_i y_i\log \hat{p}_i$; the more confident the model is on a wrong answer, the larger the penalty (\emph{entropi silang}).
+  \item[Cross-validation] assessing a model by dividing the data in turn into training and test parts (\emph{validasi silang}).
+  \item[Cumulative distribution function] the function $F(x)=P(X\le x)$; a rising staircase whose height is the probability already accumulated up to $x$ (\emph{fungsi distribusi kumulatif}).
+  \item[Data leakage] information from the test data that leaks into the training process without anyone intending it, so that test results look better than reality (\emph{kebocoran data}).
+  \item[Data split] the division of data into training, validation, and test sets that do not leak into one another (\emph{pemisahan data}).
+  \item[Defective] a matrix whose eigenvalues repeat but whose eigenspace is too narrow to be a basis (\emph{defective}).
+  \item[Dense set] a set every point of which can be approached by members of that set other than the point itself (\emph{himpunan padat}).
+  \item[Derivative] the limit of the difference quotient; the slope of the tangent line and at the same time the instantaneous rate of change (\emph{turunan}).
+  \item[Determinant] one number that measures the factor by which volume changes and at the same time tests invertibility (\emph{determinan}).
+  \item[Diagonalization] a change of basis until the matrix becomes diagonal, so that the work is reduced to multiplying numbers (\emph{diagonalisasi}).
+  \item[Differential equation] a sentence that ties the rate of change of a quantity to the size of that quantity itself (\emph{persamaan diferensial}).
+  \item[Differential privacy] the promise that one person's participation in the data changes the output distribution only slightly, measured by $\varepsilon$ (\emph{privasi diferensial}).
+  \item[Digital signature] a value that only the holder of the private key can create but anyone can check with the public key (\emph{tanda tangan digital}).
+  \item[Dimension] the number of vectors in a basis; the number belongs to the space, not to one basis that happens to be chosen (\emph{dimensi}).
+  \item[Direct sum] the sum of two subspaces that meet only at the zero vector, so that every vector has one way of being written (\emph{jumlah langsung}).
+  \item[Double integral] the sum of values over small cells of a region, then its limit as the cells shrink (\emph{integral lipat dua}).
+  \item[Duality] formulating an optimization problem from the other side, whose optimal value gives a lower bound for the original problem (\emph{dualitas}).
+  \item[Eigenspace] all the eigenvectors for one eigenvalue together with the zero vector; it is a subspace (\emph{ruang eigen}).
+  \item[Eigenvalue] a scalar $\lambda$ such that $A\mathbf{v}=\lambda\mathbf{v}$ for some nonzero vector (\emph{nilai eigen}).
+  \item[Elementary matrix] an identity matrix that has had one row operation applied to it, so that it becomes a record of that operation (\emph{matriks elementer}).
+  \item[Elimination] replacing a system by a simpler system without changing its solution set (\emph{eliminasi}).
+  \item[Epsilon-delta definition] the style of defining a limit by naming the output tolerance first, then the input bound that guarantees it (\emph{epsilon-delta}).
+  \item[Equilibrium point] a state of a dynamical system that does not change when it is not disturbed (\emph{titik setimbang}).
+  \item[Estimator] a rule that turns a sample into a guess at a parameter; the guess it produces is called the estimate (\emph{penaksir}).
+  \item[Euler method] a numerical solution of a differential equation that steps along the tangent line; its error is first order in the step (\emph{metode Euler}).
+  \item[Euler totient function] the function $\varphi(n)$: the count of numbers between $1$ and $n$ that are coprime with $n$ (\emph{fungsi phi}).
+  \item[Expectation] the expected value $\mathbb{E}[X]$: the probability-weighted average, the balance point of a distribution (\emph{harapan}).
+  \item[Expectation over transformation] an attack that maximizes the expected loss over the randomness of the defense, usually by averaging gradients over several random copies (\emph{EOT}).
+  \item[Exponential distribution] the distribution of waiting time in a process without aging, with density $\lambda e^{-\lambda t}$ (\emph{distribusi eksponensial}).
+  \item[Fast gradient sign method] a one-step attack (FGSM) that shifts every coordinate by the budget, in the direction of the sign of the loss derivative (\emph{metode tanda gradien}).
+  \item[Field] a set with two operations that is closed, has identities and inverses, and satisfies the distributive law (\emph{lapangan}).
+  \item[Floating-point system] binary scientific notation with a fixed number of digits; a number is stored as sign, exponent, and mantissa, so that the spacing between representable numbers is not uniform: dense near zero, sparse at the top end, and two different numbers can fall into the same place (\emph{sistem floating-point}).
+  \item[Formal verification] a proof that a program or formula meets its specification, checked by a machine (\emph{verifikasi formal}).
+  \item[Functional limit] $f(x)$ can be forced as close as we like to $L$ provided $x$ is close enough to $c$ but not equal to $c$ (\emph{limit fungsi}).
+  \item[General solution] the family of all solutions of a differential equation, depending on arbitrary constants (\emph{solusi umum}).
+  \item[Generalization] the ability to do problems never seen before, not problems already memorized (\emph{generalisasi}).
+  \item[Global sensitivity] the largest shift in the answer to a query that one person can cause in the worst case (\emph{global sensitivity}).
+  \item[Gradient] the vector of partial derivatives; the direction of steepest ascent of a function (\emph{gradien}).
+  \item[Gradient descent] the parameter update rule that moves against the direction of the gradient (\emph{PGC, penurunan gradien}).
+  \item[Harmonic series] the series $1+1/2+1/3+\cdots$; its terms go to zero but its sum diverges (\emph{deret harmonik}).
+  \item[Heavy tail] a distribution whose probability of enormous values shrinks too slowly, so that one observation can outweigh all the rest (\emph{ekor berat}).
+  \item[Hessian] the matrix of second partial derivatives; the concavity of a function is decided by its sign (\emph{Hessian}).
+  \item[Hidden layer] a layer of units that touches neither the input nor the output of the network directly (\emph{lapisan tersembunyi}).
+  \item[Hypothesis test] a procedure for deciding, with a stated risk of error, whether the data are enough to reject an initial claim (\emph{uji hipotesis}).
+  \item[Implication] a statement of the form if $P$ then $Q$; it is false only when $P$ is true and $Q$ is false (\emph{implikasi}).
+  \item[Independent] two events that give each other no news, $P(A\cap B)=P(A)P(B)$; knowing one does not change the probability of the other (\emph{independen}).
+  \item[Independent and identically distributed] samples that are mutually independent and share one distribution; the most often used assumption, and the most often violated (\emph{i.i.d.}).
+  \item[Induction] the domino pattern of proof: the base case holds, then each case knocks down the next (\emph{induksi}).
+  \item[Inner product] a mapping of two vectors to one scalar that measures length and angle; in $\mathbb{R}^n$ its value is $\langle \mathbf{x},\mathbf{y}\rangle=\mathbf{x}^{\top}\mathbf{y}$ (\emph{hasilkali dalam}).
+  \item[Integrality gap] the distance between the best value of the LP relaxation and the best value of the integer answer; it measures how far a continuous model misleads (\emph{celah integralitas}).
+  \item[Integrating factor] a multiplier that turns the left side of a linear differential equation into a single derivative of a product (\emph{faktor integrasi}).
+  \item[Interpolation] finding a function that passes through every data point; different from regression, which does not demand that (\emph{interpolasi}).
+  \item[Isomorphism] a bijective mapping that preserves structure; two isomorphic spaces cannot be told apart algebraically (\emph{isomorfisme}).
+  \item[Jacobian] the matrix of first partial derivatives of a vector mapping; its determinant measures the local volume scale factor (\emph{Jacobian}).
+  \item[Jacobian determinant] the local volume scale factor when coordinates are changed; its absolute value multiplies area or volume in a multiple integral (\emph{determinan Jacobian}).
+  \item[Kamus (glossary box)] a small box inside a chapter that explains one new term together with its analogy (\emph{kamus}).
+  \item[Karush-Kuhn-Tucker conditions] necessary conditions for optimality in a problem with inequality constraints (\emph{kondisi KKT}).
+  \item[Kernel, null space] the set of all vectors mapped to zero by a linear transformation (\emph{inti}).
+  \item[Kernel, null space] the set of all inputs mapped to zero by a linear transformation; the same as the null space (\emph{kernel}).
+  \item[Lagrange multiplier] an auxiliary variable that puts a price on a constraint; its value shows how much the objective could improve if the constraint were loosened (\emph{pengali Lagrange}).
+  \item[Law of large numbers] the promise that the average of many observations sticks to the true mean, with the chance of missing it shrinking (\emph{hukum bilangan besar}).
+  \item[Least squares] the choice of parameters that minimizes the sum of squared residuals when there is no exact solution (\emph{kuadrat terkecil}).
+  \item[Linear map] a mapping that preserves addition and scalar multiplication (\emph{transformasi linear}).
+  \item[Linear program] the problem of maximizing or minimizing a linear function with linear constraints (\emph{program linear}).
+  \item[Lipschitz condition] the condition that the rate of change of a function is bounded by one constant; this is what guarantees a unique solution of a differential equation (\emph{Lipschitz}).
+  \item[Logical connective] an operation that combines statements: and, or, not, if-then, if-and-only-if (\emph{penghubung logika}).
+  \item[Logistic regression] a model for binary output that maps a linear combination to a probability through the logistic function (\emph{regresi logistik}).
+  \item[Loss function] a number we want to make small while the model is trained; it measures how wrong a prediction is, not how right (\emph{fungsi kerugian}).
+  \item[LP relaxation] replacing the integer condition by a real condition so that an integer problem can be solved as an LP (\emph{relaksasi LP}).
+  \item[Lyapunov function] a positive-valued function that decreases along the trajectories of a system; its existence proves stability without solving the equations (\emph{fungsi Lyapunov}).
+  \item[Machine epsilon] the distance between $1$ and the next machine number; the size of one step at scale one (\emph{epsilon mesin}).
+  \item[Modular inverse] a number $b$ such that $ab\equiv 1 \pmod n$; the undo button of clock arithmetic (\emph{invers modular}).
+  \item[Monotone sequence] a sequence that only rises or only falls, never turning back (\emph{barisan monoton}).
+  \item[Multicollinearity] the situation in which explanatory variables are nearly linearly dependent on one another, so that regression coefficients become unstable (\emph{multikolinearitas}).
+  \item[Multiplicity] the number of times an eigenvalue occurs as a root of the characteristic polynomial, which is not always equal to the dimension of its eigenspace (\emph{multiplisitas}).
+  \item[Necessary condition] a condition that must hold for a statement to be true; without it the statement is impossible, but meeting it is not yet enough (\emph{syarat perlu}).
+  \item[Nested cross-validation] two layers of folds: the outer layer assesses, the inner layer selects, so that model selection does not leak test data (\emph{validasi silang bersarang}).
+  \item[Network intrusion detection system] a system that watches network traffic and decides whether a flow of packets is an attack (\emph{NIDS}).
+  \item[Norm] a measure of the length of a vector; the $L_\infty$ norm takes the largest component (\emph{norma}).
+  \item[Normal distribution] the symmetric bell distribution determined entirely by its mean and its variance (\emph{distribusi normal}).
+  \item[Null hypothesis] the initial claim under test, usually \"there is no effect\"; it is rejected only when the data fit it very badly (\emph{hipotesis nol}).
+  \item[Obfuscated gradient] a gradient handed to the attacker that does not point in the right direction, usually because a piece is not differentiable or is random (\emph{gradien dikaburkan}).
+  \item[Odds ratio] the ratio of the probability of success to the probability of failure; the exponential of a logistic regression coefficient states how many times that ratio multiplies per unit (\emph{rasio peluang}).
+  \item[Ordered field] a field whose members can be ordered and whose arithmetic rules respect that order (\emph{lapangan terurut}).
+  \item[Ordinary differential equation] an equation that relates a function to its derivative with respect to one independent variable (\emph{persamaan diferensial biasa}).
+  \item[Orientation] an agreement about which direction of rotation counts as positive; reversing it reverses the sign of an integral (\emph{orientasi}).
+  \item[Orthogonal] mutually perpendicular in the sense that their inner product is zero (\emph{ortogonal}).
+  \item[Orthogonal matrix] a square matrix whose columns are orthonormal; it preserves length and angle (\emph{matriks ortogonal}).
+  \item[Orthonormal] an orthogonal set each of whose members has length one (\emph{ortonormal}).
+  \item[Out-of-sample] data not used when the model was trained, so that they are honest for judging it (\emph{luar sampel}).
+  \item[Overfitting] memorizing the training data including its noise, so that performance on new data falls (\emph{overfitting}).
+  \item[Padding] extra content added to a packet before it is sent so that every packet has a fixed size, so that packet size no longer leaks its content (\emph{bantalan}).
+  \item[Partition] a division of a set into pieces that do not overlap and that cover the whole set (\emph{partisi}).
+  \item[Perceptron] the simplest linear classifier: the sign of the inner product of the weights and the input (\emph{perceptron}).
+  \item[Poles and zeros] values of a complex variable at which a function blows up or vanishes; used in the analysis of dynamical systems and control (\emph{kutub dan nol}).
+  \item[Polynomial time] the class of algorithms whose number of steps grows no faster than a polynomial in the size of the input (\emph{waktu polinomial}).
+  \item[Power series] a series of the form $\sum a_n(x-c)^n$; it holds only inside its radius of convergence (\emph{deret pangkat}).
+  \item[Power set] the set of all subsets, including the empty set and the set itself; its cardinality is $2^n$ (\emph{himpunan kuasa}).
+  \item[Prediction interval] an interval for one observation that has not yet occurred; always wider than the interval for a mean (\emph{selang prediksi}).
+  \item[Primitive root] a member that, raised repeatedly to powers, passes through every other member of the cyclic group before returning to one; in cryptography, a starting position that reaches every position of the key (\emph{akar primitif}).
+  \item[Privacy budget] the amount $\varepsilon$ a system may spend; every query or training step draws down what is left (\emph{anggaran privasi}).
+  \item[Probability] a weight on every possibility, nonnegative and summing to one (\emph{peluang}).
+  \item[Probability amplitude] a complex number whose squared modulus gives a probability; different from a probability because two amplitudes can cancel each other (\emph{amplitudo}).
+  \item[Problem space] the space of real objects an attacker may change, for example packets and timing; different from the feature space in which the model works (\emph{ruang masalah}).
+  \item[Projection] the point in a subspace closest to a vector, that is, its perpendicular image (\emph{proyeksi}).
+  \item[Proof term] an expression that is at once a proof and a value; checking a proof is the same as checking a type (\emph{term bukti}).
+  \item[Proposition] a sentence that is either true or false, not a question or a command; in this book also the name of a theorem environment (\emph{proposisi}).
+  \item[Pseudoinverse] a generalized inverse $A^{+}$ that still works when some directions have been flattened: what can be inverted is inverted, what is lost is left alone (\emph{pseudoinvers}).
+  \item[P-value] the probability of obtaining a result at least as extreme as the one observed if the null hypothesis is true; not the probability that the null hypothesis is true (\emph{nilai-p}).
+  \item[Quantifier] a marker for all ($\forall$) or there exists ($\exists$); the order in which they are used changes the meaning of a statement (\emph{kuantor}).
+  \item[Quantization] replacing every value by the nearest multiple of a fixed step; the result is a staircase function whose derivative is zero almost everywhere (\emph{kuantisasi}).
+  \item[Quantum computing era] the era when quantum computers are large enough to run Shor's algorithm on the keys used today (\emph{zaman kuantum}).
+  \item[Radius of convergence] the greatest distance from the center at which a power series still converges (\emph{jari-jari konvergensi}).
+  \item[Random variable] a function that maps the outcome of an experiment to a number (\emph{variabel acak}).
+  \item[Rank] the number of independent directions that survive after mapping, that is, $\dim\operatorname{im}T$ (\emph{rank}).
+  \item[Rank-nullity theorem] $\dim\ker T+\dim\operatorname{im}T=\dim V$ for a linear transformation on a finite-dimensional space (\emph{rank-nullity}).
+  \item[Ratio test] a series converges absolutely if $\lim|a_{n+1}/a_n|<1$, and diverges if that limit is greater than one (\emph{uji rasio}).
+  \item[Rearrangement] swapping the order of the terms of a series; in a series that converges absolutely the sum does not change, in one that does not, the sum can change (\emph{susunan ulang}).
+  \item[Regression] drawing the function closest to all the points, not the function that passes through all of them (\emph{regresi}).
+  \item[Regression line] the line (or plane) that minimizes the sum of squared residuals; equivalent to the orthogonal projection onto the column space (\emph{garis regresi}).
+  \item[Regularization] a penalty on the size of the parameters so that the model is not too sensitive to the training data (\emph{regularisasi}).
+  \item[Residual] the difference between an observed value and the value predicted by the model (\emph{residu}).
+  \item[Residue class] the set of numbers that leave the same remainder when divided by $n$, like three in the morning and three in the afternoon (\emph{kelas sisa}).
+  \item[Riemann integrability] the property of a function whose upper and lower sums can be squeezed until their difference vanishes (\emph{keterintegralan}).
+  \item[Riemann integral] the limit of the sum of rectangle areas as the width of the partition shrinks (\emph{integral Riemann}).
+  \item[ROC curve] a plot of the true rate against the false positive rate over all thresholds; the area under it is called AUROC (\emph{kurva ROC}).
+  \item[Rounding] replacing a real number by the nearest machine number (\emph{pembulatan}).
+  \item[Rounding error] the difference between a real number and its machine representative, which piles up in long sums (\emph{kesalahan pembulatan}).
+  \item[Rule of three] if no event occurs in $n$ trials, the event rate may still be as high as about $3/n$ at 95 percent confidence (\emph{aturan tiga}).
+  \item[Runge-Kutta] a family of numerical methods that evaluate the derivative several times per step for a smaller error (\emph{Runge-Kutta}).
+  \item[Sample complexity] the number of examples needed for a model to generalize with a given confidence (\emph{kompleksitas sampel}).
+  \item[Sensitivity] in differential privacy, the largest change in output that one person can cause (\emph{sensitivitas}).
+  \item[Sequence] a row of numbers given a running order $a_1,a_2,\dots$; the order is part of the definition, not something added later (\emph{barisan}).
+  \item[Series] the sum of the terms of a sequence without stopping, whose value is read as the limit of the partial sums (\emph{deret}).
+  \item[Similar] two matrices that represent the same linear mapping in two different bases, $B=P^{-1}AP$ (\emph{serupa}).
+  \item[Singular value] the square root of an eigenvalue of $A^{\top}A$; it measures the length of a principal axis of the mapping by the matrix $A$ (\emph{nilai singular}).
+  \item[Singular value decomposition] writing a matrix as $U\Sigma V^{\top}$ with $U,V$ orthogonal (\emph{dekomposisi nilai singular, SVD}).
+  \item[Slack variable] an extra variable that records the unused remainder, so that a no more than constraint becomes an equation (\emph{variabel kendur}).
+  \item[Softmax] a mapping of a row of scores into probabilities that sum to one, $e^{z_i}/\sum_j e^{z_j}$ (\emph{softmax}).
+  \item[Sorry] a Lean~4 marker that a proof has been postponed; the machine accepts it but records it as an axiom (\emph{sorry}).
+  \item[Stability] the property of an equilibrium point or dynamical system that stays close to its state after a small disturbance (\emph{kestabilan}).
+  \item[Standard error] the standard deviation of an estimator, not the standard deviation of the data; it measures the wobble of one guess (\emph{galat baku}).
+  \item[Standard form] a uniform way of writing an optimization problem: one objective, constraints in the form no more than zero, and nonnegative variables (\emph{bentuk baku}).
+  \item[Stochastic gradient descent] gradient descent that uses a small fraction of the data at every step; cheaper and noisier (\emph{penurunan gradien stokastik}).
+  \item[Strong induction] induction that may use every earlier case, not only the nearest one (\emph{induksi kuat}).
+  \item[Subsequence] a sequence obtained by discarding some terms without changing the order of the remaining terms (\emph{subbarisan}).
+  \item[Subspace] a subset of a vector space that is closed under addition and scalar multiplication (\emph{subruang}).
+  \item[Summary box] a box of bullet points at the end of a chapter that can be read on its own without the body of the chapter (\emph{ringkasan}).
+  \item[Supremum, least upper bound] the least upper bound; the smallest number that is not smaller than every member of the set (\emph{supremum}).
+  \item[Tactic] a step-by-step command in Lean~4 that changes the goal of a proof (\emph{taktik}).
+  \item[Taylor series] writing a function as a sum of derivative terms at one point, together with a remainder that measures the truncation error (\emph{deret Taylor}).
+  \item[Threat model] the complete list of an attacker's abilities: the size of the disturbance, what the attacker knows, and what the attacker wants (\emph{model ancaman}).
+  \item[Transferability] the property of an adversarial example made for one model that also fools another model trained separately (\emph{transferabilitas}).
+  \item[Truncation error] the difference that appears because an infinite process is replaced by a finite piece (\emph{galat pemotongan}).
+  \item[Type class] a list of abilities a type must have in order to be usable in a given place (\emph{typeclass}).
+  \item[Uniform continuity] continuity with one $\delta$ that works for every point of the set, not one $\delta$ per point (\emph{kekontinuan seragam}).
+  \item[Uniform convergence] a sequence of functions that approaches its limit function at the same rate over the whole domain (\emph{kekonvergenan seragam}).
+  \item[Uniform convergence] one rate for the whole domain, not one schedule per point (\emph{konvergensi seragam}).
+  \item[Uniqueness] the guarantee that one initial state gives rise to only one solution trajectory (\emph{ketunggalan}).
+  \item[Unit in the last place] the smallest step a machine can distinguish at the scale of one number (\emph{ULP}).
+  \item[Unitary] a matrix that preserves the inner product, $U^{*}U=I$; the complex version of an orthogonal matrix (\emph{uniter}).
+  \item[Upper limit] the largest value that a sequence still visits arbitrarily often near its end, written $\limsup_{n\to\infty}a_n$ (\emph{limit superior}).
+  \item[Upper sum] a deliberately enlarged estimate of an integral, using the largest value on each piece (\emph{jumlah atas}).
+  \item[Variance] a measure of spread around the mean; its square root is the standard deviation (\emph{variansi}).
+  \item[Variance inflation factor] how much the variance of a coefficient is inflated by other explanatory variables carrying similar information; abbreviated VIF (\emph{varians inflasi}).
+  \item[Vector space] a set with addition and scalar multiplication that is closed and satisfies eight axioms (\emph{ruang vektor}).
+  \item[Vertex] a corner of the feasible region, that is, a point that is never the midpoint between two other feasible points (\emph{verteks}).
+  \item[Wilson interval] a confidence interval for a proportion found by inverting a test, so that it stays sensible when the proportion approaches zero or one (\emph{interval Wilson}).
+  \item[Wilson interval] a confidence interval for a proportion that stays sensible when the proportion approaches zero or one (\emph{Wilson}).
+\end{description}

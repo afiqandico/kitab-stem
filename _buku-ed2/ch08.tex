@@ -1,0 +1,1127 @@
+\chapter{Sistem Persamaan Linear, Determinan, dan Invers}
+
+Sebuah penilai ancaman menjumlahkan tiga fitur dengan bobot yang belum diketahui,
+$s=w_{1}f_{1}+w_{2}f_{2}+w_{3}f_{3}$. Kalibrasi pada tiga contoh berlabel memberi tiga
+persamaan linear sekaligus:
+\[
+  2w_{1}+w_{2}-w_{3}=8,\qquad
+  -3w_{1}-w_{2}+2w_{3}=-11,\qquad
+  -2w_{1}+w_{2}+2w_{3}=-3 .
+\]
+Jawabannya $w=(2,3,-1)$, dan tidak ada yang mengejutkan.
+
+Kemudian matriks koefisiennya diganti oleh hasil pengukuran lain,
+\[
+  S=\begin{pmatrix}1&2&3\\ 4&5&6\\ 7&8&9{,}001\end{pmatrix}.
+\]
+Baris kedua dikurangi baris pertama memberi $(3,3,3)$, sedangkan baris ketiga dikurangi
+baris kedua memberi $(3,3,3{,}001)$: ketiga baris hampir bergantung. Bobot $w=(1,1,1)$
+menghasilkan ruas kanan $(6,\,15,\,24{,}001)$, jadi sistem itu konsisten dan jawabannya tepat
+$w=(1,1,1)$. Naikkan pengukuran ketiga sebesar $0{,}001$, dan jawabannya berpindah ke
+$(2,-1,2)$. Perubahan relatif pada data $3{,}46\times10^{-5}$ menghasilkan perubahan relatif
+pada jawaban $1{,}41$.
+
+Ada empat pertanyaan, bukan satu: apakah sistem punya jawaban, berapa banyak, angka apa yang
+memutuskannya tanpa menyelesaikan apa pun, dan seberapa jauh jawaban bergeser ketika data
+bergeser. Bab 7 sudah memberi rank dan nullity untuk yang pertama. Yang belum ada tiga:
+prosedur yang tercatat dan dapat diperiksa orang lain, satu bilangan yang memutuskan
+invertibilitas sekaligus memberi rumus jawaban, dan ukuran kepekaan; ketiganya isi bab ini.
+
+Determinan lazim diperkenalkan sebagai rumus kofaktor, lalu sifatnya dibuktikan satu per
+satu. Kita balik: definisi dulu lewat tiga sifat, ketunggalan dibuktikan, rumus kofaktor
+muncul sebagai akibat. Alasannya bukan gaya: rumus kofaktor menyembunyikan bahwa determinan
+adalah satu-satunya fungsi bergantian yang ternormalisasi, dan fakta itulah yang membuat
+bukti di bab ini pendek.
+
+\begin{untukanak}
+Tiga kawan menimbang tiga kotak dengan tiga timbangan berbeda. Setiap kawan menuliskan tiga
+angka, dan dari angka-angka itu kita ingin tahu berat setiap kotak. Selama ketiga timbangan
+mengukur hal yang berbeda, jawabannya mudah: setiap angka baru memberi satu keterangan baru.
+
+Masalahnya begini. Timbangan kedua ternyata hampir menyalin timbangan pertama. Angkanya
+tidak sama persis, hanya berbeda sedikit, mungkin karena debu di piringan. Timbangan ketiga
+juga hampir menyalin keduanya. Sekarang ketiga keterangan itu hampir sama isinya. Kita
+merasa punya tiga keterangan, padahal yang benar-benar baru hanya satu atau dua.
+
+Di sinilah keanehan mulai. Kalau salah satu angka berubah seperseribu, berat kotak yang
+kita hitung bisa berubah hampir setengah. Bukan karena hitungannya salah, tetapi karena
+keterangannya memang hampir kembar. Ada satu bilangan yang dapat memberi tahu lebih dulu
+apakah hal itu akan terjadi, sebelum kita menghitung apa pun.
+
+Pernahkah kamu menanyakan hal yang sama kepada tiga orang, lalu mendapat tiga jawaban yang
+isinya mirip, dan tetap tidak yakin? Di bab ini kita akan tahu mengapa kemiripan jawaban
+justru melemahkan keterangan, dan bagaimana mengenalinya dari angkanya.
+\end{untukanak}
+
+\section{Eliminasi Gauss dan tiga nasib sebuah sistem}
+\tingkat{dasar}
+
+Sistem linear ditulis sebagai satu kesatuan, bukan sebagai daftar persamaan yang terpisah.
+Caranya dengan menempelkan kolom ruas kanan ke matriks koefisien. Penyelesaian dikerjakan
+pada susunan itu, dan setiap langkahnya adalah penggantian satu sistem oleh sistem lain yang
+himpunan jawabannya sama.
+
+\kamus{eliminasi}{elimination}{Mengganti pertanyaan dengan pertanyaan yang lebih sederhana
+tanpa mengubah jawabannya, seperti menyederhanakan pecahan tanpa mengubah nilainya.}
+
+\begin{definisi}[Matriks diperbesar dan operasi baris elementer]
+Untuk sistem $A\mathbf{x}=\mathbf{b}$ dengan $A$ berukuran $m\times n$, \emph{matriks
+diperbesar} adalah matriks $\bigl(A\mid\mathbf{b}\bigr)$ berukuran $m\times(n+1)$. Tiga
+\emph{operasi baris elementer} adalah: menukar dua baris; mengalikan satu baris dengan
+skalar tak nol; menambahkan kelipatan satu baris pada baris lain. Dua matriks disebut
+\emph{ekuivalen baris} bila yang satu dapat dicapai dari yang lain dengan operasi-operasi
+itu.\index{eliminasi}
+\end{definisi}
+
+Operasi itu dipilih karena masing-masing dapat dibatalkan. Menukar dua baris membatalkan
+dirinya sendiri, mengalikan dengan $c\neq0$ dibatalkan dengan mengalikan $1/c$, dan
+menambahkan $c$ kali baris $i$ pada baris $j$ dibatalkan dengan mengurangi $c$ kali baris
+$i$. Karena itu tidak ada informasi yang hilang.
+
+\begin{teorema}
+Bila dua sistem linear mempunyai matriks diperbesar yang ekuivalen baris, kedua sistem itu
+mempunyai himpunan jawaban yang sama.
+\end{teorema}
+
+\begin{proof}
+Cukup diperiksa untuk satu operasi, karena operasi berulang mengikuti. Misalkan $S$ adalah
+sistem semula dan $S'$ sistem setelah satu operasi. Setiap persamaan $S'$ adalah kombinasi
+linear persamaan-persamaan $S$, sehingga setiap jawaban $S$ juga menjawab $S'$. Sebaliknya,
+karena operasi itu dapat dibatalkan oleh operasi sejenis, setiap persamaan $S$ adalah
+kombinasi linear persamaan $S'$, sehingga setiap jawaban $S'$ juga menjawab $S$. Kedua
+himpunan jawaban karena itu saling memuat.
+\end{proof}
+
+Bentuk yang dituju adalah bentuk tangga. Setiap baris tak nol dimulai lebih ke kanan
+daripada baris tak nol di atasnya, dan semua entri di bawah posisi pertama itu nol. Kolom
+tempat angka pertama sebuah baris tak nol berada disebut kolom pivot, dan angka itu sendiri
+disebut pivot.
+
+\begin{definisi}[Bentuk eselon baris]
+Matriks disebut dalam \emph{bentuk eselon baris} bila semua baris nol berada di bawah, dan
+entri tak nol pertama setiap baris tak nol terletak lebih kanan daripada entri tak nol
+pertama baris di atasnya. Bentuk itu disebut \emph{tereduksi} bila setiap pivot bernilai
+$1$ dan merupakan satu-satunya entri tak nol pada kolomnya.\index{eselon}\index{pivot}
+\end{definisi}
+
+Bentuk tereduksi itu tunggal. Fakta ini dipakai setiap kali kita berbicara tentang ``rank
+yang dihitung dengan eliminasi'', dan buktinya tidak sependek kelihatannya.
+
+\begin{teorema}[Ketunggalan bentuk eselon tereduksi]
+Setiap matriks ekuivalen baris dengan tepat satu matriks dalam bentuk eselon baris
+tereduksi.
+\end{teorema}
+
+\begin{proof}
+Bukti dilewati di sini. Pernyataan ini dibuktikan lengkap di Hoffman dan Kunze,
+\emph{Linear Algebra} edisi ke-2, bagian 1.4, dengan menunjukkan bahwa ruang jawaban
+$A\mathbf{x}=\mathbf{0}$ menentukan letak pivot secara tunggal. Yang kita pakai di bab ini
+hanya akibatnya: banyaknya pivot dan letaknya tidak bergantung pada urutan operasi yang
+dipilih.
+\end{proof}
+
+Dengan bentuk tereduksi, seluruh pertanyaan tentang jumlah jawaban dapat dijawab dengan
+menghitung pivot. Inilah tiga nasib sebuah sistem.
+
+\begin{teorema}[Tiga kasus]
+Misalkan $\bigl(A\mid\mathbf{b}\bigr)$ berekuivalen baris dengan bentuk eselon tereduksi
+$\bigl(R\mid\mathbf{c}\bigr)$, dengan $A$ berukuran $m\times n$.
+\begin{enumerate}
+  \item Sistem \emph{tidak konsisten} tepat ketika ada pivot pada kolom $(n+1)$.
+  \item Bila konsisten, sistem punya \emph{jawaban tunggal} tepat ketika setiap kolom $A$
+        memuat pivot.
+  \item Bila konsisten, sistem punya \emph{banyak jawaban} tepat ketika ada kolom $A$
+        tanpa pivot, dan banyaknya parameter bebas sama dengan banyaknya kolom tanpa pivot.
+\end{enumerate}
+\end{teorema}
+
+\begin{proof}
+Pivot pada kolom terakhir berarti ada baris berbentuk $0=\text{konstanta tak nol}$, yang
+mustahil dipenuhi. Bila tidak ada pivot semacam itu, setiap baris tak nol memberi satu
+persamaan yang menyatakan variabel pivot dalam variabel lain, sehingga sistem konsisten.
+
+Bila setiap kolom memuat pivot, banyaknya pivot sama dengan $n$, sehingga tidak ada variabel
+bebas dan setiap variabel pivot ditentukan tunggal. Bila ada kolom tanpa pivot, variabel
+pada kolom itu bebas: ia boleh bernilai sebarang, dan setiap pilihan menentukan variabel
+pivot secara tunggal. Jadi jawabannya tak berhingga banyak, dan banyaknya parameter bebas
+tepat banyaknya kolom tanpa pivot.
+\end{proof}
+
+Gambar~\ref{fig:tiga-nasib} menaruh ketiga nasib itu pada satu bidang. Garis $x+y=2$
+tidak berubah; yang berubah hanya garis kedua. Panel kiri: $x-y=0$ memotongnya di $(1,1)$,
+dua pivot, jawaban tunggal. Panel tengah: $x+y=0$ sejajar, kolom terakhir matriks diperbesar
+memuat pivot. Panel kanan: $2x+2y=4$ adalah garis yang sama dengan angka berbeda, satu pivot
+dan satu parameter bebas.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.66,>=Stealth]
+  \begin{scope}
+    \draw[layergrey!28,step=1] (-2.2,-2.2) grid (2.2,2.2);
+    \draw[->,ink] (-2.3,0)--(2.4,0) node[right,font=\scriptsize]{$x$};
+    \draw[->,ink] (0,-2.3)--(0,2.4) node[above,font=\scriptsize]{$y$};
+    \draw[very thick,layerindigo] (-1.2,3.2)--(3.2,-1.2);
+    \draw[very thick,layerteal] (-1.6,-1.6)--(2.2,2.2);
+    \fill[accent] (1,1) circle (2.4pt);
+    \node[font=\scriptsize,below right] at (1,1) {$(1,1)$};
+    \node[font=\scriptsize] at (0,-2.9) {(a) berpotongan};
+  \end{scope}
+  \begin{scope}[xshift=6.4cm]
+    \draw[layergrey!28,step=1] (-2.2,-2.2) grid (2.2,2.2);
+    \draw[->,ink] (-2.3,0)--(2.4,0) node[right,font=\scriptsize]{$x$};
+    \draw[->,ink] (0,-2.3)--(0,2.4) node[above,font=\scriptsize]{$y$};
+    \draw[very thick,layerindigo] (-1.2,3.2)--(3.2,-1.2);
+    \draw[very thick,accent,dashed] (-2.2,2.2)--(2.2,-2.2);
+    \node[font=\scriptsize] at (0,-2.9) {(b) sejajar};
+  \end{scope}
+  \begin{scope}[xshift=12.8cm]
+    \draw[layergrey!28,step=1] (-2.2,-2.2) grid (2.2,2.2);
+    \draw[->,ink] (-2.3,0)--(2.4,0) node[right,font=\scriptsize]{$x$};
+    \draw[->,ink] (0,-2.3)--(0,2.4) node[above,font=\scriptsize]{$y$};
+    \draw[very thick,layerindigo] (-1.2,3.2)--(3.2,-1.2);
+    \draw[line width=2.6pt,accent,densely dotted] (-1.2,3.2)--(3.2,-1.2);
+    \node[font=\scriptsize] at (0,-2.9) {(c) berimpit};
+  \end{scope}
+\end{tikzpicture}
+\caption{Tiga nasib sistem $2\times2$ dengan garis pertama $x+y=2$ tetap. Kiri: garis kedua
+$x-y=0$ memotong di $(1,1)$, dua pivot, jawaban tunggal. Tengah: garis kedua $x+y=0$
+sejajar, kolom ruas kanan memuat pivot, tidak ada jawaban. Kanan: garis kedua $2x+2y=4$
+berimpit dengan garis pertama, satu pivot, tak berhingga jawaban.}
+\label{fig:tiga-nasib}
+\end{figure}
+
+\begin{bacakeras}
+Dua suara. Suara pertama menyebut keadaan, suara kedua menyebut akibatnya. Bacakan
+bergantian, lalu bertukar peran.
+
+Satu sistem. Dua garis. Tiga nasib.
+
+Berpotongan: satu titik, satu jawaban.
+
+Sejajar: tidak bertemu, tidak ada jawaban.
+
+Berimpit: satu garis menyamar menjadi dua, jawaban tak berhingga.
+
+Siapa yang memutuskan, sebelum kita menghitung apa pun? Pivot yang memutuskan.
+
+Dua pivot, dua kolom: jawaban tunggal.
+
+Pivot di kolom terakhir: ada baris yang berbunyi nol sama dengan bukan nol.
+
+Ada kolom tanpa pivot: satu parameter bebas, jawaban berderet ke satu arah.
+
+Ulangi baris terakhir bersama-sama: hitung pivot dulu, baru bicara jawaban.
+\end{bacakeras}
+
+Matriks dari Bab 7 memperlihatkan dua nasib sekaligus,
+\[
+  A=\begin{pmatrix}1&2&1\\ 2&5&3\\ 3&7&4\end{pmatrix},
+  \qquad \text{baris ketiga}=\text{baris pertama}+\text{baris kedua}.
+\]
+Untuk $\mathbf{b}=(4,9,13)$ eliminasi memberi
+\[
+  \left(\begin{array}{ccc|c}1&2&1&4\\ 2&5&3&9\\ 3&7&4&13\end{array}\right)
+  \longrightarrow
+  \left(\begin{array}{ccc|c}1&0&-1&2\\ 0&1&1&1\\ 0&0&0&0\end{array}\right).
+\]
+Ada dua pivot dan tiga kolom, jadi ada satu variabel bebas. Jawabannya
+$(2,1,0)+t\,(1,-1,1)$ untuk $t\in\mathbb{R}$, dan pemeriksaannya langsung:
+$A(2,1,0)^{\top}=(4,9,13)^{\top}$ sedangkan $A(1,-1,1)^{\top}=\mathbf{0}$, jadi arah
+pergeseran itu memang arah buta matriks dari Bab 7.
+
+Untuk $\mathbf{b}=(4,9,14)$ baris terakhir menjadi $0=1$, dan sistem tidak konsisten.
+Matriks koefisiennya sama persis; satu angka di ruas kanan memindahkan nasib sistem dari
+``banyak jawaban'' ke ``tidak ada jawaban''. Karena itu pertanyaan tentang konsistensi tidak
+dapat dijawab dari $A$ saja.
+
+Kasus yang paling sering muncul dalam praktik adalah $m=n$. Di sana ketiga nasib itu
+bertumpu pada satu bilangan, dan bilangan itulah yang kita cari di bagian berikut.
+
+\begin{akibat}
+Misalkan $A$ berukuran $n\times n$. Sistem $A\mathbf{x}=\mathbf{b}$ punya jawaban tunggal
+untuk setiap $\mathbf{b}\in\mathbb{R}^{n}$ tepat ketika $\operatorname{rank}A=n$.
+\end{akibat}
+
+\begin{proof}
+Bila $\operatorname{rank}A=n$, bentuk eselon tereduksi $A$ adalah $I_{n}$, sehingga
+eliminasi pada $\bigl(A\mid\mathbf{b}\bigr)$ selalu berakhir dengan pivot pada setiap kolom
+$A$ dan tanpa pivot pada kolom terakhir; teorema sebelumnya memberi jawaban tunggal.
+Sebaliknya, bila $\operatorname{rank}A<n$, ada kolom tanpa pivot, dan untuk $\mathbf{b}$ yang
+konsisten jawabannya tidak tunggal. Karena rank kurang dari $n$, ruang kolom $A$ tidak
+memenuhi $\mathbb{R}^{n}$, sehingga ada $\mathbf{b}$ di luarnya; untuk $\mathbf{b}$ itu
+sistemnya tidak konsisten.
+\end{proof}
+
+\section{Determinan sebagai fungsi bergantian}
+\tingkat{menengah}
+
+Kita ingin satu bilangan yang menjawab pertanyaan akibat sebelumnya tanpa menyelesaikan
+sistem apa pun. Bilangan itu harus nol tepat ketika kolom-kolom $A$ tidak bebas linear,
+berubah tanda ketika dua kolom bertukar, dan bernilai satu untuk matriks identitas. Ketiga
+syarat itu ternyata sudah menentukan bilangannya secara tunggal.
+
+\kamus{determinan}{determinant}{Faktor pengali volume: berapa kali ruang diregangkan atau
+digepengkan oleh matriks itu.}
+
+\begin{definisi}[Determinan]
+Fungsi $D$ dari matriks $n\times n$ ke $\mathbb{R}$ disebut \emph{determinan} bila
+\begin{enumerate}
+  \item \emph{multilinear pada setiap baris}: untuk skalar $\alpha,\beta$ dan baris
+        $\mathbf{u},\mathbf{v}$,
+        $D(\dots,\alpha\mathbf{u}+\beta\mathbf{v},\dots)
+         =\alpha D(\dots,\mathbf{u},\dots)+\beta D(\dots,\mathbf{v},\dots)$;
+  \item \emph{bergantian}: $D(\dots,\mathbf{u},\dots,\mathbf{u},\dots)=0$ bila dua baris
+        sama;
+  \item \emph{ternormalisasi}: $D(I_{n})=1$.
+\end{enumerate}
+Nilai $D(A)$ ditulis $\det A$.\index{determinan}
+\end{definisi}
+
+Multilinearitas berarti determinan linear pada satu baris bila baris lain ditahan. Sifat
+bergantian adalah syarat terkuat, dan akibatnya panjang.
+
+\begin{lemma}
+Menukar dua baris mengubah tanda determinan. Bila satu baris merupakan kelipatan skalar baris
+lain, atau bila ada baris nol, determinannya nol.
+\end{lemma}
+
+\begin{proof}
+Misalkan dua baris bersebelahan keduanya berisi $\mathbf{u}+\mathbf{v}$. Karena dua baris
+sama, nilainya nol. Multilinearitas menguraikan nol itu menjadi empat suku,
+\[
+  0=D(\dots,\mathbf{u},\mathbf{u},\dots)+D(\dots,\mathbf{u},\mathbf{v},\dots)
+   +D(\dots,\mathbf{v},\mathbf{u},\dots)+D(\dots,\mathbf{v},\mathbf{v},\dots),
+\]
+dan suku pertama serta keempat lenyap. Jadi menukar dua baris bersebelahan membalik tanda:
+\[
+  D(\dots,\mathbf{v},\mathbf{u},\dots)=-D(\dots,\mathbf{u},\mathbf{v},\dots).
+\]
+Penukaran yang tidak bersebelahan dicapai dengan beberapa penukaran bersebelahan, dan setiap
+langkah membalik tanda.
+
+Untuk kelipatan, $D(\dots,c\mathbf{u},\dots,\mathbf{u},\dots)
+=c\,D(\dots,\mathbf{u},\dots,\mathbf{u},\dots)=0$ menurut multilinearitas dan sifat
+bergantian. Baris nol adalah kasus $c=0$ dari bentuk yang sama.
+\end{proof}
+
+Sekarang ketunggalannya. Rumus yang muncul di tengah bukti adalah rumus Leibniz, dan rumus
+itu nanti memberi ekspansi kofaktor sebagai akibat.
+
+\begin{teorema}[Ketunggalan dan rumus Leibniz]
+Hanya ada satu fungsi yang memenuhi ketiga syarat definisi, dan nilainya adalah
+\[
+  \det A=\sum_{\sigma}\operatorname{sgn}(\sigma)\,
+  a_{\sigma(1)1}a_{\sigma(2)2}\cdots a_{\sigma(n)n},
+\]
+dengan jumlah diambil atas semua permutasi $\sigma$ dari $\{1,\dots,n\}$ dan
+$\operatorname{sgn}(\sigma)=(-1)^{k}$ bila $\sigma$ dicapai dengan $k$ penukaran.
+\end{teorema}
+
+\begin{proof}
+Tulis baris ke-$i$ sebagai $\mathbf{a}_{i}=\sum_{j}a_{ij}\mathbf{e}_{j}$. Multilinearitas
+memungkinkan mengeluarkan setiap baris menjadi jumlah,
+\[
+  D(A)=\sum_{j_{1},\dots,j_{n}}a_{1j_{1}}a_{2j_{2}}\cdots a_{nj_{n}}\,
+  D(\mathbf{e}_{j_{1}},\dots,\mathbf{e}_{j_{n}}).
+\]
+Suku dengan $j_{p}=j_{q}$ untuk $p\neq q$ lenyap karena $D$ bergantian, jadi hanya
+$(j_{1},\dots,j_{n})$ yang merupakan permutasi $\sigma$ yang bertahan. Menurut lemma
+sebelumnya, $D(\mathbf{e}_{\sigma(1)},\dots,\mathbf{e}_{\sigma(n)})
+=\operatorname{sgn}(\sigma)D(I_{n})=\operatorname{sgn}(\sigma)$.
+
+Untuk ketunggalan, misalkan $D$ memenuhi ketiga syarat. Perhitungan yang sama memberi
+$D(A)=\bigl(\sum_{\sigma}\operatorname{sgn}(\sigma)a_{\sigma(1)1}\cdots
+a_{\sigma(n)n}\bigr)D(I_{n})=\det A$. Jadi setiap fungsi yang memenuhi ketiga syarat sama
+dengan rumus itu.
+\end{proof}
+
+Rumus Leibniz benar tetapi tidak praktis: ia menjumlahkan $n!$ suku, dan untuk $n=12$
+banyaknya $479\,001\,600$. Yang dipakai orang adalah bentuk lain dari rumus yang sama.
+
+\begin{akibat}[Ekspansi kofaktor]
+Untuk setiap baris $i$ yang tetap berlaku
+\[
+  \det A=\sum_{j=1}^{n}(-1)^{i+j}a_{ij}M_{ij},
+\]
+dengan $M_{ij}$ adalah determinan submatriks $(n-1)\times(n-1)$ hasil menghapus baris $i$
+dan kolom $j$. Angka $C_{ij}=(-1)^{i+j}M_{ij}$ disebut \emph{kofaktor} entri $a_{ij}$.
+Rumus yang sama berlaku bila ekspansi dilakukan sepanjang kolom.
+\end{akibat}
+
+\begin{proof}
+Dalam rumus Leibniz, kelompokkan suku-suku menurut nilai $j$ pada posisi baris $i$. Setiap
+suku yang memuat $a_{ij}$ berbentuk $a_{ij}$ kali tanda kali hasilkali $n-1$ entri lain,
+satu dari setiap baris selain $i$ dan satu dari setiap kolom selain $j$. Hasilkali itu tepat
+suku Leibniz untuk minor $M_{ij}$, dan tandanya $(-1)^{i+j}$ karena memindahkan baris $i$
+ke posisi terakhir menuntut $n-i$ penukaran dan memindahkan kolom $j$ ke posisi terakhir
+menuntut $n-j$ penukaran, sehingga tandanya $(-1)^{2n-i-j}=(-1)^{i+j}$. Penjumlahan atas
+$j$ memberi rumus yang ditulis.
+
+Untuk ekspansi sepanjang kolom, dipakai $\det A=\det A^{\top}$. Kesamaan itu sendiri
+mengikuti rumus Leibniz: setiap suku untuk $A^{\top}$ berbentuk
+$a_{\sigma(1)1}\cdots a_{\sigma(n)n}$ dengan urutan indeks terbalik, dan pemetaan
+$\sigma\mapsto\sigma^{-1}$ mempertahankan tanda karena banyaknya penukaran sama.
+\end{proof}
+
+\begin{contoh}
+Untuk
+$A=\begin{pmatrix}2&1&-1\\ -3&-1&2\\ -2&1&2\end{pmatrix}$ ekspansi sepanjang baris pertama
+memberi kofaktor
+\[
+  C_{11}=\begin{vmatrix}-1&2\\ 1&2\end{vmatrix}=-4,\qquad
+  C_{12}=-\begin{vmatrix}-3&2\\ -2&2\end{vmatrix}=2,\qquad
+  C_{13}=\begin{vmatrix}-3&-1\\ -2&1\end{vmatrix}=-5,
+\]
+sehingga $\det A=2(-4)+1(2)+(-1)(-5)=-8+2+5=-1$. Tanda bergantian itu bukan hiasan: tanpa
+tanda, hasilnya $-8+2-5=-11$, dan semua kesimpulan sesudahnya akan salah.
+\end{contoh}
+
+Determinan berguna untuk matriks hasil kali karena ia multiplikatif.
+
+\begin{teorema}
+Untuk matriks $n\times n$ berlaku $\det(AB)=\det A\,\det B$.
+\end{teorema}
+
+\begin{proof}
+Tetapkan $A$ dan definisikan $f(B)=\det(AB)$. Baris ke-$i$ dari $AB$ adalah kombinasi linear
+baris-baris $B$ dengan koefisien dari baris ke-$i$ $A$, sehingga $f$ multilinear terhadap
+baris-baris $B$. Bila dua baris $B$ sama, dua baris $AB$ juga sama, jadi $f$ bergantian.
+Menurut ketunggalan, setiap fungsi bergantian multilinear $f$ memenuhi
+$f(B)=\det(B)\,f(I_{n})$. Di sini $f(I_{n})=\det A$, jadi
+$f(B)=\det B\,\det A$.
+\end{proof}
+
+\begin{akibat}
+$A$ invertibel jika dan hanya jika $\det A\neq0$. Bila invertibel,
+$\det(A^{-1})=1/\det A$. Selain itu $\det(cA)=c^{n}\det A$, dan determinan matriks
+segitiga adalah hasilkali entri diagonalnya.
+\end{akibat}
+
+\begin{proof}
+Bila $A$ invertibel, $\det A\,\det(A^{-1})=\det I_{n}=1$, sehingga $\det A\neq0$ dan
+inversnya $1/\det A$. Bila $A$ tidak invertibel, kolom-kolomnya bergantung linear menurut
+Bab 7, sehingga salah satu kolom merupakan kombinasi linear kolom lain. Multilinearitas
+menguraikan $\det A$ menjadi jumlah determinan dengan dua kolom sama, jadi semuanya nol.
+Rumus $\det(cA)=c^{n}\det A$ diperoleh dengan mengeluarkan faktor $c$ dari setiap baris.
+Untuk matriks segitiga, ekspansi kofaktor sepanjang baris yang hanya bersisi satu entri
+diagonal, diulang $n$ kali, menyisakan hasilkali diagonal.
+\end{proof}
+
+Akibat itu membuat eliminasi dan determinan bertemu. Eliminasi membawa $A$ ke matriks
+segitiga atas $U$ lewat penukaran dan penambahan kelipatan baris. Penambahan tidak mengubah
+determinan; penukaran membalik tandanya. Karena itu $\det A=(-1)^{s}\det U$ dengan $s$
+banyaknya penukaran, dan $\det U$ adalah hasilkali pivot: determinan gratis setelah eliminasi,
+dan begitulah pustaka menghitungnya.
+
+Sisi lain determinan yang sama pentingnya adalah luas. Kolom-kolom
+$B=\begin{pmatrix}3&1\\ 1&2\end{pmatrix}$ adalah dua anak panah, $(3,1)$ dan $(1,2)$.
+Persegi satuan yang sisinya dibawa oleh kedua panah itu berubah menjadi jajaran genjang,
+dan luasnya lima, tepat $\det B=3\cdot2-1\cdot1=5$. Gambar~\ref{fig:luas-determinan}
+memperlihatkan pemetaan itu. Kalau kedua kolom segaris, jajaran genjangnya gepeng menjadi
+satu ruas, luasnya nol, dan determinannya juga nol.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.95,>=Stealth]
+  \draw[layergrey!28,step=1] (-0.4,-0.4) grid (4.4,3.4);
+  \draw[->,ink] (-0.5,0)--(4.6,0) node[right,font=\scriptsize]{$x$};
+  \draw[->,ink] (0,-0.5)--(0,3.5) node[above,font=\scriptsize]{$y$};
+  \fill[layerteal!16] (0,0)--(3,1)--(4,3)--(1,2)--cycle;
+  \draw[thick,layerteal] (0,0)--(3,1)--(4,3)--(1,2)--cycle;
+  \fill[layerorange!22] (0,0)--(1,0)--(1,1)--(0,1)--cycle;
+  \draw[thick,layerorange] (0,0)--(1,0)--(1,1)--(0,1)--cycle;
+  \draw[very thick,accent,->] (0,0)--(3,1)
+    node[below right,font=\scriptsize]{$(3,1)$};
+  \draw[very thick,accent,->] (0,0)--(1,2)
+    node[above left,font=\scriptsize]{$(1,2)$};
+  \foreach \t in {1,2,3,4} {\node[font=\tiny,below] at (\t,-0.02) {\t};}
+  \foreach \t in {1,2,3} {\node[font=\tiny,left] at (-0.02,\t) {\t};}
+  \node[font=\tiny,fill=white,inner sep=0.5pt] at (0.5,0.5) {1};
+  \node[font=\scriptsize,fill=white,inner sep=1.5pt] at (2,1.5) {luas $5$};
+\end{tikzpicture}
+\caption{Determinan sebagai luas. Persegi satuan (jingga, luas $1$) dipetakan oleh
+$B=\begin{pmatrix}3&1\\ 1&2\end{pmatrix}$ menjadi jajaran genjang (teal) yang dibangun
+$(3,1)$ dan $(1,2)$. Luasnya $5$, sama dengan $\det B=3\cdot2-1\cdot1=5$: determinan
+mengalikan luas sebesar lima, dan tandanya mencatat apakah arah putaran dibalik.}
+\label{fig:luas-determinan}
+\end{figure}
+
+\begin{tangan}
+Bahan: kertas berpetak, gunting, penggaris, lem.
+\begin{enumerate}
+  \item Gambar persegi panjang tiga petak kali satu petak. Luasnya tiga petak.
+  \item Gunting persegi panjang itu. Dari ujung kiri, potong satu segitiga siku-siku dengan alas
+        dua petak dan tinggi satu petak, lalu tempelkan potongan itu ke ujung kanan.
+  \item Bentuk barunya jajaran genjang yang miring. Luasnya tetap tiga petak, karena tidak
+        ada kertas yang dibuang dan tidak ada yang ditambah.
+  \item Ulangi dengan kemiringan satu petak, lalu dua, lalu tiga. Setiap kali hitung alas
+        kali tinggi, jangan panjang sisi miring.
+\end{enumerate}
+Yang harus pembaca lihat: bentuk berubah, luas tidak. Kemiringan hanya menggeser, tidak
+meregangkan, jadi determinan tidak bertambah.
+\end{tangan}
+
+\begin{untukanak}
+Ambil selembar kertas persegi panjang, lalu miringkan dengan mendorong sisi atasnya ke samping
+tanpa memendekkan atau memanjangkan apa pun. Tingginya tetap, lebarnya tetap, luasnya tetap,
+walaupun bentuknya bukan persegi panjang lagi. Yang berubah hanya arah putaran: telusuri sisi
+bawah lalu sisi kanan dari pojok kiri bawah, dan kertas miring masih berputar ke arah yang
+sama; tukar kedua sisi, dan arahnya berbalik seperti sepatu kiri di kaki kanan.
+
+Di bab ini kita akan tahu mengapa satu bilangan dapat memberitahu luas sekaligus arah, dan
+mengapa bilangan itu menjadi nol tepat ketika kertas terlipat menjadi garis. Menurutmu, kalau
+kertas itu dilipat dua, masih adakah cara menghitung luasnya dengan bilangan yang sama?
+\end{untukanak}
+
+\section{Aturan Cramer dan adjoin}
+\tingkat{menengah}
+
+Determinan menjawab apakah jawaban tunggal ada. Pertanyaan berikutnya: dapatkah jawaban itu
+ditulis sebagai rumus, bukan sebagai hasil langkah? Untuk sistem kecil, dapat, dan rumusnya
+rapi.
+
+\kamus{adjoin}{adjugate}{Peta kofaktor yang disusun transpos, dipakai untuk menulis invers
+sebagai satu rumus.}
+
+\begin{definisi}[Adjoin]
+Untuk $A$ berukuran $n\times n$ dengan kofaktor $C_{ij}$, \emph{matriks kofaktor} adalah
+matriks dengan entri $C_{ij}$ pada posisi $(i,j)$, dan \emph{adjoin}
+$\operatorname{adj}A$ adalah transposnya, yaitu matriks dengan entri $C_{ji}$ pada posisi
+$(i,j)$.\index{kofaktor}\index{adjoin}
+\end{definisi}
+
+Perhatikan pembalikan indeksnya: kofaktor $C_{ij}$ berasal dari menghapus baris $i$ dan kolom
+$j$, tetapi diletakkan pada posisi $(j,i)$. Inilah sumber kekeliruan paling sering saat
+menghitung adjoin dengan tangan.
+
+\begin{teorema}
+Untuk setiap matriks $n\times n$ berlaku $A\operatorname{adj}A
+=(\det A)I_{n}=\operatorname{adj}A\,A$.
+\end{teorema}
+
+\begin{proof}
+Entri $(i,j)$ dari $A\operatorname{adj}A$ adalah
+$\sum_{k}a_{ik}C_{jk}$. Bila $i=j$, jumlah itu tepat ekspansi kofaktor sepanjang baris $i$,
+yaitu $\det A$. Bila $i\neq j$, jumlah itu adalah ekspansi sepanjang baris $j$ dari matriks
+yang diperoleh dari $A$ dengan mengganti baris $j$ oleh baris $i$. Matriks itu punya dua
+baris sama, jadi determinannya nol. Karena itu $A\operatorname{adj}A=(\det A)I_{n}$.
+Kesamaan kedua diperoleh dengan argumen yang sama pada kolom, atau dari
+$\operatorname{adj}(A^{\top})=(\operatorname{adj}A)^{\top}$.
+\end{proof}
+
+\begin{akibat}
+Bila $\det A\neq0$, maka $A^{-1}=\dfrac{1}{\det A}\operatorname{adj}A$.
+\end{akibat}
+
+\begin{proof}
+Dari teorema sebelumnya, $A\bigl(\operatorname{adj}A/\det A\bigr)=I_{n}$ dan
+$\bigl(\operatorname{adj}A/\det A\bigr)A=I_{n}$. Invers matriks tunggal, jadi matriks itu
+adalah $A^{-1}$.
+\end{proof}
+
+Rumus itu berlaku untuk semua $n$, tetapi harganya mahal: $\operatorname{adj}A$ memuat
+$n^{2}$ kofaktor, dan setiap kofaktor adalah determinan $(n-1)\times(n-1)$.
+
+Dengan rumus invers itu, jawaban sistem dapat ditulis sebagai nisbah dua determinan.
+
+\begin{teorema}[Aturan Cramer]
+Misalkan $A$ berukuran $n\times n$ dengan $\det A\neq0$, dan $\mathbf{b}\in\mathbb{R}^{n}$.
+Jawaban tunggal $A\mathbf{x}=\mathbf{b}$ adalah
+\[
+  x_{j}=\frac{\det A_{j}}{\det A},\qquad j=1,\dots,n,
+\]
+dengan $A_{j}$ adalah matriks yang diperoleh dari $A$ dengan mengganti kolom ke-$j$ oleh
+$\mathbf{b}$.\index{cramer}
+\end{teorema}
+
+\begin{proof}
+Karena $\det A\neq0$, akibat sebelumnya memberi
+$\mathbf{x}=A^{-1}\mathbf{b}=(\operatorname{adj}A)\,\mathbf{b}/\det A$. Entri ke-$j$ dari
+hasil kali itu adalah $\sum_{i}b_{i}C_{ji}/\det A$. Jumlah $\sum_{i}b_{i}C_{ji}$ adalah
+ekspansi kofaktor sepanjang kolom ke-$j$ dari matriks yang kolom ke-$j$-nya telah diganti
+oleh $\mathbf{b}$, yaitu $A_{j}$. Jadi $x_{j}=\det A_{j}/\det A$.
+\end{proof}
+
+\begin{contoh}
+Kembali ke sistem pembuka, $A\mathbf{x}=\mathbf{b}$ dengan
+$\mathbf{b}=(8,-11,-3)^{\top}$. Kita sudah menghitung $\det A=-1$, dan
+\[
+  \det A_{1}=\begin{vmatrix}8&1&-1\\ -11&-1&2\\ -3&1&2\end{vmatrix}=-2,\qquad
+  \det A_{2}=-3,\qquad \det A_{3}=1 .
+\]
+Jadi $x_{1}=(-2)/(-1)=2$, $x_{2}=(-3)/(-1)=3$, dan $x_{3}=1/(-1)=-1$. Pemeriksaan:
+$A(2,3,-1)^{\top}=(4+3+1,\,-6-3-2,\,-4+3-2)^{\top}=(8,-11,-3)^{\top}$.
+
+Adjoin matriks itu, dengan kofaktor baris pertamanya sudah kita hitung di atas, adalah
+\[
+  \operatorname{adj}A=\begin{pmatrix}-4&-3&1\\ 2&2&-1\\ -5&-4&1\end{pmatrix},
+  \qquad
+  A^{-1}=\frac{1}{-1}\operatorname{adj}A
+  =\begin{pmatrix}4&3&-1\\ -2&-2&1\\ 5&4&-1\end{pmatrix}.
+\]
+Baris pertama $A^{-1}$ kali $\mathbf{b}$ memberi $4(8)+3(-11)-1(-3)=32-33+3=2$, cocok
+dengan $x_{1}$.
+\end{contoh}
+
+Aturan Cramer indah dan jarang dipakai untuk menghitung. Nilainya terletak pada hal lain:
+rumus itu menunjukkan jawaban bergantung secara mulus pada $\mathbf{b}$ dan pada entri $A$,
+dan ketergantungan itulah yang kita ukur lewat biaya dan kepekaan.
+
+\section{Matriks elementer, invers, dan syarat setara}
+\tingkat{lanjut}
+
+Eliminasi baris dapat dipandang sebagai perkalian matriks. Pandangan itu mengubah pertanyaan
+``apakah $A$ invertibel'' menjadi pertanyaan tentang daftar faktor, dan daftar faktor itu
+memberi algoritme invers.
+
+\kamus{matriks elementer}{elementary matrix}{Matriks identitas yang satu langkahnya sudah
+dikerjakan, sehingga menjadi catatan satu operasi baris.}
+
+\begin{definisi}[Matriks elementer]
+\emph{Matriks elementer} adalah matriks yang diperoleh dari $I_{n}$ dengan satu operasi
+baris elementer. Ada tiga jenis, sesuai tiga operasi: penukaran dua baris, perkalian satu
+baris dengan skalar tak nol, dan penambahan kelipatan satu baris pada baris lain.
+\end{definisi}
+
+\begin{lemma}
+Bila $E$ matriks elementer $m\times m$ dan $A$ matriks $m\times n$, maka $EA$ adalah hasil
+mengerjakan operasi baris yang sama pada $A$. Setiap matriks elementer invertibel, dan
+inversnya matriks elementer sejenis.
+\end{lemma}
+
+\begin{proof}
+Baris ke-$i$ dari $EA$ adalah kombinasi linear baris-baris $A$ dengan koefisien baris ke-$i$
+$E$. Untuk $E$ jenis ketiga, baris itu adalah $\mathbf{a}_{i}+c\mathbf{a}_{j}$, tepat seperti
+operasi barisnya; untuk dua jenis lain pemeriksaannya sama langsung. Inversnya diperoleh
+dengan membatalkan operasi: menukar baris membatalkan dirinya sendiri, dan
+$\operatorname{diag}(1,\dots,c,\dots,1)^{-1}=\operatorname{diag}(1,\dots,1/c,\dots,1)$.
+\end{proof}
+
+Gambar~\ref{fig:tiga-gerakan} menjalankan ketiga operasi pada sistem $x+2y=4$,
+$3x+4y=10$, yang berpotongan di $(2,1)$. Menukar baris hanya menukar nama; mengalikan baris
+pertama dengan $2$ menulis garis yang sama dengan angka dua kali; menambahkan baris kedua pada
+baris pertama memberi $4x+6y=14$, yang masih melewati $(2,1)$. Titik potongnya tidak bergeser,
+tetapi determinan matriks koefisiennya berganti tanda, berlipat dua, lalu tetap. Himpunan
+jawaban kekal; bilangan yang mengukur luas tidak.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.58,>=Stealth]
+  \begin{scope}
+    \draw[layergrey!28,step=1] (-0.4,-0.4) grid (4.4,3.2);
+    \draw[->,ink] (-0.5,0)--(4.6,0) node[right,font=\scriptsize]{$x$};
+    \draw[->,ink] (0,-0.5)--(0,3.4) node[above,font=\scriptsize]{$y$};
+    \draw[very thick,layerindigo] (0,2)--(4,0) node[pos=0.15,above,font=\scriptsize]{$R_{1}$};
+    \draw[very thick,layerteal] (0,2.5)--(3.33,0) node[pos=0.85,above left,font=\scriptsize]{$R_{2}$};
+    \fill[accent] (2,1) circle (2.6pt);
+    \node[font=\scriptsize,below right] at (2,1) {$(2,1)$};
+    \node[font=\scriptsize] at (2,-1.1) {(i) tukar baris};
+  \end{scope}
+  \begin{scope}[xshift=5.6cm]
+    \draw[layergrey!28,step=1] (-0.4,-0.4) grid (4.4,3.2);
+    \draw[->,ink] (-0.5,0)--(4.6,0) node[right,font=\scriptsize]{$x$};
+    \draw[->,ink] (0,-0.5)--(0,3.4) node[above,font=\scriptsize]{$y$};
+    \draw[very thick,layerindigo] (0,2)--(4,0) node[pos=0.15,above,font=\scriptsize]{$R_{1}$};
+    \draw[very thick,layerindigo,densely dashed] (0,2)--(4,0);
+    \draw[very thick,layerteal] (0,2.5)--(3.33,0) node[pos=0.85,above left,font=\scriptsize]{$R_{2}$};
+    \fill[accent] (2,1) circle (2.6pt);
+    \node[font=\scriptsize,below right] at (2,1) {$(2,1)$};
+    \node[font=\scriptsize] at (2,-1.1) {(ii) kalikan baris};
+  \end{scope}
+  \begin{scope}[xshift=11.2cm]
+    \draw[layergrey!28,step=1] (-0.4,-0.4) grid (4.4,3.2);
+    \draw[->,ink] (-0.5,0)--(4.6,0) node[right,font=\scriptsize]{$x$};
+    \draw[->,ink] (0,-0.5)--(0,3.4) node[above,font=\scriptsize]{$y$};
+    \draw[very thick,layergrey,dash pattern=on 3pt off 2pt] (0,2)--(4,0);
+    \draw[very thick,layerteal] (0,2.5)--(3.33,0)
+      node[pos=0.8,below right,font=\scriptsize]{$R_{2}$};
+    \draw[very thick,layerplum] (0,2.33)--(3.5,0)
+      node[pos=0.2,above,font=\scriptsize]{$R_{1}+R_{2}$};
+    \fill[accent] (2,1) circle (2.6pt);
+    \node[font=\scriptsize,below right] at (2,1) {$(2,1)$};
+    \node[font=\scriptsize] at (2,-1.1) {(iii) tambah kelipatan};
+  \end{scope}
+\end{tikzpicture}
+\caption{Tiga operasi baris elementer pada sistem $x+2y=4$, $3x+4y=10$. Menukar baris
+hanya menukar nama $R_{1}$ dan $R_{2}$; mengalikan $R_{1}$ dengan $2$ menulis garis yang
+sama; menambahkan $R_{2}$ pada $R_{1}$ memutar garis pertama menjadi $4x+6y=14$. Pada ketiga
+panel, kedua garis melewati titik potong yang sama, $(2,1)$.}
+\label{fig:tiga-gerakan}
+\end{figure}
+
+\begin{teorema}
+Matriks $A$ berukuran $n\times n$ invertibel jika dan hanya jika $A$ merupakan hasilkali
+matriks-matriks elementer.
+\end{teorema}
+
+\begin{proof}
+Hasilkali matriks-matriks invertibel juga invertibel, jadi satu arah jelas.
+
+Untuk arah lain, misalkan $A$ invertibel dan bawa $A$ ke bentuk eselon tereduksi lewat
+operasi baris, yang sama dengan mengalikan dari kiri oleh matriks elementer
+$E_{1},\dots,E_{k}$. Menurut teorema tiga kasus, $A$ invertibel berarti setiap kolom $A$
+memuat pivot, sehingga bentuk tereduksi $A$ adalah $I_{n}$, sebab $A$ persegi dengan $n$
+pivot. Jadi $E_{k}\cdots E_{1}A=I_{n}$, dan karena itu
+$A=E_{1}^{-1}\cdots E_{k}^{-1}$, hasilkali matriks elementer.
+\end{proof}
+
+Bukti itu sekaligus algoritme: mengerjakan operasi yang sama pada $I_{n}$ memberi $A^{-1}$,
+jadi $\bigl(A\mid I_{n}\bigr)\to\bigl(I_{n}\mid A^{-1}\bigr)$ menyelesaikan invers tanpa
+satu pun determinan, jauh lebih murah daripada adjoin.
+
+Kita kumpulkan yang sudah terbukti menjadi satu daftar. Daftar inilah yang dipakai orang
+setiap hari, dan isinya wajah lain dari satu pernyataan.
+
+\begin{teorema}[Syarat setara]
+Untuk matriks $A$ berukuran $n\times n$, pernyataan berikut setara.
+\begin{enumerate}
+  \item $A$ invertibel.
+  \item $A\mathbf{x}=\mathbf{0}$ hanya punya jawaban trivial $\mathbf{x}=\mathbf{0}$.
+  \item Bentuk eselon tereduksi $A$ adalah $I_{n}$.
+  \item $A$ adalah hasilkali matriks-matriks elementer.
+  \item $A\mathbf{x}=\mathbf{b}$ konsisten untuk setiap $\mathbf{b}\in\mathbb{R}^{n}$.
+  \item $A\mathbf{x}=\mathbf{b}$ punya tepat satu jawaban untuk setiap
+        $\mathbf{b}\in\mathbb{R}^{n}$.
+  \item $\det A\neq0$.
+\end{enumerate}
+\end{teorema}
+
+\begin{proof}
+Kita rangkaikan implikasi $(1)\Rightarrow(2)\Rightarrow(3)\Rightarrow(4)\Rightarrow(1)$
+lalu $(1)\Rightarrow(5)\Rightarrow(6)\Rightarrow(1)$ dan $(1)\Leftrightarrow(7)$.
+
+$(1)\Rightarrow(2)$: kalikan $A\mathbf{x}=\mathbf{0}$ dari kiri dengan $A^{-1}$.
+$(2)\Rightarrow(3)$: inti $A$ hanya $\{\mathbf{0}\}$ berarti nullity nol, sehingga menurut
+rank-nullity di Bab 7, $\operatorname{rank}A=n$; jadi ada $n$ pivot dan bentuk tereduksinya
+$I_{n}$. $(3)\Rightarrow(4)$: langkah eliminasinya memberi
+$E_{k}\cdots E_{1}A=I_{n}$. $(4)\Rightarrow(1)$: hasilkali matriks-matriks invertibel juga
+invertibel.
+$(1)\Rightarrow(5)$: ambil $\mathbf{x}=A^{-1}\mathbf{b}$. $(5)\Rightarrow(6)$: misalkan ada
+$\mathbf{b}$ dengan dua jawaban berbeda $\mathbf{x}\neq\mathbf{y}$. Maka
+$\mathbf{x}-\mathbf{y}\neq\mathbf{0}$ dan $A(\mathbf{x}-\mathbf{y})=\mathbf{0}$, sehingga
+kolom-kolom $A$ bergantung linear dan $\operatorname{rank}A<n$. Ruang kolom $A$ karena itu
+berdimensi kurang dari $n$, sehingga ada $\mathbf{b}'$ yang tidak terjangkau, bertentangan
+dengan (5).
+$(6)\Rightarrow(1)$: bila $A$ tidak invertibel, kolom-kolomnya bergantung, jadi ada
+$\mathbf{x}\neq\mathbf{0}$ dengan $A\mathbf{x}=\mathbf{0}$, sehingga jawaban untuk
+$\mathbf{b}=\mathbf{0}$ tidak tunggal. Terakhir $(1)\Leftrightarrow(7)$ adalah akibat di
+bagian sebelumnya.
+\end{proof}
+
+Daftar itu menjelaskan mengapa empat pertanyaan yang tampak berbeda, tentang solusi, bentuk
+eselon, faktorisasi, dan determinan, sebenarnya satu pertanyaan; yang berubah hanya alat
+ukurnya. Tetapi daftar itu diam tentang biaya dan kepekaan, dan dua hal itulah yang menentukan
+apakah jawaban yang diperoleh dapat dipercaya.
+
+\begin{tantangan}
+Sistem berikut tampak biasa: tiga persamaan untuk tiga bilangan, tidak ada baris kembar yang
+mencolok, sehingga kelihatannya jawabannya tunggal.
+\[
+  x+y+z=3,\qquad x+2y+3z=6,\qquad 2x+3y+4z=9 .
+\]
+Tentukan semua jawabannya. Berapa banyak jawabannya, dan mengapa menghitung banyaknya
+persamaan menyesatkan di sini?
+
+Petunjuk 1: jumlahkan dua persamaan pertama, lalu bandingkan hasilnya dengan persamaan
+ketiga.
+
+Petunjuk 2: persamaan ketiga tidak menambah keterangan apa pun, jadi hanya dua keterangan
+yang bebas. Setelah $z$ dipilih, $y$ lalu $x$ ikut tertentu; tuliskan jawaban sebagai satu
+keluarga dengan satu parameter.
+
+Kalau mentok, kembali ke bagian tiga nasib dan hitung pivotnya.
+\end{tantangan}
+
+\subsection*{Biaya dan kepekaan}
+
+Eliminasi pada matriks $n\times n$ memakai sekitar $n^{3}/3$ perkalian: untuk $n=1000$
+sekitar $3{,}33\times10^{8}$, yang masih cepat. Aturan Cramer dengan kofaktor memakai
+$n\cdot n!$ perkalian, sekitar $5{,}75\times10^{9}$ untuk $n=12$ dan di atas $10^{19}$ untuk
+$n=20$; karena itu ia hanya dipakai untuk $n$ kecil atau untuk keperluan teoretis.
+
+Yang lebih halus adalah kepekaan. Misalkan $A$ invertibel dan $\mathbf{b}\neq\mathbf{0}$,
+dan misalkan $\mathbf{b}$ berubah menjadi $\mathbf{b}+\delta\mathbf{b}$ sehingga jawabannya
+berubah menjadi $\mathbf{x}+\delta\mathbf{x}$.
+
+\begin{teorema}
+Dengan notasi di atas, untuk sembarang norma matriks yang subordinate berlaku
+\[
+  \frac{\lVert\delta\mathbf{x}\rVert}{\lVert\mathbf{x}\rVert}
+  \le\kappa(A)\,
+  \frac{\lVert\delta\mathbf{b}\rVert}{\lVert\mathbf{b}\rVert},
+  \qquad \kappa(A)=\lVert A\rVert\,\lVert A^{-1}\rVert .
+\]
+\end{teorema}
+
+\begin{proof}
+Dari $A\,\delta\mathbf{x}=\delta\mathbf{b}$ diperoleh
+$\delta\mathbf{x}=A^{-1}\delta\mathbf{b}$, sehingga
+$\lVert\delta\mathbf{x}\rVert\le\lVert A^{-1}\rVert\lVert\delta\mathbf{b}\rVert$.
+Dari $\mathbf{b}=A\mathbf{x}$ diperoleh
+$\lVert\mathbf{b}\rVert\le\lVert A\rVert\lVert\mathbf{x}\rVert$, yaitu
+$1/\lVert\mathbf{x}\rVert\le\lVert A\rVert/\lVert\mathbf{b}\rVert$. Mengalikan kedua
+ketaksamaan memberi hasil yang diminta.
+\end{proof}
+
+Bilangan $\kappa(A)$ disebut \emph{bilangan kondisi}. Ia tidak bergantung pada skala:
+mengalikan $A$ dengan $c$ tidak mengubahnya, karena $\lVert cA\rVert\lVert (cA)^{-1}\rVert
+=|c|\lVert A\rVert\cdot|c|^{-1}\lVert A^{-1}\rVert$. Determinan tidak punya sifat itu, dan
+inilah alasan kita tidak memakai determinan sebagai ukuran kepekaan. Determinan kecil hanya
+berarti volume kecil; ia dapat kecil karena seluruh matriks diperkecil, sedangkan kepekaan
+tidak berubah.
+
+Untuk sistem pembuka, $\kappa(S)\approx1{,}01\times10^{5}$. Dengan presisi mesin sekitar
+$10^{-16}$, sisa angka yang dapat dipercaya pada jawaban sekitar $10^{-11}$ relatif: cukup
+untuk contoh ini, habis untuk matriks yang lebih buruk. Bab 22 membahas ambang dan cara
+mengenali matriks yang sudah tidak dapat dipercaya.
+\index{kondisi}
+
+\begin{untukanak}
+Bayangkan papan panjang yang dipakai sebagai landasan untuk mengukur tinggi sebuah bukit.
+Papan itu hampir mendatar, hanya miring sedikit. Kalau ujung yang di bawah diangkat sejari,
+ujung yang lain naik jauh lebih banyak, karena papan itu bertumpu pada kemiringan yang
+sangat kecil. Sejari di satu tempat menjadi sejengkal di tempat lain.
+
+Sekarang bayangkan papannya dibuat sangat curam. Angkat ujung bawahnya sejari, dan ujung
+atasnya hanya naik sedikit sekali. Pekerjaan yang sama menghasilkan dua akibat yang sangat
+berbeda, hanya karena landasannya berbeda.
+
+Hitungan kita bekerja seperti papan itu. Ada susunan angka yang membuat perubahan kecil pada
+masukan menghasilkan perubahan kecil pada jawaban; ada pula susunan yang membuat perubahan
+sebesar debu menghasilkan jawaban yang sama sekali lain. Yang menentukan bukan besar kecilnya
+angka, melainkan bentuk susunannya.
+
+Di bab ini kita akan tahu mengapa ada satu bilangan yang dapat meramalkan hal itu sebelum
+kita menghitung, dan mengapa bilangan itu tidak berubah ketika semua angka diperbesar atau
+diperkecil dengan perbandingan yang sama.
+
+Kalau kamu menimbang dengan timbangan yang landasannya miring, apakah hasilnya salah, atau
+hanya tidak dapat dipercaya?
+\end{untukanak}
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Kita kerjakan satu sistem dengan dua cara, hitung satu determinan $4\times4$, lalu mengukur
+kepekaan dua matriks.
+
+\begin{resep}
+\begin{enumerate}
+  \item Tulis matriks diperbesar $\bigl(A\mid\mathbf{b}\bigr)$: kolom koefisien dulu, kolom
+        ruas kanan paling akhir.
+  \item Kerjakan kolom paling kiri. Pilih satu entri tak nol sebagai pivot; kalau entri
+        teratas nol, tukar baris lebih dulu.
+  \item Nolkan semua entri di bawah pivot: untuk tiap baris $j$ di bawahnya,
+        $R_{j}\leftarrow R_{j}-\frac{a_{ji}}{a_{ii}}R_{i}$.
+  \item Geser satu kolom ke kanan dan ulangi; berhenti saat tidak ada baris tak nol lagi,
+        lalu baca nasib sistem dari letak pivot.
+\end{enumerate}
+Peringatan urutan: pivot dinolkan dari atas ke bawah, kolom demi kolom, sebelum substitusi
+mundur dimulai. Membalik urutan itu menghapus pivot yang sudah diperoleh dan membuat
+pekerjaan harus diulang.
+\end{resep}
+
+Sistemnya $A\mathbf{x}=\mathbf{b}$ dengan
+\[
+  A=\begin{pmatrix}2&1&-1\\ -3&-1&2\\ -2&1&2\end{pmatrix},
+  \qquad \mathbf{b}=\begin{pmatrix}8\\ -11\\ -3\end{pmatrix}.
+\]
+
+Cara pertama, eliminasi, dengan langkah ditulis lengkap:
+\[
+  \left(\begin{array}{ccc|c}2&1&-1&8\\ -3&-1&2&-11\\ -2&1&2&-3\end{array}\right)
+  \xrightarrow[R_{3}\leftarrow R_{3}+R_{1}]{R_{2}\leftarrow R_{2}+\tfrac{3}{2}R_{1}}
+  \left(\begin{array}{ccc|c}2&1&-1&8\\ 0&\tfrac{1}{2}&\tfrac{1}{2}&1\\
+  0&2&1&5\end{array}\right),
+\]
+lalu $R_{3}\leftarrow R_{3}-4R_{2}$ memberi
+\[
+  \left(\begin{array}{ccc|c}2&1&-1&8\\ 0&\tfrac{1}{2}&\tfrac{1}{2}&1\\
+  0&0&-1&1\end{array}\right).
+\]
+Substitusi mundur: dari baris ketiga $-x_{3}=1$, jadi $x_{3}=-1$. Baris kedua
+$\tfrac{1}{2}x_{2}+\tfrac{1}{2}(-1)=1$ memberi $x_{2}=3$. Baris pertama
+$2x_{1}+3+1=8$ memberi $x_{1}=2$. Hasilnya $\mathbf{x}=(2,3,-1)$. Pivot yang muncul adalah
+$2$, $\tfrac{1}{2}$, dan $-1$, jadi hasilkali pivot $\det A=2\cdot\tfrac{1}{2}\cdot(-1)=-1$,
+cocok dengan ekspansi kofaktor tadi. Di sini tidak ada penukaran baris, sehingga tandanya
+tidak berubah.
+
+Cara kedua, aturan Cramer, sudah kita jalankan pada sistem yang sama di bagian sebelumnya.
+Ketiga determinan pengganti memberi $\det A_{1}=-2$, $\det A_{2}=-3$, dan $\det A_{3}=1$,
+sehingga $\mathbf{x}=(-2,-3,1)/(-1)=(2,3,-1)$. Dua jalan, satu jawaban; pemeriksaan semacam
+ini murah dan sebaiknya selalu dikerjakan.
+
+Sekarang determinan $4\times4$. Ambil
+\[
+  M=\begin{pmatrix}2&0&1&3\\ 1&4&0&2\\ 3&1&2&1\\ 0&2&1&5\end{pmatrix}.
+\]
+Ekspansi sepanjang baris pertama memakai empat minor, dan salah satunya kita hitung penuh:
+\[
+  M_{11}=\begin{vmatrix}4&0&2\\ 1&2&1\\ 2&1&5\end{vmatrix}
+  =4(10-1)-0(5-2)+2(1-4)=36-6=30 .
+\]
+Dengan cara serupa $M_{12}=15$, $M_{13}=-45$, dan $M_{14}=-15$. Karena itu
+\[
+  \det M=2(30)-0(15)+1(-45)-3(-15)=60-45+45=60 .
+\]
+Banyaknya suku yang dijumlahkan adalah $4!=24$, dan untuk $5\times5$ sudah $120$:
+pertumbuhannya faktorial. Inilah alasan pustaka tidak memakai cara ini.
+
+Sekarang kepekaan. Matriks Hilbert $4\times4$ didefinisikan oleh $h_{ij}=1/(i+j-1)$.
+Determinannya tepat $1/6\,048\,000\approx1{,}65\times10^{-7}$, sangat kecil, sehingga orang
+mudah menyimpulkan bahwa matriks ini berbahaya. Bilangan kondisinya $15\,513{,}74$. Matriks
+pembuka tadi punya $\det S=-0{,}003$ dan $\kappa(S)\approx1{,}01\times10^{5}$, jadi
+determinannya delapan belas ribu kali lebih besar, sedangkan kepekaannya sekitar enam
+setengah kali lebih buruk. Determinan bukan ukuran kepekaan; bilangan kondisi itu ukurannya.
+
+Uji lompatan untuk $S$ memakai $\mathbf{x}=(1,1,1)$, sehingga
+$\mathbf{b}=(6,\,15,\,24{,}001)$. Mengubah komponen ketiga menjadi $24{,}002$ mengubah
+jawaban menjadi $(2,-1,2)$. Perubahan relatif data $3{,}46\times10^{-5}$, perubahan relatif
+jawaban $\sqrt{2}\approx1{,}414$, nisbahnya $40\,916$: di bawah $\kappa(S)$ seperti
+dijanjikan teorema, tetapi hanya dengan faktor dua setengah.
+
+\kertas{Manakah yang lebih peka, $M$ atau matriks Hilbert $4\times4$? Ramalkan dengan membandingkan
+determinannya, lalu hitung bilangan kondisi keduanya dengan \texttt{numpy.linalg.cond}.
+Bandingkan juga dengan $10^{-3}I_{4}$, yang determinannya jauh lebih kecil, lalu jelaskan
+mengapa aturan ``determinan kecil berarti peka'' gagal. Terakhir, kalikan $M$ dengan
+$10^{-4}$: bilangan kondisinya tidak berubah, sedangkan determinannya mengecil sebesar
+$10^{-16}$.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np, math
+
+def det_kofaktor(A):
+    n = A.shape[0]
+    if n == 1:
+        return A[0, 0]
+    return sum((-1) ** j * A[0, j] *
+               det_kofaktor(np.delete(np.delete(A, 0, 0), j, 1))
+               for j in range(n))
+
+A = np.array([[2., 1., -1.], [-3., -1., 2.], [-2., 1., 2.]])
+b = np.array([8., -11., -3.])
+x = np.linalg.solve(A, b)
+print("det A    :", np.linalg.det(A))
+print("det kof  :", det_kofaktor(A))
+print("rank A   :", np.linalg.matrix_rank(A))
+print("x        :", x)
+print("sisa     :", np.linalg.norm(A @ x - b))
+for j in range(3):
+    Aj = A.copy(); Aj[:, j] = b
+    print("det A%d   : %.1f  -> x%d = %.6f" % (j + 1, np.linalg.det(Aj),
+          j + 1, np.linalg.det(Aj) / np.linalg.det(A)))
+
+M = np.array([[2., 0., 1., 3.], [1., 4., 0., 2.],
+              [3., 1., 2., 1.], [0., 2., 1., 5.]])
+print("det M    :", det_kofaktor(M), np.linalg.det(M))
+
+H = np.array([[1. / (i + j + 1) for j in range(4)] for i in range(4)])
+print("det H4   :", np.linalg.det(H))
+print("cond H4  : %.2f" % np.linalg.cond(H))
+
+S = np.array([[1., 2., 3.], [4., 5., 6.], [7., 8., 9.001]])
+bs = S @ np.array([1., 1., 1.])
+print("det S    :", np.linalg.det(S), " cond S: %.1f" % np.linalg.cond(S))
+print("x        :", np.linalg.solve(S, bs))
+bs2 = bs.copy(); bs2[2] += 0.001
+print("x'       :", np.linalg.solve(S, bs2))
+print("biaya    :", math.factorial(12) * 12, round(1000 ** 3 / 3))
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+det A    : -1.0
+det kof  : -1.0
+rank A   : 3
+x        : [ 2.  3. -1.]
+sisa     : 1.9860273225978185e-15
+det A1   : -2.0  -> x1 = 2.000000
+det A2   : -3.0  -> x2 = 3.000000
+det A3   : 1.0  -> x3 = -1.000000
+det M    : 60.0 60.000000000000036
+det H4   : 1.6534391534390412e-07
+cond H4  : 15513.74
+det S    : -0.0030000000000036655  cond S: 101072.3
+x        : [1. 1. 1.]
+x'       : [ 2. -1.  2.]
+biaya    : 5748019200 333333333
+\end{verbatim}
+\end{lab}
+
+Empat hal perlu dibaca dari keluaran itu.
+
+Pertama, $x=(2,3,-1)$ muncul dengan sisa $1{,}99\times10^{-15}$, yaitu nol sampai presisi
+mesin. Sisa itu sengaja dihitung: jawaban pustaka tidak pernah persis, dan sisa adalah cara
+termurah memeriksa apakah jawaban itu memenuhi sistemnya. Pada matriks buruk, sisa kecil
+tidak menjamin galat kecil; itu topik Bab 22.
+
+Kedua, determinan hasil ekspansi kofaktor dan hasil pustaka sama-sama $-1$, dan untuk $M$
+keduanya $60$. Pustaka tidak memakai kofaktor; ia memakai faktorisasi dan mengalikan pivot.
+Selisih $3{,}6\times10^{-14}$ pada $\det M$ adalah pembulatan, bukan perbedaan definisi.
+
+Ketiga, $\det H_{4}$ dilaporkan $1{,}65\times10^{-7}$ sedangkan nilainya tepat
+$1/6\,048\,000$, jadi angka mesin itu benar sampai tujuh digit. Untuk orde lebih tinggi,
+$1/\det$ melampaui $10^{12}$ dengan cepat, dan di situlah determinan berhenti berguna
+sebagai penanda.
+
+Keempat, lompatan jawaban pada $S$ terlihat utuh: dari $(1,1,1)$ ke $(2,-1,2)$ hanya karena
+satu angka berubah seperseribu. Angka yang dilaporkan untuk $\det S$ pun tidak persis
+$-0{,}003$; selisih $3{,}7\times10^{-15}$ muncul karena $9{,}001$ tidak terwakili tepat
+dalam pecahan biner.
+
+Terakhir, biaya: $5{,}748\times10^{9}$ perkalian untuk aturan Cramer pada $n=12$ melawan
+$3{,}33\times10^{8}$ untuk eliminasi pada $n=1000$. Matriks yang jauh lebih besar dikerjakan
+dengan pekerjaan yang jauh lebih sedikit; itu bedanya pangkat tiga dan faktorial.
+
+\begin{untukdosen}
+Urutan mengajar yang berhasil dipakai: eliminasi lebih dulu, dengan tiga kasus ditunjukkan
+pada satu matriks koefisien tetap dan tiga ruas kanan berbeda. Mahasiswa yang melihat
+konsistensi berubah karena satu angka di $\mathbf{b}$ biasanya langsung menerima bahwa
+pertanyaan tentang $A$ dan pertanyaan tentang $\mathbf{b}$ harus dipisahkan. Baru setelah itu
+determinan masuk sebagai jawaban atas pertanyaan tentang $A$ saja.
+
+Dua miskonsepsi khas. Pertama, ``determinan kecil berarti sistem tidak stabil''. Matriks
+$10^{-6}I$ punya determinan $10^{-18}$ dan bilangan kondisi satu; sebaliknya $H_{4}$ punya
+determinan $1{,}65\times10^{-7}$ dan kondisi $1{,}5\times10^{4}$. Kekeliruan ini muncul
+setiap tahun, dan cara membongkarnya adalah meminta mahasiswa mengalikan satu matriks
+dengan skalar lalu membandingkan kedua bilangan. Kedua, ``aturan Cramer adalah cara
+menyelesaikan sistem''. Secara teori benar; secara biaya salah. Beri satu sistem $12\times12$
+dan minta mereka memperkirakan biaya kedua cara sebelum menghitung.
+
+Aktivitas kelas yang berguna: bagikan tiga sistem dengan matriks koefisien sama dan ruas
+kanan $(4,9,13)$, $(4,9,14)$, dan $(0,0,0)$. Minta setiap kelompok menentukan nasib
+sistemnya hanya dari bentuk eselon, lalu menyimpulkan apa yang dapat dan tidak dapat
+disimpulkan dari $A$ seorang diri.
+
+Tanda kesiapan lanjut: mahasiswa dapat menyebutkan tujuh syarat setara tanpa menghafal
+urutan, dan dapat menjelaskan mengapa syarat tentang determinan berada di daftar yang sama
+dengan syarat tentang pivot.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Operasi baris elementer tidak mengubah himpunan jawaban, karena setiap operasi dapat
+        dibatalkan. Karena bentuk tereduksi tunggal, letak pivot menentukan tiga nasib: tidak
+        konsisten bila pivot muncul di kolom terakhir, tunggal bila setiap kolom koefisien
+        punya pivot, banyak bila ada kolom tanpa pivot.
+  \item Determinan adalah satu-satunya fungsi multilinear, bergantian, dan ternormalisasi.
+        Rumus Leibniz dan ekspansi kofaktor adalah akibatnya, bukan definisinya.
+  \item $\det(AB)=\det A\det B$, sehingga $A$ invertibel tepat ketika $\det A\neq0$; dan
+        $\det A$ sama dengan hasilkali pivot setelah eliminasi, kali tanda penukaran.
+  \item Adjoin memberi $A\operatorname{adj}A=(\det A)I$ dan
+        $A^{-1}=\operatorname{adj}A/\det A$; aturan Cramer menulis
+        $x_{j}=\det A_{j}/\det A$.
+  \item Tujuh syarat invertibilitas setara: inti trivial, bentuk tereduksi $I_{n}$, hasilkali
+        matriks elementer, konsisten dan tunggal untuk semua $\mathbf{b}$, dan
+        $\det A\neq0$.
+  \item Biaya eliminasi sebanding $n^{3}/3$, biaya kofaktor sebanding $n\cdot n!$. Kepekaan
+        diukur oleh $\kappa(A)=\lVert A\rVert\lVert A^{-1}\rVert$, bukan oleh $\det A$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Selesaikan dengan eliminasi, lalu periksa dengan aturan Cramer:
+        \[
+          \begin{pmatrix}1&2&3\\ 2&5&3\\ 1&0&8\end{pmatrix}\mathbf{x}
+          =\begin{pmatrix}9\\ 8\\ 26\end{pmatrix}.
+        \]
+        Tuliskan pivot yang muncul, catat berapa kali baris ditukar, lalu simpulkan
+        $\det A$ dari hasilkali pivot.
+
+  \item Hitung $\det M$ untuk
+        $M=\begin{pmatrix}0&1&2&3\\ 1&0&3&2\\ 2&3&0&1\\ 3&2&1&0\end{pmatrix}$
+        dengan ekspansi kofaktor sepanjang satu baris, lalu hitung dengan
+        \texttt{numpy.linalg.det}. Kedua hasil tidak sama persis: yang pertama eksak, yang
+        kedua $5{,}3\times10^{-15}$. Jelaskan mengapa. Sesudah itu cari vektor tak nol
+        $\mathbf{v}$ dengan $M\mathbf{v}=\mathbf{0}$ dan simpulkan $\det M=0$ tanpa
+        ekspansi apa pun.
+
+  \item Buktikan bahwa bila dua kolom $A$ sama, maka $\det A=0$, tanpa memakai
+        $\det A=\det A^{\top}$.
+        (Petunjuk: pakai rumus Leibniz, kelompokkan suku-suku menurut pasangan permutasi yang
+        bertukar pada dua kolom itu, dan tunjukkan tandanya berlawanan.)
+
+  \item Buktikan bahwa $\det(\operatorname{adj}A)=(\det A)^{n-1}$ untuk $n\ge2$.
+        (Petunjuk: ambil determinan pada $A\operatorname{adj}A=(\det A)I$ dan gunakan
+        $\det(cI)=c^{n}$.)
+
+  \item Nilai klaim ini: \emph{bila $\det A$ sangat kecil, maka jawaban $A\mathbf{x}
+        =\mathbf{b}$ sangat peka terhadap perubahan $\mathbf{b}$}. Tentukan benar, salah,
+        atau belum cukup bukti, dan sertakan contoh penyangkal atau alasan tambahan yang
+        membuatnya benar.
+
+  \item Untuk $A=\begin{pmatrix}1&1\\ 1&1+\varepsilon\end{pmatrix}$ dengan
+        $\varepsilon>0$, hitung $\kappa(A)$ dalam norma $1$ sebagai fungsi
+        $\varepsilon$. Tentukan nilai $\varepsilon$ yang membuat $\kappa(A)>10^{6}$, lalu
+        periksa dengan \texttt{numpy.linalg.cond}.
+
+  \item Buktikan: bila $A$ invertibel dan $B$ diperoleh dari $A$ dengan menambahkan
+        kelipatan satu baris pada baris lain, maka $\det B=\det A$ dan
+        $B^{-1}$ dapat dinyatakan lewat $A^{-1}$ dan satu matriks elementer.
+
+  \item Misalkan $D=\operatorname{diag}(d_{1},\dots,d_{n})$ dan $A$ berukuran $n\times n$.
+        Tunjukkan bahwa $\det(A+AD)=\det(A)\prod_{i=1}^{n}(1+d_{i})$, lalu tentukan syarat
+        pada $d_{1},\dots,d_{n}$ agar $A+AD$ invertibel. Periksa jawabanmu dengan satu
+        matriks $3\times3$ di Python.
+
+  \item Pilih satu matriks $3\times3$ dengan entri bulat kecil dan $\det A=1$, hitung
+        $A^{-1}$ lewat adjoin dan lewat \texttt{numpy.linalg.inv}, lalu bandingkan
+        keduanya. Ulangi untuk matriks dengan $\det A=7$ dan jelaskan mengapa entri
+        $A^{-1}$ menjadi pecahan.
+\end{enumerate}
+
+Petunjuk tiga butir tersulit. Butir 4: ambil determinan kedua ruas, ingat
+$\det(cI)=c^{n}$, dan perhatikan bahwa $\det A$ boleh nol sehingga kesimpulan tentang
+$\operatorname{adj}A$ harus dibaca sebagai matriks, bukan invers. Butir 6: dalam norma $1$,
+$\lVert A\rVert_{1}$ adalah jumlah kolom terbesar, dan untuk matriks ini kolom keduanya
+yang terbesar; hitung $\lVert A^{-1}\rVert_{1}$ dari rumus $2\times2$ dan perhatikan bahwa
+jawabannya sebanding $1/\varepsilon$. Butir 8: tulis $A+AD$ sebagai $A(I+D)$ sebelum
+mengeluarkan determinan, dan ingat bahwa $I+D$ bersifat diagonal sehingga determinannya
+hasilkali entri diagonalnya.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini, untuk medan $\mathbb{R}$ dan dimensi hingga: ketunggalan
+determinan sebagai fungsi $n$-linear bergantian yang ternormalisasi beserta rumus permutasi,
+di Hoffman dan Kunze, \emph{Linear Algebra} edisi ke-2, bagian 5.2 dan 5.3, berlaku lebih umum
+atas gelanggang komutatif dengan identitas (bagian 5.1); multiplikativitas dan kesetaraan
+invertibilitas dengan $\det\neq0$, di Axler, \emph{Linear Algebra Done Right} edisi ke-4,
+bagian 9C, pernyataan 9.49 dan 9.50, dengan determinan operator yang bebas basis; serta daftar
+tujuh syarat setara, di Anton edisi ke-11, Teorema 2.3.8.
+
+Yang dipopulerkan: ``determinan adalah volume''. Yang terbukti adalah $|\det A|$ sama dengan
+volume paralelepipedum kolom-kolomnya; tanpa nilai mutlak, klaim itu salah untuk determinan
+negatif. Juga keliru secara numerik: aturan Cramer sebagai cara menyelesaikan sistem di atas
+$n=11$, tempat biayanya faktorial.
+
+Pertanyaan terbuka. Batas kepekaan pada teorema di atas bersifat normwise dan worst-case,
+sering terlalu pesimistis dibanding analisis componentwise. Lebih mendasar: faktor pertumbuhan
+maksimum eliminasi Gauss dengan pivot parsial belum diketahui untuk $n$ umum. Batas terbukti
+$2^{n-1}$, sedangkan percobaan numerik memberi jauh lebih kecil, dan kesenjangan itu terbuka.
+
+Batas keberlakuan. Argumen runtuh bila medan bukan lapangan, sebab modul tidak selalu punya
+basis dan eliminasi tidak selalu dapat membagi. Untuk $n$ sangat besar, determinan meluap
+atau mengalir habis jauh sebelum rank-nya hilang, sehingga pustaka melaporkan logaritma
+determinan. Pernyataan kepekaan juga bergantung pada norma, dan tidak ada pilihan yang
+kanonik.
+\end{untukpeneliti}
+
+\peta{Bab ini mengikuti Anton, \emph{Elementary Linear Algebra} edisi ke-11, bagian 1.1
+sampai 1.6 (sistem linear, eliminasi Gauss-Jordan, invers, matriks elementer) dan 2.1 sampai
+2.3 (kofaktor, determinan lewat reduksi baris, aturan Cramer, termasuk Teorema 2.3.8 tentang
+syarat setara). Perlakuan aksiomatik mengikuti Hoffman dan Kunze, \emph{Linear Algebra} edisi
+ke-2, bagian 5.2 dan 5.3, dengan bagian 1.4 untuk ketunggalan bentuk eselon tereduksi.
+Pandangan bebas basis ada di Axler, \emph{Linear Algebra Done Right} edisi ke-4, bagian 9C.
+Untuk eliminasi sebagai faktorisasi dan pandangan $A=CR$, lihat Strang, \emph{Introduction to
+Linear Algebra} edisi ke-6, Bab 2 dan catatan ``Elimination and Factorization''. Sisi numerik,
+yaitu bilangan kondisi, galat pembulatan, dan biaya, dibahas di Bab 22 buku ini.}

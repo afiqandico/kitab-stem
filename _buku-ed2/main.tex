@@ -1,0 +1,1012 @@
+\documentclass[11pt,a4paper,oneside]{book}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[a4paper,top=2.6cm,bottom=2.8cm,left=3.0cm,right=2.6cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta,positioning,calc,patterns}
+\usepackage[font=small,labelfont=bf,justification=centering]{caption}
+\usepackage[most]{tcolorbox}
+\usepackage{makeidx}
+\usepackage[hidelinks,bookmarksnumbered,bookmarksopenlevel=1,plainpages=false]{hyperref}
+
+\hypersetup{
+  pdftitle={Kenapa Mesin Bisa Salah? Dari Aljabar Linear sampai Keamanan Machine Learning (Edisi Pertama)},
+  pdfauthor={Afiq Andico Pangimpian},
+  pdfsubject={Buku ajar bertingkat: matematika, komputasi, pembelajaran mesin, dan keamanan},
+  pdfkeywords={aljabar linear, analisis real, peluang, optimasi, jaringan saraf, adversarial ML, Lean 4},
+  pdfcreator={pdfLaTeX},
+}
+
+\definecolor{ink}{HTML}{1A1A1A}
+\definecolor{accent}{HTML}{8C2F39}
+\definecolor{layerorange}{HTML}{B45309}
+\definecolor{layerteal}{HTML}{0F766E}
+\definecolor{layergrey}{HTML}{374151}
+\definecolor{layerindigo}{HTML}{4338CA}
+\definecolor{layerjade}{HTML}{15803D}
+\definecolor{layerbrown}{HTML}{92400E}
+\definecolor{layerplum}{HTML}{86198F}
+\color{ink}
+
+\theoremstyle{definition}
+\newtheorem{definisi}{Definisi}[chapter]
+\theoremstyle{plain}
+\newtheorem{teorema}{Teorema}[chapter]
+\newtheorem{lemma}[teorema]{Lemma}
+\newtheorem{akibat}[teorema]{Akibat}
+\newtheorem{proposisi}[teorema]{Proposisi}
+\theoremstyle{remark}
+\newtheorem{contoh}{Contoh}[chapter]
+\newtheorem{latihan}{Latihan}[chapter]
+\newtheorem{catatan}{Catatan}[chapter]
+\newtheorem*{ringkasan}{Ringkasan}
+
+\renewcommand{\chaptername}{Bab}
+\renewcommand{\partname}{Bagian}
+\renewcommand{\contentsname}{Daftar Isi}
+\renewcommand{\bibname}{Daftar Rujukan}
+\renewcommand{\indexname}{Indeks}
+\renewcommand{\figurename}{Gambar}
+\renewcommand{\tablename}{Tabel}
+\renewcommand{\listfigurename}{Daftar Gambar}
+
+\setlist[itemize]{topsep=0.35em,itemsep=0.15em,parsep=0pt}
+\setlist[enumerate]{topsep=0.35em,itemsep=0.15em,parsep=0pt}
+
+% ---------------- empat lapisan pembaca ----------------
+\newtcolorbox{untukanak}{colback=orange!6,colframe=layerorange,
+  title={\small\bfseries Untuk pembaca muda (10 tahun ke atas)},
+  fonttitle=\bfseries,breakable,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{untukdosen}{colback=teal!5,colframe=layerteal,
+  title={\small\bfseries Catatan untuk dosen},
+  fonttitle=\bfseries,breakable,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{untukpeneliti}{colback=black!4,colframe=layergrey,
+  title={\small\bfseries Untuk peneliti: batas dan lanjutan},
+  fonttitle=\bfseries,breakable,left=6pt,right=6pt,top=4pt,bottom=4pt}
+% ---- kanal gaya belajar: auditori, kinestetik, prosedural, pemecah masalah ----
+\newtcolorbox{bacakeras}{colback=violet!5,colframe=layerindigo,
+  title={\small\bfseries Bacakan keras-keras (pembelajar auditori)},
+  fonttitle=\bfseries,breakable,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{tangan}{colback=green!5,colframe=layerjade,
+  title={\small\bfseries Kerjakan dengan tangan (pembelajar kinestetik)},
+  fonttitle=\bfseries,breakable,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{resep}{colback=orange!4,colframe=layerbrown,
+  title={\small\bfseries Resep langkah (pembelajar prosedural)},
+  fonttitle=\bfseries,breakable,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{tantangan}{colback=magenta!4,colframe=layerplum,
+  title={\small\bfseries Tantangan (pemecah masalah)},
+  fonttitle=\bfseries,breakable,left=6pt,right=6pt,top=4pt,bottom=4pt}
+
+\newcommand{\kamus}[3]{%
+  \par\smallskip\noindent
+  \colorbox{blue!5}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+    \small\textbf{#1} (\emph{#2}) --- #3}}\par\smallskip}
+\newcommand{\tingkat}[1]{%
+  \par\noindent{\footnotesize\scshape Tingkat: #1}\par\smallskip}
+\newcommand{\kertas}[1]{%
+  \par\medskip\noindent
+  \fbox{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule}{\small #1}}%
+  \par\medskip}
+\newcommand{\peta}[1]{%
+  \par\medskip\noindent{\small\itshape Peta ke kitab sumber: #1}\par\medskip}
+
+\newenvironment{lab}{\par\medskip\noindent\textbf{Lab komputasi}\par\nopagebreak}{\par\medskip}
+% Kode lebih kecil dari teks: tanpa ini baris selebar 80+ kolom meluber keluar
+% margin. Ambang aman pada tata letak ini ~90 kolom (dijaga gerbang).
+\makeatletter
+\renewcommand{\verbatim@font}{\footnotesize\ttfamily}
+\makeatother
+
+\makeindex
+
+% Baris yang memuat kata tanpa titik potong (mis. "Cauchy-Schwarz" di daftar isi)
+% diberi ruang lebih untuk meregang, bukan dibiarkan menembus margin. Tanpa ini
+% ada empat baris meluber 1,87-7,99 pt ke margin kanan.
+\setlength{\emergencystretch}{3em}
+
+\begin{document}
+
+\frontmatter
+
+% ---------------------------- halaman judul ----------------------------
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+\centering
+\vspace*{1.6cm}
+{\color{accent}\rule{\textwidth}{1.2pt}}\\[0.45cm]
+{\large\scshape Kitab Ajar Bertingkat}\\[0.15cm]
+{\itshape Matematika $\cdot$ Komputasi $\cdot$ Pembelajaran Mesin $\cdot$ Keamanan}\\[0.45cm]
+{\color{accent}\rule{\textwidth}{0.6pt}}\\[1.8cm]
+{\Huge\bfseries Kenapa Mesin\\[0.25cm] Bisa Salah?}\\[0.7cm]
+{\Large\itshape Dari Aljabar Linear\\[0.18cm] sampai Keamanan Machine Learning}\\[0.7cm]
+{\large\itshape Edisi Pertama}\\[0.5cm]
+{\large Enam bagian, tiga puluh dua bab, empat jalur baca}\\[0.35cm]
+{\normalsize\itshape untuk pembaca usia 10 tahun, mahasiswa, dosen, dan peneliti}\\[2.0cm]
+{\large Disusun oleh Afiq Andico Pangimpian}\\[0.3cm]
+{\large Oktober 2026}
+\vfill
+{\footnotesize\itshape Buku ajar tentang cara kita tahu bahwa sebuah jawaban benar --- dan
+cara mesin gagal tahu. Sumber lengkapnya ada di Daftar Rujukan.}
+\end{titlepage}
+\hypersetup{pageanchor=true}
+
+% ---------------------------- kata pengantar ----------------------------
+\chapter*{Kata Pengantar}
+\addcontentsline{toc}{chapter}{Kata Pengantar}
+\markboth{Kata Pengantar}{Kata Pengantar}
+
+Edisi pertama buku ini tumbuh dari satu masalah sederhana: koleksi kitab ajar yang
+saya kumpulkan berisi lebih dari sepuluh ribu halaman, tetapi halaman-halaman itu
+tidak pernah terbaca berurutan. Membuka Rudin pada bab tiga tanpa pernah menyentuh
+definisi supremum hanya menghasilkan frustrasi. Yang kurang bukan bahan, melainkan
+urutan.
+
+Sebelum naskah ini, ada versi tiga belas bab. Setelah dibaca ulang, dua kelemahan
+kelihatan. Pertama, tiga belas bab terlalu cepat sehingga bagian tersulit hanya lewat
+sekilas. Kedua, buku itu hanya bisa dibaca satu jenis pembaca: mahasiswa yang sudah
+terbiasa dengan notasi formal. Siswa SMP yang penasaran tidak punya pintu masuk, dan
+dosen tidak menemukan catatan mengajar di dalamnya.
+
+Versi ini memperbaiki keduanya. Cakupannya diperluas menjadi enam bagian dan tiga puluh
+dua bab, dengan materi yang di versi tiga belas bab tidak ada: himpunan dan
+kardinalitas, deret tak hingga, sistem persamaan linear dan determinan, integral lipat
+serta teorema lapangan vektor, persamaan diferensial dan sistem dinamik, regresi,
+generalisasi dan regularisasi model. Setiap bab kini disusun berlapis.
+
+Lapisan pertama adalah kotak \emph{Untuk pembaca muda}. Isinya analogi benda
+sehari-hari, tanpa satu pun simbol matematika, ditutup satu pertanyaan yang membuat
+penasaran. Lapisan kedua adalah badan bab itu sendiri: definisi, teorema, bukti,
+contoh hitung, dan latihan, seperti buku ajar biasa. Lapisan ketiga adalah kotak
+\emph{Catatan untuk dosen}: urutan mengajar yang saya sarankan, miskonsepsi yang
+hampir selalu muncul, dan satu aktivitas kelas. Lapisan keempat adalah kotak
+\emph{Untuk peneliti}: apa yang benar-benar terbukti, apa yang hanya dipopulerkan,
+sumber primernya, dan pertanyaan yang masih terbuka.
+
+Keempat lapisan tidak saling menggantikan: pembaca muda dapat membaca satu bab hanya
+dari kotak oranye dan ringkasannya, mahasiswa membaca semuanya kecuali kotak peneliti,
+dosen memakai kotak hijau sebagai rencana pertemuan, dan peneliti memulai dari kotak
+abu-abu. Satu buku, empat jalur.
+
+Lapisan itu mengatur \emph{kedalaman}. Yang mengatur \emph{cara masuk} adalah empat
+kotak kedua: \emph{Bacakan keras} untuk pembaca yang paham dengan mendengar,
+\emph{Kerjakan dengan tangan} untuk yang paham dengan bergerak dan meraba,
+\emph{Resep langkah} untuk yang paham dengan menghafal prosedur lebih dahulu, dan
+\emph{Tantangan} untuk yang paham justru ketika soalnya belum jelas. Keduanya hidup
+bersama: satu bab yang sama, dengan enam pintu.
+
+Tiga prinsip penulisan tidak berubah. \emph{Tidak ada klaim tanpa alat uji}: setiap
+teorema disertai bukti atau pengakuan jujur bahwa bukti dilewati beserta lokasinya;
+setiap angka berasal dari eksekusi nyata yang pembaca dapat ulangi. \emph{Notasi
+diperkenalkan sebelum dipakai}. \emph{Kejujuran evaluasi adalah bagian dari
+matematika}: bab-bab terakhir tidak berhenti pada cara membangun model, melainkan
+pada cara mengetahui apakah klaim tentang model itu terbukti.
+
+Satu hal yang sengaja tidak ada di buku ini: kunci jawaban lengkap. Memberi angka
+akhir tanpa jejak pemeriksaan akan melanggar prinsip pertama. Sebagai gantinya,
+Lampiran~C memberi kriteria penilaian dan alat verifikasi untuk setiap jenis latihan,
+sehingga pembaca dapat memeriksa dirinya sendiri dengan cara yang sama seperti
+penulis memeriksa naskah ini.
+
+Buku ini bukan pengganti kitab sumbernya, melainkan pintu masuk yang tertata: jika
+satu bab membuat pembaca membuka Rudin, Axler, Boyd, atau makalah Athalye lalu membaca
+bagian yang ditunjuk, buku ini sudah berhasil. Kesalahan yang tersisa milik penulis,
+bukan kitab-kitab itu.
+
+\enlargethispage{3\baselineskip}
+\vspace{0.35cm}
+\begin{flushright}
+Afiq Andico Pangimpian\\
+Oktober 2026
+\end{flushright}
+
+% ---------------------------- cara membaca ----------------------------
+\chapter*{Cara Membaca: Empat Jalur}
+\addcontentsline{toc}{chapter}{Cara Membaca: Empat Jalur}
+\markboth{Cara Membaca}{Cara Membaca}
+
+Setiap bab punya bentuk yang sama, sehingga pembaca tahu apa yang diharapkan dan
+boleh melompat tanpa kehilangan arah.
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{3.1cm}p{4.6cm}p{4.4cm}@{}}
+\toprule
+\textbf{Jalur} & \textbf{Yang dibaca} & \textbf{Hasil yang didapat} \\
+\midrule
+Pembaca muda (10-14) & kotak \emph{Untuk pembaca muda}, Ringkasan, satu contoh
+  hitung & gagasan inti tanpa notasi; tahu apa yang sedang dihitung \\
+Mahasiswa S1 & seluruh badan bab, Lab komputasi, Latihan; lewati kotak peneliti &
+  definisi, bukti, kemampuan menghitung dan memeriksa \\
+Dosen & kotak \emph{Catatan untuk dosen}, peta sumber, Latihan & rencana
+  pertemuan, miskonsepsi yang harus diantisipasi, bahan papan tulis \\
+Peneliti & kotak \emph{Untuk peneliti}, peta sumber, Lampiran~A dan~B & batas
+  klaim, sumber primer, pertanyaan terbuka, notasi yang konsisten \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+Tanda \textsc{tingkat} di awal setiap bagian menunjukkan kesulitan bacaan:
+\emph{dasar} dapat dibaca tanpa bab sebelumnya selain yang ditunjuk;
+\emph{menengah} menuntut aljabar dan notasi buku ini;
+\emph{lanjut} boleh dilewati pada pembacaan pertama tanpa memutus alur bab.
+
+\medskip
+\noindent\textbf{Enam cara belajar, enam pintu masuk.} Orang tidak belajar dengan cara
+yang sama. Karena itu setiap bab memuat lebih dari satu rute menuju gagasan yang sama,
+dan tidak ada rute yang wajib: pilih yang paling cepat membuatmu paham, lalu kembali ke
+badan bab untuk melihat mengapa cara itu bekerja.
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{3.4cm}p{4.3cm}p{4.6cm}@{}}
+\toprule
+\textbf{Tipe} & \textbf{Cari ini di setiap bab} & \textbf{Cara memakainya} \\
+\midrule
+Visual & 2-3 gambar bernomor (di Daftar Gambar), tabel, dan warna kotak & baca
+  gambar sebelum teksnya; gambar memuat angka yang sama dengan hitungan di teks \\[2pt]
+Auditori & kotak \emph{Bacakan keras-keras} (indigo) & bacakan naskahnya keras-keras
+  atau rekam suaramu; ulangi bagian yang berirama \\[2pt]
+Kinestetik & kotak \emph{Kerjakan dengan tangan} (hijau) & lakukan dengan benda nyata:
+  kertas, kartu, lantai, uang, atau badan sendiri \\[2pt]
+Pemaham konsep & definisi, teorema, bukti, kotak \emph{Untuk peneliti} & jangan pakai
+  rumus sebelum tahu asalnya; bukti adalah tempat asal itu ditulis \\[2pt]
+Penghafal prosedural & kotak \emph{Resep langkah} (cokelat) dan Latihan & hafalkan
+  urutan kartu resep, lalu terapkan pada angka berbeda sampai otomatis \\[2pt]
+Pemecah masalah & kotak \emph{Tantangan} (ungu) dan butir latihan bertanda &
+  kerjakan tantangan lebih dulu; petunjuknya bertingkat, jangan dibuka sekaligus \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Empat jalur di bawah ini mengatur \emph{berapa banyak} yang dibaca; enam tipe di atas
+mengatur \emph{lewat pintu mana} masuk. Keduanya boleh dikombinasikan: seorang pembaca
+visual yang mengejar jalur peneliti tetap membaca semua bukti, hanya saja ia mulai dari
+gambarnya.
+
+Tiga jalur belajar yang sudah dicoba, dari yang paling ringan:
+
+\begin{enumerate}
+  \item \textbf{Jalur rasa ingin tahu (8-12 minggu).} Baca kotak oranye, Ringkasan,
+        dan satu contoh hitung dari setiap bab, berurutan dari Bab~1 sampai Bab~32.
+        Tanpa latihan. Tujuannya satu: tahu peta medan.
+  \item \textbf{Jalur mahasiswa (2 semester).} Semester pertama: Bab~1-10 dan
+        Bab~17. Semester kedua: Bab~11-16 lalu 18-32. Itu dua puluh satu bab, lebih
+        banyak dari satu semester biasa; cara memangkasnya tanpa memutus prasyarat
+        adalah menunda Bab~31-32 (kriptografi dan privasi) ke mata kuliah pilihan,
+        sehingga tersisa sembilan belas bab. Kerjakan Lab komputasi setiap bab;
+        latihan minimal empat butir per bab. Urutan ini menjaga janji prasyarat:
+        Bab~18 menuntut Bab~13 dan~17, jadi ketiganya tidak boleh berjauhan; Bab~21
+        menuntut Bab~10 dan~20; Bab~23 menuntut Bab~12.
+  \item \textbf{Jalur peneliti keamanan ML (9 minggu).} Sembilan belas bab, bukan
+        tujuh: Bab~3, 4, 9, 10, 12, 13, 18, 19, 20, 22, 23, 25, lalu 26-30, ditutup
+        Bab~31 dan~32. Bab~13, 18, 22, dan~23 ikut karena masing-masing adalah
+        prasyarat Bab~20 (uji hipotesis), Bab~29 (adversarial), dan Bab~25 (jaringan
+        saraf); Bab~31 dan~32 melengkapi sisi kriptografi dan privasi yang dituntut
+        judul buku. Membaca jalur ini dalam enam minggu berarti melewati prasyarat
+        dan kehilangan alasan mengapa klaimnya berlaku.
+\end{enumerate}
+
+Simbol dipakai konsisten di seluruh buku: $\mathbb{N}$, $\mathbb{Z}$, $\mathbb{Q}$,
+$\mathbb{R}$ untuk himpunan bilangan; $\mathbf{x}$ untuk vektor dan $x_i$ untuk
+komponennya; $\|\mathbf{x}\|$ untuk norma Euklides; $\nabla f$ untuk gradien;
+$\varepsilon$ dan $\delta$ selalu bilangan positif kecil; $\mathbb{E}[X]$ untuk
+nilai harapan; $\mathcal{L}(V,W)$ untuk ruang transformasi linear; $\top$ untuk
+transpos. Lampiran~A memuat daftar lengkapnya.
+
+% ---------------------------- peta ketergantungan ----------------------------
+\chapter*{Peta Ketergantungan Bab}
+\addcontentsline{toc}{chapter}{Peta Ketergantungan Bab}
+\markboth{Peta Ketergantungan Bab}{Peta Ketergantungan Bab}
+
+Buku ini boleh dibaca tidak berurutan, tetapi tidak semua bab berdiri sendiri.
+Tabel berikut menyebut prasyarat minimum setiap bab; semua prasyarat lain boleh
+diabaikan pada pembacaan pertama.
+
+\begin{center}
+\small
+\begin{tabular}{@{}r p{9.0cm} p{2.8cm}@{}}
+\toprule
+\textbf{Bab} & \textbf{Judul} & \textbf{Prasyarat} \\
+\midrule
+1 & Bahasa Matematika dan Seni Membuktikan & --- \\
+2 & Himpunan, Relasi, Fungsi, dan Kardinalitas & 1 \\
+3 & Aksioma Bilangan Real dan Supremum & 1, 2 \\
+4 & Barisan dan Limit & 3 \\
+5 & Deret Tak Hingga & 4 \\
+6 & Ruang Vektor dan Subruang & 2 \\
+7 & Basis, Dimensi, dan Transformasi Linear & 6 \\
+8 & Sistem Persamaan Linear, Determinan, dan Invers & 6 \\
+9 & Nilai Eigen dan Diagonalisasi & 7, 8 \\
+10 & Ortogonalitas, SVD, dan Kuadrat Terkecil & 7, 9 \\
+11 & Kekontinuan dan Kekontinuan Seragam & 3, 4 \\
+12 & Turunan: Satu dan Banyak Variabel & 11, 7 \\
+13 & Integral Riemann dan Teorema Dasar Kalkulus & 11 \\
+14 & Deret Fungsi dan Pertukaran Limit & 5, 11, 13 \\
+15 & Integral Lipat, Perubahan Variabel, dan Teorema Lapangan Vektor & 10, 12, 13 \\
+16 & Persamaan Diferensial dan Sistem Dinamik & 12, 14, 15 \\
+17 & Peluang dan Peluang Bersyarat & 2, 5 \\
+18 & Variabel Acak dan Distribusi & 17, 13 \\
+19 & Hukum Bilangan Besar dan Teorema Limit Pusat & 18, 5 \\
+20 & Estimasi, Interval Kepercayaan, dan Uji Hipotesis & 19 \\
+21 & Regresi dan Statistika Terapan & 10, 20 \\
+22 & Aritmetika Floating-Point dan Analisis Galat & 3, 5 \\
+23 & Optimasi Konveks dan Dualitas & 6, 12 \\
+24 & Pemrograman Linear dan Integer & 8, 23 \\
+25 & Jaringan Saraf dan Turunan Balik & 10, 12, 23 \\
+26 & Generalisasi, Regularisasi, dan Pelatihan & 18, 25 \\
+27 & Evaluasi Model yang Jujur & 20, 26 \\
+28 & Metode Formal dengan Lean 4 & 1, 2 \\
+29 & Adversarial Machine Learning: Serangan dan Pertahanan & 25, 22 \\
+30 & Batas Serangan: Gradien Dikaburkan dan Evasi NIDS & 27, 29 \\
+31 & Kriptografi: Bilangan Bulat Modular sampai Ancaman Kuantum & 2, 3, 28 \\
+32 & Privasi Diferensial dan Fondasi Matematis QML & 10, 17, 18 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\phantomsection
+\pdfbookmark[0]{Daftar Isi}{toc}
+\tableofcontents
+\cleardoublepage
+\phantomsection
+\pdfbookmark[0]{Daftar Gambar}{lof}
+\listoffigures
+
+\mainmatter
+
+\part{Fondasi: Bahasa, Himpunan, dan Bilangan}
+
+Bagian ini menjawab satu pertanyaan yang biasanya dilewati: apa arti kata
+``berlaku untuk semua'' dan bagaimana sebuah kalimat bisa dibuktikan, bukan hanya
+diyakini. Prasyaratnya hanya aljabar sekolah. Setelah lima bab, kamu bisa menulis
+bukti langsung, bukti dengan kontradiksi, dan induksi, serta tahu kapan sebuah
+argumen belum lengkap.
+\input{ch01}
+\input{ch02}
+\input{ch03}
+\input{ch04}
+\input{ch05}
+
+\part{Aljabar Linear}
+
+Bagian ini memasang kerangka yang dipakai hampir setiap bab sesudahnya: ruang
+vektor, basis, determinan, nilai eigen, dan dekomposisi nilai singular. Prasyaratnya
+Bab~1--2. Setelah lima bab, kamu bisa menerjemahkan soal menjadi matriks,
+menyelesaikannya, dan menjelaskan mengapa jawabannya tunggal atau tidak.
+\input{ch06}
+\input{ch07}
+\input{ch08}
+\input{ch09}
+\input{ch10}
+
+\part{Analisis dan Kalkulus}
+
+Bagian ini membuat kata ``dekat'', ``halus'', dan ``menyusut'' menjadi pernyataan
+yang bisa diperiksa dengan bilangan. Prasyaratnya Bab~3--5 dan~7. Setelah enam bab,
+kamu bisa membuktikan kekontinuan, menurunkan dan mengintegralkan, menukar limit
+dengan integral, dan menyelesaikan persamaan diferensial orde satu serta sistem
+dua dimensi.
+\input{ch11}
+\input{ch12}
+\input{ch13}
+\input{ch14}
+\input{ch15}
+\input{ch16}
+
+\part{Peluang, Statistika, dan Aritmetika Komputer}
+
+Bagian ini menyiapkan dua hal yang tampak tidak berhubungan: cara mengukur
+ketidakpastian dan cara komputer menyimpan bilangan. Prasyaratnya Bab~2, 5, dan~10.
+Setelah enam bab, kamu bisa menghitung peluang, menaksir parameter, menguji klaim,
+memasang regresi, dan menjelaskan mengapa $0{,}1+0{,}2$ tidak sama dengan $0{,}3$.
+\input{ch17}
+\input{ch18}
+\input{ch19}
+\input{ch20}
+\input{ch21}
+\input{ch22}
+
+\part{Optimasi}
+
+Bagian ini mengubah ``cari yang terbaik'' menjadi soal yang punya syarat
+selesai. Prasyaratnya Bab~6 dan~12. Setelah dua bab, kamu bisa membedakan minimum
+lokal dari global, memakai dualitas untuk membuktikan batas, dan mengenali kapan
+sebuah soal linear selesai dalam waktu polinomial dan kapan tidak.
+\input{ch23}
+\input{ch24}
+
+\part{Pembelajaran Mesin, Keamanan, dan Privasi}
+
+Bagian ini menutup buku dengan pertanyaan yang paling sering dihindari: kapan
+sebuah mesin yang tampak pintar sebenarnya rapuh, dan bagaimana kerapuhannya
+dibuktikan dengan angka. Prasyaratnya Bab~10, 12, 18, dan~23. Setelah delapan bab,
+kamu bisa melatih dan mengevaluasi model secara jujur, menyerangnya, membuktikan
+batas serangan, serta menjelaskan kriptografi dan privasi diferensial pada tingkat
+yang cukup untuk membaca makalah aslinya.
+\input{ch25}
+\input{ch26}
+\input{ch27}
+\input{ch28}
+\input{ch29}
+\input{ch30}
+\input{ch31}
+\input{ch32}
+
+% ---------------------------- lampiran A ----------------------------
+\appendix
+\renewcommand{\appendixname}{Lampiran}
+\chapter{Tabel Notasi}
+\label{app:notasi}
+
+Notasi berikut berlaku di seluruh buku. Bila sebuah bab memakai simbol yang tidak
+tercantum di sini, simbol itu diperkenalkan di tempat pemakaiannya. Angka di ujung
+setiap butir menunjuk bab yang memakainya.
+
+\section*{Himpunan, logika, dan bilangan (Bab 1--5, 22)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$\mathbb{N}$, $\mathbb{Z}$, $\mathbb{Q}$, $\mathbb{R}$, $\mathbb{C}$]
+        bilangan asli, bulat, rasional, real, dan kompleks.
+  \item[$\forall$, $\exists$, $\neg$] untuk semua, ada, dan bukan.
+  \item[$\Rightarrow$, $\Leftrightarrow$] berakibat, dan jika dan hanya jika.
+  \item[$\in$, $\notin$, $\subseteq$, $\cup$, $\cap$, $\setminus$] keanggotaan,
+        bukan anggota, himpunan bagian, gabungan, irisan, selisih (Bab 2).
+  \item[$\mathcal{P}(S)$, $|S|$, $S\times T$] himpunan kuasa, kardinalitas,
+        hasilkali kartesius (Bab 2).
+  \item[$\sup S$, $\inf S$] batas atas terkecil dan batas bawah terbesar (Bab 3).
+  \item[$a_n\to a$] barisan $(a_n)$ konvergen ke $a$ (Bab 4).
+  \item[$\sum_{n=1}^{\infty} a_n$] deret dan jumlahnya (Bab 5).
+  \item[$\mathrm{fl}(x)$, $\mathrm{ulp}$] hasil pembulatan bilangan real dan satuan
+        terkecil yang dapat diwakili (Bab 22).
+\end{description}
+
+\section*{Aljabar linear (Bab 6--10)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$\mathbf{x}$, $\mathbf{x}^{\top}$, $\|\mathbf{x}\|$] vektor kolom,
+        transpos, dan norma Euklides.
+  \item[$\operatorname{span} S$, $\dim V$] rentang himpunan vektor dan dimensi
+        ruang vektor.
+  \item[$\mathcal{L}(V,W)$] ruang semua transformasi linear dari $V$ ke $W$ (Bab 7).
+  \item[$\ker T$, $\operatorname{im} T$] inti dan jangkauan transformasi (Bab 7).
+  \item[$\det A$, $\operatorname{tr} A$, $A^{-1}$] determinan, jejak, dan invers
+        matriks (Bab 8).
+  \item[$\lambda$, $\mathbf{v}$] nilai eigen dan vektor eigen (Bab 9).
+  \item[$\sigma_i$, $A=U\Sigma V^{\top}$] nilai singular dan dekomposisi nilai
+        singular (Bab 10).
+  \item[$A^{+}$, $\kappa(A)$] pseudoinvers dan bilangan kondisi (Bab 10, 20).
+\end{description}
+
+\section*{Analisis dan kalkulus (Bab 11--16)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$\varepsilon$, $\delta$] bilangan positif kecil dalam definisi limit,
+        kekontinuan, dan kekontinuan seragam.
+  \item[$f'(x)$, $\nabla f$] turunan biasa dan gradien.
+  \item[$J_f$, $H_f$] matriks Jacobian dan Hessian (Bab 12).
+  \item[$\int_a^b f$] integral Riemann pada $[a,b]$ (Bab 13).
+  \item[$\sum_{\mathcal{P}} M_i \Delta x_i$] jumlah atas untuk partisi
+        $\mathcal{P}$ (Bab 13).
+  \item[$f_n \rightrightarrows f$] barisan fungsi konvergen seragam (Bab 14).
+  \item[$\dfrac{\partial(x,y)}{\partial(u,v)}$] determinan Jacobian perubahan
+        variabel (Bab 15).
+  \item[$x'=f(t,x)$, $\dot{x}=F(x)$] persamaan diferensial biasa dan sistem
+        otonom, dengan $'$ dan $\dot{\ }$ sama-sama menyatakan turunan terhadap
+        waktu (Bab 16).
+  \item[$\varphi_t(x_0)$] aliran: keadaan pada waktu $t$ bila mulai dari $x_0$
+        (Bab 16).
+  \item[$x^{*}$, $J_F(x^{*})$] titik setimbang dan matriks Jacobian di titik itu;
+        tanda bagian real nilai eigennya menentukan kestabilan (Bab 16).
+\end{description}
+
+\section*{Peluang dan statistika (Bab 17--21, 26)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$P(A)$, $P(A\mid B)$] peluang kejadian $A$ dan peluang bersyarat.
+  \item[{$\mathbb{E}[X]$, $\operatorname{Var}X$}] harapan dan variansi.
+  \item[$\operatorname{Cov}(X,Y)$] kovarians dua variabel acak (Bab 18).
+  \item[$\bar{X}_n$, $\mathrm{se}$] rata-rata sampel dan galat bakunya.
+  \item[$\mathrm{CI}_{1-\alpha}$] interval kepercayaan dengan tingkat
+        $1-\alpha$ (Bab 20).
+  \item[$\mathrm{TP}$, $\mathrm{FP}$, $\mathrm{FN}$, $\mathrm{TN}$] empat sel
+        matriks konfusi (Bab 27).
+  \item[$\hat{\beta}$, $\hat{y}=X\hat{\beta}$] koefisien regresi kuadrat
+        terkecil dan nilai yang diprediksi (Bab 21).
+  \item[$e_i=y_i-\hat{y}_i$, $R^2$] residu dan proporsi variansi yang dijelaskan
+        model (Bab 21).
+  \item[$\mathrm{se}(\hat{\beta}_j)$, $\mathrm{VIF}_j$] galat baku koefisien dan
+        faktor pembengkakan variansi (Bab 21).
+\end{description}
+
+\section*{Optimasi, pembelajaran mesin, dan verifikasi (Bab 23--30)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$\min f_0(x)$ dengan $f_i(x)\le 0$] bentuk baku masalah optimasi (Bab 23).
+  \item[$L(x,\lambda,\nu)$] Lagrangian; $\lambda,\nu$ pengali (Bab 23).
+  \item[$c^{\top}x$, $Ax\le b$, $x\in\mathbb{Z}^n$] bentuk LP dan program integer
+        (Bab 24).
+  \item[$\sigma(\cdot)$, $\mathrm{softmax}$] fungsi aktivasi dan normalisasi
+        eksponensial (Bab 25).
+  \item[$\nabla_{\mathbf{x}}\ell$] gradien fungsi kerugian terhadap masukan;
+        bahan bakar serangan (Bab 25, 29).
+  \item[$L_2$, $L_1$, $\lambda_{\text{reg}}$] jenis regularisasi dan kekuatannya
+        (Bab 26).
+  \item[$\|\delta\|_{\infty}\le\varepsilon$] batas gangguan pada serangan
+        adversarial (Bab 29, 30).
+  \item[$\vdash$, \texttt{by}, \texttt{sorry}] keterbuktian, pembuka blok taktik,
+        dan bukti yang ditangguhkan di Lean~4 (Bab 28).
+\end{description}
+
+% ---------------------------- lampiran B ----------------------------
+\chapter{Glosarium}
+\label{app:glosarium}
+
+Istilah di bawah dipakai dengan arti teknis yang tetap sepanjang buku. Padanan
+Inggris dicantumkan karena sebagian besar literatur memakai istilah Inggris.
+
+\begin{description}[style=nextline,itemsep=0.35em]
+  \item[Adjoin] matriks kofaktor yang disusun transpos; dipakai menuliskan invers sebagai satu rumus, $A^{-1}=\operatorname{adj}(A)/\det A$ (\emph{adjugate}).
+  \item[Adjoint] dalam turunan balik, bilangan yang menyatakan seberapa besar kerugian akhir terpengaruh oleh satu besaran di tengah jaringan; satu adjoint per besaran (\emph{adjoint}).
+  \item[Akar primitif] anggota yang bila dipangkatkan berulang melewati semua anggota grup siklik lain sebelum kembali ke satu; pada kriptografi, posisi awal yang mencapai seluruh posisi kunci (\emph{primitive root}).
+  \item[Aksioma] pernyataan yang diterima tanpa bukti sebagai titik awal; seluruh isi bab bergantung padanya (\emph{axiom}).
+  \item[Aksioma kelengkapan] janji bahwa setiap himpunan tak kosong yang terbatas ke atas di $\mathbb{R}$ punya supremum; inilah yang membuat garis bilangan tidak berlubang (\emph{completeness axiom}).
+  \item[Amplitudo] amplitudo peluang: bilangan kompleks yang modulus kuadratnya memberi peluang; berbeda dari peluang karena dua amplitudo dapat saling meniadakan (\emph{probability amplitude}).
+  \item[Anggaran privasi] jumlah $\varepsilon$ yang boleh dibelanjakan sebuah sistem; setiap kueri atau langkah pelatihan mengurangi sisanya (\emph{privacy budget}).
+  \item[Antiturunan] fungsi yang turunannya adalah fungsi yang sedang diintegralkan; arah pulang dari sebuah turunan (\emph{antiderivative}).
+  \item[Aturan Born] aturan yang mengubah amplitudo menjadi peluang dengan mengkuadratkan modulusnya (\emph{Born rule}).
+  \item[Aturan rantai] laju perubahan fungsi tersusun sama dengan hasil kali laju pada setiap mata rantainya (\emph{chain rule}).
+  \item[Aturan tiga] bila tidak ada kejadian dalam $n$ percobaan, laju kejadiannya masih boleh setinggi sekitar $3/n$ pada selang kepercayaan 95 persen (\emph{rule of three}).
+  \item[Bantalan] isi tambahan pada paket sebelum dikirim agar setiap paket berukuran tetap, sehingga ukuran paket tidak lagi membocorkan isinya (\emph{padding}).
+  \item[Barisan] deretan bilangan yang diberi nomor urut $a_1,a_2,\dots$; urutannya bagian dari definisinya, bukan sesuatu yang ditambahkan kemudian (\emph{sequence}).
+  \item[Barisan Cauchy] barisan yang sukunya makin rapat satu sama lain, tanpa perlu menyebut nilai yang dituju (\emph{Cauchy sequence}).
+  \item[Barisan monoton] barisan yang hanya naik atau hanya turun, tidak pernah berbalik arah (\emph{monotone sequence}).
+  \item[Basis] himpunan vektor yang bebas linear dan merentang seluruh ruang (\emph{basis}).
+  \item[Bentuk baku] penulisan seragam masalah optimasi: satu sasaran, kendala berbentuk tidak lebih dari nol, dan peubah tak negatif (\emph{standard form}).
+  \item[Bias-variansi] pembagian galat model menjadi galat karena terlalu sederhana dan galat karena terlalu peka pada data (\emph{bias-variance tradeoff}).
+  \item[Bijeksi] pemasangan sempurna dua himpunan: injektif dan surjektif sekaligus, tanpa sisa di kedua sisi (\emph{bijection}).
+  \item[Bilangan kondisi] ukuran seberapa besar galat relatif keluaran dapat membesar dibanding galat relatif masukan (\emph{condition number}).
+  \item[Bootstrap] penaksiran sebaran statistik dengan mengambil ulang sampel dari data sendiri, berkali-kali, dengan pengembalian (\emph{bootstrap}).
+  \item[BPDA] pengganti gradien pada potongan yang tidak terdiferensiasi dengan gradien fungsi di titik sesudahnya, dipakai agar serangan tetap dapat dihitung (\emph{backward pass differentiable approximation}).
+  \item[Celah integralitas] jarak antara nilai terbaik relaksasi LP dan nilai terbaik jawaban bulat; ia mengukur seberapa jauh model bersambung menipu (\emph{integrality gap}).
+  \item[Defective] matriks yang nilai eigennya berulang tetapi ruang eigennya terlalu sempit untuk menjadi basis (\emph{defective}).
+  \item[Dekomposisi nilai singular (SVD)] penulisan matriks sebagai $U\Sigma V^{\top}$ dengan $U,V$ ortogonal (\emph{singular value decomposition}).
+  \item[Deret] penjumlahan suku-suku barisan tanpa henti, yang nilainya dibaca sebagai limit jumlah parsial (\emph{series}).
+  \item[Deret harmonik] deret $1+1/2+1/3+\cdots$; sukunya menuju nol tetapi jumlahnya menyimpang (\emph{harmonic series}).
+  \item[Deret pangkat] deret berbentuk $\sum a_n(x-c)^n$; ia berlaku hanya di dalam jari-jari konvergensinya (\emph{power series}).
+  \item[Deret Taylor] penulisan fungsi sebagai jumlah suku turunan di satu titik, beserta sisa yang mengukur galat pemotongan. (\emph{Taylor series}).
+  \item[Determinan] satu bilangan yang mengukur faktor perubahan volume dan sekaligus menguji invertibilitas (\emph{determinant}).
+  \item[Determinan Jacobian] faktor skala volume lokal ketika koordinat diganti; nilai mutlaknya mengalikan luas atau volume pada integral lipat (\emph{Jacobian determinant}).
+  \item[Diagonalisasi] penggantian basis sampai matriksnya menjadi diagonal, sehingga pekerjaannya tinggal perkalian angka (\emph{diagonalization}).
+  \item[Dimensi] banyaknya vektor dalam sebuah basis; angkanya milik ruang, bukan milik satu basis yang kebetulan dipilih (\emph{dimension}).
+  \item[Distribusi eksponensial] sebaran waktu tunggu pada proses tanpa penuaan, dengan fungsi kepadatan $\lambda e^{-\lambda t}$ (\emph{exponential distribution}).
+  \item[Distribusi normal] sebaran lonceng simetris yang ditentukan sepenuhnya oleh rata-rata dan variansinya (\emph{normal distribution}).
+  \item[Dualitas] perumusan masalah optimasi dari sisi lain, yang nilai optimalnya memberi batas bawah bagi masalah asal (\emph{duality}).
+  \item[Ekor berat] sebaran yang peluang nilai raksasanya mengecil terlalu lambat, sehingga satu pengamatan dapat mengalahkan seluruh sisanya (\emph{heavy tail}).
+  \item[Eliminasi] penggantian sebuah sistem dengan sistem yang lebih sederhana tanpa mengubah himpunan solusinya (\emph{elimination}).
+  \item[Entropi silang] ukuran kejutan $-\sum_i y_i\log \hat{p}_i$; makin yakin model pada jawaban yang salah, makin besar dendanya (\emph{cross-entropy}).
+  \item[EOT] serangan yang memaksimumkan harapan kerugian atas keacakan pertahanan, biasanya dengan merata-ratakan gradien pada beberapa salinan acak (\emph{expectation over transformation}).
+  \item[Epsilon mesin] jarak antara $1$ dan bilangan mesin berikutnya; ukuran satu langkah pada skala satu (\emph{machine epsilon}).
+  \item[Epsilon-delta] gaya mendefinisikan limit dengan menyebut toleransi keluaran lebih dulu, lalu batas masukan yang menjaminnya. (\emph{epsilon-delta definition}).
+  \item[Faktor integrasi] pengali yang mengubah ruas kiri persamaan diferensial linear menjadi satu turunan hasil kali (\emph{integrating factor}).
+  \item[Fungsi aktivasi] pemetaan tak linear pada keluaran sebuah unit; ia menentukan seberapa besar sinyal diteruskan dan bentuk turunannya (\emph{activation function}).
+  \item[Fungsi distribusi kumulatif] fungsi $F(x)=P(X\le x)$; tangga menanjak yang tingginya menyatakan peluang yang sudah terkumpul sampai $x$ (\emph{cumulative distribution function}).
+  \item[Fungsi kerugian] bilangan yang ingin diperkecil saat model dilatih; ia mengukur seberapa salah prediksi, bukan seberapa benar (\emph{loss function}).
+  \item[Fungsi konveks] fungsi yang grafiknya selalu di bawah tali penghubung dua titiknya; setiap minimum lokalnya adalah minimum global (\emph{convex function}).
+  \item[Fungsi Lyapunov] fungsi bernilai positif yang menurun sepanjang lintasan sistem; keberadaannya membuktikan kestabilan tanpa menyelesaikan persamaannya (\emph{Lyapunov function}).
+  \item[Fungsi phi] fungsi $\varphi(n)$: banyaknya bilangan antara $1$ dan $n$ yang saling prima dengan $n$ (\emph{Euler totient function}).
+  \item[Galat baku] simpangan baku penaksir, bukan simpangan baku data; ia mengukur goyangan satu tebakan (\emph{standard error}).
+  \item[Galat pemotongan] selisih yang muncul karena proses tak hingga diganti potongan berhingga (\emph{truncation error}).
+  \item[Garis regresi] garis (atau bidang) yang meminimumkan jumlah kuadrat sisa; ekuivalen dengan proyeksi ortogonal pada ruang kolom (\emph{regression line}).
+  \item[Generalisasi] kemampuan mengerjakan soal yang belum pernah dilihat, bukan soal yang sudah dihafal (\emph{generalization}).
+  \item[Gradien] vektor turunan parsial; arah naik tercepat sebuah fungsi (\emph{gradient}).
+  \item[Gradien dikaburkan] gradien yang diberikan kepada penyerang tidak menunjuk arah yang benar, biasanya karena ada potongan tak terdiferensiasi atau acak (\emph{obfuscated gradient}).
+  \item[Gradien terbalik] lihat turunan balik. (\emph{backward gradient}).
+  \item[Harapan] nilai harapan $\mathbb{E}[X]$: rata-rata berbobot peluang, titik tumpu sebaran (\emph{expectation}).
+  \item[Hasilkali dalam] pemetaan dua vektor ke satu skalar yang mengukur panjang dan sudut; di $\mathbb{R}^n$ nilainya $\langle \mathbf{x},\mathbf{y}\rangle=\mathbf{x}^{\top}\mathbf{y}$ (\emph{inner product}).
+  \item[Hessian] matriks turunan parsial kedua; kecekungan fungsi ditentukan oleh tandanya (\emph{Hessian}).
+  \item[Himpunan kuasa] himpunan semua himpunan bagian, termasuk himpunan kosong dan himpunan itu sendiri; kardinalitasnya $2^n$ (\emph{power set}).
+  \item[Himpunan padat] himpunan yang setiap titiknya dapat didekati oleh anggota himpunan itu sendiri selain titik tersebut (\emph{dense set}).
+  \item[Himpunan terhitung] himpunan yang anggotanya dapat didaftar sebagai barisan pertama, kedua, ketiga, dan seterusnya tanpa ada yang tertinggal (\emph{countable set}).
+  \item[Hipotesis nol] dugaan awal yang diuji, biasanya "tidak ada efek"; penolakan hanya terjadi bila data sangat tidak cocok dengannya (\emph{null hypothesis}).
+  \item[Hukum bilangan besar] janji bahwa rata-rata banyak pengamatan menempel ke rata-rata sebenarnya, dengan peluang meleset yang mengecil (\emph{law of large numbers}).
+  \item[i.i.d.] sampel yang saling bebas dan berdistribusi sama; asumsi paling sering dipakai, dan paling sering dilanggar (\emph{independent and identically distributed}).
+  \item[Implikasi] pernyataan berbentuk jika $P$ maka $Q$; ia hanya salah bila $P$ benar dan $Q$ salah (\emph{implication}).
+  \item[Independen] dua kejadian yang tidak saling memberi kabar, $P(A\cap B)=P(A)P(B)$; mengetahui yang satu tidak mengubah peluang yang lain (\emph{independent}).
+  \item[Induksi] pola bukti domino: basis benar, lalu setiap kasus menjatuhkan kasus berikutnya (\emph{induction}).
+  \item[Induksi kuat] induksi yang boleh memakai seluruh kasus sebelumnya, bukan hanya kasus terdekat (\emph{strong induction}).
+  \item[Integral lipat dua] penjumlahan nilai pada petak-petak kecil sebuah daerah, lalu limitnya ketika petak mengecil (\emph{double integral}).
+  \item[Integral Riemann] limit jumlah luas persegi panjang ketika lebar partisi mengecil (\emph{Riemann integral}).
+  \item[Interpolasi] mencari fungsi yang melewati semua titik data; berbeda dari regresi yang tidak menuntut itu. (\emph{interpolation}).
+  \item[Interval kepercayaan] rentang nilai yang, bila prosedur pengambilan sampel diulang, memuat parameter sebenarnya dengan peluang tertentu (\emph{confidence interval}).
+  \item[Interval Wilson] selang kepercayaan proporsi yang dicari dengan membalik uji, sehingga tetap masuk akal ketika proporsi mendekati nol atau satu (\emph{Wilson interval}).
+  \item[Inti] lihat kernel: himpunan semua vektor yang dipetakan ke nol oleh transformasi linear (\emph{kernel, null space}).
+  \item[Invers modular] bilangan $b$ sehingga $ab\equiv 1 \pmod n$; tombol batalkan pada aritmetika jam (\emph{modular inverse}).
+  \item[Isomorfisme] pemetaan bijektif yang mempertahankan struktur; dua ruang yang isomorfik tidak dapat dibedakan secara aljabar (\emph{isomorphism}).
+  \item[Jacobian] matriks turunan parsial pertama sebuah pemetaan vektor; determinannya mengukur faktor skala volume lokal (\emph{Jacobian}).
+  \item[Jari-jari konvergensi] jarak terjauh dari pusat tempat sebuah deret pangkat masih konvergen (\emph{radius of convergence}).
+  \item[Jumlah atas] taksiran integral yang sengaja dibesarkan, memakai nilai terbesar pada tiap potongan (\emph{upper sum}).
+  \item[Jumlah langsung] penjumlahan dua subruang yang hanya bertemu di vektor nol, sehingga setiap vektor punya satu cara penulisan (\emph{direct sum}).
+  \item[Kalibrasi] kesesuaian antara angka yang dijanjikan model dan frekuensi kenyataan pada kelompok yang dijanjikan sama (\emph{calibration}).
+  \item[Kamus] kotak kecil di dalam bab yang menerangkan satu istilah baru beserta analoginya.
+  \item[Kebocoran data] informasi dari data uji yang tanpa sengaja masuk ke proses pelatihan, sehingga hasil uji tampak lebih baik dari kenyataan (\emph{data leakage}).
+  \item[Kekontinuan seragam] kekontinuan dengan satu $\delta$ yang berlaku untuk semua titik pada himpunan, bukan satu $\delta$ per titik (\emph{uniform continuity}).
+  \item[Kekonvergenan seragam] barisan fungsi yang mendekati fungsi batasnya dengan laju yang sama di seluruh domain (\emph{uniform convergence}).
+  \item[Kelas sisa] himpunan bilangan yang memberi sisa sama saat dibagi $n$, seperti pukul tiga pagi dan pukul tiga sore (\emph{residue class}).
+  \item[Kernel] himpunan semua masukan yang dipetakan ke nol oleh transformasi linear; sama dengan ruang nol (\emph{kernel, null space}).
+  \item[Kesalahan pembulatan] selisih antara bilangan real dan wakilannya di mesin, yang menumpuk pada penjumlahan panjang (\emph{rounding error}).
+  \item[Kestabilan] sifat titik setimbang atau sistem dinamik yang tetap dekat dengan keadaannya setelah gangguan kecil (\emph{stability}).
+  \item[Keterintegralan] sifat fungsi yang jumlah atas dan bawahnya dapat dirapatkan sampai selisihnya hilang, disebut keterintegralan Riemann (\emph{Riemann integrability}).
+  \item[Ketunggalan] jaminan bahwa satu keadaan awal hanya melahirkan satu lintasan solusi (\emph{uniqueness}).
+  \item[Koefisien determinasi] bagian variasi yang dijelaskan model, dinyatakan sebagai pecahan dari keseluruhan; ditulis $R^2$ (\emph{coefficient of determination}).
+  \item[Kombinasi] pilihan beberapa anggota tanpa memperhatikan urutannya; banyaknya $\binom{n}{k}$ (\emph{combination}).
+  \item[Kombinasi konveks] campuran berbobot vektor dengan bobot tak negatif yang berjumlah satu (\emph{convex combination}).
+  \item[Kompak] himpunan tertutup dan terbatas; setiap barisan di dalamnya punya subbarisan yang konvergen di dalam himpunan itu (\emph{compact}).
+  \item[Kompleksitas sampel] banyaknya contoh yang dibutuhkan agar model dapat digeneralisasi dengan keyakinan tertentu (\emph{sample complexity}).
+  \item[Kondisi KKT] syarat perlu optimalitas untuk masalah dengan kendala pertidaksamaan (\emph{Karush-Kuhn-Tucker conditions}).
+  \item[Kontinu] fungsi yang grafiknya dapat digambar tanpa mengangkat pena di titik itu, yaitu $\lim_{x\to c}f(x)=f(c)$ (\emph{continuous}).
+  \item[Konvergensi dalam distribusi] fungsi distribusinya menuju fungsi distribusi batas di setiap titik kontinuitas; yang menyerupai adalah bentuk sebarannya, bukan nilainya (\emph{convergence in distribution}).
+  \item[Konvergensi dalam peluang] $P(|X_n-X|>\varepsilon)\to 0$ untuk setiap $\varepsilon>0$ (\emph{convergence in probability}).
+  \item[Konvergensi mutlak] deret yang tetap konvergen ketika semua sukunya dipaksa menjadi positif (\emph{absolute convergence}).
+  \item[Konvergensi seragam] lihat kekonvergenan seragam: satu laju untuk seluruh domain, bukan satu jadwal per titik (\emph{uniform convergence}).
+  \item[Koordinat] daftar koefisien yang menyatakan sebuah vektor dalam suatu basis; disebut juga vektor koordinat (\emph{coordinate vector}).
+  \item[Korelasi] ukuran kekuatan hubungan linear antara dua peubah; tidak menyatakan sebab-akibat (\emph{correlation}).
+  \item[Kovarians] lihat kovariansi: ukuran dua besaran bergerak bersama, dihitung dari hasil kali simpangan keduanya (\emph{covariance}).
+  \item[Kovariansi] ukuran seberapa dua peubah bergerak bersama; satuannya hasil kali satuan keduanya (\emph{covariance}).
+  \item[Kuadrat terkecil] pemilihan parameter yang meminimumkan jumlah kuadrat sisa ketika tidak ada solusi eksak (\emph{least squares}).
+  \item[Kuantisasi] penggantian setiap nilai dengan kelipatan terdekat dari jarak tetap; hasilnya fungsi tangga yang turunannya nol hampir di mana-mana (\emph{quantization}).
+  \item[Kuantor] penanda untuk semua ($\forall$) atau ada ($\exists$); urutan pemakaiannya mengubah arti pernyataan (\emph{quantifier}).
+  \item[Kurva ROC] grafik tingkat benar terhadap tingkat salah palsu pada semua ambang; luas di bawahnya disebut AUROC (\emph{ROC curve}).
+  \item[Kutub dan nol] nilai peubah kompleks yang membuat fungsi meledak atau lenyap; dipakai dalam analisis sistem dinamik dan kontrol. (\emph{poles and zeros}).
+  \item[Lapangan] himpunan dengan dua operasi yang tertutup, punya identitas dan invers, dan memenuhi hukum distributif (\emph{field}).
+  \item[Lapangan terurut] lapangan yang anggotanya dapat diurutkan dan aturan hitungnya menghormati urutan itu (\emph{ordered field}).
+  \item[Lapisan tersembunyi] lapisan unit yang tidak bersentuhan langsung dengan masukan maupun keluaran jaringan (\emph{hidden layer}).
+  \item[Lawan contoh] satu contoh yang mematahkan pernyataan "untuk semua" (\emph{counterexample}).
+  \item[Limit fungsi] $f(x)$ dapat dipaksa sedekat apa pun ke $L$ asalkan $x$ cukup dekat ke $c$ tetapi tidak sama dengan $c$ (\emph{functional limit}).
+  \item[Limit superior] nilai terbesar yang masih dikunjungi barisan sesering apa pun di ujungnya, ditulis $\limsup_{n\to\infty}a_n$ (\emph{upper limit}).
+  \item[Lipschitz] syarat bahwa laju perubahan sebuah fungsi dibatasi satu konstanta; inilah yang menjamin solusi persamaan diferensial tunggal (\emph{Lipschitz condition}).
+  \item[Luar sampel] data yang tidak dipakai saat melatih model, sehingga jujur untuk menilai (\emph{out-of-sample}).
+  \item[Matriks elementer] matriks identitas yang sudah dikenai satu operasi baris, sehingga menjadi catatan operasi itu (\emph{elementary matrix}).
+  \item[Matriks konfusi] tabel empat sel yang membandingkan prediksi dengan kenyataan (\emph{confusion matrix}).
+  \item[Matriks ortogonal] matriks persegi yang kolom-kolomnya ortonormal; ia mempertahankan panjang dan sudut (\emph{orthogonal matrix}).
+  \item[Metode Euler] penyelesaian numerik persamaan diferensial dengan melangkah mengikuti garis singgung; galatnya orde satu terhadap langkah. (\emph{Euler method}).
+  \item[Metode tanda gradien] serangan satu langkah (FGSM) yang menggeser setiap koordinat sebesar anggaran, arahnya mengikuti tanda turunan kerugian (\emph{fast gradient sign method}).
+  \item[Model ancaman] daftar lengkap kemampuan penyerang: besar gangguannya, apa yang ia ketahui, dan apa tujuannya (\emph{threat model}).
+  \item[Multikolinearitas] keadaan ketika peubah penjelas saling hampir bergantung linear, sehingga koefisien regresi menjadi tidak stabil (\emph{multicollinearity}).
+  \item[Multiplisitas] banyaknya kemunculan sebuah nilai eigen sebagai akar polinomial karakteristik, yang tidak selalu sama dengan dimensi ruang eigennya (\emph{multiplicity}).
+  \item[NIDS] sistem yang memantau lalu lintas jaringan dan memutuskan apakah suatu aliran paket merupakan serangan (\emph{network intrusion detection system}).
+  \item[Nilai eigen] skalar $\lambda$ sehingga $A\mathbf{v}=\lambda\mathbf{v}$ untuk suatu vektor tak nol (\emph{eigenvalue}).
+  \item[Nilai mutlak] jarak sebuah bilangan ke nol pada garis bilangan, tanpa memedulikan tandanya (\emph{absolute value}).
+  \item[Nilai singular] akar nilai eigen dari $A^{\top}A$; mengukur panjang sumbu utama pemetaan oleh matriks $A$ (\emph{singular value}).
+  \item[Nilai-p] peluang memperoleh hasil setidaknya seekstrem yang teramati bila hipotesis nol benar; bukan peluang hipotesis nol benar (\emph{p-value}).
+  \item[Norma] ukuran panjang vektor; norma $L_\infty$ mengambil komponen terbesar. (\emph{norm}).
+  \item[Orientasi] kesepakatan tentang arah putar mana yang dihitung positif; membaliknya membalik tanda integral (\emph{orientation}).
+  \item[Ortogonal] saling tegak lurus dalam arti hasilkali dalamnya nol (\emph{orthogonal}).
+  \item[Ortonormal] himpunan ortogonal yang setiap anggotanya berpanjang satu (\emph{orthonormal}).
+  \item[Overfitting] menghafal data latih termasuk deraunya, sehingga kemampuan di data baru menurun (\emph{overfitting}).
+  \item[Partisi] pembagian himpunan menjadi bagian-bagian yang saling lepas dan menutup seluruh himpunan (\emph{partition}).
+  \item[Peluang] bobot pada setiap kemungkinan, tak negatif dan berjumlah satu (\emph{probability}).
+  \item[Peluang bersyarat] peluang kejadian bila kejadian lain diketahui terjadi; ditulis $P(A\mid B)$ (\emph{conditional probability}).
+  \item[Pembatalan katastrofik] hilangnya digit berarti ketika dua bilangan hampir sama dikurangkan, sehingga yang tersisa hanya galat (\emph{catastrophic cancellation}).
+  \item[Pembelajaran adversarial] studi tentang contoh yang sengaja dirancang untuk menipu model, dan cara mempertahankannya (\emph{adversarial learning}).
+  \item[Pembulatan] penggantian bilangan real dengan bilangan mesin terdekat (\emph{rounding}).
+  \item[Pemisahan data] pembagian data menjadi latih, validasi, dan uji yang tidak saling bocor (\emph{data split}).
+  \item[Penaksir] aturan yang mengubah sampel menjadi tebakan parameter; tebakan yang dihasilkan disebut nilai dugaan (\emph{estimator}).
+  \item[Pengali Lagrange] peubah bantu yang mengenakan harga pada kendala; nilainya menunjukkan seberapa besar tujuan dapat membaik bila kendala dilonggarkan (\emph{Lagrange multiplier}).
+  \item[Penghubung logika] operasi yang menggabungkan pernyataan: dan, atau, tidak, jika-maka, jika-dan-hanya-jika (\emph{logical connective}).
+  \item[Penurunan gradien stokastik] penurunan gradien yang memakai sebagian kecil data tiap langkah; lebih murah, lebih berisik (\emph{stochastic gradient descent}).
+  \item[Perceptron] pengklasifikasi linear paling sederhana: tanda dari hasilkali dalam bobot dan masukan. (\emph{perceptron}).
+  \item[Persamaan diferensial] kalimat yang mengikat laju perubahan sebuah besaran dengan besar besaran itu sendiri (\emph{differential equation}).
+  \item[Persamaan diferensial biasa] persamaan yang mengaitkan fungsi dengan turunannya terhadap satu peubah bebas (\emph{ordinary differential equation}).
+  \item[PGC (penurunan gradien)] aturan pembaruan parameter melawan arah gradien (\emph{gradient descent}).
+  \item[Plateau tandus] daerah pada lanskap kerugian sirkuit variasional tempat gradien mengecil secara eksponensial terhadap jumlah qubit (\emph{barren plateau}).
+  \item[Polinomial karakteristik] $\det(A-\lambda I)$; akar-akarnya adalah nilai eigen $A$ (\emph{characteristic polynomial}).
+  \item[Privasi diferensial] janji bahwa keikutsertaan satu orang di dalam data hanya mengubah sebaran keluaran sedikit, diukur oleh $\varepsilon$ (\emph{differential privacy}).
+  \item[Program linear] masalah memaksimumkan atau meminimumkan fungsi linear dengan kendala linear (\emph{linear program}).
+  \item[Proposisi] kalimat yang bernilai benar atau salah, bukan pertanyaan atau perintah; dalam buku ini juga nama lingkungan teorema (\emph{proposition}).
+  \item[Proyeksi] titik pada subruang yang paling dekat dengan sebuah vektor, yaitu bayangan tegak lurusnya (\emph{projection}).
+  \item[Pseudoinvers] invers tergeneralisasi $A^{+}$ yang tetap bekerja ketika sebagian arah sudah gepeng: yang dapat dibalik dibalik, yang hilang dibiarkan (\emph{pseudoinverse}).
+  \item[Rank] banyaknya arah bebas yang masih bertahan setelah dipetakan, yaitu $\dim\operatorname{im}T$ (\emph{rank}).
+  \item[Rank-nullity] $\dim\ker T+\dim\operatorname{im}T=\dim V$ untuk transformasi linear pada ruang berdimensi hingga. (\emph{rank-nullity theorem}).
+  \item[Rasio peluang] perbandingan peluang berhasil dan gagal; eksponensial koefisien regresi logistik menyatakan berapa kali rasio itu berlipat per satuan (\emph{odds ratio}).
+  \item[Regresi] menarik fungsi yang paling dekat ke semua titik, bukan fungsi yang melewati semuanya (\emph{regression}).
+  \item[Regresi logistik] model untuk keluaran biner yang memetakan kombinasi linear ke peluang lewat fungsi logistik (\emph{logistic regression}).
+  \item[Regularisasi] penalti pada besarnya parameter agar model tidak terlalu peka pada data latih (\emph{regularization}).
+  \item[Relaksasi LP] penggantian syarat bulat dengan syarat real agar masalah integer dapat diselesaikan sebagai LP (\emph{LP relaxation}).
+  \item[Residu] selisih antara nilai teramati dan nilai yang diprediksi model (\emph{residual}).
+  \item[Ringkasan] kotak butir di akhir bab yang boleh dibaca sendiri tanpa badan bab.
+  \item[Ruang eigen] seluruh vektor eigen untuk satu nilai eigen beserta vektor nol; ia sebuah subruang (\emph{eigenspace}).
+  \item[Ruang masalah] ruang objek nyata yang boleh diubah penyerang, misalnya paket dan waktu; berbeda dari ruang fitur tempat model bekerja (\emph{problem space}).
+  \item[Ruang vektor] himpunan dengan penjumlahan dan perkalian skalar yang tertutup dan memenuhi delapan aksioma (\emph{vector space}).
+  \item[Runge-Kutta] keluarga metode numerik yang mengevaluasi turunan beberapa kali per langkah untuk galat lebih kecil (\emph{Runge-Kutta}).
+  \item[Selang prediksi] selang bagi satu pengamatan yang belum terjadi; selalu lebih lebar daripada selang bagi rata-rata (\emph{prediction interval}).
+  \item[Sensitivitas] dalam privasi diferensial, perubahan keluaran terbesar yang dapat disebabkan satu orang (\emph{sensitivity}).
+  \item[Sensitivitas global] pergeseran terbesar jawaban sebuah kueri yang dapat disebabkan satu orang pada kasus terburuk (\emph{global sensitivity}).
+  \item[Serangan adaptif] serangan yang dirancang dengan mengetahui pertahanan yang sedang diuji, termasuk mengetahui bahwa gradiennya dimanipulasi (\emph{adaptive attack}).
+  \item[Serangan adversarial] gangguan kecil pada masukan yang sengaja dibuat untuk mengubah keluaran model (\emph{adversarial example}).
+  \item[Serupa] dua matriks yang menyatakan pemetaan linear yang sama dalam dua basis berbeda, $B=P^{-1}AP$ (\emph{similar}).
+  \item[Sistem floating-point] notasi ilmiah biner dengan jumlah digit tetap; bilangan disimpan sebagai tanda, pangkat, dan mantissa, sehingga jarak antar bilangan yang dapat diwakili tidak seragam: rapat di dekat nol, renggang di ujung atas, dan dua bilangan berbeda dapat jatuh ke tempat yang sama (\emph{floating-point system}).
+  \item[Softmax] pemetaan deretan skor menjadi peluang yang berjumlah satu, $e^{z_i}/\sum_j e^{z_j}$ (\emph{softmax}).
+  \item[Solusi layak basis] titik yang diperoleh dengan menyetel sebagian peubah ke nol lalu menyelesaikan sisanya, dan masih memenuhi semua kendala (\emph{basic feasible solution}).
+  \item[Solusi umum] keluarga semua solusi sebuah persamaan diferensial, bergantung pada konstanta sembarang (\emph{general solution}).
+  \item[Sorry] penanda Lean~4 bahwa sebuah bukti ditangguhkan; mesin menerimanya tetapi mencatatnya sebagai aksioma (\emph{sorry}).
+  \item[Stabil asimtotik] tetap dekat setelah diganggu, lalu benar-benar kembali ke titik setimbang (\emph{asymptotically stable}).
+  \item[Subbarisan] barisan yang diperoleh dengan membuang sebagian suku tanpa mengubah urutan sisa sukunya (\emph{subsequence}).
+  \item[Subruang] himpunan bagian ruang vektor yang tertutup terhadap penjumlahan dan perkalian skalar (\emph{subspace}).
+  \item[Supremum] batas atas terkecil; bilangan terkecil yang tidak lebih kecil dari semua anggota himpunan (\emph{supremum, least upper bound}).
+  \item[Susunan ulang] penukaran urutan suku deret; pada deret yang konvergen mutlak jumlahnya tidak berubah, pada deret yang tidak, jumlahnya dapat berubah (\emph{rearrangement}).
+  \item[Syarat perlu] syarat yang harus dipenuhi agar pernyataan benar; tanpanya mustahil, tetapi memenuhinya belum cukup (\emph{necessary condition}).
+  \item[Taktik] perintah langkah demi langkah dalam Lean~4 yang mengubah sasaran pembuktian (\emph{tactic}).
+  \item[Tanda tangan digital] nilai yang hanya dapat dibuat pemegang kunci privat tetapi dapat diperiksa siapa pun dengan kunci publik (\emph{digital signature}).
+  \item[Teorema Limit Pusat] rata-rata banyak variabel acak bebas menghampiri distribusi normal setelah dibakukan (\emph{central limit theorem}).
+  \item[Terhitung] himpunan yang anggotanya dapat dinomori tanpa ada yang terlewat; $\mathbb{Q}$ terhitung, $\mathbb{R}$ tidak (\emph{countable}).
+  \item[Term bukti] ungkapan yang sekaligus menjadi bukti dan menjadi nilai; memeriksa bukti sama dengan memeriksa tipe (\emph{proof term}).
+  \item[Titik akumulasi] titik yang setiap persekitarannya memuat anggota himpunan lain (\emph{accumulation point}).
+  \item[Titik setimbang] keadaan sistem dinamik yang tidak berubah bila tidak diganggu (\emph{equilibrium point}).
+  \item[Transferabilitas] sifat contoh adversarial yang dibuat untuk satu model tetapi juga menipu model lain yang dilatih terpisah (\emph{transferability}).
+  \item[Transformasi linear] pemetaan yang mempertahankan penjumlahan dan perkalian skalar (\emph{linear map}).
+  \item[Turunan] limit hasil bagi selisih; kemiringan garis singgung sekaligus laju perubahan sesaat (\emph{derivative}).
+  \item[Turunan balik] algoritme menghitung gradien seluruh parameter dengan menerapkan aturan rantai dari keluaran ke masukan (\emph{backpropagation}).
+  \item[Typeclass] daftar kemampuan yang harus dimiliki sebuah tipe agar dapat dipakai di tempat tertentu (\emph{type class}).
+  \item[Uji hipotesis] prosedur memutuskan, dengan risiko galat yang dinyatakan, apakah data cukup menolak dugaan awal (\emph{hypothesis test}).
+  \item[Uji rasio] deret konvergen mutlak bila $\lim|a_{n+1}/a_n|<1$, dan divergen bila limit itu lebih besar dari satu (\emph{ratio test}).
+  \item[ULP] satuan di tempat terakhir: satu langkah terkecil yang dapat dibedakan mesin pada skala sebuah bilangan (\emph{unit in the last place}).
+  \item[Uniter] matriks yang mempertahankan hasilkali dalam, $U^{*}U=I$; versi kompleks dari matriks ortogonal (\emph{unitary}).
+  \item[Validasi silang] penilaian model dengan membagi data bergiliran menjadi latih dan uji (\emph{cross-validation}).
+  \item[Validasi silang bersarang] dua lapis lipatan: lapisan luar menilai, lapisan dalam memilih, sehingga pemilihan model tidak membocorkan data uji (\emph{nested cross-validation}).
+  \item[Variabel acak] fungsi yang memetakan hasil percobaan ke bilangan (\emph{random variable}).
+  \item[Variabel kendur] peubah tambahan yang mencatat sisa pemakaian, sehingga kendala tidak lebih dari berubah menjadi persamaan (\emph{slack variable}).
+  \item[Varians inflasi] seberapa banyak variansi sebuah koefisien digelembungkan oleh penjelas lain yang membawa informasi serupa; disingkat VIF (\emph{variance inflation factor}).
+  \item[Variansi] ukuran sebaran di sekitar rata-rata; akar kuadratnya adalah simpangan baku (\emph{variance}).
+  \item[Verifikasi formal] pembuktian bahwa program atau rumus memenuhi spesifikasinya, diperiksa mesin (\emph{formal verification}).
+  \item[Verteks] sudut daerah layak, yaitu titik yang tidak pernah menjadi titik tengah antara dua titik layak lain (\emph{vertex}).
+  \item[Waktu polinomial] kelas algoritme yang banyaknya langkah tumbuh tidak lebih cepat dari polinom ukuran masukan (\emph{polynomial time}).
+  \item[Wilson] interval kepercayaan proporsi yang tetap masuk akal ketika proporsi mendekati nol atau satu. (\emph{Wilson interval}).
+  \item[Zaman kuantum] era ketika komputer kuantum cukup besar untuk menjalankan algoritme Shor pada kunci yang dipakai hari ini. (\emph{quantum computing era}).
+\end{description}
+
+% ---------------------------- lampiran C ----------------------------
+\chapter{Petunjuk dan Kriteria Penilaian Latihan}
+\label{app:petunjuk}
+
+Kunci jawaban ada di Lampiran~D, tetapi bentuknya sengaja tidak lengkap: angka akhir
+dan sketsa langkah, bukan pembuktian penuh. Alasannya konsistensi. Angka akhir tanpa
+jejak pemeriksaan akan mengajari pembaca kebiasaan yang justru ingin dihapus buku ini,
+dan bukti yang disodorkan utuh menghapus satu-satunya latihan yang berguna, yaitu
+mencari sendiri di mana argumen belum menutup. Jadi pakai kunci ini sebagai pembanding
+terakhir, bukan sebagai tempat memulai. Yang disediakan di sini adalah cara memeriksa
+pekerjaan sendiri sebelum kamu membuka Lampiran~D.
+
+\section*{Tiga jenis latihan dan cara memeriksanya}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{2.6cm}p{5.6cm}p{5.8cm}@{}}
+\toprule
+\textbf{Jenis} & \textbf{Yang dinilai} & \textbf{Cara memeriksa} \\
+\midrule
+Bukti & setiap langkah harus berangkat dari definisi atau hasil yang sudah
+  dibuktikan; tidak boleh ada lompatan & tukar naskah dengan teman; minta dia
+  menunjuk kalimat yang tidak bisa ia turunkan sendiri \\
+Hitung & angka akhir dan langkah antara & ulangi dengan Python; hitung galat
+  relatif terhadap hasil eksak; periksa apakah jawaban masuk akal secara
+  orde besaran \\
+Nilai klaim & mutu argumen, bukan benar-salah binari & tuliskan lebih dulu apa
+  yang harus benar agar klaim itu berlaku; cari satu contoh yang mematahkannya;
+  baru putuskan "benar", "salah", atau "belum cukup bukti" \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{Alat verifikasi per bagian}
+
+\begin{center}
+\small
+\begin{tabular}{@{}llp{7.2cm}@{}}
+\toprule
+\textbf{Bab} & \textbf{Alat} & \textbf{Pemeriksaan khas} \\
+\midrule
+1--5 & \texttt{python3} & tabel nilai, faktorisasi, jumlah parsial; bandingkan
+  dengan taksiran analitik (mis. $H_n\approx\ln n+\gamma$) \\
+6--10 & \texttt{numpy}, \texttt{scipy.linalg} & rank, ruang nol (\texttt{null\_space}),
+  nilai eigen, SVD, kuadrat terkecil (\texttt{lstsq}); periksa
+  $\|A\mathbf{v}-\lambda\mathbf{v}\|$ \\
+11--16 & \texttt{scipy.integrate}, beda hingga & kuadratur vs antiturunan; laju
+  galat pada beberapa $h$ atau beberapa $n$ \\
+17--21 & \texttt{numpy.random}, \texttt{scipy.stats} & simulasi Monte Carlo dengan
+  \emph{seed} tetap; bandingkan peluang empiris dengan peluang eksak dan
+  laporkan galat bakunya \\
+22 & \texttt{struct}, \texttt{float.hex} & bitfield, ULP, epsilon mesin;
+  bandingkan algoritme naif dengan Kahan \\
+23--24 & \texttt{scipy.optimize} & \texttt{linprog}, \texttt{minimize},
+  \texttt{milp}; periksa syarat KKT dan dualitas kuat secara numerik \\
+25--26 & \texttt{numpy} & pemeriksaan gradien dengan beda hingga; kurva galat
+  latih vs validasi pada beberapa setelan regularisasi \\
+27--30 & \texttt{numpy}, \texttt{scikit-learn} bila ada & matriks konfusi dari
+  prediksi tersimpan; interval Wilson untuk proporsi; akurasi di bawah serangan
+  untuk beberapa $\varepsilon$ dan beberapa \emph{seed} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{Cara menilai pekerjaan sendiri}
+
+\begin{enumerate}
+  \item Tuliskan lebih dulu apa yang diketahui dan apa yang ingin dibuktikan.
+        Bila keduanya belum jelas, kesulitannya bukan pada matematika.
+  \item Untuk latihan hitung, tebak jawaban sebelum menghitung. Tebakan yang salah
+        tetap berguna: ia menunjukkan di mana intuisi meleset.
+  \item Bandingkan hasil dengan dua cara berbeda. Satu cara bisa benar karena
+        kebetulan; dua cara yang sepakat jarang kebetulan.
+  \item Bila hasilnya berbeda jauh, cari kesalahan pada kasus sederhana lebih dulu
+        (satu variabel, satu langkah, $n=1$).
+  \item Tuliskan batas keberlakuan jawaban. Jawaban benar untuk kasus khusus yang
+        dinyatakan sebagai jawaban umum adalah kesalahan yang paling sering lolos.
+\end{enumerate}
+
+% ---------------------------- lampiran D ----------------------------
+\chapter{Kunci Jawaban}
+\label{app:kunci}
+
+Setiap angka di lampiran ini dihitung ulang dengan Python sebelum ditulis, dan skrip
+pemeriksanya disertakan bersama sumber naskah, sehingga pembaca dapat menjalankannya
+sendiri. Untuk latihan bukti, yang diberikan hanya sketsa dua sampai lima baris;
+itu cukup untuk memeriksa apakah arah pekerjaanmu benar, tetapi tidak cukup untuk
+disalin sebagai bukti. Butir yang soalnya sendiri bermasalah ditandai terang-terangan
+sebagai ambigu, bukan dipaksakan punya jawaban.
+
+\input{lampiran-kunci/kunci-01-05}
+\input{lampiran-kunci/kunci-06-15}
+\input{lampiran-kunci/kunci-16-23}
+\input{lampiran-kunci/kunci-24-32}
+
+% ---------------------------- indeks ----------------------------
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Indeks}
+\printindex
+
+% ---------------------------- kolofon ----------------------------
+\chapter*{Kolofon}
+\addcontentsline{toc}{chapter}{Kolofon}
+\markboth{Kolofon}{Kolofon}
+
+Naskah ini ditulis dalam bahasa Indonesia, disusun menjadi enam bagian dan tiga puluh
+dua bab, dan dibangun dengan \LaTeX{} (pdf\LaTeX{}, kelas \texttt{book}). Seluruh
+sumber naskah dalam bentuk \LaTeX{} disertakan bersama buku ini, sehingga setiap angka
+dan setiap potongan kode dapat diperiksa ulang pembaca; versi tiga belas bab yang
+mendahuluinya tetap diarsipkan sebagai catatan sejarah penyusunan.
+
+Buku ini karya tulis orisinal: kalimat, urutan penyajian, contoh hitung, dan latihan
+disusun sendiri. Gagasan matematisnya bersumber pada kitab-kitab di Daftar Rujukan,
+dan pembaca didorong membacanya. Tidak ada bagian naskah yang disalin verbatim dari
+kitab sumber; bila sebuah definisi atau teorema mengikuti sumber secara ketat,
+sumbernya disebut pada peta bab.
+
+Setiap angka di dalam Lab komputasi berasal dari eksekusi nyata di mesin penyusun
+(Python 3, NumPy, SciPy) dan dapat diulang pembaca. Potongan kode Lean~4 di Bab~28
+dijalankan dengan Lean 4.10.0 tanpa Mathlib dan keluarannya dikutip apa adanya;
+taktik pustaka seperti \texttt{linarith} dan \texttt{ring} tidak dijalankan karena
+Mathlib tidak terpasang, dan bab itu menyatakan batas tersebut.
+
+Sampul dan tata letak sederhana dengan sengaja, tanpa foto atau gambar raster: seluruh
+gambar di dalam bab digambar sebagai kode TikZ, sehingga pembaca dapat memeriksa
+angkanya dan mengubahnya, dan daftar gambarnya ada di halaman depan. Enam kotak
+belajar menjadi penanda visual utama --- \emph{Untuk pembaca muda}, \emph{Catatan untuk
+dosen}, \emph{Untuk peneliti}, \emph{Bacakan keras}, \emph{Kerjakan dengan tangan},
+\emph{Resep langkah}, dan \emph{Tantangan} --- sehingga satu bab yang sama dapat
+dimasuki dari cara belajar yang berbeda.
+
+\subsection*{Lisensi}
+Teks buku ini dilisensikan Creative Commons BY-NC-SA 4.0: boleh dibagikan dan
+diadaptasi untuk kepentingan nonkomersial dengan atribusi dan lisensi yang sama.
+Potongan kode Python dan Lean~4 di dalamnya dilisensikan MIT, agar dapat dipakai ulang
+tanpa hambatan. Jika kamu memerlukan izin di luar ketentuan itu, hubungi penulis.
+
+\subsection*{Cara mengutip}
+Pangimpian, Afiq Andico. \emph{Kenapa Mesin Bisa Salah? Dari Aljabar Linear sampai
+Keamanan Machine Learning}. Edisi Pertama. 2026.
+
+\subsection*{Versi dan umpan balik}
+Versi naskah 1.0, Oktober 2026. Setiap kekeliruan yang kamu temukan --- salah hitung,
+rujukan yang tidak cocok, atau kalimat yang menyesatkan --- lebih berguna daripada
+pujian; kirimkan ke \texttt{afiqandico13@gmail.com} dengan nomor bab dan halaman.
+
+% ---------------------------- daftar rujukan ----------------------------
+\chapter*{Daftar Rujukan}
+\addcontentsline{toc}{chapter}{Daftar Rujukan}
+\markboth{Daftar Rujukan}{Daftar Rujukan}
+
+Setiap karya di bawah ini dipakai sebagai sumber gagasan, bukan sebagai bahan salinan.
+Nomor bab yang disebut pada \emph{Peta ke kitab sumber} merujuk pada penomoran bab di
+edisi yang tercantum; pembaca yang ingin memeriksa satu klaim cukup membuka edisi itu.
+
+\begin{sloppypar}
+\begin{enumerate}[label={[\arabic*]},leftmargin=1.8em]
+  \item W. Rudin, \emph{Principles of Mathematical Analysis}, 3rd ed.,
+        McGraw-Hill, 1976.
+  \item S. Abbott, \emph{Understanding Analysis}, 2nd ed., Springer, 2015.
+  \item S. Axler, \emph{Linear Algebra Done Right}, 4th ed., Springer, 2024.
+  \item H. Anton, \emph{Elementary Linear Algebra}, 11th ed., Wiley, 2013.
+  \item K. Hoffman dan R. Kunze, \emph{Linear Algebra}, 2nd ed.,
+        Prentice-Hall, 1971.
+  \item G. Strang, \emph{Introduction to Linear Algebra}, 6th ed.,
+        Wellesley-Cambridge Press, 2023.
+  \item J. Stewart, \emph{Calculus: Early Transcendentals}, 8th ed.,
+        Cengage, 2016.
+  \item J. Stewart, D. K. Clegg, S. Watson, \emph{Calculus: Early
+        Transcendentals}, 9th ed., Cengage, 2020.
+  \item M. Spivak, \emph{Calculus on Manifolds}, W. A. Benjamin, 1965.
+  \item M. Boelkins, D. Austin, S. Schlicker, \emph{Active Calculus:
+        Multivariable}, edisi ke-2, teks terbuka, Grand Valley State University,
+        \url{https://activecalculus.org/multi/}.
+  \item J. K. Blitzstein dan J. Hwang, \emph{Introduction to Probability},
+        2nd ed., CRC Press, 2019.
+  \item L. Wasserman, \emph{All of Statistics: A Concise Course in Statistical
+        Inference}, Springer, 2004.
+  \item D. Goldberg, \emph{What Every Computer Scientist Should Know About
+        Floating-Point Arithmetic}, ACM Computing Surveys 23(1), 1991.
+  \item S. Boyd dan L. Vandenberghe, \emph{Convex Optimization}, Cambridge
+        University Press, 2004.
+  \item D. Bertsimas dan J. N. Tsitsiklis, \emph{Introduction to Linear
+        Optimization}, Athena Scientific, 1997.
+  \item L. A. Wolsey, \emph{Integer Programming}, Wiley, 1998.
+  \item I. Goodfellow, Y. Bengio, A. Courville, \emph{Deep Learning},
+        MIT Press, 2016.
+  \item M. A. Nielsen, \emph{Neural Networks and Deep Learning}, buku daring,
+        Determination Press, 2015.
+  \item J. Avigad dan P. Massot, \emph{Mathematics in Lean}, versi 4.19.0, Juni
+        2025, \url{https://avigad.github.io/mathematics_in_lean/} (tersedia juga
+        dalam edisi bahasa Indonesia).
+  \item J. Avigad, L. de Moura, S. Kong, S. Ullrich, \emph{Theorem Proving in
+        Lean 4}, Lean FRO, \url{https://lean-lang.org/theorem_proving_in_lean4/}.
+  \item I. J. Goodfellow, J. Shlens, C. Szegedy, \emph{Explaining and Harnessing
+        Adversarial Examples}, ICLR 2015 (arXiv:1412.6572).
+  \item A. Madry, A. Makelov, L. Schmidt, D. Tsipras, A. Vladu,
+        \emph{Towards Deep Learning Models Resistant to Adversarial Attacks},
+        ICLR 2018 (arXiv:1706.06083).
+  \item A. Athalye, N. Carlini, D. Wagner, \emph{Obfuscated Gradients Give a
+        False Sense of Security: Circumventing Defenses to Adversarial
+        Examples}, ICML 2018 (arXiv:1802.00420).
+  \item C. Szegedy, W. Zaremba, I. Sutskever, J. Bruna, D. Erhan, I. Goodfellow,
+        R. Fergus, \emph{Intriguing Properties of Neural Networks}, ICLR 2014
+        (arXiv:1312.6199).
+  \item N. Carlini dan D. Wagner, \emph{Towards Evaluating the Robustness of
+        Neural Networks}, IEEE Symposium on Security and Privacy 2017
+        (arXiv:1608.04644).
+  \item J. M. Cohen, E. Rosenfeld, J. Z. Kolter, \emph{Certified Adversarial
+        Robustness via Randomized Smoothing}, ICML 2019 (arXiv:1902.02918).
+  \item N. Moustafa dan J. Slay, \emph{UNSW-NB15: A Comprehensive Data Set for
+        Network Intrusion Detection Systems}, Military Communications and
+        Information Systems Conference (Milcom), 2015, hlm. 1--6.
+  \item M. elShehaby dan A. Matrawy, \emph{Evasion Adversarial Attacks Remain
+        Impractical Against ML-based Network Intrusion Detection Systems,
+        Especially Dynamic Ones}, arXiv:2306.05494, 2023.
+  \item W. Diffie dan M. E. Hellman, \emph{New Directions in Cryptography},
+        IEEE Transactions on Information Theory 22(6), 1976, hlm. 644--654.
+  \item R. L. Rivest, A. Shamir, L. Adleman, \emph{A Method for Obtaining Digital
+        Signatures and Public-Key Cryptosystems}, Communications of the ACM 21(2),
+        1978, hlm. 120--126.
+  \item P. W. Shor, \emph{Polynomial-Time Algorithms for Prime Factorization and
+        Discrete Logarithms on a Quantum Computer}, SIAM Journal on Computing
+        26(5), 1997, hlm. 1483--1509.
+  \item C. Dwork, \emph{Differential Privacy}, International Colloquium on
+        Automata, Languages and Programming (ICALP), LNCS 4052, Springer, 2006,
+        hlm. 1--12.
+  \item M. Abadi, A. Chu, I. Goodfellow, H. B. McMahan, I. Mironov, K. Talwar,
+        L. Zhang, \emph{Deep Learning with Differential Privacy}, ACM CCS 2016,
+        hlm. 308--318 (arXiv:1607.00133).
+  \item NIST, \emph{FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism
+        Standard}, National Institute of Standards and Technology, 13 Agustus
+        2024, \url{https://csrc.nist.gov/pubs/fips/203/final}.
+\end{enumerate}
+\end{sloppypar}
+
+\end{document}

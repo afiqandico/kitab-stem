@@ -1,0 +1,1187 @@
+\chapter{Hukum Bilangan Besar dan Teorema Limit Pusat}
+
+Satu program pendek menghitung rata-rata dari $\exp(U)$ untuk sepuluh ribu bilangan
+acak $U$ yang seragam pada $(0,1)$. Hasil cetaknya $1{,}722206$. Nilai sebenarnya
+adalah $e-1=1{,}7182818285$, jadi galat jalankan itu $+0{,}003924$. Program
+dijalankan ulang dengan empat kali lipat bilangan: $1{,}717502$, galat
+$-0{,}000780$. Dengan sepuluh kali lipat: $1{,}717767$, galat $-0{,}000515$.
+Polanya tidak rapi. Empat kali data memangkas galat lebih dari lima kali, sedangkan
+sepuluh kali data hanya memangkasnya $7{,}6$ kali. Tebakan naif "sepuluh kali data,
+sepersepuluh galat" tidak berlaku pada satu jalankan. Satu jalankan program tidak
+memuat laju apa pun; yang punya laju adalah sebaran dari banyak jalankan.
+
+Sebaran itu bisa diukur. Dengan $n=10^4$ simpangan baku penaksir ini $0{,}00492$;
+dengan $n=4\cdot10^4$ menjadi $0{,}00246$; dengan $n=10^5$ menjadi $0{,}00156$.
+Setiap kali $n$ naik empat kali, simpangan itu tepat separuh. Di sini ada dua
+pernyataan berbeda yang sering tertukar. Pertama, rata-rata memang mendekat ke
+nilai sebenarnya: itu kecenderungan, dan namanya hukum bilangan besar. Kedua, sisa
+galat punya ukuran dan bentuk tertentu: itu fluktuasi, dan namanya teorema limit
+pusat. Bab ini memberi nama, bukti, dan batas keberlakuan untuk keduanya.
+
+Bab 18 sudah menyiapkan bahan: harapan, variansi, dan distribusi jumlah lewat
+konvolusi. Konvolusi hanya berguna bila $n$ kecil dan bentuk asalnya sederhana;
+untuk sebagian besar distribusi tidak ada bentuk tertutup. Yang kita butuhkan
+bukan distribusi tepat pada satu $n$, melainkan pernyataan yang berlaku untuk
+semua $n$ yang besar. Pertanyaan praktisnya dua: seberapa dekat rata-rata boleh
+dipercaya, dan seberapa besar galat yang wajar. Jawabannya datang dari
+memeriksa bagaimana barisan distribusi itu berperilaku, bukan dari menghitung
+satu distribusi.
+
+\begin{untukanak}
+Bayangkan satu kelas diminta menebak banyaknya kelereng di dalam stoples besar.
+Tebakan anak-anak jauh meleset ke dua arah. Ada yang menebak tiga ratus, ada yang
+menebak dua ribu, padahal isinya delapan ratus. Guru lalu menuliskan semua tebakan
+di papan dan menghitung rata-ratanya. Angkanya ternyata dekat sekali dengan
+delapan ratus.
+
+Sekarang gurunya menambah murid. Dengan tiga puluh penebak, rata-ratanya masih
+goyang. Dengan tiga ratus penebak, rata-ratanya lebih tenang. Dengan tiga ribu
+penebak, rata-ratanya hampir tidak bergeser lagi. Ada dua hal aneh di sini.
+Pertama, tidak seorang pun penebak yang menjadi lebih jago; yang berubah hanya
+banyaknya penebak. Kedua, menambah penebak dari tiga puluh ke tiga ratus menolong
+jauh lebih banyak daripada menambah dari tiga ratus ke tiga ribu. Pertolongannya
+terus bertambah, tetapi makin lama makin sedikit.
+
+Pertanyaan yang membuat penasaran: kalau setiap tebakan bisa meleset sangat jauh,
+mengapa rata-ratanya justru bisa dipercaya? Dan mengapa pertolongannya melambat
+dengan pola yang bisa ditebak, bukan sembarangan? Di bab ini kita akan tahu
+mengapa, dan sekaligus tahu kapan kebiasaan mempercayai rata-rata itu menipu.
+\end{untukanak}
+
+\section{Tiga arti kata menuju pada variabel acak}
+\tingkat{dasar}
+
+Kalimat sehari-harinya: barisan variabel acak bisa "menuju" dalam tiga arti yang
+berbeda, dan arti yang paling longgar sama sekali tidak mengatakan bahwa nilainya
+mendekat.
+
+Barisan bilangan real hanya punya satu arti menuju, yaitu jarak $|x_n-L|$ menjadi
+kecil. Untuk variabel acak, jarak itu sendiri adalah variabel acak, sehingga kita
+harus memilih besaran mana yang dibuat kecil. Pilihan pertama adalah peluangnya.
+Ini pilihan yang paling lemah secara intuitif tetapi paling berguna secara praktis.
+
+\kamus{konvergensi dalam peluang}{convergence in probability}{janji bahwa peluang
+meleset lebih dari toleransi mengecil menuju nol, bukan janji bahwa nilainya
+mendekat pada satu jalankan}
+
+\begin{definisi}[Konvergensi dalam peluang]
+Barisan variabel acak $X_1,X_2,\dots$ \emph{konvergen dalam peluang}
+\index{konvergensi dalam peluang} ke variabel acak $X$ jika untuk setiap
+$\varepsilon>0$ berlaku
+\[
+P\bigl(|X_n-X|>\varepsilon\bigr)\to 0 \qquad (n\to\infty).
+\]
+\end{definisi}
+
+Perhatikan letak kuantornya. Nilai $\varepsilon$ dipilih lebih dahulu, lalu
+peluangnya boleh mengecil sesudah itu. Definisi ini tidak mengatakan bahwa
+$|X_n-X|$ mengecil untuk satu hasil percobaan tertentu; ia mengatakan bahwa
+kejadian "meleset lebih dari $\varepsilon$" menjadi makin jarang. Pada percobaan
+yang sama, $X_n$ masih boleh meleset jauh, asal kejadian itu jarang.
+
+\kamus{konvergensi dalam distribusi}{convergence in distribution}{yang menyerupai
+adalah bentuk sebarannya, bukan nilainya; dua variabel bisa sebentuk tanpa pernah
+berdekatan}
+
+\begin{definisi}[Konvergensi dalam distribusi]
+Misalkan $F_n$ fungsi sebaran $X_n$ dan $F$ fungsi sebaran $X$. Kita tulis
+$X_n\rightsquigarrow X$ bila $F_n(t)\to F(t)$ untuk setiap titik $t$ tempat $F$
+kontinu. Batasnya disebut \emph{limit dalam distribusi}\index{konvergensi dalam
+distribusi}.
+\end{definisi}
+
+Syarat "di titik kontinu" bukan keisengan teknis. Ambil $X_n$ yang bernilai $1/n$
+dengan peluang satu, dan $X$ yang bernilai $0$ dengan peluang satu. Maka $F_n(0)=0$
+untuk setiap $n$, sedangkan $F(0)=1$, jadi barisan itu tidak konvergen di $t=0$.
+Di setiap $t\neq0$ barisan itu konvergen, dan $t=0$ adalah satu-satunya titik
+ketakkontinuan $F$. Tanpa syarat tadi, kesimpulan yang benar akan ditolak hanya
+karena satu titik.
+
+Arti ketiga lebih kuat dan lebih harfiah: hampir setiap hasil percobaan, sebagai
+satu titik $\omega$ di ruang sampel, menghasilkan barisan bilangan real yang
+konvergen.
+
+\begin{definisi}[Konvergensi hampir pasti]
+$X_n$ \emph{konvergen hampir pasti}\index{konvergensi hampir pasti} ke $X$ bila
+\[
+P\bigl(\{\omega : X_n(\omega)\to X(\omega)\}\bigr)=1 .
+\]
+\end{definisi}
+
+Di sini barisan bilangan real $X_1(\omega),X_2(\omega),\dots$ benar-benar
+konvergen dalam arti Bab 4, dan himpunan hasil percobaan yang gagal konvergen
+hanya boleh berpeluang nol. Karena itu konvergensi hampir pasti berbicara tentang
+satu jalankan yang panjang, sedangkan konvergensi dalam peluang berbicara tentang
+satu $n$ pada banyak jalankan sekaligus.
+
+Ketiga arti itu tidak setara, tetapi ada arah implikasi yang tetap.
+
+\begin{teorema}[Hubungan tiga modus]
+Untuk variabel acak $X_n$ dan $X$ berlaku:
+(a) $X_n\to X$ hampir pasti mengakibatkan $X_n\to X$ dalam peluang;
+(b) $X_n\to X$ dalam peluang mengakibatkan $X_n\rightsquigarrow X$;
+(c) bila $X_n\rightsquigarrow c$ dan $c$ konstanta, maka $X_n\to c$ dalam peluang.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Untuk (a), tetapkan $\varepsilon>0$ dan misalkan
+$A_n=\{\sup_{k\ge n}|X_k-X|>\varepsilon\}$. Himpunan $A_n$ menurun, dan setiap
+$\omega$ di $\bigcap_n A_n$ memenuhi $|X_k(\omega)-X(\omega)|>\varepsilon$ untuk
+tak hingga banyak $k$, sehingga barisan itu tidak konvergen ke $X(\omega)$.
+Jadi $\bigcap_n A_n$ termuat di himpunan berpeluang nol. Karena peluang bersifat
+kontinu dari atas pada himpunan berpeluang hingga,
+$P(A_n)\to P(\bigcap_n A_n)=0$. Kejadian $\{|X_n-X|>\varepsilon\}$ termuat di
+$A_n$, maka peluangnya juga menuju nol.
+
+Untuk (b), ambil $t$ titik kontinu $F$ dan $\varepsilon>0$. Dari
+$\{X_n\le t\}\subseteq\{X\le t+\varepsilon\}\cup\{|X_n-X|>\varepsilon\}$ kita
+peroleh
+\[
+F_n(t)\le F(t+\varepsilon)+P\bigl(|X_n-X|>\varepsilon\bigr).
+\]
+Dengan cara yang sama, dari $\{X\le t-\varepsilon\}\subseteq\{X_n\le t\}\cup
+\{|X_n-X|>\varepsilon\}$ kita peroleh
+$F(t-\varepsilon)\le F_n(t)+P(|X_n-X|>\varepsilon)$. Kedua ketaksamaan itu
+memberi
+\[
+F(t-\varepsilon)-\delta_n\le F_n(t)\le F(t+\varepsilon)+\delta_n,
+\qquad \delta_n=P\bigl(|X_n-X|>\varepsilon\bigr).
+\]
+Karena $\delta_n\to0$, limit inferior dan limit superior $F_n(t)$ terkurung di
+antara $F(t-\varepsilon)$ dan $F(t+\varepsilon)$. Biarkan $\varepsilon\downarrow0$
+dan pakai kekontinuan $F$ di $t$; keduanya menuju $F(t)$.
+
+Untuk (c), ambil $\varepsilon>0$. Karena $F$ adalah sebaran titik massa di $c$,
+titik $c-\varepsilon$ dan $c+\varepsilon$ keduanya titik kontinu $F$, sehingga
+\[
+P\bigl(|X_n-c|>\varepsilon\bigr)
+\le P(X_n<c-\varepsilon)+P(X_n>c+\varepsilon)
+\le F_n(c-\varepsilon)+1-F_n(c+\varepsilon)
+\to 0+1-1=0 .
+\]
+\end{proof}
+
+Tiga arah sebaliknya tidak berlaku, dan contoh penyangkalnya perlu diingat karena
+masing-masing menunjukkan apa yang sesungguhnya hilang.
+
+\begin{contoh}[Dalam peluang tetapi tidak hampir pasti]
+Pecah $(0,1)$ menjadi $k$ bagian sama panjang, untuk $k=1,2,3,\dots$, lalu
+urutkan semua bagian itu menjadi satu daftar. Definisikan $X_n(\omega)=1$ bila
+$\omega$ berada di bagian ke-$n$ dan $0$ bila tidak. Bagian ke-$n$ berasal dari
+pemecahan dengan $k_n$ bagian, jadi $P(X_n=1)=1/k_n\to0$ dan $X_n\to0$ dalam
+peluang. Tetapi untuk setiap $\omega\in(0,1)$, dalam setiap blok pemecahan ada
+tepat satu $n$ dengan $X_n(\omega)=1$. Nilai satu itu muncul tak hingga sering,
+sehingga $X_n(\omega)$ tidak konvergen, untuk setiap $\omega$. Jadi tidak ada
+konvergensi hampir pasti. Barisan ini bahkan konvergen dalam $L^1$, karena
+$\mathbb{E}|X_n|=1/k_n\to0$, maka kekuatan $L^1$ pun tidak menutup celah itu.
+\end{contoh}
+
+\begin{contoh}[Dalam distribusi tetapi tidak dalam peluang]
+Ambil $X\sim N(0,1)$ dan tetapkan $X_n=-X$ untuk setiap $n$. Sebaran $X_n$ sama
+persis dengan sebaran $X$, jadi $F_n(t)=F(t)$ dan $X_n\rightsquigarrow X$ secara
+hampa. Tetapi $P(|X_n-X|>\varepsilon)=P(2|X|>\varepsilon)>0$ untuk setiap
+$\varepsilon$, dan peluang itu tidak bergantung pada $n$. Dua variabel yang
+sebentuk belum tentu berdekatan: $X$ dan $-X$ bisa berjarak jauh pada jalankan
+yang sama.
+\end{contoh}
+
+Pelajaran dari dua contoh itu: konvergensi dalam distribusi hanya menyentuh
+sebaran satu per satu, sedangkan dua modus lainnya menyentuh hubungan
+antar-variabel pada ruang sampel yang sama. Karena itu teorema (c) penting secara
+praktis: dalam statistika limit kita hampir selalu konstanta, dan di situ ketiga
+modus bertemu.
+
+Satu peringatan lain harus dicatat sejak awal, karena kesalahannya mahal.
+
+\begin{catatan}
+Konvergensi dalam peluang tidak membawa serta konvergensi harapan. Misalkan
+$P(X_n=n^2)=1/n$ dan $P(X_n=0)=1-1/n$. Untuk setiap $\varepsilon>0$,
+$P(|X_n|>\varepsilon)=1/n\to0$, jadi $X_n\to0$ dalam peluang. Tetapi
+$\mathbb{E}[X_n]=n$, sehingga harapannya menuju tak hingga. Rata-rata yang
+memusat bukan jaminan bahwa harapannya memusat.
+\end{catatan}
+
+\section{Ketaksamaan Chebyshev dan hukum bilangan besar lemah}
+\tingkat{menengah}
+
+Kalimat sehari-harinya: peluang menyimpang jauh dari rata-rata dibatasi oleh
+variansi dibagi kuadrat jarak penyimpangan itu.
+
+Untuk membuktikan hukum bilangan besar kita hanya butuh satu ketaksamaan, dan
+ketaksamaan itu butuh satu pengamatan sederhana tentang harapan.
+
+\begin{lemma}[Markov]
+Jika $Y\ge0$ dan $a>0$, maka $P(Y\ge a)\le \mathbb{E}[Y]/a$.
+\index{ketaksamaan Markov}
+\end{lemma}
+
+\begin{proof}[Bukti]
+Tulis $Y=Y\mathbf{1}_{\{Y<a\}}+Y\mathbf{1}_{\{Y\ge a\}}$. Suku pertama tak
+negatif. Pada kejadian $Y\ge a$ berlaku $Y\ge a$, sehingga harapan suku kedua
+paling sedikit $a\,P(Y\ge a)$. Jadi
+$\mathbb{E}[Y]\ge 0+a\,P(Y\ge a)$.
+\end{proof}
+
+\begin{akibat}[Ketaksamaan Chebyshev]
+Jika $\mathbb{E}[X]=\mu$ dan $\operatorname{Var}(X)=\sigma^2<\infty$, maka untuk
+setiap $a>0$
+\[
+P\bigl(|X-\mu|\ge a\bigr)\le\frac{\sigma^2}{a^2}.
+\]
+\index{ketaksamaan Chebyshev}
+\end{akibat}
+
+\begin{proof}[Bukti]
+Terapkan Lemma Markov pada $Y=(X-\mu)^2$ dengan ambang $a^2$. Kejadian
+$\{Y\ge a^2\}$ sama dengan $\{|X-\mu|\ge a\}$, dan
+$\mathbb{E}[Y]=\sigma^2$.
+\end{proof}
+
+Ketaksamaan ini lemah, dan kelemahannya bukan cacat tersembunyi melainkan
+kekuatannya. Ia tidak mengetahui bentuk distribusi apa pun, hanya dua momen.
+Karena itu ia berlaku untuk semua distribusi bervariansi hingga, dan justru
+karena itu ia cukup untuk membuktikan teorema yang berlaku umum.
+
+\kamus{hukum bilangan besar}{law of large numbers}{janji bahwa rata-rata banyak
+pengamatan menempel ke rata-rata sebenarnya, dengan peluang meleset yang mengecil}
+
+\begin{teorema}[Hukum bilangan besar lemah]
+Misalkan $X_1,X_2,\dots$ bebas dan berdistribusi sama dengan
+$\mathbb{E}[X_i]=\mu$ dan $\operatorname{Var}(X_i)=\sigma^2<\infty$. Maka untuk
+setiap $\varepsilon>0$\index{hukum bilangan besar}
+\[
+P\bigl(|\bar X_n-\mu|\ge\varepsilon\bigr)\to0,
+\qquad \bar X_n=\frac1n\sum_{i=1}^n X_i .
+\]
+\end{teorema}
+
+\begin{proof}[Bukti]
+Karena harapan linear, $\mathbb{E}[\bar X_n]=\mu$. Karena variabelnya bebas,
+variansi jumlah adalah jumlah variansi, sehingga
+$\operatorname{Var}(\bar X_n)=\sigma^2/n$. Ketaksamaan Chebyshev dengan
+$a=\varepsilon$ memberi
+\[
+P\bigl(|\bar X_n-\mu|\ge\varepsilon\bigr)\le\frac{\sigma^2}{n\varepsilon^2}.
+\]
+Ruas kanan menuju nol untuk setiap $\varepsilon>0$ tetap.
+\end{proof}
+
+Perhatikan apa yang baru saja dibuktikan dan apa yang tidak. Yang dibuktikan:
+untuk toleransi $\varepsilon$ yang kita pilih sendiri, peluang rata-rata meleset
+lebih dari $\varepsilon$ menuju nol. Yang tidak dibuktikan: seberapa cepat, dan
+bagaimana bentuk sisa galatnya. Keduanya pertanyaan berbeda.
+
+Gambar~\ref{fig:tiga-lebar} menggambar isi pernyataan itu untuk dadu. Yang
+berubah dari $n=4$ ke $n=64$ hanya dua: lebarnya menyusut, puncaknya meninggi,
+sedangkan pusatnya tetap di $3{,}5$. Hukum bilangan besar bukan janji bahwa satu
+jalankan lebih tepat, melainkan bahwa sebaran kemungkinannya mengerut ke satu
+titik.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.95\linewidth, height=5.4cm,
+  xmin=1, xmax=6, ymin=0, ymax=2.05,
+  xlabel={nilai rata-rata $\bar x_n$}, ylabel={kerapatan},
+  label style={font=\small}, tick label style={font=\footnotesize},
+  axis lines=left,
+  legend style={font=\footnotesize, draw=layergrey!35, fill=white,
+    fill opacity=0.9, text opacity=1, at={(0.015,0.985)},
+    anchor=north west, cells={anchor=west}},
+  legend cell align=left,
+]
+\addplot[draw=layerteal!60!black, fill=layerteal!18, fill opacity=0.85,
+  line width=0.4pt] coordinates{
+  (1,0.0031) (1.25,0.0123) (1.5,0.0309) (1.75,0.0617) (2,0.108) (2.25,0.1728)
+  (2.5,0.2469) (2.75,0.321) (3,0.3858) (3.25,0.4321) (3.5,0.4506) (3.75,0.4321)
+  (4,0.3858) (4.25,0.321) (4.5,0.2469) (4.75,0.1728) (5,0.108) (5.25,0.0617)
+  (5.5,0.0309) (5.75,0.0123) (6,0.0031)};
+\addlegendentry{$n=4$}
+\addplot[draw=layerindigo!70!black, fill=layerindigo!22, fill opacity=0.8,
+  line width=0.4pt] coordinates{
+  (1.6875,0) (1.75,0.0001) (1.8125,0.0002) (1.875,0.0004) (1.9375,0.0008) (2,0.0014)
+  (2.0625,0.0025) (2.125,0.0043) (2.1875,0.0072) (2.25,0.0117) (2.3125,0.0184) (2.375,0.028)
+  (2.4375,0.0416) (2.5,0.0601) (2.5625,0.0847) (2.625,0.1163) (2.6875,0.1558) (2.75,0.2039)
+  (2.8125,0.2607) (2.875,0.3258) (2.9375,0.3981) (3,0.4759) (3.0625,0.5567) (3.125,0.6374)
+  (3.1875,0.7145) (3.25,0.7843) (3.3125,0.8431) (3.375,0.8878) (3.4375,0.9156) (3.5,0.9251)
+  (3.5625,0.9156) (3.625,0.8878) (3.6875,0.8431) (3.75,0.7843) (3.8125,0.7145) (3.875,0.6374)
+  (3.9375,0.5567) (4,0.4759) (4.0625,0.3981) (4.125,0.3258) (4.1875,0.2607) (4.25,0.2039)
+  (4.3125,0.1558) (4.375,0.1163) (4.4375,0.0847) (4.5,0.0601) (4.5625,0.0416) (4.625,0.028)
+  (4.6875,0.0184) (4.75,0.0117) (4.8125,0.0072) (4.875,0.0043) (4.9375,0.0025) (5,0.0014)
+  (5.0625,0.0008) (5.125,0.0004) (5.1875,0.0002) (5.25,0.0001) (5.3125,0)};
+\addlegendentry{$n=16$}
+\addplot[draw=accent!80!black, fill=accent!30, fill opacity=0.8,
+  line width=0.5pt] coordinates{
+  (2.5312,0) (2.5469,0.0001) (2.5625,0.0001) (2.5781,0.0001) (2.5938,0.0002) (2.6094,0.0003)
+  (2.625,0.0004) (2.6406,0.0005) (2.6562,0.0007) (2.6719,0.0009) (2.6875,0.0012) (2.7031,0.0016)
+  (2.7188,0.0021) (2.7344,0.0028) (2.75,0.0036) (2.7656,0.0047) (2.7812,0.0061) (2.7969,0.0079)
+  (2.8125,0.01) (2.8281,0.0127) (2.8438,0.0161) (2.8594,0.0202) (2.875,0.0252) (2.8906,0.0312)
+  (2.9062,0.0385) (2.9219,0.0472) (2.9375,0.0576) (2.9531,0.0698) (2.9688,0.0842) (2.9844,0.1009)
+  (3,0.1203) (3.0156,0.1426) (3.0312,0.1681) (3.0469,0.1971) (3.0625,0.2297) (3.0781,0.2663)
+  (3.0938,0.307) (3.1094,0.3521) (3.125,0.4015) (3.1406,0.4553) (3.1562,0.5136) (3.1719,0.5762)
+  (3.1875,0.6429) (3.2031,0.7134) (3.2188,0.7875) (3.2344,0.8645) (3.25,0.944) (3.2656,1.0252)
+  (3.2812,1.1075) (3.2969,1.19) (3.3125,1.2718) (3.3281,1.352) (3.3438,1.4295) (3.3594,1.5035)
+  (3.375,1.573) (3.3906,1.6369) (3.4062,1.6943) (3.4219,1.7445) (3.4375,1.7867) (3.4531,1.8202)
+  (3.4688,1.8445) (3.4844,1.8592) (3.5,1.8641) (3.5156,1.8592) (3.5312,1.8445) (3.5469,1.8202)
+  (3.5625,1.7867) (3.5781,1.7445) (3.5938,1.6943) (3.6094,1.6369) (3.625,1.573) (3.6406,1.5035)
+  (3.6562,1.4295) (3.6719,1.352) (3.6875,1.2718) (3.7031,1.19) (3.7188,1.1075) (3.7344,1.0252)
+  (3.75,0.944) (3.7656,0.8645) (3.7812,0.7875) (3.7969,0.7134) (3.8125,0.6429) (3.8281,0.5762)
+  (3.8438,0.5136) (3.8594,0.4553) (3.875,0.4015) (3.8906,0.3521) (3.9062,0.307) (3.9219,0.2663)
+  (3.9375,0.2297) (3.9531,0.1971) (3.9688,0.1681) (3.9844,0.1426) (4,0.1203) (4.0156,0.1009)
+  (4.0312,0.0842) (4.0469,0.0698) (4.0625,0.0576) (4.0781,0.0472) (4.0938,0.0385) (4.1094,0.0312)
+  (4.125,0.0252) (4.1406,0.0202) (4.1562,0.0161) (4.1719,0.0127) (4.1875,0.01) (4.2031,0.0079)
+  (4.2188,0.0061) (4.2344,0.0047) (4.25,0.0036) (4.2656,0.0028) (4.2812,0.0021) (4.2969,0.0016)
+  (4.3125,0.0012) (4.3281,0.0009) (4.3438,0.0007) (4.3594,0.0005) (4.375,0.0004) (4.3906,0.0003)
+  (4.4062,0.0002) (4.4219,0.0001) (4.4375,0.0001) (4.4531,0.0001) (4.4688,0)};
+\addlegendentry{$n=64$}
+\draw[layergrey, densely dotted, line width=0.6pt] (axis cs:3.5,0) -- (axis cs:3.5,1.95);
+\node[font=\footnotesize, layergrey, anchor=south east] at (axis cs:3.45,1.95) {$3{,}5$};
+\end{axis}
+\end{tikzpicture}
+\caption{Tiga sebaran rata-rata $n$ lemparan dadu, digambar pada satu skala yang
+sama: $n=4$, $16$, dan $64$. Lebarnya $0{,}853913$, $0{,}426956$, dan
+$0{,}213478$, jadi setiap kali $n$ dilipat empatkan lebarnya tinggal separuh.
+Puncaknya meninggi dari $0{,}4506$ ke $0{,}9251$ dan $1{,}8641$, sedangkan
+pusatnya tetap di $3{,}5$.}
+\label{fig:tiga-lebar}
+\end{figure}
+
+Angka-angka membuat perbedaan itu terasa. Untuk lemparan koin dengan $p=1/2$ dan
+toleransi $\varepsilon=0{,}1$, Chebyshev memberi
+$\sigma^2/(n\varepsilon^2)=0{,}25/(0{,}01n)=25/n$. Agar peluang meleset paling
+besar $0{,}3$, cukup $n\ge25/0{,}3=83{,}33$, yaitu $n=84$. Pada $n=84$ batas itu
+bernilai $0{,}297619$, jadi Chebyshev menjamin peluang berada dalam
+$0{,}4$ sampai $0{,}6$ paling sedikit $0{,}702381$. Peluang sebenarnya, dihitung
+dari sebaran binomial, adalah $0{,}937028$, dan aproksimasi normal memberi
+$0{,}933197$. Jaminan itu benar tetapi terlalu rendah sekitar $23$ poin
+persentase.
+
+Kelemahan yang sama menjadi parah bila $\sigma$ besar. Untuk dadu adil,
+$\operatorname{Var}(X)=35/12=2{,}916667$ dan $\sigma=1{,}707825$. Pada $n=100$
+dengan $\varepsilon=0{,}1$, Chebyshev memberi batas $2{,}916667$, angka yang lebih
+besar dari satu dan karena itu tidak berarti apa pun. Untuk mendapatkan galat
+$0{,}01$ dengan keyakinan $95$ persen, rumus normal menuntut paling sedikit
+$112043$ pengamatan, sedangkan Chebyshev menuntut jauh lebih banyak lagi.
+
+Di sinilah letak persoalan yang menyiapkan bagian berikutnya. Chebyshev menjawab
+"apakah rata-rata boleh dipercaya" dengan benar tetapi tumpul. Ia tidak mampu
+menjawab "seberapa dekat, dengan peluang berapa" secara layak dipakai. Jawaban
+tajam menuntut pengetahuan tentang bentuk sebaran galat, bukan hanya ukurannya.
+
+\begin{bacakeras}
+Dua suara, bergantian. Yang pertama menyebut banyaknya lemparan; yang kedua
+menyebut jarak meleset yang masih wajar.
+
+--- Sepuluh lemparan. Melesetnya masih lebar.
+--- Seratus lemparan. Sudah lebih sempit.
+--- Seribu lemparan. Makin sempit lagi.
+
+Sekarang lipat empatkan, jangan tambah sepuluh: sepuluh jadi empat puluh,
+seratus jadi empat ratus, seribu jadi empat ribu. Melesetnya tinggal separuh.
+Bukan seperempat. Separuh. Setiap kali empat kali, tepat separuh.
+
+Lalu balik arahnya, dan bacakan lebih pelan. Berapa ongkos satu angka tambahan
+di belakang koma? Seratus kali lemparan. Seratus kali kerja, satu angka.
+Rata-rata tidak sabar: ia menuntut empat kali, bukan dua kali, dan tidak
+menawarkan diskon.
+
+Baris yang diulang tiga kali: empat kali data, separuh galat.
+\end{bacakeras}
+
+\begin{untukanak}
+Bayangkan mesin pengisi kantong beras. Setiap kantong meleset sedikit dari berat
+yang diminta, kadang lebih kadang kurang, dan besar melesetnya berbeda-beda;
+menimbang satu kantong tidak memberi tahu arah melesetnya.
+
+Sekarang mesin itu mengisi seratus kantong, lalu kita menimbang semuanya
+sekaligus. Meleset ke atas dan ke bawah saling memotong, sehingga berat totalnya
+jauh lebih dekat ke seratus kali berat yang diminta. Kalau kantongnya sepuluh
+ribu, jumlahnya hampir tepat.
+
+Yang mengejutkan, bentuk sebaran meleset itu tidak perlu kita ketahui. Entah
+melesetnya berupa lonceng, berupa dua nilai saja, atau berupa apa pun yang aneh,
+sebaran jumlahnya tetap menyerupai lonceng yang sama, asalkan kantongnya cukup
+banyak dan melesetnya tidak terlalu sering menjadi raksasa. Inilah yang membuat
+para penjudi, pembuat jembatan, dan peneliti cuaca bisa memakai rumus yang sama.
+
+Pertanyaan yang membuat penasaran: mengapa bentuk asli melesetnya tidak lagi
+penting setelah kantongnya banyak? Dan mengapa satu kantong yang melesetnya
+raksasa bisa merusak seluruh kesimpulan? Di bab ini kita akan tahu mengapa.
+\end{untukanak}
+
+\section{Hukum yang kuat: apa yang sesungguhnya ditambahkan}
+\tingkat{lanjut}
+
+Kalimat sehari-harinya: dengan keyakinan satu, rata-rata pada satu jalankan
+panjang akhirnya menetap, bukan sekadar sering dekat.
+
+Hukum lemah berbicara tentang setiap $n$ secara terpisah: pada $n$ yang cukup
+besar, peluang meleset kecil. Ia tidak melarang rata-rata meleset jauh pada
+$n=10^6$, lalu kembali tenang, lalu meleset lagi pada $n=10^9$, asalkan kejadian
+semacam itu jarang pada setiap $n$. Hukum kuat menutup celah itu.
+
+\begin{teorema}[Hukum bilangan besar kuat]
+Misalkan $X_1,X_2,\dots$ bebas dan berdistribusi sama dengan
+$\mathbb{E}|X_1|<\infty$ dan $\mathbb{E}[X_1]=\mu$. Maka
+$\bar X_n\to\mu$ hampir pasti.\index{hukum bilangan besar kuat}
+\end{teorema}
+
+Bedanya halus tetapi tajam. Barisan $X_n$ pada bagian sebelumnya konvergen dalam
+peluang ke nol, tetapi pada setiap $\omega$ nilainya satu tak hingga sering.
+Hukum lemah tidak dapat menolaknya; hukum kuat menolaknya, karena ia menuntut
+konvergensi pada setiap $\omega$ di luar himpunan berpeluang nol.
+
+Perhatikan juga syaratnya. Hukum kuat hanya menuntut $\mathbb{E}|X_1|<\infty$,
+tanpa variansi. Hukum lemah yang kita buktikan di atas menuntut $\sigma^2<\infty$
+hanya karena buktinya memakai Chebyshev; syarat itu bukan syarat alami teoremanya.
+Untuk hukum lemah, syarat perlu dan cukup bagi barisan iid adalah
+$n\,P(|X_1|>n)\to0$, yang lebih lemah daripada $\mathbb{E}|X_1|<\infty$. Rincian
+itu kita tinggalkan, dan pembaca dapat menemukannya pada Feller, \emph{An
+Introduction to Probability Theory and Its Applications}, jilid 2, bab tentang
+hukum bilangan besar.
+
+Bukti hukum kuat tidak kita kerjakan di sini. Bentuk klasiknya memotong variabel
+pada ambang $n$, menerapkan Borel--Cantelli pada ekor potongan, lalu memakai
+kriteria Cauchy untuk kekonvergenan hampir pasti; Etemadi memberi bukti yang
+menghindari asumsi variansi dan hanya memakai pasangan variabel yang saling
+bebas. Lokasi buktinya: Blitzstein dan Hwang, \emph{Introduction to Probability},
+bab 10 bagian 10.2; Wasserman, \emph{All of Statistics}, lampiran bab 5 bagian
+5.7.1. Yang perlu diingat dari pernyataan itu: hukum kuat tidak memberi laju.
+Ia mengatakan bahwa galat akhirnya kecil dan tinggal kecil, bukan seberapa cepat.
+
+\begin{tangan}
+Ambil satu koin dan selembar kertas bergaris. Angka bernilai satu, gambar
+bernilai nol.
+
+Lempar empat puluh kali, tulis 1 atau 0 berderet. Di baris kedua, tulis
+rata-rata berjalan di bawah setiap lemparan: jumlah sampai situ dibagi
+banyaknya lemparan sampai situ.
+
+Yang harus kita lihat: baris kedua bergoyang paling liar pada lima lemparan
+pertama, lalu makin tenang. Pada lemparan keempat puluh angkanya belum tentu
+$0{,}5$; masih wajar $0{,}475$ atau $0{,}525$.
+
+Sekarang ulangi percobaan itu empat kali dan gambar keempat jalur di satu
+grafik dengan pensil berbeda. Keempat jalur menyempit ke $0{,}5$, dan lebar
+sebarannya tinggal separuh setiap kali lemparannya dilipat empatkan.
+
+Tempel kertasnya di dinding. Kalau ada yang berkata hasilnya pasti seimbang,
+tunjuk lemparan keempat puluh, bukan yang kesepuluh.
+\end{tangan}
+
+\section{Teorema limit pusat}
+\tingkat{lanjut}
+
+Kalimat sehari-harinya: galat rata-rata, setelah dibesarkan dengan faktor
+$\sqrt n$, selalu berbentuk lonceng yang sama, apa pun bentuk asli datanya.
+
+Hukum bilangan besar memberi tahu bahwa $\bar X_n$ menempel ke $\mu$. Ia tidak
+memberi tahu seberapa lebar tempelan itu. Teorema limit pusat menjawabnya, dan
+jawabannya mengejutkan karena tidak bergantung pada distribusi asal.
+
+\kamus{teorema limit pusat}{central limit theorem}{bentuk lonceng yang muncul pada
+galat rata-rata, bukan pada datanya, dan hanya setelah galat itu dibesarkan
+sebesar akar banyaknya data}
+
+\begin{teorema}[Limit pusat, bentuk Lindeberg--Levy]\index{teorema limit pusat}
+Misalkan $X_1,X_2,\dots$ bebas dan berdistribusi sama dengan
+$\mathbb{E}[X_i]=\mu$ dan $0<\operatorname{Var}(X_i)=\sigma^2<\infty$. Maka
+\[
+Z_n=\frac{\sqrt n\,(\bar X_n-\mu)}{\sigma}
+\;\rightsquigarrow\; Z\sim N(0,1),
+\]
+artinya $P(Z_n\le z)\to\Phi(z)$ untuk setiap $z\in\mathbb{R}$.
+\end{teorema}
+
+Perhatikan letak $\sqrt n$. Simpangan baku $\bar X_n$ adalah
+$\sigma/\sqrt n$, bukan $\sigma/n$. Karena itu untuk memangkas galat menjadi
+separuh kita perlu empat kali data, dan untuk menambah satu digit ketelitian kita
+perlu seratus kali data. Ini kabar buruk yang tidak bisa diakali: ketelitian
+datang dengan harga kuadratik.
+
+Gambar~\ref{fig:lonceng-dari-kotak} memperlihatkan dari mana bentuk lonceng itu
+datang. Panel kiri adalah sebaran satu dadu: datar, tanpa lonceng sama sekali.
+Panel kanan adalah sebaran rata-rata dua belas dadu yang sudah distandarkan.
+Bahannya bukan lonceng, hasilnya lonceng.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  name=satu, width=4.3cm, height=4.5cm,
+  ybar, bar width=11pt,
+  xmin=0.5, xmax=6.5, ymin=0, ymax=0.21,
+  xtick={1,2,3,4,5,6}, ytick={0,0.0833,0.1667},
+  yticklabels={$0$,$\frac{1}{12}$,$\frac16$},
+  xlabel={mata dadu}, ylabel={peluang},
+  title={\footnotesize satu dadu},
+  label style={font=\footnotesize}, tick label style={font=\scriptsize},
+  axis lines=left,
+]
+\addplot[fill=layerindigo!50, draw=layerindigo!80!black, line width=0.3pt]
+  coordinates{
+  (1,0.1667) (2,0.1667) (3,0.1667) (4,0.1667) (5,0.1667) (6,0.1667)};
+\end{axis}
+\begin{axis}[
+  name=duabelas, at={(satu.east)}, anchor=west, xshift=7pt,
+  width=9.3cm, height=4.5cm,
+  ybar, bar width=3.4pt,
+  xmin=-5.3, xmax=5.3, ymin=0, ymax=0.45,
+  xtick={-4,-2,0,2,4}, ytick={0,0.2,0.4},
+  xlabel={skor $z$ dari rata-rata}, ylabel={kerapatan},
+  title={\footnotesize dua belas dadu, sudah distandarkan},
+  label style={font=\footnotesize}, tick label style={font=\scriptsize},
+  axis lines=left,
+]
+\addplot[fill=accent!45, draw=accent!70!black, line width=0.2pt]
+  coordinates{
+  (-4.3948,0) (-4.2258,0.00001) (-4.0567,0.00003) (-3.8877,0.00009) (-3.7187,0.0002) (-3.5496,0.00044)
+  (-3.3806,0.00091) (-3.2116,0.00177) (-3.0426,0.00327) (-2.8735,0.00575) (-2.7045,0.00966) (-2.5355,0.01559)
+  (-2.3664,0.02418) (-2.1974,0.03614) (-2.0284,0.05215) (-1.8593,0.07276) (-1.6903,0.09826) (-1.5213,0.1286)
+  (-1.3522,0.16323) (-1.1832,0.20113) (-1.0142,0.24073) (-0.8452,0.28001) (-0.6761,0.31669) (-0.5071,0.34838)
+  (-0.3381,0.37287) (-0.169,0.38835) (0,0.39365) (0.169,0.38835) (0.3381,0.37287) (0.5071,0.34838)
+  (0.6761,0.31669) (0.8452,0.28001) (1.0142,0.24073) (1.1832,0.20113) (1.3522,0.16323) (1.5213,0.1286)
+  (1.6903,0.09826) (1.8593,0.07276) (2.0284,0.05215) (2.1974,0.03614) (2.3664,0.02418) (2.5355,0.01559)
+  (2.7045,0.00966) (2.8735,0.00575) (3.0426,0.00327) (3.2116,0.00177) (3.3806,0.00091) (3.5496,0.00044)
+  (3.7187,0.0002) (3.8877,0.00009) (4.0567,0.00003) (4.2258,0.00001) (4.3948,0)};
+\addplot[domain=-4.6:4.6, samples=120, layerindigo, line width=0.9pt]
+  {0.39894228*exp(-x^2/2)};
+\end{axis}
+\end{tikzpicture}
+\caption{Dari datar ke lonceng. Kiri: sebaran satu dadu, rata di enam nilai.
+Kanan: sebaran rata-rata dua belas dadu setelah distandarkan, ditumpuk dengan
+lengkung normal baku. Jarak supremum keduanya $0{,}03384$, kurang dari separuh
+jarak pada $n=2$ yang $0{,}08333$. Bahan asalnya tidak lonceng, hasilnya
+lonceng.}
+\label{fig:lonceng-dari-kotak}
+\end{figure}
+
+Bukti berikut memakai fungsi pembangkit momen. Ia lengkap untuk kasus yang momen
+ketiganya hingga, dan kita nyatakan batasnya secara jujur di akhir.
+
+\begin{lemma}[Kekonvergenan lewat fungsi pembangkit momen]\index{fungsi pembangkit momen}
+Misalkan $\psi_n(t)=\mathbb{E}[e^{tZ_n}]$ dan $\psi(t)=\mathbb{E}[e^{tZ}]$ hingga
+pada suatu selang terbuka di sekitar $t=0$. Jika $\psi_n(t)\to\psi(t)$ untuk
+setiap $t$ di selang itu, maka $Z_n\rightsquigarrow Z$.
+\end{lemma}
+
+Lemma itu adalah teorema kontinuitas untuk fungsi pembangkit momen. Buktinya
+memakai kenyataan bahwa fungsi sebaran ditentukan oleh fungsi pembangkit momennya
+pada selang di sekitar nol, dan kita tidak mengulanginya di sini; lihat Wasserman,
+\emph{All of Statistics}, bab 5 bagian 5.7.2, Lemma 5.20.
+
+\begin{proof}[Bukti teorema limit pusat]
+Tetapkan $Y_i=(X_i-\mu)/\sigma$, sehingga $\mathbb{E}[Y_i]=0$,
+$\operatorname{Var}(Y_i)=1$, dan $Z_n=n^{-1/2}\sum_{i=1}^n Y_i$. Misalkan
+$\psi(t)=\mathbb{E}[e^{tY_1}]$ fungsi pembangkit momen $Y_1$, yang hingga pada
+selang $|t|\le\delta$. Karena variabelnya bebas, fungsi pembangkit momen $Z_n$
+adalah
+\[
+\xi_n(t)=\Bigl[\psi\bigl(t/\sqrt n\bigr)\Bigr]^n .
+\]
+Turunan di nol memberi $\psi(0)=1$, $\psi'(0)=\mathbb{E}[Y_1]=0$, dan
+$\psi''(0)=\mathbb{E}[Y_1^2]=1$. Ekspansi Taylor orde dua dengan sisa orde tiga,
+yang sah bila $\mathbb{E}|Y_1|^3<\infty$, berbunyi
+\[
+\psi(s)=1+\frac{s^2}{2}+R(s),\qquad |R(s)|\le C|s|^3 \quad (|s|\le\delta).
+\]
+Untuk $n$ cukup besar berlaku $|t|/\sqrt n\le\delta$, sehingga
+\[
+\xi_n(t)=\Bigl(1+\frac{t^2}{2n}+R\bigl(t/\sqrt n\bigr)\Bigr)^n
+=\Bigl(1+\frac{t^2}{2n}+O\bigl(n^{-3/2}\bigr)\Bigr)^n .
+\]
+Ambil logaritma. Dengan $\log(1+a)=a-a^2/2+\dots$ dan
+$a_n=t^2/(2n)+O(n^{-3/2})$,
+\[
+\log\xi_n(t)=n\Bigl(a_n-\frac{a_n^2}{2}+\dots\Bigr)
+=\frac{t^2}{2}+O\bigl(n^{-1/2}\bigr)-\frac{t^4}{8n}+\dots
+\longrightarrow \frac{t^2}{2}.
+\]
+Jadi $\xi_n(t)\to e^{t^2/2}$ untuk setiap $t$ tetap. Fungsi terakhir adalah fungsi
+pembangkit momen $N(0,1)$, sehingga Lemma di atas memberi
+$Z_n\rightsquigarrow N(0,1)$.
+\end{proof}
+
+Ada satu syarat tambahan yang menyelinap masuk: sisa Taylor orde tiga menuntut
+$\mathbb{E}|Y_1|^3<\infty$. Untuk distribusi berekor sangat berat syarat itu bisa
+gagal walaupun variansinya hingga, dan bukti di atas harus diganti. Jalan yang
+umum adalah memakai fungsi karakteristik $\varphi(t)=\mathbb{E}[e^{itX}]$, yang
+selalu ada karena $|e^{itX}|=1$, lalu memakai teorema kontinuitas Levy. Rangka
+buktinya sama: logaritma fungsi karakteristik $Z_n$ menuju $-t^2/2$. Versi tanpa
+asumsi momen ketiga ada di Wasserman, bab 5 bagian 5.7.2, dan di Blitzstein dan
+Hwang, bab 10 bagian 10.3.
+
+Teorema ini tidak mengatakan bahwa galatnya kecil. Ia mengatakan bahwa galat itu
+berbentuk lonceng setelah dibagi $\sigma/\sqrt n$. Ukurannya tetap diberikan oleh
+$\sigma/\sqrt n$, dan $\sigma$ adalah besaran yang biasanya tidak kita ketahui.
+Dalam praktik $\sigma$ diganti oleh simpangan baku sampel $s$, dan penggantian itu
+tidak merusak limit; pernyataannya menjadi $\sqrt n(\bar X_n-\mu)/s_n
+\rightsquigarrow N(0,1)$. Besaran $\sigma/\sqrt n$ disebut galat baku
+\index{galat baku} (\emph{standard error}), dan inilah dasar interval kepercayaan
+di Bab 20.
+
+Seberapa cepat aproksimasi itu membaik juga bisa dibatasi.
+
+\begin{teorema}[Ketaksamaan Berry--Esseen]
+Jika $\rho=\mathbb{E}|X_1-\mu|^3<\infty$, maka
+\[
+\sup_z\bigl|P(Z_n\le z)-\Phi(z)\bigr|\le \frac{C\rho}{\sigma^3\sqrt n},
+\]
+dengan $C$ konstanta universal; nilai $C=0{,}4748$ cukup untuk semua distribusi.
+\end{teorema}
+
+Bentuk ketaksamaan ini penting: jaraknya mengecil seperti $1/\sqrt n$, dengan
+konstanta yang bergantung pada kemencengan distribusi asal lewat $\rho/\sigma^3$.
+Distribusi yang sangat menceng akan butuh $n$ jauh lebih besar daripada
+distribusi yang simetris. Angka pada bagian lab menunjukkan hal ini secara
+kuantitatif untuk distribusi eksponensial, yang momen ketiganya $\rho=2{,}414553$
+dan karenanya batasnya $1{,}1464/\sqrt n$.
+
+\begin{resep}
+Tiga langkah menormalkan rata-rata sampel. Urutannya tidak boleh ditukar.
+\begin{enumerate}
+\item \textbf{Kurangi pusat.} Hitung $\bar x-\mu$. Lonceng bergeser sehingga
+      puncaknya jatuh di nol.
+\item \textbf{Bagi lebar.} Bagi hasilnya dengan galat baku $\sigma/\sqrt n$.
+      Bentuk lonceng tidak berubah; hanya skalanya yang menjadi satu satuan.
+\item \textbf{Baca tabel.} Sisa angka $z$ dibaca pada $\Phi(z)$; untuk ekor
+      kanan pakai $1-\Phi(z)$.
+\end{enumerate}
+Peringatan urutan: membagi sebelum mengurangi pusat menggeser hasil sebesar
+$\mu\sqrt n/\sigma$. Pada dadu dengan $\mu=3{,}5$, $\sigma=1{,}707825$, dan
+$n=12$, pergeseran itu $7{,}10$; angkanya sudah di luar tabel normal mana pun.
+\end{resep}
+
+\section{Aproksimasi normal dan koreksi kontinuitas}
+\tingkat{menengah}
+
+Kalimat sehari-harinya: untuk menghitung peluang jumlah, kita boleh memakai
+tabel normal, tetapi bila jumlahnya hanya bisa bernilai bulat, ambangnya digeser
+setengah.
+
+Aproksimasi normal untuk jumlah bekerja paling sederhana pada distribusi diskret,
+dan di situ muncul satu koreksi kecil yang dampaknya besar. Namanya koreksi
+kontinuitas\index{koreksi kontinuitas}. Ambil $S\sim
+\text{Binomial}(100;\,0{,}5)$, sehingga $\mu=50$ dan $\sigma=\sqrt{100\cdot0{,}5
+\cdot0{,}5}=5$. Kejadian $\{S\le40\}$ adalah kejadian yang sama dengan
+$\{S<40{,}5\}$, karena $S$ hanya bernilai bulat. Karena itu ambang yang benar
+untuk distandarkan adalah $40{,}5$, bukan $40$.
+
+\begin{center}
+\begin{tabular}{lrrr}
+\hline
+Kejadian & Eksak & Tanpa koreksi & Dengan koreksi \\
+\hline
+$P(S\le40)$ & $0{,}028444$ & $0{,}022750$ & $0{,}028717$ \\
+$P(S\le55)$ & $0{,}864373$ & $0{,}841345$ & $0{,}864334$ \\
+$P(S=60)$   & $0{,}010844$ & $0{,}010798$ & $0{,}010852$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Bacalah tabel itu baris demi baris. Pada baris pertama, aproksimasi tanpa koreksi
+meleset $0{,}005694$, sedangkan dengan koreksi meleset $0{,}000273$, hampir dua
+puluh satu kali lebih dekat. Pada baris ketiga keduanya sudah dekat, karena di
+sekitar pusat sebaran lebar satu satuan sudah kecil dibandingkan $\sigma=5$.
+Pelajaran umumnya: koreksi kontinuitas paling menolong di ekor dan ketika
+$\sigma$ kecil. Besar pergeseran $z$ yang ditimbulkannya adalah $1/(2\sigma)$,
+yaitu $0{,}1$ pada contoh ini.
+
+\kertas{Hitung ulang baris pertama tabel ini dengan tangan. $z=(40-50)/5=-2$,
+$\Phi(-2)=0{,}022750$; lalu $z=(40{,}5-50)/5=-1{,}9$, $\Phi(-1{,}9)=0{,}028717$.
+Nilai eksaknya $\sum_{k=0}^{40}\binom{100}{k}2^{-100}=0{,}028444$. Periksa juga
+bahwa galat tanpa koreksi $0{,}005694$ sekitar $21$ kali galat dengan koreksi
+$0{,}000273$.}
+
+Koreksi ini bukan rumus baru, hanya pembacaan ulang kejadian. Untuk variabel
+diskret dengan jarak antar-nilai $h$, ambang digeser $h/2$ ke arah dalam. Untuk
+variabel kontinu tidak ada yang perlu digeser, karena tidak ada lompatan.
+
+Satu kebiasaan buruk perlu disebut di sini. Banyak buku menulis bahwa
+aproksimasi normal "boleh dipakai bila $n\ge30$". Itu bukan teorema melainkan
+kebiasaan. Angka pada bagian lab memperlihatkan mengapa: untuk rata-rata
+eksponensial, jarak supremum ke normal pada $n=30$ adalah $0{,}02429$, dan
+kuantil $95$ persen dari $Z_{30}$ adalah $1{,}7419$ sedangkan normal memberi
+$1{,}6449$. Selisih $0{,}097$ itu berarti interval kepercayaan yang terlalu
+sempit sekitar enam persen. Yang menentukan bukan $n$ saja, melainkan kemencengan
+dan kurtosis distribusi asal.
+
+\section{Bila teorema limit pusat menyesatkan: ekor berat}
+\tingkat{lanjut}
+
+Kalimat sehari-harinya: bila satu pengamatan sesekali bisa jauh lebih besar
+daripada semua yang lain, rata-rata tidak lagi menetap, dan lonceng tidak muncul.
+
+\kamus{ekor berat}{heavy tail}{peluang nilai raksasa yang tidak cukup cepat
+mengecil, sehingga satu pengamatan dapat mengalahkan seluruh sisanya}
+
+Semua teorema di atas memakai satu syarat yang mudah dilewati: variansi hingga.
+Distribusi Cauchy\index{distribusi Cauchy}, dengan kepadatan
+\[
+f(x)=\frac{1}{\pi(1+x^2)},\qquad x\in\mathbb{R},
+\]
+tidak memilikinya. Ekornya mengecil seperti $1/x$, terlalu lambat. Peluang
+melewati sepuluh adalah $1-(2/\pi)\arctan 10=0{,}063451$, dan peluang melewati
+seratus masih $0{,}006366$. Bandingkan dengan normal baku, yang peluang melewati
+sepuluh praktis nol. Bahkan $\mathbb{E}|X|$ tidak hingga: harapan terpangkas pada
+ambang $M$ bernilai $(2/\pi)\ln(1+M^2)$, yaitu $2{,}9381$ untuk $M=10$,
+$8{,}7952$ untuk $M=10^3$, dan $17{,}5905$ untuk $M=10^6$. Angka itu tumbuh
+seperti logaritma, jadi tidak ada batas.
+
+Akibatnya tegas, dan bukan sekadar "CLT kurang akurat".
+
+\begin{proposisi}
+Jika $X_1,\dots,X_n$ iid Cauchy, maka $\bar X_n$ berdistribusi Cauchy untuk
+setiap $n$.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Fungsi karakteristik Cauchy adalah $\varphi(t)=e^{-|t|}$. Karena variabelnya
+bebas, fungsi karakteristik $\bar X_n$ adalah
+$\bigl[e^{-|t|/n}\bigr]^n=e^{-|t|}$, yaitu fungsi karakteristik Cauchy lagi.
+Karena fungsi karakteristik menentukan sebaran, $\bar X_n$ berdistribusi Cauchy.
+\end{proof}
+
+Jadi rata-rata $10^5$ pengamatan Cauchy sama tidak informatifnya dengan satu
+pengamatan. Hukum bilangan besar gagal, teorema limit pusat gagal, dan "galat
+baku" tidak berarti apa pun. Angka pada bagian lab menunjukkan tiga gejala itu
+sekaligus. Median $|\bar X_n|$ tinggal di sekitar satu untuk semua $n$
+($1{,}004$, $1{,}008$, $1{,}040$, $0{,}973$), padahal untuk distribusi
+bervariansi hingga ia harus mengecil seperti $1/\sqrt n$. Peluang
+$|\bar X_n|>10$ tinggal di sekitar $0{,}0635$, nilai teoretisnya, untuk semua $n$.
+Simpangan baku empirisnya melompat-lompat: $33{,}04$, $863{,}61$, $23{,}87$,
+$379{,}53$ untuk $n=10$ sampai $10^4$. Lompatan itu bukan kesalahan program.
+Simpangan baku sampel dari data Cauchy sendiri adalah variabel acak yang tidak
+punya nilai khas.
+
+Gambar~\ref{fig:cauchy-berjalan} memperlihatkan bedanya pada satu jalankan.
+Rata-rata berjalan data seragam menempel ke $0{,}5$ sesudah beberapa puluh
+tarikan. Rata-rata berjalan data Cauchy melompat dari $-0{,}0866$ ke $4{,}4572$
+pada tarikan ke-20, karena satu nilai $90{,}79$ kebetulan masuk, lalu mengembara
+lagi. Satu nilai raksasa cukup untuk membatalkan seluruh riwayat sebelumnya.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.95\linewidth, height=6.0cm,
+  xmode=log, xmin=1, xmax=4000, ymin=-1.1, ymax=4.9,
+  xlabel={banyak tarikan $n$ (skala logaritma)}, ylabel={rata-rata berjalan},
+  label style={font=\small}, tick label style={font=\footnotesize},
+  axis lines=left,
+  legend style={font=\footnotesize, draw=layergrey!35, fill=white,
+    fill opacity=0.9, text opacity=1, at={(0.015,0.985)},
+    anchor=north west, cells={anchor=west}},
+  legend cell align=left,
+]
+\addplot[accent, line width=0.7pt] coordinates{
+  (1,-0.253) (2,1.045) (3,0.582) (4,0.564) (5,0.553) (6,1.064)
+  (7,-0.579) (8,-0.517) (9,-0.409) (10,-0.325) (11,-0.409) (12,-0.361)
+  (13,-0.344) (14,-0.262) (15,0.008) (16,-0.038) (17,0.017) (18,-0.08)
+  (19,-0.087) (20,4.457) (21,4.29) (22,4.153) (23,4.046) (24,3.762)
+  (25,3.656) (26,3.551) (27,3.425) (28,3.257) (29,3.186) (30,3.083)
+  (31,2.934) (32,2.786) (33,2.837) (34,2.743) (35,2.633) (36,2.528)
+  (37,2.464) (38,2.381) (39,2.279) (40,2.218) (41,2.157) (44,1.732)
+  (47,1.387) (50,1.367) (53,1.191) (57,1.113) (61,1.077) (65,0.942)
+  (70,0.796) (75,0.773) (80,0.725) (85,0.492) (91,0.79) (97,0.655)
+  (104,0.54) (111,0.478) (119,0.494) (127,0.401) (135,0.981) (145,0.868)
+  (155,2.5) (165,2.351) (177,2.207) (189,2.168) (202,1.935) (216,1.854)
+  (230,1.776) (246,1.665) (263,1.573) (281,0.848) (300,0.794) (321,0.791)
+  (343,0.511) (367,0.922) (392,0.986) (419,0.984) (447,1.03) (478,0.951)
+  (511,0.827) (546,0.685) (583,0.37) (623,0.548) (666,0.953) (712,1.021)
+  (761,0.945) (813,2.066) (869,2.135) (929,1.855) (992,1.814) (1060,1.649)
+  (1133,1.31) (1211,0.557) (1294,0.422) (1383,0.434) (1478,0.466) (1579,0.324)
+  (1688,0.406) (1803,0.386) (1927,0.444) (2059,0.403) (2201,0.585) (2352,0.419)
+  (2513,0.528) (2686,0.397) (2870,0.356) (3067,0.326) (3278,0.276) (3503,-0.096)
+  (3743,-0.159) (4000,-0.203)};
+\addlegendentry{Cauchy}
+\addplot[layerteal, dashed, line width=1.0pt] coordinates{
+  (1,0.221) (2,0.272) (3,0.323) (4,0.472) (5,0.462) (6,0.519)
+  (7,0.524) (8,0.573) (9,0.55) (10,0.574) (11,0.605) (12,0.601)
+  (13,0.57) (14,0.581) (15,0.543) (16,0.532) (17,0.529) (18,0.528)
+  (19,0.532) (20,0.544) (21,0.545) (22,0.547) (23,0.539) (24,0.531)
+  (25,0.54) (26,0.555) (27,0.561) (28,0.541) (29,0.545) (30,0.547)
+  (31,0.562) (32,0.549) (33,0.533) (34,0.542) (35,0.531) (36,0.535)
+  (37,0.537) (38,0.526) (39,0.519) (40,0.516) (41,0.517) (44,0.518)
+  (47,0.519) (50,0.503) (53,0.518) (57,0.515) (61,0.525) (65,0.53)
+  (70,0.529) (75,0.53) (80,0.535) (85,0.538) (91,0.539) (97,0.538)
+  (104,0.541) (111,0.535) (119,0.532) (127,0.533) (135,0.528) (145,0.526)
+  (155,0.518) (165,0.523) (177,0.513) (189,0.516) (202,0.513) (216,0.507)
+  (230,0.5) (246,0.498) (263,0.495) (281,0.496) (300,0.496) (321,0.495)
+  (343,0.499) (367,0.499) (392,0.501) (419,0.503) (447,0.497) (478,0.505)
+  (511,0.508) (546,0.509) (583,0.504) (623,0.502) (666,0.497) (712,0.494)
+  (761,0.488) (813,0.484) (869,0.485) (929,0.484) (992,0.485) (1060,0.484)
+  (1133,0.483) (1211,0.485) (1294,0.487) (1383,0.489) (1478,0.488) (1579,0.491)
+  (1688,0.489) (1803,0.489) (1927,0.49) (2059,0.491) (2201,0.49) (2352,0.492)
+  (2513,0.491) (2686,0.493) (2870,0.492) (3067,0.49) (3278,0.492) (3503,0.491)
+  (3743,0.493) (4000,0.493)};
+\addlegendentry{seragam $(0,1)$}
+\draw[layergrey, densely dotted, line width=0.6pt]
+  (axis cs:1,0.5) -- (axis cs:4000,0.5);
+\node[font=\scriptsize, layergrey, anchor=south west] at (axis cs:1.3,0.53) {$0{,}5$};
+\end{axis}
+\end{tikzpicture}
+\caption{Rata-rata berjalan dari 4000 tarikan. Garis putus-putus: seragam pada
+$(0,1)$, menetap dekat $0{,}5$ dan berakhir di $0{,}4930$. Garis penuh: Cauchy,
+melompat dari $-0{,}0866$ ke $4{,}4572$ pada tarikan ke-20 ketika satu nilai
+$90{,}79$ masuk, lalu mengembara lagi dan berakhir di $-0{,}203$. Lebar sumbu
+mendatar logaritma, supaya lompatan awal tidak tertutup.}
+\label{fig:cauchy-berjalan}
+\end{figure}
+
+Yang menggantikan teorema limit pusat adalah keluarga sebaran stabil
+\index{sebaran stabil}. Untuk
+variabel iid dengan ekor yang mengecil seperti $x^{-\alpha}$ dengan
+$0<\alpha<2$, ada konstanta $a_n$ sehingga
+\[
+\frac{S_n-a_n}{n^{1/\alpha}}\;\rightsquigarrow\;Y_\alpha,
+\]
+dengan $Y_\alpha$ sebaran stabil berindeks $\alpha$. Untuk $\alpha=1$ kita
+mendapat Cauchy dan $n^{1/1}=n$, persis seperti proposisi di atas. Untuk
+$\alpha\in(1,2)$ rata-rata masih konvergen ke $\mu$, tetapi galatnya mengecil
+seperti $n^{1-1/\alpha}$, lebih lambat daripada $1/\sqrt n$, dan bentuknya bukan
+lonceng. Pernyataan umum ini adalah hasil Gnedenko dan Kolmogorov; rinciannya ada
+pada Feller jilid 2, bab tentang sebaran stabil.
+
+Bila $\alpha>2$ tetapi momen ketiga tidak ada, teorema limit pusat tetap benar
+karena variansinya hingga. Yang hilang adalah jaminan lajunya: batas
+Berry--Esseen menjadi tak berhingga, sehingga tidak ada lagi pegangan bahwa galat
+mengecil seperti $1/\sqrt n$ dengan konstanta yang terkendali. Dalam praktik ini
+yang paling sering menggigit: sebarannya tidak ekstrem seperti Cauchy, tetapi
+cukup berekor untuk membuat interval kepercayaan terlalu sempit pada ukuran
+sampel yang realistis.
+
+\begin{tantangan}
+Distribusi tanpa rata-rata. Ambil $X$ dengan
+$P(X=2^k)=P(X=-2^k)=2^{-k-1}$ untuk $k=1,2,3,\dots$
+
+Tunjukkan dua hal. Pertama, $\mathbb{E}|X|=\infty$, sehingga tidak ada $\mu$
+yang boleh dituju. Kedua, rata-rata sampelnya tidak konvergen dalam peluang ke
+konstanta mana pun: hukum bilangan besar gagal, bukan sekadar melambat.
+
+Petunjuk 1: yang menentukan bukan rata-rata semua suku, melainkan suku
+terbesar. Tanyakan seberapa sering satu suku melewati ambang $n$.
+
+Petunjuk 2: hitung $n\,P(|X|>n)$ untuk $n$ di antara dua pangkat dua, lalu
+pakai syarat perlu $n\,P(|X_1|>n)\to0$ yang disebut pada bagian hukum kuat.
+
+Kalau mentok, kembali ke bagian tentang ekor berat dan ke paragraf syarat perlu
+dan cukup di bagian hukum kuat.
+\end{tantangan}
+
+\begin{untukanak}
+Di sebuah desa ada seratus orang dengan penghasilan biasa-biasa saja, dan satu
+orang yang sangat kaya. Kalau kita menghitung penghasilan rata-rata desa itu,
+angkanya ditentukan hampir sepenuhnya oleh orang kaya tadi. Kalau orang kaya itu
+kebetulan sedang pergi, rata-ratanya jatuh drastis. Kalau ia pulang, rata-ratanya
+melompat naik.
+
+Sekarang tambahkan penduduk. Seratus orang lagi, seribu orang lagi; selama
+pendatangnya orang biasa, rata-ratanya berubah sedikit. Tetapi kalau di antara
+pendatang itu ada satu orang raksasa lagi, rata-ratanya melompat lagi. Menambah
+banyak orang tidak menolong, karena yang menentukan bukan banyaknya orang,
+melainkan siapa yang terbesar.
+
+Inilah yang terjadi pada data yang ekornya berat: satu pengamatan bisa
+mengalahkan semua yang lain. Rata-rata menjadi tidak stabil, dan lonceng yang
+biasa dipakai untuk menghitung "seberapa yakin" tidak muncul sama sekali.
+
+Pertanyaan yang membuat penasaran: bagaimana kita bisa tahu, sebelum menghitung,
+apakah data kita termasuk jenis yang tenang atau jenis yang dikuasai raksasa? Di
+bab ini kita akan tahu mengapa pertanyaan itu tidak bisa dijawab hanya dengan
+melihat rata-ratanya.
+\end{untukanak}
+
+\section{Lab komputasi: lima pemeriksaan}
+\tingkat{lanjut}
+
+Lima klaim di bab ini dapat diperiksa dengan satu skrip: laju $1/\sqrt n$ pada
+hukum bilangan besar, kemencengan dan kurtosis rata-rata eksponensial, jarak
+supremum ke normal, galat baku Monte Carlo, dan kegagalan total pada Cauchy.
+Semua angka di bawah ini adalah keluaran nyata dari eksekusi dengan NumPy 2.5.2
+dan SciPy 1.18.0, pembangkit \texttt{default\_rng(20261024)}.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from scipy import stats
+
+rng = np.random.default_rng(20261024)
+
+print("== 1. hukum bilangan besar: rata-rata dadu ==")
+for k in range(1, 6):
+    n = 10**k
+    m = rng.integers(1, 7, size=(2000, n)).mean(axis=1)
+    print("n=%6d  rata2=%.4f  rms=%.4f  sd/akar n=%.4f"
+          % (n, m.mean(), np.sqrt(np.mean((m-3.5)**2)),
+             np.sqrt(35/12/n)))
+
+print("== 2. CLT: rata-rata eksponensial ==")
+for n in (2, 5, 10, 30, 100, 500):
+    z = (rng.exponential(size=(50000, n)).mean(axis=1)
+         - 1)*np.sqrt(n)
+    ks = stats.kstest(z, "norm")
+    print("n=%4d skew=%+.3f (%+.3f) kurt=%+.3f (%+.3f)"
+          % (n, stats.skew(z), 2/np.sqrt(n),
+             stats.kurtosis(z), 6.0/n))
+    print("      KS D=%.4f p=%.3f" % (ks.statistic, ks.pvalue))
+
+print("== 3. jarak sup ke normal, eksak lewat gamma ==")
+rho = 2 + 2*(6/np.e - 2)          # E|X-1|^3 untuk X ~ Exp(1)
+for n in (2, 5, 10, 30, 100, 500):
+    zg = np.linspace(-4, 4, 40001)
+    Fn = stats.gamma.cdf(n*(1+zg/np.sqrt(n)), a=n)
+    D = np.max(np.abs(Fn - stats.norm.cdf(zg)))
+    print("n=%4d sup|Fn-Phi|=%.5f  D*akar n=%.3f  BE=%.3f"
+          % (n, D, D*np.sqrt(n), 0.4748*rho/np.sqrt(n)))
+
+print("== 4. galat baku Monte Carlo untuk E[exp(U)] ==")
+for k in (2, 3, 4, 5):
+    n = 10**k
+    est = np.exp(rng.random(size=(2000, n))).mean(axis=1)
+    print("n=%6d  sd=%.5f  sd*akar n=%.5f"
+          % (n, est.std(), est.std()*np.sqrt(n)))
+
+print("== 5. Cauchy: rata-rata tidak memusat ==")
+for k in (1, 2, 3, 4):
+    n = 10**k
+    m = rng.standard_cauchy(size=(4000, n)).mean(axis=1)
+    print("n=%5d  median|m|=%.3f P(|m|>10)=%.4f sd=%.2f"
+          % (n, np.median(np.abs(m)), np.mean(np.abs(m) > 10),
+             m.std()))
+print("teori P(|rata2|>10) = %.4f"
+      % (1 - 2/np.pi*np.arctan(10)))
+\end{verbatim}
+\end{lab}
+
+Keluarannya, apa adanya:
+
+\begin{verbatim}
+== 1. hukum bilangan besar: rata-rata dadu ==
+n=    10  rata2=3.5014  rms=0.5440  sd/akar n=0.5401
+n=   100  rata2=3.4992  rms=0.1698  sd/akar n=0.1708
+n=  1000  rata2=3.4986  rms=0.0527  sd/akar n=0.0540
+n= 10000  rata2=3.5001  rms=0.0171  sd/akar n=0.0171
+n=100000  rata2=3.4997  rms=0.0053  sd/akar n=0.0054
+== 2. CLT: rata-rata eksponensial ==
+n=   2 skew=+1.440 (+1.414) kurt=+3.130 (+3.000)
+      KS D=0.0929 p=0.000
+n=   5 skew=+0.919 (+0.894) kurt=+1.393 (+1.200)
+      KS D=0.0602 p=0.000
+n=  10 skew=+0.631 (+0.632) kurt=+0.589 (+0.600)
+      KS D=0.0480 p=0.000
+n=  30 skew=+0.355 (+0.365) kurt=+0.181 (+0.200)
+      KS D=0.0219 p=0.000
+n= 100 skew=+0.196 (+0.200) kurt=+0.038 (+0.060)
+      KS D=0.0167 p=0.000
+n= 500 skew=+0.112 (+0.089) kurt=-0.003 (+0.012)
+      KS D=0.0062 p=0.043
+== 3. jarak sup ke normal, eksak lewat gamma ==
+n=   2 sup|Fn-Phi|=0.09446  D*akar n=0.134  BE=0.811
+n=   5 sup|Fn-Phi|=0.05963  D*akar n=0.133  BE=0.513
+n=  10 sup|Fn-Phi|=0.04211  D*akar n=0.133  BE=0.363
+n=  30 sup|Fn-Phi|=0.02429  D*akar n=0.133  BE=0.209
+n= 100 sup|Fn-Phi|=0.01330  D*akar n=0.133  BE=0.115
+n= 500 sup|Fn-Phi|=0.00595  D*akar n=0.133  BE=0.051
+== 4. galat baku Monte Carlo untuk E[exp(U)] ==
+n=   100  sd=0.04928  sd*akar n=0.49281
+n=  1000  sd=0.01586  sd*akar n=0.50156
+n= 10000  sd=0.00495  sd*akar n=0.49538
+n=100000  sd=0.00155  sd*akar n=0.49056
+== 5. Cauchy: rata-rata tidak memusat ==
+n=   10  median|m|=1.004 P(|m|>10)=0.0630 sd=33.04
+n=  100  median|m|=1.008 P(|m|>10)=0.0680 sd=863.61
+n= 1000  median|m|=1.040 P(|m|>10)=0.0653 sd=23.87
+n=10000  median|m|=0.973 P(|m|>10)=0.0580 sd=379.53
+teori P(|rata2|>10) = 0.0635
+\end{verbatim}
+
+Bagian 1 memperlihatkan hukum bilangan besar bekerja, dan memperlihatkan
+harganya. Kolom rms cocok dengan $\sigma/\sqrt n$ sampai dua angka di belakang
+koma untuk $n\ge100$: $0{,}1698$ lawan $0{,}1708$, $0{,}0171$ lawan $0{,}0171$,
+$0{,}0053$ lawan $0{,}0054$. Tetapi lihat besarnya: pada $n=10^5$ rata-ratanya
+masih meleset sekitar $0{,}005$, yaitu $0{,}15$ persen dari $3{,}5$. Rata-rata
+$10^5$ lemparan bukan "praktis tepat"; ia tepat sampai dua angka di belakang
+koma.
+
+Bagian 2 dan 3 memperlihatkan dua cara mengukur kedekatan ke normal. Kemencengan
+dan kurtosis mengikuti ramalan teori dengan rapi mulai $n=10$: $0{,}631$ lawan
+$2/\sqrt{10}=0{,}632$ dan $0{,}589$ lawan $6/10=0{,}600$. Pada $n=2$ dan $n=5$
+penaksir kurtosis masih berisik, karena simpangannya bergantung pada momen
+kedelapan distribusi itu, bukan hanya pada banyaknya ulangan. Bagian 3 menghitung
+jarak supremum secara eksak, tanpa simulasi, dengan memakai sebaran Gamma untuk
+rata-rata eksponensial: $0{,}04211$ pada $n=10$ dan $0{,}00595$ pada $n=500$.
+Kolom $D\sqrt n$ hampir tetap di $0{,}133$, bukti langsung bahwa lajunya
+$1/\sqrt n$. Batas Berry--Esseen $1{,}1464/\sqrt n$ berlaku, dengan angka
+$0{,}209$ lawan $0{,}02429$ pada $n=30$; batas itu sekitar $8{,}6$ kali lebih
+longgar daripada kenyataan, dan itu wajar untuk batas yang seragam atas semua
+distribusi.
+
+Uji Kolmogorov--Smirnov pada lima puluh ribu tarikan menolak kenormalan dengan
+$p=0{,}000$ untuk semua $n$ sampai $100$, lalu memberi $p=0{,}043$ pada $n=500$.
+Itu bukan tanda program salah: aproksimasi normal tidak pernah tepat untuk $n$
+berhingga, dan jaraknya hanya mengecil sampai uji sebesar itu tidak mampu
+melihatnya lagi. Pertanyaan yang benar bukan "apakah normal" melainkan
+"seberapa besar galat yang masih boleh kita terima", dan bagian 3 menjawabnya
+dengan angka.
+
+Bagian 4 memisahkan dua besaran yang sering tertukar. Simpangan baku penaksir
+turun dari $0{,}04928$ ke $0{,}00155$ ketika $n$ naik seribu kali, sedangkan
+$\text{sd}\cdot\sqrt n$ hampir tetap di $0{,}49$. Nilai tetap itu adalah
+$\sigma$ dari $\exp(U)$, yaitu $\sqrt{(e^2-1)/2-(e-1)^2}=0{,}491971$. Inilah
+hukum $1/\sqrt n$ dalam bentuk paling telanjang: untuk ketelitian $0{,}001$ pada
+$95$ persen keyakinan kita perlu $(1{,}96\cdot0{,}491971/0{,}001)^2=929803$
+tarikan.
+
+Bagian 5 adalah tandingannya. Median $|\bar X_n|$ tidak mengecil; peluang
+melewati sepuluh tidak mengecil; dan simpangan baku empirisnya melompat dari
+$33{,}04$ ke $863{,}61$ lalu turun ke $23{,}87$. Teori menyebut $0{,}0635$, dan
+kelima angka simulasi berkisar di situ. Tidak ada hukum bilangan besar di sini,
+dan tidak ada teorema limit pusat. Satu-satunya cara menyelamatkan analisis adalah
+mengubah pertanyaannya: menaksir indeks ekor, bukan rata-rata.
+
+\begin{untukdosen}
+Urutan mengajar yang saya sarankan: mulai dari tabel simulasi, bukan dari definisi.
+Tunjukkan pada kelas bahwa galat satu jalankan tidak mengikuti pola apa pun,
+sedangkan sebaran galatnya mengikuti. Sesudah itu tiga modus konvergensi, dengan
+contoh penyangkal untuk setiap arah yang gagal; jangan menunda contoh-contoh itu,
+karena di situlah mahasiswa paham bahwa "menuju" perlu diperjelas. Baru kemudian
+Markov, Chebyshev, hukum lemah, hukum kuat sebagai pernyataan, lalu limit pusat
+dengan bukti fungsi pembangkit momen.
+
+Dua miskonsepsi yang paling sering muncul. Pertama, mahasiswa membaca "konvergen
+dalam peluang" sebagai "nilainya menjadi tetap", lalu heran ketika simulasi
+menunjukkan lompatan besar pada $n$ besar; contoh $(0,1)$ yang dipecah pada bab
+ini adalah penawarnya. Kedua, mereka membaca teorema limit pusat sebagai "rata-rata
+menjadi normal", padahal yang menjadi normal adalah galat yang dibagi
+$\sigma/\sqrt n$; akibatnya mereka menuliskan $\bar X_n\approx N(\mu,\sigma^2)$
+dan lupa $\sqrt n$.
+
+Aktivitas papan tulis yang berhasil: minta dua mahasiswa memerankan penjudi dan
+bandar. Penjudi menyebut toleransi, bandar menyebut banyak lemparan yang
+menjaminnya, dan kelas menghitung dengan Chebyshev lalu membandingkannya dengan
+angka eksak dari SciPy. Selisihnya selalu besar, dan itulah pintu masuk ke
+aproksimasi normal. Tanda kelas siap lanjut: mereka dapat menjelaskan mengapa
+Chebyshev tetap berguna walaupun longgar, dan dapat menyebut satu distribusi yang
+membuat teorema limit pusat gagal.
+\end{untukdosen}
+
+\section{Ringkasan}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Ada tiga modus konvergensi yang berbeda: hampir pasti, dalam peluang, dan
+        dalam distribusi. Hampir pasti mengakibatkan dalam peluang, dalam peluang
+        mengakibatkan dalam distribusi, dan arah sebaliknya gagal kecuali bila
+        limitnya konstanta.
+  \item Ketaksamaan Markov dan Chebyshev hanya memakai momen, karena itu berlaku
+        untuk semua distribusi bervariansi hingga, dan karena itu pula longgar.
+  \item Hukum bilangan besar lemah: $P(|\bar X_n-\mu|\ge\varepsilon)\le
+        \sigma^2/(n\varepsilon^2)\to0$. Hukum kuat menambahkan bahwa
+        $\bar X_n\to\mu$ hampir pasti bila $\mathbb{E}|X_1|<\infty$, tanpa
+        menuntut variansi.
+  \item Teorema limit pusat: $\sqrt n(\bar X_n-\mu)/\sigma\rightsquigarrow N(0,1)$
+        bila variansi hingga. Lajunya $1/\sqrt n$, maka empat kali data untuk
+        separuh galat, dan seratus kali data untuk satu digit tambahan.
+  \item Aproksimasi normal untuk jumlah diskret memerlukan koreksi kontinuitas
+        setengah satuan; koreksi itu memangkas galat di ekor sekitar dua puluh
+        kali pada contoh binomial di bab ini.
+  \item Bila variansi tak hingga, teorema limit pusat gagal, bukan hanya melambat.
+        Rata-rata $n$ pengamatan Cauchy tetap Cauchy, dan yang menggantikan
+        lonceng adalah sebaran stabil berindeks $\alpha<2$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Buktikan: bila $X_n\to X$ dan $Y_n\to Y$ dalam peluang, maka
+        $X_n+Y_n\to X+Y$ dalam peluang. Tuliskan pertidaksamaan himpunan yang
+        dipakai, lalu jelaskan mengapa $\varepsilon/2$ muncul.
+  \item Buktikan bahwa ketaksamaan Chebyshev tajam: untuk $0<\sigma^2\le a^2$,
+        ambil $X$ dengan $P(X=a)=P(X=-a)=\sigma^2/(2a^2)$ dan
+        $P(X=0)=1-\sigma^2/a^2$, lalu hitung $\operatorname{Var}(X)$ dan
+        $P(|X|\ge a)$.
+  \item Nilai klaim ini: "Karena teorema limit pusat berlaku untuk semua
+        distribusi, rata-rata tiga puluh pengamatan selalu boleh dianggap
+        normal." Benar, salah, atau belum cukup bukti? Sebutkan syarat yang
+        dilanggar atau yang belum diperiksa, dan pakai angka dari bagian lab.
+  \item Untuk koin dengan $p=1/2$ dan toleransi $\varepsilon=0{,}05$, cari $n$
+        terkecil yang dijamin Chebyshev untuk peluang meleset paling besar
+        $0{,}05$. Lalu cari $n$ terkecil yang benar-benar memenuhi syarat itu,
+        dengan menghitung sebaran binomial di Python. Bandingkan kedua angka.
+  \item Buktikan bahwa konvergensi dalam peluang tidak menjamin konvergensi
+        harapan, dengan memakai $P(X_n=n^2)=1/n$ dan $P(X_n=0)=1-1/n$. Hitung
+        $\mathbb{E}[X_n]$ dan $P(|X_n|>\varepsilon)$ untuk $\varepsilon$ tetap.
+  \item Untuk $S\sim\text{Binomial}(200;\,0{,}3)$, aproksimasi $P(S\le50)$ dengan
+        normal tanpa dan dengan koreksi kontinuitas, lalu bandingkan keduanya
+        dengan nilai eksak dari SciPy. Laporkan kedua galat.
+  \item Bangkitkan $4000$ rata-rata dari $n$ bilangan Cauchy untuk
+        $n=10,10^2,10^3,10^4$, lalu laporkan median $|\bar X_n|$, peluang
+        $|\bar X_n|>10$, dan simpangan bakunya. Bandingkan dengan
+        $1-(2/\pi)\arctan10$ dan jelaskan mengapa kolom simpangan baku tidak
+        mengecil.
+  \item Buktikan dengan fungsi karakteristik bahwa rata-rata $n$ variabel iid
+        Cauchy berdistribusi Cauchy. Lalu jelaskan mengapa laporan berbentuk
+        "rata-rata $\pm$ dua galat baku" pada data semacam itu tidak dapat
+        ditafsirkan.
+  \item Berapa tarikan Monte Carlo yang diperlukan agar penaksir
+        $\mathbb{E}[\exp(U)]$ memiliki setengah lebar interval $95$ persen
+        sebesar $0{,}0005$? Pakai $\sigma=0{,}491971$ dari bagian lab, lalu
+        bandingkan dengan $n$ yang diperlukan untuk setengah lebar $0{,}001$.
+        Nyatakan rasionya dan jelaskan asalnya.
+  \item Buktikan bahwa bila $X_n\rightsquigarrow c$ dengan $c$ konstanta, maka
+        $X_n\to c$ dalam peluang, tanpa memakai bagian (c) teorema hubungan tiga
+        modus di awal bab, lalu tunjukkan dengan contoh bahwa syarat "konstanta"
+        tidak dapat dibuang.
+\end{enumerate}
+
+Petunjuk untuk tiga butir tersulit. Butir 1: tulis
+$\{|(X_n+Y_n)-(X+Y)|>\varepsilon\}$ termuat dalam gabungan dua kejadian, lalu
+pakai batas gabungan. Butir 8: fungsi karakteristik jumlah adalah hasilkali
+fungsi karakteristik, dan fungsi karakteristik Cauchy $e^{-|t|}$ bersifat
+istimewa karena bentuknya tidak berubah saat dipangkatkan. Butir 10: tulis
+$P(X_n\le t)\le P(X_n\le c-\varepsilon)+P(|X_n-c|>\varepsilon)$ untuk $t$ di
+kiri $c$, dan ingat bahwa sebaran titik massa melompat tepat di $c$.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini: implikasi hampir pasti $\Rightarrow$ dalam
+peluang $\Rightarrow$ dalam distribusi, hukum lemah lewat Chebyshev, dan limit
+pusat lewat fungsi pembangkit momen dengan asumsi $\mathbb{E}|Y_1|^3<\infty$.
+Yang populer tetapi tidak terbukti di sini: hukum kuat (pernyataan saja, bukti
+Etemadi dilewati), versi limit pusat tanpa momen ketiga (butuh fungsi
+karakteristik dan teorema kontinuitas Levy), dan seluruh teori sebaran stabil
+(pernyataan Gnedenko--Kolmogorov, tanpa bukti).
+
+Sumber primer yang saya pakai: Wasserman, \emph{All of Statistics}, bab 5 bagian
+5.2 (tipe konvergensi dan diagram implikasinya), 5.3 (hukum lemah), 5.4 (limit
+pusat dan Berry--Esseen), serta lampiran 5.7.1 dan 5.7.2 untuk hukum kuat dan
+bukti limit pusat. Blitzstein dan Hwang, \emph{Introduction to Probability}, bab
+10 bagian 10.1 (ketaksamaan), 10.2 (hukum bilangan besar), 10.3 (limit pusat).
+Untuk sisi ekor berat: Feller jilid 2.
+
+Batas keberlakuan yang perlu disebut. Pertama, semua teorema di sini mengandaikan
+kebebasan dan distribusi sama; untuk data dependen, misalnya deret waktu atau
+iterasi rantai Markov, yang berlaku adalah versi martingale atau mixing, dan
+lajunya bisa jauh lebih lambat. Kedua, konstanta optimal pada Berry--Esseen belum
+diketahui; $0{,}4748$ cukup, dan batas bawah yang terbaik bagi konstanta itu
+masih di bawah $0{,}5$. Ketiga, laju $1/\sqrt n$ adalah laju paling buruk yang
+dijamin secara seragam; untuk distribusi tertentu laju sebenarnya lebih baik,
+dan untuk ekor berat dengan $\alpha\in(1,2)$ laju sebenarnya lebih buruk.
+Pertanyaan terbuka yang masih hidup: seberapa tajam batas Berry--Esseen untuk
+kelas distribusi yang dibatasi momennya, dan bagaimana menaksir indeks ekor
+dengan interval kepercayaan yang sah pada $n$ kecil.
+\end{untukpeneliti}
+
+\peta{Bab 19 pada Wasserman, \emph{All of Statistics}: bab 5 (Convergence of
+Random Variables), bagian 5.2 Types of Convergence, 5.3 The Law of Large Numbers,
+5.4 The Central Limit Theorem, dan lampiran 5.7.1 Almost Sure and L1 Convergence
+serta 5.7.2 Proof of the Central Limit Theorem. Pada Blitzstein dan Hwang,
+\emph{Introduction to Probability}: bab 10 (Inequalities and limit theorems),
+bagian 10.1 Inequalities, 10.2 Law of large numbers, 10.3 Central limit theorem.
+Untuk sebaran stabil: Feller, \emph{An Introduction to Probability Theory and Its
+Applications}, jilid 2. Distribusi dasar yang dipakai di sini dibangun di Bab 17,
+dan interval kepercayaan yang bersandar pada bab ini dibahas di Bab 19.}

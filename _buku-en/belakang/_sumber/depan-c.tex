@@ -1,0 +1,57 @@
+\chapter*{Peta Ketergantungan Bab}
+\addcontentsline{toc}{chapter}{Peta Ketergantungan Bab}
+\markboth{Peta Ketergantungan Bab}{Peta Ketergantungan Bab}
+
+Buku ini boleh dibaca tidak berurutan, tetapi tidak semua bab berdiri sendiri.
+Tabel berikut menyebut prasyarat minimum setiap bab; semua prasyarat lain boleh
+diabaikan pada pembacaan pertama.
+
+\begin{center}
+\small
+\begin{tabular}{@{}r p{9.0cm} p{2.8cm}@{}}
+\toprule
+\textbf{Bab} & \textbf{Judul} & \textbf{Prasyarat} \\
+\midrule
+1 & Bahasa Matematika dan Seni Membuktikan & --- \\
+2 & Himpunan, Relasi, Fungsi, dan Kardinalitas & 1 \\
+3 & Aksioma Bilangan Real dan Supremum & 1, 2 \\
+4 & Barisan dan Limit & 3 \\
+5 & Deret Tak Hingga & 4 \\
+6 & Ruang Vektor dan Subruang & 2 \\
+7 & Basis, Dimensi, dan Transformasi Linear & 6 \\
+8 & Sistem Persamaan Linear, Determinan, dan Invers & 6 \\
+9 & Nilai Eigen dan Diagonalisasi & 7, 8 \\
+10 & Ortogonalitas, SVD, dan Kuadrat Terkecil & 7, 9 \\
+11 & Kekontinuan dan Kekontinuan Seragam & 3, 4 \\
+12 & Turunan: Satu dan Banyak Variabel & 11, 7 \\
+13 & Integral Riemann dan Teorema Dasar Kalkulus & 11 \\
+14 & Deret Fungsi dan Pertukaran Limit & 5, 11, 13 \\
+15 & Integral Lipat, Perubahan Variabel, dan Teorema Lapangan Vektor & 10, 12, 13 \\
+16 & Persamaan Diferensial dan Sistem Dinamik & 12, 14, 15 \\
+17 & Peluang dan Peluang Bersyarat & 2, 5 \\
+18 & Variabel Acak dan Distribusi & 17, 13 \\
+19 & Hukum Bilangan Besar dan Teorema Limit Pusat & 18, 5 \\
+20 & Estimasi, Interval Kepercayaan, dan Uji Hipotesis & 19 \\
+21 & Regresi dan Statistika Terapan & 10, 20 \\
+22 & Aritmetika Floating-Point dan Analisis Galat & 3, 5 \\
+23 & Optimasi Konveks dan Dualitas & 6, 12 \\
+24 & Pemrograman Linear dan Integer & 8, 23 \\
+25 & Jaringan Saraf dan Turunan Balik & 10, 12, 23 \\
+26 & Generalisasi, Regularisasi, dan Pelatihan & 18, 25 \\
+27 & Evaluasi Model yang Jujur & 20, 26 \\
+28 & Metode Formal dengan Lean 4 & 1, 2 \\
+29 & Adversarial Machine Learning: Serangan dan Pertahanan & 25, 22 \\
+30 & Batas Serangan: Gradien Dikaburkan dan Evasi NIDS & 27, 29 \\
+31 & Kriptografi: Bilangan Bulat Modular sampai Ancaman Kuantum & 2, 3, 28 \\
+32 & Privasi Diferensial dan Fondasi Matematis QML & 10, 17, 18 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\phantomsection
+\pdfbookmark[0]{Daftar Isi}{toc}
+\tableofcontents
+\cleardoublepage
+\phantomsection
+\pdfbookmark[0]{Daftar Gambar}{lof}
+\listoffigures

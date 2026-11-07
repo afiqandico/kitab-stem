@@ -1,0 +1,1144 @@
+\chapter{Evaluasi Model yang Jujur}
+
+Sebuah laporan pendek sampai di meja seorang analis keamanan. Isinya satu tabel: detektor
+intrusi baru, diuji pada data lalu lintas jaringan yang diambil dari jaringan kampus
+selama sebulan, mencapai akurasi $99$ persen. Angka itu dibingkai dengan huruf tebal dan
+satu kalimat penutup: ``siap dipakai''.
+
+Data itu berisi satu serangan untuk setiap seribu koneksi. Pada kumpulan yang sama,
+program tiga baris yang selalu menjawab ``bersih'' memperoleh akurasi $99{,}9$ persen: ia
+tidak membaca satu fitur pun dan tidak pernah salah menuduh. Detektor yang dilatih berjam-
+jam itu kalah, dan laporannya tidak memuat satu angka pun yang membocorkan kekalahan itu.
+
+Yang keliru adalah ringkasannya: satu bilangan mewakili empat bilangan yang perannya
+berbeda, pada data yang komposisinya tidak disebut. Bab 26 menjelaskan mengapa galat uji
+berbeda dari galat latih; bab ini menutup tiga celah: metrik apa yang jujur tentang apa
+yang mereka abaikan, seberapa besar angkanya bergoyang, dan apakah data uji benar-benar
+belum dilihat oleh prosedur yang memilih model.
+
+\begin{untukanak}
+Bayangkan sebuah detektor logam di gerbang sekolah. Setiap pagi ia berbunyi. Kemarin ia
+berbunyi seribu kali, dan petugas memeriksa seribu tas. Ternyata hanya enam puluh tas
+yang benar-benar membawa barang terlarang. Sembilan ratus empat puluh siswa lain harus
+membuka tasnya tanpa alasan.
+
+Sekarang datang petugas dinas yang bertanya: berapa persen jawaban alat itu yang benar?
+Petugas gerbang menjawab dengan bangga: sembilan puluh sembilan persen. Ia tidak
+berbohong; dari seratus ribu kantong, alat itu hanya salah pada seribu. Tetapi jawaban itu
+tidak menjawab pertanyaan yang membuat siswa kesal: mereka kesal bukan karena alat itu
+sering salah, melainkan karena hampir setiap kali berbunyi, ia salah.
+
+Dua pertanyaan itu terdengar mirip dan jawabannya berbeda jauh: yang satu bertanya tentang
+seluruh kantong, yang lain tentang kantong yang dibunyikan. Di bab ini kita akan tahu
+mengapa satu alat bisa unggul pada pertanyaan pertama dan hancur pada pertanyaan kedua,
+mengapa angka seratus persen kadang bukan kabar baik, dan mengapa laporan yang jujur selalu
+memuat lebih dari satu angka.
+\end{untukanak}
+
+\section{Empat bilangan yang tidak simetris}
+\tingkat{dasar}
+
+Pengklasifikasi biner, secanggih apa pun isinya, meninggalkan jejak yang sama: empat
+bilangan. Yang membedakan satu laporan evaluasi dari laporan lain adalah apakah keempatnya
+dilaporkan. Kalimat sehari-harinya: setiap keputusan punya dua cara untuk benar dan dua
+cara untuk salah, dan menutup salah satunya sama dengan bersembunyi.
+
+\kamus{matriks konfusi}{confusion matrix}{buku kas empat kolom yang mencatat setiap
+keputusan benar dan salah beserta arah kesalahannya}
+
+\begin{definisi}[Matriks konfusi]
+\index{matriks konfusi}
+Misalkan setiap contoh memiliki label sebenarnya $y\in\{0,1\}$ dan prediksi
+$\hat y\in\{0,1\}$, dengan $1$ berarti positif (serangan, penyakit, pesan berbahaya).
+Empat bilangan
+\begin{align}
+\mathrm{TP}&=\#\{y=1,\ \hat y=1\}, & \mathrm{FP}&=\#\{y=0,\ \hat y=1\},
+\nonumber\\
+\mathrm{FN}&=\#\{y=1,\ \hat y=0\}, & \mathrm{TN}&=\#\{y=0,\ \hat y=0\}
+\nonumber
+\end{align}
+beserta susunannya disebut \emph{matriks konfusi}. Jumlah seluruh contoh adalah
+$n=\mathrm{TP}+\mathrm{FP}+\mathrm{FN}+\mathrm{TN}$.
+\end{definisi}
+
+Dari empat bilangan itu diturunkan metrik yang menjawab pertanyaan berbeda. Presisi
+bertanya: bila model mengatakan positif, berapa peluang ia benar. Recall bertanya: dari
+seluruh kasus positif, berapa bagian yang tertangkap.
+
+\begin{definisi}[Presisi, recall, spesifisitas]
+\index{presisi}
+\index{recall}
+Dengan $\mathrm{TP}+\mathrm{FP}>0$ dan $\mathrm{TP}+\mathrm{FN}>0$,
+\[
+\operatorname{prec}=\frac{\mathrm{TP}}{\mathrm{TP}+\mathrm{FP}},\qquad
+\operatorname{rec}=\frac{\mathrm{TP}}{\mathrm{TP}+\mathrm{FN}},\qquad
+\operatorname{spec}=\frac{\mathrm{TN}}{\mathrm{TN}+\mathrm{FP}} .
+\]
+Akurasi adalah $(\mathrm{TP}+\mathrm{TN})/n$, dan $F_1$ adalah
+$2\,\mathrm{TP}/(2\,\mathrm{TP}+\mathrm{FP}+\mathrm{FN})$.
+\end{definisi}
+
+Mari kita pakai satu contoh kerja: sebuah detektor diuji pada $1000$ koneksi berlabel,
+$100$ di antaranya serangan. Ia menandai $62$ serangan dengan benar, melewatkan
+$38$, dan menuduh $17$ koneksi bersih sebagai serangan.
+
+\begin{center}
+\small
+\begin{tabular}{l|rr|r}
+\hline
+ & prediksi positif & prediksi negatif & total \\
+\hline
+sebenarnya positif & $\mathrm{TP}=62$ & $\mathrm{FN}=38$ & 100 \\
+sebenarnya negatif & $\mathrm{FP}=17$ & $\mathrm{TN}=883$ & 900 \\
+\hline
+total & 79 & 921 & 1000 \\
+\hline
+\end{tabular}
+\end{center}
+
+Presisinya $62/79=0{,}784810$: sekitar empat dari lima alarm menunjuk serangan.
+Recall-nya $62/100=0{,}620000$: hampir empat dari sepuluh serangan tidak terlihat.
+Spesifisitasnya $883/900=0{,}981111$. Akurasinya $945/1000=0{,}945000$, dan
+$F_1=124/179=0{,}692737$. Kelima angka itu benar tentang model yang sama, dan tidak satu
+pun darinya boleh dipakai sendiri. Pemeriksaan dengan \texttt{sklearn.metrics} memberi
+kelima angka yang sama sampai enam angka desimal.
+
+Gambar~\ref{fig:konfusi-jujur} menempatkan keempat bilangan itu pada tempatnya, lengkap
+dengan jumlah baris dan kolomnya; setiap angka di sisa bab harus dapat dilacak ke salah
+satu sel gambar itu.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[every node/.style={font=\footnotesize}]
+  % dua sel benar (hijau) dan dua sel salah (merah)
+  \fill[layerjade!14] (4.40,2.00) rectangle (6.70,2.90);
+  \fill[layerjade!14] (6.70,1.10) rectangle (9.00,2.00);
+  \fill[accent!8]     (6.70,2.00) rectangle (9.00,2.90);
+  \fill[accent!8]     (4.40,1.10) rectangle (6.70,2.00);
+  \draw[ink,thick] (4.40,0.55) rectangle (10.30,2.90);
+  \draw[ink] (6.70,0.55) -- (6.70,2.90);
+  \draw[ink] (9.00,0.55) -- (9.00,2.90);
+  \draw[ink] (4.40,2.00) -- (10.30,2.00);
+  \draw[ink] (4.40,1.10) -- (10.30,1.10);
+  \draw[ink!35] (4.40,0.55) -- (10.30,0.55);
+  % isi sel
+  \node at (5.55,2.45) {$\mathrm{TP}=62$};
+  \node at (7.85,2.45) {$\mathrm{FN}=38$};
+  \node at (5.55,1.55) {$\mathrm{FP}=17$};
+  \node at (7.85,1.55) {$\mathrm{TN}=883$};
+  % judul kolom
+  \node at (5.55,3.14) {prediksi positif};
+  \node at (7.85,3.14) {prediksi negatif};
+  \node at (9.65,3.14) {total};
+  % judul baris
+  \node[anchor=east] at (4.24,2.45) {sebenarnya positif $(100)$};
+  \node[anchor=east] at (4.24,1.55) {sebenarnya negatif $(900)$};
+  \node[anchor=east] at (4.24,0.82) {total};
+  % jumlah
+  \node at (5.55,0.82) {$79$};
+  \node at (7.85,0.82) {$921$};
+  \node at (9.65,2.45) {$100$};
+  \node at (9.65,1.55) {$900$};
+  \node at (9.65,0.82) {$1000$};
+  \node[anchor=north,font=\scriptsize,align=center,text width=11.4cm] at (7.00,0.30)
+    {akurasi $=(62+883)/1000=0{,}945$;\quad presisi $=62/79$;\quad recall $=62/100$};
+\end{tikzpicture}
+\caption{Matriks konfusi contoh kerja pada $1000$ koneksi: $62$ serangan tertangkap, $38$
+lolos, $17$ alarm palsu, dan $883$ koneksi bersih yang ditolak dengan benar. Baris
+menjumlah menjadi $100$ positif dan $900$ negatif, kolom menjadi $79$ prediksi positif dan
+$921$ prediksi negatif, dan seluruhnya $1000$. Dua sel hijau adalah dua cara untuk benar,
+dua sel merah dua cara untuk salah. Akurasi $0{,}945$ menjumlahkan kedua sel hijau dan
+karena itu tidak dapat membedakan $62$ yang tertangkap dari $38$ yang lolos.}
+\label{fig:konfusi-jujur}
+\end{figure}
+
+Peran keempat bilangan tidak simetris. Presisi menjawab pertanyaan operator: bila
+alarm berbunyi, berapa peluang memang ada serangan. Recall menjawab pertanyaan
+perancang kebijakan: dari seluruh serangan, berapa bagian yang tertangkap. Keduanya
+bergantung pada ambang, sehingga metrik tanpa ambang bukan pernyataan yang lengkap:
+model yang sama memberi presisi $0{,}25$ dengan recall $0{,}45$, atau presisi
+$0{,}013$ dengan recall $0{,}86$.
+
+$F_1$ mencoba meringkas presisi dan recall menjadi satu bilangan, dan justru di situ ia
+paling mudah disalahgunakan.
+
+\begin{proposisi}
+\index{f1}
+$F_1$ adalah rata-rata harmonik presisi $P$ dan recall $R$, yaitu $F_1=2PR/(P+R)$,
+sehingga $F_1\le(P+R)/2$ dengan kesamaan berlaku tepat ketika $P=R$.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Tulis $a=\mathrm{TP}$, $b=\mathrm{FP}$, $c=\mathrm{FN}$. Maka $P=a/(a+b)$,
+$R=a/(a+c)$, dan
+\[
+\frac{2PR}{P+R}
+=\frac{2a^2\big/\bigl((a+b)(a+c)\bigr)}{a(2a+b+c)\big/\bigl((a+b)(a+c)\bigr)}
+=\frac{2a}{2a+b+c}=F_1 .
+\]
+Ketaksamaan harmonik--aritmetik $4PR\le(P+R)^2$ ekuivalen dengan $(P-R)^2\ge0$, dan
+kesamaan hanya terjadi bila $P=R$.
+\end{proof}
+
+Sifat harmonik itu menarik nilainya ke bawah oleh komponen terkecil: presisi $0{,}9$
+dengan recall $0{,}2$ memberi $F_1\approx0{,}327$, bukan $0{,}55$; pada contoh kita
+$F_1=0{,}6927$, sedikit di bawah titik tengah $0{,}7024$.
+
+Tiga cacat ringkasan perlu dinamai satu per satu, sebab obatnya berbeda. Presisi
+buta terhadap serangan yang lolos: model yang menandai semua koneksi memperoleh
+presisi $0{,}1$, yaitu kelazimannya sendiri, tetapi recall $1$. $F_1$ mengabaikan
+$\mathrm{TN}$ sepenuhnya: dua model dengan presisi dan recall sama tetapi alarm
+palsu berbeda sepuluh kali lipat melaporkan $F_1$ identik, padahal biaya
+operasionalnya jauh berbeda. $F_1$ juga membebani kedua komponen setara, padahal
+satu serangan yang lolos biasanya jauh lebih mahal daripada satu alarm palsu.
+
+\begin{tantangan}
+Sebuah laporan hanya memuat tiga angka: ``akurasi $0{,}9720$ pada $5000$ koneksi uji;
+presisi $0{,}000$; model siap dipakai''. Tentukan seluruh matriks konfusi yang konsisten
+dengan laporan itu, jelaskan mengapa recall-nya nol dan bukan bilangan lain, lalu cari
+kelaziman terbesar yang masih mungkin.
+
+Petunjuk 1: akurasi hanya menjumlahkan dua sel diagonal, jadi
+$5000(1-0{,}9720)=140$ kesalahan bebas dibagi antara dua sel yang tersisa.
+
+Petunjuk 2: presisi $0{,}000$ berarti $\mathrm{TP}=0$, sehingga $\mathrm{FN}$ sama dengan
+banyaknya contoh positif dan $\mathrm{FP}$ adalah sisanya. Tetapi presisi dengan
+$\mathrm{TP}=\mathrm{FP}=0$ adalah $0/0$, bukan $0$; angka $0{,}000$ pada laporan itu
+karena itu menuntut sekurang-kurangnya satu alarm palsu.
+
+Kalau mentok, kembali ke bagian Akurasi yang menipu pada bab ini.
+\end{tantangan}
+
+\section{Akurasi yang menipu pada data tak seimbang}
+\tingkat{dasar}
+
+Akurasi paling sering dilaporkan dan paling mudah menipu: ia menghitung semua
+kesalahan dengan harga sama pada kumpulan yang komposisinya tidak disebut. Kalimat
+sehari-harinya: akurasi adalah nilai rapor yang dihitung seolah kedua kelompok
+seimbang.
+
+\index{akurasi seimbang}
+\begin{definisi}[Akurasi seimbang]
+Misalkan $\pi$ adalah kelaziman kelas positif. \emph{Akurasi seimbang} adalah
+$(\operatorname{rec}+\operatorname{spec})/2$, yaitu rata-rata laju benar pada kedua kelas.
+Besaran ini tidak berubah bila jumlah contoh positif dan negatif diubah tanpa mengubah
+kedua laju tersebut.
+\end{definisi}
+
+Akurasi biasa tidak memiliki sifat itu, dan akibatnya dapat ditulis tepat.
+
+\begin{proposisi}
+Pengklasifikasi yang selalu menjawab negatif memperoleh akurasi $1-\pi$. Karena itu
+sebuah model dengan akurasi di bawah $1-\pi$ kalah dari garis dasar yang tidak belajar
+apa pun, dan laporan yang menyebut akurasi tanpa menyebut $\pi$ tidak dapat dinilai.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Dari $n$ contoh, $\pi n$ berlabel positif dan seluruhnya salah, sedangkan $(1-\pi)n$
+berlabel negatif dan seluruhnya benar. Akurasinya $(1-\pi)n/n=1-\pi$. Model lain dengan
+akurasi lebih kecil karena itu melakukan lebih banyak kesalahan daripada garis dasar itu.
+\end{proof}
+
+\begin{bacakeras}
+Dua suara, dibaca bergantian dengan teman. Ketuk meja setiap kali kata ``nol'' diucapkan.
+
+``Seratus kartu. Berapa merah?'' ``Sepuluh.'' ``Berapa putih?'' ``Sembilan puluh.''
+``Mesin menjawab apa?'' ``Putih. Semua putih.'' ``Berapa yang benar?'' ``Sembilan puluh.''
+``Jadi akurasinya?'' ``Sembilan puluh persen.'' ``Dan yang merah?'' ``Nol. Tidak satu pun.''
+``Angka tadi bohong?'' ``Tidak. Ia hanya menjawab satu pertanyaan.''
+``Pertanyaan apa?'' ``Berapa banyak yang kutebak benar, dari semua yang ada.''
+``Pertanyaan mana yang tidak dijawab?'' ``Dari yang benar-benar berbahaya, berapa yang kutemukan.''
+
+Ulangi tiga baris tengah, makin cepat, dengan ketukan yang sama: yang dihitung semua, yang
+hilang tak disebut, yang hilang tak disebut.
+
+Suara kedua menutup pelan: kelas yang sedikit mudah tenggelam di dalam rata-rata kelas
+yang banyak, dan angka rata-rata itu tidak pernah menyebut siapa yang tenggelam.
+
+Baris yang harus diulang pembaca, sekali, dengan suara jelas: akurasi menjumlahkan yang
+benar, bukan yang penting, jadi pada kelas tak seimbang sembilan puluh persen bisa berarti
+nol.
+\end{bacakeras}
+
+Pada contoh kerja kita $\pi=0{,}1$, jadi garis dasarnya $0{,}9$ dan model dengan
+$0{,}945$ memang lebih baik. Sekarang ubah kelazimannya saja, tanpa mengubah mutu model,
+dan lihat apa yang terjadi pada angka yang sama.
+
+\begin{contoh}[Satu serangan untuk setiap seribu koneksi]
+Ambil $100\,000$ koneksi dengan $100$ serangan. Skor pada koneksi bersih menyebar
+normal dengan rataan $0$ dan simpangan baku $1$; skor pada serangan dengan rataan
+$2{,}6$ dan simpangan baku $1$. Ambang dipasang pada $2{,}3263$, yaitu
+kuantil $0{,}99$ dari sebaran skor negatif, sehingga secara rancangan sekitar satu persen
+koneksi bersih akan ditandai. Hasil satu lintasan dengan benih tetap:
+\[
+\mathrm{TP}=62,\quad \mathrm{FP}=1013,\quad \mathrm{FN}=38,\quad \mathrm{TN}=98\,887 .
+\]
+Akurasinya $(62+98\,887)/100\,000=0{,}989490$. Garis dasarnya
+$99\,900/100\,000=0{,}999000$. Presisinya $62/1075=0{,}057674$, recall
+$62/100=0{,}620000$, dan akurasi seimbangnya $0{,}804930$.
+\end{contoh}
+
+Angka $0{,}9895$ itu, bila dibulatkan, menjadi ``$99$ persen''. Ia bukan hanya tidak
+informatif: ia lebih rendah daripada garis dasar sebesar $0{,}009510$, hampir satu poin
+persentase penuh. Model itu melakukan sepuluh kali lebih banyak kesalahan daripada program
+yang selalu menjawab ``bersih'', $1051$ melawan $100$, dan seluruhnya berupa alarm palsu,
+$1013$ buah atau sekitar $16{,}3$ per serangan yang tertangkap.
+
+Di sini pembulatan menambah kerusakan: $0{,}9895$ dan $0{,}9990$ sama-sama menjadi
+``$99$ persen'', padahal keduanya terpisah oleh seluruh selisih yang menentukan.
+Laporan yang baik karena itu menuliskan tiga atau empat angka desimal, menyebut $n$,
+dan menyebut kelazimannya; tanpa ketiganya, pembaca tidak tahu apakah $99$ persen
+itu prestasi atau kegagalan.
+
+Apakah akurasi lalu tidak boleh dipakai? Ia sah bila biaya kedua kesalahan setara,
+kelaziman dekat setengah, dan ambangnya tetap. Di luar itu ia harus ditemani presisi dan
+recall, atau diganti akurasi seimbang: $0{,}8049$ lebih jujur daripada $0{,}9895$, sebab
+kelas minoritas hanya tertangkap $62$ persen.
+
+\begin{tangan}
+Bahan: $100$ kartu, $90$ bermuka putih dan $10$ bermuka merah, spidol, dan satu lembar
+tally dua kolom.
+
+Tulis ``bersih'' pada sembilan puluh kartu putih dan ``serangan'' pada sepuluh kartu merah.
+Kocok, lalu bagi menjadi sepuluh tumpukan. Aturan pertama: setiap tumpukan dijawab
+``bersih'' tanpa membalik satu kartu pun. Catat jawaban yang benar, lalu balik semua kartu:
+sembilan puluh benar, sepuluh merah lolos. Tulis di papan: akurasi
+sembilan puluh persen, recall nol persen.
+
+Sekarang aturan kedua. Beri titik di sudut enam kartu merah, dan tanpa memberi tahu pemain,
+beri titik yang sama di sudut empat kartu putih. Jawab ``serangan'' hanya bila titik itu
+terlihat. Hitung ulang: enam merah tertangkap, empat merah lolos, empat putih dituduh,
+delapan puluh enam putih benar.
+
+Yang harus terlihat: akurasi hanya bergerak dari sembilan puluh ke sembilan puluh dua
+persen, sedangkan recall melompat dari nol ke enam puluh persen. Angka yang berubah paling
+banyak justru angka yang tidak ada pada laporan pertama.
+\end{tangan}
+
+\section{Kurva ROC, AUC, dan prevalensi}
+\tingkat{menengah}
+
+Setiap ambang memberi satu titik pada dua laju yang berbeda; memilih ambang tanpa melihat
+seluruh kemungkinannya adalah menebak. Kalimat sehari-harinya: kita menyapu ambang
+dari longgar ke ketat, lalu menggambar jejak yang ditinggalkan model.
+
+\kamus{kurva roc}{receiver operating characteristic}{jejak yang ditinggalkan sebuah model
+ketika ambangnya disapu dari longgar ke ketat, digambar pada dua laju yang tidak
+bergantung pada kelaziman}
+
+\begin{definisi}[Kurva ROC dan AUC]
+\index{kurva roc}
+\index{auc}
+Untuk ambang $t$, laju benar positif dan laju salah positif adalah
+\[
+\mathrm{TPR}(t)=P(S>t\mid y=1),\qquad \mathrm{FPR}(t)=P(S>t\mid y=0),
+\]
+dengan $S$ skor model. Kurva ROC adalah himpunan titik $(\mathrm{FPR}(t),\mathrm{TPR}(t))$
+untuk seluruh $t$. Luas di bawah kurva itu disebut AUC, dan untuk data terhingga ia
+dihitung sebagai luas trapesium di antara titik-titik yang teramati.
+\end{definisi}
+
+AUC punya arti yang jauh lebih sederhana daripada namanya, dan arti itu yang membuatnya
+populer.
+
+\begin{proposisi}
+Untuk data tanpa skor kembar, AUC sama dengan peluang bahwa skor satu contoh positif
+yang diambil acak melebihi skor satu contoh negatif yang diambil acak. Bila ada skor
+kembar, tiap pasangan kembar dihitung setengah.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Susun seluruh skor dari besar ke kecil dan sapu ambang ke bawah. Setiap kali ambang
+melewati satu contoh positif, $\mathrm{TPR}$ naik sebesar $1/n_+$ pada ketinggian
+$\mathrm{FPR}$ saat itu, yaitu bagian contoh negatif yang sudah terlewati. Setiap kali
+ambang melewati contoh negatif, $\mathrm{FPR}$ naik pada $\mathrm{TPR}$ tetap dan tidak
+menambah luas. Karena itu luas totalnya
+\[
+\mathrm{AUC}=\frac1{n_+}\sum_{i:\ y_i=1}\mathrm{FPR}_i
+=\frac{1}{n_+n_-}\#\{(i,j):\ y_i=1,\ y_j=0,\ S_i>S_j\},
+\]
+yaitu peluang yang diklaim, dan suku terakhir itulah yang dihitung oleh statistik
+Mann--Whitney. Skor kembar tidak menambah luas, sehingga tiap pasangan seperti itu
+menyumbang setengah.
+\end{proof}
+
+AUC tidak melihat kelaziman: bila setiap contoh negatif digandakan sepuluh kali, urutan
+skor tidak berubah dan AUC tetap. Cara menghitungnya di kertas diperlihatkan pada bagian
+Contoh hitung.
+
+Sekarang bagian yang membuat ROC berbahaya: sapu ambang simulasi satu banding seribu.
+
+\begin{center}
+\small
+\begin{tabular}{rrrrr}
+\hline
+ambang & recall & FPR & presisi & akurasi \\
+\hline
+3,0000 & 0,450 & 0,00132 & 0,254 & 0,99813 \\
+2,8000 & 0,510 & 0,00263 & 0,162 & 0,99688 \\
+2,6000 & 0,550 & 0,00467 & 0,105 & 0,99488 \\
+2,3263 & 0,620 & 0,01014 & 0,058 & 0,98949 \\
+2,0000 & 0,740 & 0,02269 & 0,032 & 0,97707 \\
+1,5000 & 0,860 & 0,06729 & 0,013 & 0,93264 \\
+\hline
+\end{tabular}
+\end{center}
+
+Pada kurva ROC, baris-baris itu bergerak dari $(0{,}001;0{,}45)$ ke $(0{,}067;0{,}86)$:
+jejak yang naik tajam di dekat sumbu tegak, persis seperti yang diinginkan setiap
+praktisi. AUC-nya $0{,}966448$. Tetapi kolom presisi mengatakan hal lain. Bahkan pada
+ambang paling ketat, tempat hanya $132$ koneksi bersih ditandai, presisinya $0{,}254$:
+tiga dari empat alarm tetap salah. Ketika recall dinaikkan ke $0{,}86$, presisinya
+$0{,}013$.
+
+Gambar~\ref{fig:presisi-recall-ambang} menggambar keenam baris tabel itu pada satu sumbu
+ambang: recall menanjak sementara presisi menurun, dan tidak ada titik yang memberi keduanya
+tinggi sekaligus.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.78\linewidth, height=6.2cm,
+  x dir=reverse, xmin=1.45, xmax=3.05,
+  ymin=0.35, ymax=0.95, ytick={0.4,0.5,0.6,0.7,0.8,0.9},
+  xlabel={ambang $t$ (ke kanan: ambang dilonggarkan)}, ylabel={recall},
+  axis y line*=left, axis x line*=bottom,
+  tick label style={font=\footnotesize}, label style={font=\footnotesize},
+  grid=major, grid style={layergrey!15},
+]
+\addplot[accent,thick,mark=*,mark size=1.8pt] coordinates {
+  (3.0,0.450) (2.8,0.510) (2.6,0.550) (2.3263,0.620) (2.0,0.740) (1.5,0.860)};
+\node[accent,font=\footnotesize,anchor=south west] at (axis cs:2.62,0.665) {recall};
+\end{axis}
+\begin{axis}[
+  width=0.78\linewidth, height=6.2cm,
+  x dir=reverse, xmin=1.45, xmax=3.05,
+  ymin=0, ymax=0.30, ytick={0,0.1,0.2,0.3},
+  axis y line*=right, axis x line*=none, ylabel={presisi (skala kanan)},
+  tick label style={font=\footnotesize}, label style={font=\footnotesize},
+]
+\addplot[layerteal,thick,mark=square*,mark size=1.6pt] coordinates {
+  (3.0,0.254) (2.8,0.162) (2.6,0.105) (2.3263,0.058) (2.0,0.032) (1.5,0.013)};
+\node[layerteal,font=\footnotesize,anchor=north east] at (axis cs:2.78,0.232) {presisi};
+\end{axis}
+\end{tikzpicture}
+\caption{Presisi dan recall pada enam ambang dari tabel sebelumnya, digambar pada satu
+sumbu ambang yang diputar sehingga ke kanan ambang dilonggarkan. Recall menanjak dari
+$0{,}450$ pada $t=3{,}0$ ke $0{,}860$ pada $t=1{,}5$, sedangkan presisi menurun dari
+$0{,}254$ ke $0{,}013$: kedua kurva bergerak berlawanan arah dan tidak ada satu titik pun
+yang memberi keduanya tinggi. Skala presisi ada di sisi kanan, $0$ sampai $0{,}30$; pada
+$t=2{,}3263$, ambang yang dipakai simulasi, presisi $0{,}058$ dengan recall $0{,}620$.}
+\label{fig:presisi-recall-ambang}
+\end{figure}
+
+Kedua bacaan itu tidak bertentangan: keduanya mengukur hal berbeda.
+
+\begin{proposisi}
+Kurva ROC dan AUC hanya bergantung pada sebaran skor bersyarat $S\mid y=1$ dan
+$S\mid y=0$, sehingga tidak berubah bila kelaziman $\pi$ diubah. Presisi pada ambang
+tetap berubah, dan mengikuti
+\[
+\operatorname{prec}(t)=\frac{\pi\,\mathrm{TPR}(t)}
+{\pi\,\mathrm{TPR}(t)+(1-\pi)\,\mathrm{FPR}(t)} .
+\]
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Menurut definisi, $\mathrm{TPR}$ dan $\mathrm{FPR}$ adalah peluang bersyarat pada $y$,
+jadi keduanya tidak memuat $\pi$; kurva yang tersusun dari keduanya pun tidak memuat
+$\pi$. Untuk presisi, hukum peluang total memberi
+$P(\hat y=1)=\pi\,\mathrm{TPR}+(1-\pi)\mathrm{FPR}$, sedangkan
+$P(y=1,\hat y=1)=\pi\,\mathrm{TPR}$. Aturan Bayes dari Bab 17 memberi bentuk di atas.
+\end{proof}
+
+Akibatnya dapat diukur. Bila kelaziman diubah menjadi setengah tanpa mengubah
+sebaran skor bersyarat, AUC tinggal $0{,}967061$ (selisih $0{,}0006$ hanyalah galat
+Monte Carlo), sedangkan \emph{average precision} melompat dari $0{,}287636$ menjadi
+$0{,}967544$. Pada kelaziman satu banding seribu garis dasarnya $\pi=0{,}001$, jadi
+$0{,}288$ masih jauh lebih baik daripada menebak, tetapi jauh lebih dekat kepada
+kenyataan operasional daripada $0{,}966$.
+
+Aturan praktisnya sederhana: bila kelas positif langka, laporkan kurva presisi--recall,
+bukan hanya ROC, dan sebutkan kelazimannya. ROC tetap berguna untuk membandingkan dua model
+pada populasi yang sama sebab ia tidak tercemar komposisi; ia menyesatkan begitu dipakai
+menyimpulkan kegunaan pada populasi lain atau pada ambang tertentu. AUC juga buta terhadap
+kalibrasi: model yang skornya dua kali terlalu besar memiliki AUC yang sama persis, sebab
+urutannya tidak berubah. Dua cacat itu membawa kita ke bagian berikutnya.
+
+\section{Kalibrasi: apakah angka itu berarti peluang}
+\tingkat{menengah}
+
+Operator yang menerima alarm perlu tahu satu hal yang tidak dijawab presisi maupun AUC:
+bila model menulis $0{,}8$, apakah delapan dari sepuluh kasus seperti itu memang positif.
+Kalimat sehari-harinya: kalibrasi memeriksa apakah ramalan cuaca yang mengatakan ``tujuh
+puluh persen hujan'' memang benar pada tujuh dari sepuluh hari seperti itu.
+
+\kamus{kalibrasi}{calibration}{kesesuaian antara angka yang dijanjikan model dan
+kenyataan yang benar-benar terjadi pada kelompok dengan janji yang sama}
+
+\begin{definisi}[Kalibrasi sempurna]
+\index{kalibrasi}
+Skor $S\in[0,1]$ disebut terkalibrasi sempurna bila
+$P(y=1\mid S=s)=s$ untuk setiap $s$ yang mungkin. Pada data terhingga, kalibrasi diperiksa
+dengan mengelompokkan skor ke dalam selang, lalu membandingkan rataan skor di selang itu
+dengan laju positif yang teramati. Selisih mutlaknya, ditimbang ukuran selang, disebut
+\emph{expected calibration error}.
+\end{definisi}
+
+Contoh kerja dengan $1000$ prediksi memperlihatkan bentuk pemeriksaannya.
+
+\begin{center}
+\small
+\begin{tabular}{lrrrr}
+\hline
+selang skor & banyak & positif & rataan skor & laju positif \\
+\hline
+$[0{,}5;0{,}6)$ & 40 & 21 & 0,55 & 0,525 \\
+$[0{,}6;0{,}7)$ & 60 & 36 & 0,65 & 0,600 \\
+$[0{,}7;0{,}8)$ & 120 & 90 & 0,75 & 0,750 \\
+$[0{,}8;0{,}9)$ & 200 & 176 & 0,85 & 0,880 \\
+$[0{,}9;1{,}0]$ & 580 & 551 & 0,95 & 0,950 \\
+\hline
+\end{tabular}
+\end{center}
+
+Selisih terbesar ada di selang kedua, $0{,}05$, dan kesalahan kalibrasi keseluruhannya
+\[
+\tfrac{40}{1000}(0{,}025)+\tfrac{60}{1000}(0{,}050)+\tfrac{120}{1000}(0)
++\tfrac{200}{1000}(0{,}030)+\tfrac{580}{1000}(0)=0{,}010 .
+\]
+Arah kesalahannya berbeda antar selang, tetapi besarnya kecil: satu poin persentase. Pemeriksaan silangnya gratis: banyaknya
+contoh di kelima selang berjumlah $1000$, dan positifnya $874$.
+
+Kalibrasi diukur oleh galat kuadrat, dan di situ ada identitas yang rapi.
+
+\begin{proposisi}[Brier untuk skor terkalibrasi]
+\index{brier}
+Misalkan $S$ terkalibrasi sempurna dan $B=\mathbb{E}[(S-y)^2]$ adalah skor Brier. Maka
+\[
+B=\mathbb{E}\bigl[S(1-S)\bigr].
+\]
+Khususnya skor konstan $S=\pi$ terkalibrasi sempurna dengan $B=\pi(1-\pi)$, dan skor
+konstan itu adalah peramal terkalibrasi yang paling tidak tajam.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Bersyarat pada $S=s$, peubah $y$ bernilai $1$ dengan peluang $s$. Maka
+\[
+\mathbb{E}\bigl[(s-y)^2\mid S=s\bigr]
+=s(s-1)^2+(1-s)s^2=s(1-s)\bigl[(1-s)+s\bigr]=s(1-s).
+\]
+Mengambil harapan atas $S$ memberi bentuk pertama. Untuk $S=\pi$ konstan, syarat
+kalibrasi menuntut $P(y=1)=\pi$, yang memang benar, dan rumusnya memberi $\pi(1-\pi)$.
+\end{proof}
+
+Identitas itu menjelaskan dua hal: kalibrasi saja tidak cukup, sebab skor konstan $\pi$
+terkalibrasi sempurna tetapi tidak membedakan contoh; dan untuk kejadian langka garis
+dasar Brier sangat rendah, sehingga model yang tampak baik pada akurasi dapat kalah telak
+pada Brier. Pada simulasi kita $\pi(1-\pi)=0{,}000999$, sedangkan label keras model memberi
+Brier sama dengan laju galatnya, $1051/100\,000=0{,}010510$. Skor keterampilan Brier,
+$1-B/B_{\mathrm{garis\ dasar}}$, bernilai $-9{,}52$: model itu sepuluh kali lebih buruk
+daripada meramalkan kelaziman konstan.
+
+Angka negatif itu bukan keanehan: label keras membuang informasi ketidakpastian, dan pada
+kejadian langka informasi itulah yang paling berharga. Model yang mengeluarkan $0{,}06$
+sedang mengatakan sesuatu yang benar, dan laporan yang hanya memuat akurasi membuang
+kalimat itu.
+
+\section{Ketidakpastian metrik}
+\tingkat{lanjut}
+
+Semua angka di atas dihitung dari sejumlah contoh yang terbatas, jadi semuanya bergoyang
+bila datanya diganti. Kalimat sehari-harinya: sebuah metrik tanpa selang adalah satu
+tembakan tanpa keterangan seberapa lebar sasarannya.
+
+Bab 20 sudah menurunkan interval Wilson dan membuktikan sifatnya, jadi kita tidak
+mengulangnya di sini. Yang perlu diingat adalah bentuknya untuk proporsi $k/n$:
+\[
+\frac{\hat p+\dfrac{z^2}{2n}\pm
+z\sqrt{\dfrac{\hat p(1-\hat p)}{n}+\dfrac{z^2}{4n^2}}}{1+\dfrac{z^2}{n}},
+\qquad z=1{,}96 .
+\]
+
+\begin{untukanak}
+Dua penjaga gawang berlatih menepis penalti. Yang pertama menepis sembilan dari sepuluh
+tendangan. Yang kedua menepis sembilan ratus dari seribu tendangan. Koran menulis judul
+yang sama untuk keduanya: sembilan puluh persen.
+
+Tetapi kita merasa kedua kalimat itu tidak sama kuatnya, dan perasaan itu benar. Penjaga
+pertama baru menghadapi sepuluh tendangan. Bisa jadi ia memang hebat, bisa jadi ia hanya
+beruntung sepuluh kali berturut-turut. Penjaga kedua sudah menghadapi seribu tendangan,
+dan keberuntungan sepanjang itu hampir mustahil. Angka yang sama, kekuatan yang berbeda.
+
+Pertanyaan yang membuat penasaran: kalau kita hanya boleh menulis satu kalimat tentang
+penjaga pertama, apakah ``sembilan puluh persen'' masih boleh ditulis? Boleh, asalkan
+kalimatnya dilengkapi. Di bab ini kita akan tahu mengapa angka yang sama berarti ``antara
+lima puluh sembilan dan sembilan puluh delapan persen'' pada sepuluh tendangan, tetapi
+hanya ``antara delapan puluh delapan dan sembilan puluh dua persen'' pada seribu tendangan,
+dan mengapa memperbanyak tendangan seratus kali lipat hanya mempersempit jawaban menjadi
+sepersepuluh.
+\end{untukanak}
+
+Tabel berikut memakai rumus itu pada akurasi, dengan $z=1{,}96$.
+
+\begin{center}
+\small
+\begin{tabular}{lrrr}
+\hline
+data & $\hat p$ & selang Wilson & lebar \\
+\hline
+$9/10$ & 0,900 & $(0{,}5959;\ 0{,}9821)$ & 0,3863 \\
+$900/1000$ & 0,900 & $(0{,}8798;\ 0{,}9171)$ & 0,0372 \\
+$10/10$ & 1,000 & $(0{,}7225;\ 1{,}0000)$ & 0,2775 \\
+$0/1000$ & 0,000 & $(0{,}0000;\ 0{,}0038)$ & 0,0038 \\
+\hline
+\end{tabular}
+\end{center}
+
+Baris pertama dan kedua menjawab dua penjaga gawang tadi. Angka titiknya
+sama, $0{,}9$, tetapi selang pertama selebar $0{,}3863$ dan yang kedua $0{,}0372$:
+sepuluh kali lebih sempit, bukan seratus kali.
+
+Baris ketiga adalah kasus yang paling sering muncul: tidak ada satu pun kesalahan
+dalam $10$ percobaan, lalu ditulis ``akurasi $100$ persen''. Selang Wilson yang
+jujur, $(0{,}7225;1)$, selebar $0{,}2775$: laju galatnya masih boleh $27{,}75$
+persen. Di ujung lain, nol kejadian dalam $1000$ percobaan memberi batas atas
+$0{,}003827$, sedangkan aturan tiga dari Bab 20 memberi $0{,}003$; keduanya boleh,
+asalkan prosedurnya disebut.
+
+Membandingkan dua model dengan memeriksa apakah selang masing-masing bertumpuk adalah
+kebiasaan yang salah: keduanya diuji pada data yang sama, dan ketergantungan itu justru
+menajamkan perbandingan.
+
+\begin{proposisi}[Selisih dua model berpasangan]
+Misalkan $b$ adalah banyak contoh yang benar oleh model A dan salah oleh model B, dan $c$
+sebaliknya, pada $n$ contoh yang sama. Selisih akurasinya $d=(b-c)/n$ dengan variansi
+\[
+\operatorname{Var}(d)=\frac{1}{n}\Bigl(p_b+p_c-(p_b-p_c)^2\Bigr),
+\]
+sehingga galat baku tertaksirnya $\sqrt{b+c-(b-c)^2/n}\,/\,n$.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Setiap contoh masuk salah satu dari empat sel: benar keduanya, salah keduanya, benar hanya
+A, benar hanya B. Karena contohnya bebas, $(b,c)$ menyebar multinomial dengan peluang
+$p_b,p_c$. Maka $\operatorname{Var}(b-c)=n\bigl(p_b+p_c-(p_b-p_c)^2\bigr)$, dan membagi
+dengan $n^2$ memberi rumus di atas.
+\end{proof}
+
+Pada $b=37$, $c=15$, dan $n=1000$, selisihnya $0{,}022$ dengan galat baku $0{,}007177$,
+sehingga selang $95$ persennya $(0{,}007932;0{,}036068)$, seluruhnya di atas nol, dan uji
+McNemar eksak memberi nilai-p $0{,}003185$. Perlakuan naif yang menganggap kedua model
+bebas memberi selang $(-0{,}004296;0{,}048296)$ yang memuat nol. Kedua model karena itu
+dapat dinyatakan berbeda, asalkan perbandingannya berpasangan dan pengujiannya memakai
+selisih, bukan dua selang terpisah.
+
+Terakhir, ukuran uji menentukan selisih sekecil apa yang dapat dilihat. Untuk mendeteksi
+selisih $\delta$ pada taraf $\alpha$ dan daya $1-\beta$,
+\[
+n\approx\frac{(z_{1-\alpha/2}+z_{1-\beta})^2\,\bigl(p_1(1-p_1)+p_0(1-p_0)\bigr)}
+{\delta^2}.
+\]
+Pada $p_0=p_1=0{,}9$, taraf $0{,}05$, dan daya $0{,}8$, selisih satu poin menuntut
+$n\approx14\,128$ contoh per model, selisih dua poin menuntut $3532$. Kumpulan uji seribu
+contoh tidak dapat membedakan dua model yang terpaut satu poin.
+
+\section{Kebocoran data dan validasi silang bersarang}
+\tingkat{lanjut}
+
+Semua perhitungan di atas mengandaikan satu hal yang tidak boleh dilanggar: angka uji
+diukur pada data yang tidak pernah dilihat model, dan tidak pernah dilihat pula oleh
+prosedur yang memilih model. Kalimat sehari-harinya: nilai ujian hanya berarti bila
+soalnya belum pernah dibocorkan, termasuk oleh guru yang menyusun soalnya.
+
+\kamus{kebocoran data}{data leakage}{jawaban ujian yang tanpa sengaja ikut masuk ke
+bahan belajar, sehingga nilai menjadi tinggi tanpa kepandaian}
+
+\begin{definisi}[Kebocoran data]
+\index{kebocoran data}
+Kebocoran terjadi bila informasi yang tidak akan tersedia pada saat model dipakai masuk
+ke dalam pelatihan, pemilihan model, atau pelaporan, sehingga angka evaluasi mengukur
+kemampuan mengingat, bukan kemampuan menggeneralisasi.
+\end{definisi}
+
+Bentuknya bermacam-macam, dan yang paling sering tidak terlihat. Menghitung rataan
+atau median prapemrosesan dari seluruh data termasuk data uji adalah kebocoran:
+statistik itu seharusnya dari latih saja. Memilih $50$ fitur terbaik dengan korelasi
+terhadap label sebelum memisahkan latih dan uji juga kebocoran, sebab penyaring
+fitur sudah melihat label uji. Menyetel hiperparameter pada kumpulan uji lalu
+melaporkan angka terbaiknya adalah kebocoran yang paling sering dilakukan dengan
+sadar. Pada data berkelompok, pemisahan acak menempatkan kelompok yang sama di kedua
+sisi; pada deret waktu, ia membocorkan masa depan ke masa lalu. Yang paling sulit
+dideteksi: fitur yang merupakan akibat dari label, misalnya kolom ``tindakan yang
+diambil'' yang diisi setelah insiden diketahui.
+
+Kebocoran pemilihan fitur dapat diukur, dan ukurannya mengejutkan. Ambil $200$ contoh
+berlabel acak dan $2000$ fitur derau normal, tanpa sinyal apa pun. Pilih $20$ fitur dengan
+korelasi mutlak terbesar terhadap label, lalu validasi silang lima lipatan dengan
+pengklasifikasi centroid terdekat. Bila pemilihan
+dilakukan sekali pada seluruh data sebelum lipatan dibentuk, akurasinya $0{,}7800$; bila
+pemilihan diulang di dalam tiap lipatan memakai baris latihnya saja, $0{,}4600$. Pada tiga
+benih lain angkanya $0{,}775$ dan $0{,}415$, $0{,}820$ dan $0{,}545$: yang bocor selalu
+tinggi, yang jujur selalu di sekitar $0{,}5$. Angka $0{,}78$ itu seluruhnya ilusi, dan
+tidak satu pun baris kodenya salah tulis.
+
+Protokolnya satu kalimat: pisahkan lebih dulu, baru hitung apa pun. Bagi data
+menjadi latih, validasi, dan uji; hitung statistik prapemrosesan dari latih saja;
+setel hiperparameter pada validasi; sentuh uji sekali, di akhir, untuk satu angka.
+Bila validasi silang dipakai, prapemrosesan berada di dalam lipatan. Untuk data
+berkelompok, lipatannya mengikuti kelompok; untuk data waktu, mengikuti urutan
+waktu.
+
+Gambar~\ref{fig:pemisahan-tiga} menggambar urutan itu sebagai tiga kotak dan satu panah
+yang dilarang.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[every node/.style={font=\footnotesize},
+  blok/.style={draw=ink,thick,rounded corners=2pt,align=center,
+               minimum width=3.5cm,minimum height=1.5cm,inner sep=3pt}]
+  \node[blok,fill=layerteal!12]   (latih) at (0.0,0) {\textbf{latih} $60\%$\\ hitung statistik};
+  \node[blok,fill=layerorange!12] (val)   at (4.8,0) {\textbf{validasi} $20\%$\\ pilih hiperparameter};
+  \node[blok,fill=layerindigo!12] (uji)   at (9.6,0) {\textbf{uji} $20\%$\\ sentuh sekali};
+  \draw[-{Latex},ink,thick] (latih.east) -- (val.west)
+    node[midway,above,font=\scriptsize] {latih ulang};
+  \draw[-{Latex},ink,thick] (val.east) -- (uji.west)
+    node[midway,above,font=\scriptsize] {kunci sebelum dilihat};
+  \draw[-{Latex},accent,thick,dashed] (uji.south) .. controls (9.6,-1.85) and (0.0,-1.85)
+    .. (latih.south);
+  \draw[accent,very thick] (4.62,-1.42) -- (4.98,-1.06);
+  \draw[accent,very thick] (4.62,-1.06) -- (4.98,-1.42);
+  \node[accent,anchor=west,font=\scriptsize] at (5.12,-1.24) {dilarang};
+  \node[anchor=north,align=center,text width=11.6cm] at (4.8,-1.98)
+    {statistik uji, penyaring fitur, dan penyetelan hiperparameter tidak boleh menyeberang
+     balik ke kotak latih};
+\end{tikzpicture}
+\caption{Tiga kumpulan data yang terpisah, dengan proporsi $60/20/20$; pada $1000$ koneksi
+itu berarti $600$, $200$, dan $200$. Statistik prapemrosesan dihitung dari kotak latih,
+hiperparameter dipilih di kotak validasi, dan kotak uji disentuh sekali di akhir. Panah
+putus-putus dari uji kembali ke latih adalah kebocoran: satu panah itu cukup untuk
+menaikkan akurasi dari $0{,}4600$ menjadi $0{,}7800$ pada data yang seluruhnya derau.}
+\label{fig:pemisahan-tiga}
+\end{figure}
+
+Yang tersisa adalah satu masalah halus. Bila validasi silang dipakai sekaligus untuk
+memilih hiperparameter dan untuk melaporkan mutu, angka yang dilaporkan adalah angka
+terbaik dari banyak percobaan pada data yang sama, jadi ia terlalu optimistis. Jalan
+keluarnya adalah dua lapis lipatan.
+
+\kamus{validasi silang bersarang}{nested cross-validation}{dua lapis lipatan, lapisan luar
+untuk menilai dan lapisan dalam untuk memilih, seperti dua ruang ujian yang terpisah}
+
+\begin{definisi}[Validasi silang bersarang]
+\index{validasi silang}
+\index{validasi silang bersarang}
+Misalkan $\Lambda$ himpunan hiperparameter. Data dibagi menjadi $K$ lipatan luar. Untuk
+setiap lipatan luar $k$: latih pada sisa data dengan setiap $\lambda\in\Lambda$ memakai
+$J$ lipatan dalam, pilih $\lambda_k$ yang terbaik, latih ulang pada seluruh bagian latih
+lipatan $k$ dengan $\lambda_k$, lalu ukur pada lipatan $k$. Angka yang dilaporkan adalah
+rata-rata $K$ angka itu. Penilaian dan pemilihan karena itu memakai data yang berbeda.
+\end{definisi}
+
+Biayanya $K$ kali lebih mahal, dan itulah sebabnya protokol ini sering dilewati; tanpa
+lapisan luar, tidak ada satu angka pun dalam laporan yang dapat ditafsirkan sebagai
+taksiran mutu pada data baru.
+
+\section{Mengapa satu kali uji tidak cukup}
+\tingkat{menengah}
+
+Kalimat ``kami menguji model pada $1000$ contoh dan memperoleh akurasi $0{,}900$''
+terdengar tuntas, padahal ia memuat tiga ketidakpastian. Kalimat sehari-harinya:
+satu kali menimbang tidak memberi tahu apakah timbangannya bergoyang, barangnya
+berubah, atau kita memilih hasil yang paling menyenangkan.
+
+Yang pertama statistis dan sudah dihitung: pada $n=1000$ selang $95$ persen selebar
+$0{,}037$, dan memisahkan dua model yang terpaut satu poin menuntut $14\,128$ contoh.
+Kesimpulan ``A lebih baik'' dari selisih sekecil itu adalah kesimpulan tentang undian.
+
+Yang kedua selektif, dan namanya \emph{winner's curse}. Melatih $20$ varian yang mutunya
+identik lalu melaporkan yang terbaik berarti melaporkan maksimum dari $20$ goyangan: pada
+simulasi dengan akurasi benar $0{,}90$ dan $n=1000$, rata-rata tiap varian $0{,}899987$
+sedangkan rata-rata maksimumnya $0{,}917337$, jadi $1{,}7$ poin dari angka itu
+keberuntungan. Bila varian saling bergantung, goyangannya lebih kecil, tetapi arahnya
+selalu ke atas.
+
+Yang ketiga prosedural: kumpulan uji yang dipakai berulang berhenti menjadi kumpulan uji.
+Bila tiap perbandingan punya peluang $5$ persen menipu, peluang sekurang-kurangnya satu
+dari $20$ perbandingan menipu adalah $1-0{,}95^{20}=0{,}6415$, lebih besar daripada peluang
+benar.
+
+Obatnya sepadan: laporkan selang, pisahkan data pemilihan dari data pelaporan, dan kunci
+kumpulan uji sebelum eksperimen dimulai. Bila uji terlanjur dipakai berulang, angka
+berikutnya disebut angka eksplorasi.
+
+\section{Daftar periksa pelaporan}
+\tingkat{dasar}
+
+Tujuh baris ini memisahkan laporan yang dapat diperiksa dari yang hanya meyakinkan.
+Kalimat sehari-harinya: resi tidak membuat barang sampai, tetapi tanpa resi tak ada yang
+dapat ditelusuri.
+
+\begin{enumerate}
+  \item Ukuran tiap kelas dan kelazimannya, bukan hanya $n$ total.
+  \item Keempat bilangan matriks konfusi, lalu presisi dan recall pada ambang yang
+        benar-benar dipakai, beserta nilai ambangnya.
+  \item Selang kepercayaan tiap metrik utama, dengan metode yang disebut; untuk $n$ kecil
+        pakai Wilson, bukan Wald.
+  \item Kurva presisi--recall bila kelas positif langka, beserta average precision dan
+        garis dasarnya $\pi$.
+  \item Kalibrasi: batas selang skor, banyak contoh per selang, dan kesalahan kalibrasi.
+  \item Protokol pemisahan: apa yang dihitung dari data mana, berapa kali data uji
+        disentuh, dan berapa varian dicoba; angka terbaik tanpa penyebut itu angka
+        pilihan, bukan angka mutu.
+  \item Sebaran hasil antar benih atau antar lipatan, beserta kode dan benih acaknya.
+\end{enumerate}
+
+Yang tidak perlu ada: akurasi tanpa kelaziman, AUC tanpa kurva, dan kata ``siap
+dipakai''.
+
+\begin{resep}
+Empat langkah melaporkan hasil evaluasi yang tidak menyesatkan:
+\begin{enumerate}
+  \item Pisahkan data lebih dulu: latih, validasi, uji, beserta proporsi dan kunci
+        pemisahannya, ditulis sebelum satu hitungan pun dijalankan.
+  \item Hitung prapemrosesan dan pilih fitur hanya dari latih, setel hiperparameter hanya
+        pada validasi, lalu simpan uji untuk satu kali sentuh.
+  \item Laporkan keempat sel matriks konfusi beserta $n$, $\pi$, dan ambang yang dipakai,
+        lalu presisi, recall, dan selang kepercayaan tiap metrik.
+  \item Sebutkan banyak varian yang dicoba dan sebaran hasil antar benih atau antar
+        lipatan, supaya pembaca tahu berapa derajat kebebasan yang sudah dipakai.
+\end{enumerate}
+Peringatan urutan: langkah 1 tidak boleh menyusul langkah 2 atau 3. Statistik yang dihitung
+sebelum data dipisahkan sudah memindahkan informasi uji ke latih, dan setelah itu tidak ada
+angka yang dapat memperbaikinya; seluruh laporan hanya mengukur ingatan.
+\end{resep}
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Tiga hitungan berikut dapat diulang di kertas.
+
+Pertama, matriks konfusi dari catatan kerja penulis sendiri, pada $35\,069$ koneksi uji:
+$\mathrm{TP}=23\,279$, $\mathrm{FP}=997$, $\mathrm{FN}=590$, $\mathrm{TN}=10\,203$.
+\begin{align*}
+\operatorname{prec}&=\frac{23\,279}{24\,276}=0{,}958931, &
+\operatorname{rec}&=\frac{23\,279}{23\,869}=0{,}975282,\\
+F_1&=\frac{46\,558}{48\,145}=0{,}967037, &
+\mathrm{acc}&=\frac{33\,482}{35\,069}=0{,}954746,
+\end{align*}
+dan akurasi seimbangnya $0{,}943132$. Satu hal di catatan itu tidak konsisten: satu
+kalimat menyebut $11\,200$ serangan dan $23\,869$ normal, sedangkan matriksnya menempatkan
+$23\,869$ pada baris positif. Aritmetikanya benar, penamaan kelasnya tertukar, dan
+kelaziman harus dibaca dari matriks, bukan dari kalimat.
+
+Kedua, AUC dari data kecil. Positif berskor $0{,}92$, $0{,}81$, $0{,}55$ melawan negatif
+berskor $0{,}70$, $0{,}41$, $0{,}35$, $0{,}22$ memberi $12$ pasangan; $0{,}92$ dan $0{,}81$
+mengalahkan keempatnya, $0{,}55$ mengalahkan tiga, jadi $11/12=0{,}916667$. Bila satu skor
+positif sama dengan satu skor negatif, pasangan itu dihitung setengah dan hasilnya
+$0{,}875$; \texttt{sklearn} memberi angka yang sama bila $y$ dan skornya diumpankan
+sebagai vektor.
+
+Ketiga, efek kelaziman pada presisi ketika sensitivitas $0{,}90$ dan spesifisitas $0{,}95$
+dipertahankan. Dengan $\operatorname{prec}=\pi(0{,}9)/\bigl(\pi(0{,}9)+(1-\pi)(0{,}05)\bigr)$:
+
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\hline
+$\pi$ & $\operatorname{prec}$ & alarm benar & alarm palsu \\
+\hline
+0,001 & 0,017699 & 1 & 56 \\
+0,010 & 0,153846 & 1 & 5,5 \\
+0,100 & 0,666667 & 2 & 1 \\
+0,500 & 0,947368 & 18 & 1 \\
+\hline
+\end{tabular}
+\end{center}
+
+Kolom terakhir adalah kebalikan presisi dikurangi satu, yaitu banyak alarm palsu untuk
+setiap alarm benar. Pada kelaziman satu banding seribu, satu alarm benar datang bersama
+$55{,}5$ alarm palsu; pada kelaziman setengah, bersama $0{,}056$. Model yang sama, mutu
+yang sama, dan pengalaman operator yang sama sekali berbeda.
+
+\kertas{Ambil matriks $1000$ prediksi tadi dan hitung ulang kelima metriknya tanpa melihat
+teks. Lalu jawab: berapa $\mathrm{FP}$ yang harus dihapus, tanpa mengubah $\mathrm{TP}$
+dan $\mathrm{FN}$, agar presisi menjadi $0{,}900$? Petunjuk: presisi $62/(62+x)=0{,}9$
+memberi $x=6{,}89$, jadi $\mathrm{FP}$ harus turun dari $17$ menjadi paling banyak $6$.
+Periksa bahwa akurasi sesudah perubahan itu $0{,}956$.}
+
+\section{Lab komputasi: satu angka, empat cara membacanya}
+\tingkat{lanjut}
+
+Seluruh angka di bab ini dihitung oleh satu program pendek, yang juga memperlihatkan dua
+hal yang tak dapat diperlihatkan rumus: seberapa besar kebocoran menaikkan angka, dan
+seberapa besar pemenang dari banyak varian dilebihkan. Kodenya dijalankan apa adanya
+dengan \texttt{numpy} dan \texttt{scipy}.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from math import sqrt
+from scipy.stats import norm
+
+z = norm.ppf(0.975)
+
+
+def wilson(k, n):
+    p, z2 = k / n, z * z
+    mid = (p + z2 / (2 * n)) / (1 + z2 / n)
+    half = z * sqrt(p * (1 - p) / n + z2 / (4 * n * n)) / (1 + z2 / n)
+    return mid - half, mid + half
+
+
+def roc_pr(spos, sneg):
+    s = np.concatenate([spos, sneg])
+    y = np.concatenate([np.ones(len(spos)), np.zeros(len(sneg))])
+    o = np.argsort(-s)
+    s, y = s[o], y[o]
+    tp, fp = np.cumsum(y), np.cumsum(1 - y)
+    tpr, fpr = tp / len(spos), fp / len(sneg)
+    prec = tp / (tp + fp)
+    auc = np.sum(np.diff(np.concatenate([[0], fpr])) *
+                 (tpr + np.concatenate([[0], tpr[:-1]])) / 2)
+    ap = np.sum(np.diff(np.concatenate([[0], tpr])) * prec)
+    return auc, ap
+
+
+rng = np.random.default_rng(20261025)
+Nneg, Npos = 99900, 100
+sneg = rng.normal(0.0, 1.0, Nneg)
+spos = rng.normal(2.6, 1.0, Npos)
+t = 2.3263
+tp = int((spos > t).sum()); fp = int((sneg > t).sum())
+fn, tn = Npos - tp, Nneg - fp
+n = Nneg + Npos
+print("TP=%d FP=%d FN=%d TN=%d" % (tp, fp, fn, tn))
+print("akurasi %.6f  garis dasar %.6f" % ((tp + tn) / n, Nneg / n))
+print("presisi %.6f  recall %.6f" % (tp / (tp + fp), tp / Npos))
+print("akurasi seimbang %.6f" % ((tp / Npos + tn / Nneg) / 2))
+print("brier label keras %.6f  brier konstan %.6f"
+      % ((fp + fn) / n, 0.001 * 0.999))
+a1, p1 = roc_pr(spos, sneg)
+print("pi=0,001: AUC=%.6f  AP=%.6f" % (a1, p1))
+a2, p2 = roc_pr(rng.normal(2.6, 1.0, 50000), rng.normal(0.0, 1.0, 50000))
+print("pi=0,500: AUC=%.6f  AP=%.6f" % (a2, p2))
+for k, m in ((9, 10), (900, 1000), (10, 10), (0, 1000)):
+    lo, hi = wilson(k, m)
+    print("%4d/%-4d (%.6f, %.6f) lebar %.6f" % (k, m, lo, hi, hi - lo))
+b, c = 37, 15
+d = (b - c) / 1000
+se = sqrt(b + c - (b - c) ** 2 / 1000) / 1000
+print("selisih %.6f  se %.6f  IK (%.6f, %.6f)"
+      % (d, se, d - z * se, d + z * se))
+rt = np.random.default_rng(11)
+a = rt.binomial(1000, 0.90, (20000, 20)) / 1000
+print("20 varian: rata2 %.6f  rata2 maks %.6f"
+      % (a.mean(), a.max(axis=1).mean()))
+
+rl = np.random.default_rng(4)
+nn, dd, kk = 200, 2000, 20
+X = rl.normal(size=(nn, dd))
+y = rl.permutation(np.repeat([0, 1], nn // 2))
+corr = np.array([abs(np.corrcoef(X[:, j], y)[0, 1]) for j in range(dd)])
+sel_all = np.argsort(-corr)[:kk]
+
+
+def cv(pick):
+    idx = rl.permutation(nn)
+    ok = 0
+    for f in np.array_split(idx, 5):
+        tr = np.setdiff1d(idx, f)
+        cols = pick(tr)
+        m1 = X[np.ix_(tr[y[tr] == 1], cols)].mean(0)
+        m0 = X[np.ix_(tr[y[tr] == 0], cols)].mean(0)
+        d1 = ((X[np.ix_(f, cols)] - m1) ** 2).sum(1)
+        d0 = ((X[np.ix_(f, cols)] - m0) ** 2).sum(1)
+        ok += (np.where(d1 < d0, 1, 0) == y[f]).sum()
+    return ok / nn
+
+
+def top_in(tr):
+    c = np.array([abs(np.corrcoef(X[tr, j], y[tr])[0, 1]) for j in range(dd)])
+    return np.argsort(-c)[:kk]
+
+
+print("pemilihan fitur: bocor %.4f  jujur %.4f"
+      % (cv(lambda tr: sel_all), cv(top_in)))
+\end{verbatim}
+\end{lab}
+
+Keluaran yang sebenarnya, apa adanya:
+
+\begin{verbatim}
+TP=62 FP=1013 FN=38 TN=98887
+akurasi 0.989490  garis dasar 0.999000
+presisi 0.057674  recall 0.620000
+akurasi seimbang 0.804930
+brier label keras 0.010510  brier konstan 0.000999
+pi=0,001: AUC=0.966448  AP=0.287636
+pi=0,500: AUC=0.967061  AP=0.967544
+   9/10   (0.595850, 0.982124) lebar 0.386274
+ 900/1000 (0.879848, 0.917091) lebar 0.037243
+  10/10   (0.722467, 1.000000) lebar 0.277533
+   0/1000 (0.000000, 0.003827) lebar 0.003827
+selisih 0.022000  se 0.007177  IK (0.007932, 0.036068)
+20 varian: rata2 0.899987  rata2 maks 0.917330
+pemilihan fitur: bocor 0.7800  jujur 0.4600
+\end{verbatim}
+
+Empat hal perlu dibaca dari keluaran itu. Pertama, dua angka pada baris kedua harus muncul
+berdekatan: $0{,}989490$ dan $0{,}999000$. Arah selisihnya menentukan seluruh tafsiran:
+model yang diuji berada di bawah garis dasar.
+
+Kedua, AUC hampir tidak bergerak, $0{,}966448$ melawan $0{,}967061$, sedangkan AP bergerak
+dari $0{,}287636$ ke $0{,}967544$, faktor $3{,}4$: bukti numerik bagi proposisi sebelumnya.
+
+Ketiga, lebar selang menyusut sebanding $1/\sqrt n$, dari $0{,}386274$ pada $n=10$ menjadi
+$0{,}037243$ pada $n=1000$, dan $0/1000$ memberi batas atas $0{,}003827$.
+
+Keempat, dua baris terakhir memuat dua penyakit yang tak terlihat pada satu angka: selisih
+berpasangan $0{,}022$ dengan selang $(0{,}007932;0{,}036068)$ tidak memuat nol, padahal
+$(0{,}8798;0{,}9171)$ dan $(0{,}8563;0{,}8969)$ bertumpuk lebar; dan pemenang dari $20$
+varian identik dilaporkan $0{,}917337$ padahal mutu sebenarnya $0{,}899987$.
+
+Program tidak membuktikan satu pun proposisi di bab ini; ia memeriksa klaim yang sudah
+dibuktikan. Simulasi memakai sebaran yang kita andaikan, dan validasi silang yang jujur
+pada data derau memberi $0{,}4600$, bukan $0{,}5000$: angka tanpa sinyal pun bergoyang.
+
+\begin{untukdosen}
+Urutan mengajar yang saya sarankan: mulai dari laporan vendor pada pembuka bab, tulis
+$99$ persen dan $99{,}9$ persen di papan, lalu minta kelas memutuskan mana yang lebih
+baik. Hampir seluruh kelas memilih detektor, dan dari kegelisahan itu matriks konfusi
+muncul sebagai jawaban, bukan definisi yang dihafal. Setelah presisi dan recall ada,
+barulah $F_1$ dan akurasi seimbang masuk. Kurva ROC sebaiknya digambar tangan untuk enam
+titik pada tabel ambang, sebab di situ mahasiswa melihat sendiri bahwa titik yang tampak
+bagus pada ROC dapat berpresisi $0{,}013$.
+
+Dua miskonsepsi khas. Pertama, AUC dianggap ukuran mutu yang bebas konteks sehingga ambang
+dipilih sembarang; gejalanya tampak ketika mahasiswa tidak dapat menjelaskan presisi pada
+ambang yang dipakai. Kedua, validasi silang dianggap selalu jujur, padahal pemilihan fitur
+atau standardisasi di luar lipatan sudah cukup menaikkan angka $30$ poin pada data yang
+seluruhnya derau.
+
+Aktivitas papan tulis: bagi kelas menjadi dua kelompok, satu menghitung presisi untuk
+$\pi=0{,}001$ dan satu untuk $\pi=0{,}5$ dengan sensitivitas dan spesifisitas yang sama,
+lalu suruh keduanya mempertahankan hasilnya. Kelompok pertama menemukan $0{,}018$ dan harus
+menjelaskan mengapa model yang sama terasa berbeda. Tanda kelas siap lanjut: mereka dapat
+menyebut satu keadaan di mana akurasi $0{,}99$ lebih buruk daripada tidak memakai model.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Empat bilangan matriks konfusi berperan tidak simetris: presisi menjawab
+        pertanyaan operator, recall pertanyaan perancang kebijakan, dan keduanya
+        bergantung pada ambang; $F_1$ adalah rata-rata harmoniknya dan mengabaikan
+        $\mathrm{TN}$.
+  \item Akurasi garis dasar adalah $1-\pi$: pada $\pi=0{,}001$ model dengan $0{,}989490$
+        kalah dari program yang selalu menjawab negatif ($0{,}999000$), sedangkan akurasi
+        seimbang $0{,}804930$ lebih jujur sebab tidak bergantung pada komposisi.
+  \item AUC sama dengan peluang skor positif acak melebihi skor negatif acak, jadi hanya
+        bergantung pada sebaran skor bersyarat; ia tidak berubah ketika kelaziman diubah,
+        sedangkan presisi dan average precision berubah, dari $0{,}288$ ke $0{,}968$.
+  \item Kalibrasi memeriksa apakah skor $0{,}8$ berarti delapan dari sepuluh. Untuk skor
+        terkalibrasi, Brier sama dengan $\mathbb{E}[S(1-S)]$; skor konstan $\pi$
+        terkalibrasi sempurna tetapi tidak tajam. Label keras di sini memberi
+        $0{,}010510$ melawan $0{,}000999$.
+  \item Lebar selang menyusut sebanding $1/\sqrt n$: $0{,}3863$ pada $n=10$ dan $0{,}0372$
+        pada $n=1000$. Untuk membandingkan dua model, pakai selisih berpasangan: $b=37$,
+        $c=15$ memberi $(0{,}007932;0{,}036068)$, sedangkan perlakuan tak berpasangan
+        memberi selang yang memuat nol.
+  \item Satu kali uji tidak cukup, dan kebocoran menaikkan angka secara palsu: $0{,}7800$
+        bila fitur dipilih di luar lipatan, $0{,}4600$ bila di dalamnya; pemenang dari
+        $20$ varian identik dilebihkan $1{,}7$ poin; dan $20$ perbandingan pada taraf $5$
+        persen memberi peluang $0{,}6415$ bahwa salah satunya menipu.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Nilai klaim ini: ``Model A mencapai akurasi $99{,}1$ persen dan model B $98{,}7$
+        persen pada kumpulan uji yang sama, jadi A lebih baik.'' Benar, salah, atau belum
+        cukup bukti? Sebutkan bagian yang keliru dan dua angka
+        tambahan yang memperkuat.
+  \item Buktikan bahwa Brier untuk label keras $0/1$ sama dengan laju galat,
+        $(\mathrm{FP}+\mathrm{FN})/n$. Mengapa kesamaan itu gagal untuk skor berupa
+        peluang?
+  \item Buktikan bahwa skor konstan $S=s$ meminimumkan Brier tepat ketika $s=\pi$, dengan
+        nilai minimum $\pi(1-\pi)$.
+  \item Diberikan $\mathrm{TP}=180$, $\mathrm{FP}=45$, $\mathrm{FN}=20$,
+        $\mathrm{TN}=1755$. Hitung presisi, recall, $F_1$, akurasi, spesifisitas, dan
+        akurasi seimbang sampai enam angka desimal, lalu periksa dengan
+        \texttt{sklearn.metrics}.
+  \item Hitung selang Wilson $95$ persen untuk $95/100$ dan $950/1000$. Bandingkan kedua
+        lebar, lalu jelaskan mengapa perbandingan itu tidak boleh dipakai menyimpulkan
+        model mana yang lebih baik.
+  \item Hitung AUC dari lima positif berskor $0{,}95$, $0{,}88$, $0{,}70$, $0{,}60$,
+        $0{,}40$ dan lima negatif berskor $0{,}75$, $0{,}65$, $0{,}50$, $0{,}30$,
+        $0{,}10$. Tuliskan banyak pasangan benar, lalu periksa dengan
+        \texttt{roc\_auc\_score}.
+  \item Sebuah model memiliki sensitivitas $0{,}80$ dan spesifisitas $0{,}99$. Hitung
+        presisinya pada $\pi=0{,}002$ dan $\pi=0{,}2$, lalu tentukan kelaziman minimum
+        agar presisinya paling sedikit $0{,}5$.
+  \item Anda memiliki $6000$ rekaman dari $300$ host, masing-masing sekitar $20$ rekaman,
+        dan $40$ setelan hiperparameter. Rancang protokol evaluasi yang tidak bocor:
+        sebutkan pembagian data, tempat prapemrosesan dihitung, tempat pemilihan
+        hiperparameter, dan berapa kali uji disentuh.
+  \item Nilai klaim ini: ``Karena AUC model ini $0{,}95$, model ini berguna pada ambang
+        mana pun yang kami pilih.'' Benar, salah, atau belum cukup bukti? Sertakan satu
+        perhitungan pendukung.
+\end{enumerate}
+
+Petunjuk untuk tiga butir tersulit. Butir 2: tulis $(s-y)^2$ untuk $s\in\{0,1\}$; nilainya
+$1$ tepat pada kesalahan. Butir 3: turunkan $\mathbb{E}[(s-y)^2]=s^2-2s\pi+\pi$ terhadap
+$s$, cari titik minimumnya, lalu pakai proposisi Brier di bab ini. Butir 7: presisinya
+$0{,}8\pi/\bigl(0{,}8\pi+0{,}01(1-\pi)\bigr)$; selesaikan
+$0{,}8\pi\ge0{,}5\bigl(0{,}8\pi+0{,}01(1-\pi)\bigr)$ terhadap $\pi$.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang terbukti di bab ini: akurasi pengklasifikasi konstan adalah $1-\pi$; $F_1$ adalah
+rata-rata harmonik presisi dan recall dengan $F_1\le(P+R)/2$; AUC sama dengan peluang
+peringkat benar beserta bentuk Mann--Whitney-nya; ROC dan AUC invarian terhadap kelaziman
+sedangkan presisi tidak; untuk skor terkalibrasi Brier sama dengan $\mathbb{E}[S(1-S)]$;
+dan rumus variansi selisih dua proporsi berpasangan.
+
+Yang populer tetapi bukan teorema: bahwa ``AUC $0{,}9$ berarti model bagus''; bahwa ambang
+$0{,}5$ netral; bahwa validasi silang selalu jujur; dan bahwa selang yang bertumpuk berarti
+tidak ada perbedaan. Tiga yang terakhir salah secara matematis, bukan hanya tidak lengkap.
+\emph{Average precision} juga bukan taksiran tak bias bagi luas kurva presisi--recall
+populasi: ia ringkasan dari kurva teramati, dan nilainya bergantung pada kelaziman sampel.
+
+Sumber primer: Wasserman, \emph{All of Statistics}, Bab 6, Bab 9--10, Bab 13 bagian
+Model Selection, dan Bab 22 bagian ``Assessing Error Rates and Choosing a Good Classifier''.
+Goodfellow, Bengio, dan Courville, \emph{Deep Learning}, Bab 11 bagian ``Performance
+Metrics'', memberi contoh penyakit satu per sejuta dan gagasan \emph{coverage}. Athalye,
+Carlini, dan Wagner (2018) menunjukkan bahwa evaluasi yang lemah menghasilkan klaim
+keamanan yang salah: tujuh dari sembilan pertahanan tanpa sertifikat pada ICLR 2018
+bergantung pada gradien yang dikaburkan, dan enam tembus setelah evaluasinya diperbaiki.
+
+Batas keberlakuan: seluruh simulasi memakai sebaran normal yang diandaikan, jadi ia
+mengukur perilaku prosedur, bukan kebenaran model. Selang Wilson adalah aproksimasi
+skor, dan McNemar mengandaikan pasangan tak sepakat simetris di bawah hipotesis nol.
+Hasil kebocoran bergantung pada $n$, $d$, dan banyaknya fitur terpilih: $0{,}78$
+bukan tetapan alam, melainkan satu titik pada kurva yang naik bersama $d/n$.
+
+Pertanyaan terbuka: selang jujur untuk metrik dari lipatan yang saling bergantung;
+pengujian kalibrasi tanpa asumsi selang skor seragam; dan pelaporan ketidakpastian ketika
+kumpulan uji dipilih secara adaptif.
+\end{untukpeneliti}
+
+\peta{Bab 27 pada Wasserman, \emph{All of Statistics}: Bab 6 (penaksir, bias, galat baku),
+Bab 9--10 (interval dan pengujian), Bab 13 bagian Model Selection, dan Bab 22 bagian
+``Assessing Error Rates and Choosing a Good Classifier''. Interval Wilson dan aturan tiga
+dirujuk dari Bab 20 buku ini serta dari Wilson (1927) dan Jovanovic--Levy (1997). Contoh
+akurasi yang menipu mengikuti Goodfellow, Bengio, dan Courville, \emph{Deep Learning},
+Bab 11; batas evaluasi pertahanan adversarial mengikuti Athalye, Carlini, dan Wagner (2018),
+dibahas di Bab 27 dan 28. Aturan Bayes untuk presisi dibuktikan di Bab 16; pemisahan data
+di Bab 24.}

@@ -1,0 +1,1224 @@
+\chapter{Jaringan Saraf dan Turunan Balik}
+
+Sebuah sistem pencegahan intrusi mengamati empat besaran pada setiap koneksi: banyak
+permintaan per detik, lama koneksi, banyak paket yang ditolak, dan ukuran muatan rata-rata.
+Analis yang mencoba memisahkan lalu lintas berbahaya dari lalu lintas wajar menemukan pola
+yang tidak enak dibaca. Koneksi dengan permintaan tinggi tetapi tanpa paket ditolak biasanya
+sah, sebab begitulah pengambilan berkas besar. Koneksi dengan banyak paket ditolak tetapi
+permintaan rendah juga biasanya sah, sebab begitulah pemindaian yang gagal. Gabungan
+keduanya hampir selalu serangan. Setiap ciri sendiri tidak memisahkan apa pun, sedangkan
+gabungannya memisahkan dengan tajam.
+
+Ambang linear tidak dapat menggambar pemisah semacam itu, dan bagian pertama bab ini
+menunjukkan bahwa batas itu bukan soal jumlah data. Yang harus berubah adalah bentuk
+fungsinya. Satu lapisan tersembunyi sudah cukup untuk pola tadi. Setelah bentuknya berubah,
+muncul pertanyaan berikutnya yang lebih gawat: bagaimana kita menyesuaikan ketiga belas
+parameter jaringan kecil itu tanpa menurunkan rumus baru untuk setiap arsitektur?
+
+Jawabannya adalah aturan rantai Bab 12, dijalankan mundur pada graf komputasi. Bab ini
+menurunkan aturan itu sampai ke angka: satu langkah maju dengan bobot yang ditentukan,
+ketiga belas gradien dihitung dengan tangan lalu diperiksa dengan NumPy, satu langkah
+penurunan gradien, dan gradien terhadap masukan yang nanti menjadi senjata di Bab 29.
+Yang dijanjikan bab ini bukan jaringan yang pintar, melainkan mesin turunan yang dapat
+diperiksa baris demi baris.
+
+\begin{untukanak}
+Bayangkan sebuah lini perakitan dengan beberapa tukang. Tukang pertama mengerjakan bahan
+mentah, tukang kedua mengerjakan hasil tukang pertama, dan begitu seterusnya sampai tukang
+terakhir menyerahkan barang jadi kepada pemeriksa. Pemeriksa menimbang barang itu, lalu
+berkata: terlalu berat, kurang dua ratus gram.
+
+Sekarang pertanyaannya: siapa yang harus mengubah cara kerjanya? Tukang pertama? Tukang
+terakhir? Kalau mandor hanya bisa mengubah satu setelan lalu menjalankan ulang seluruh lini, ia butuh dua kali percobaan per setelan. Dengan tiga belas setelan, itu dua puluh enam kali menjalankan lini untuk satu perbaikan.
+
+Ternyata ada cara yang jauh lebih pintar. Sesudah satu kali jalan, kita bisa menelusuri
+kembali dari pemeriksa ke tukang terakhir, lalu ke tukang sebelumnya, sampai ke tukang
+pertama. Di setiap perhentian kita hitung satu angka: seberapa besar kesalahan akhir berubah
+kalau orang ini mengubah sedikit hasil kerjanya. Sekali telusur mundur, semua tukang tahu
+bagiannya masing-masing, tanpa ada yang perlu dijalankan ulang.
+
+Di bab ini kita akan tahu mengapa informasi bisa mengalir mundur padahal barangnya hanya
+mengalir maju, dan mengapa telusur mundur itu memberi jawaban yang sama tepatnya dengan
+menjalankan lini dua puluh enam kali.
+\end{untukanak}
+
+\section{Ambang linear dan perceptron}
+\tingkat{dasar}
+
+Bentuk pengklasifikasi paling tua adalah ambang linear. Untuk masukan
+$\mathbf{x}\in\mathbb{R}^{d}$, bobot $\mathbf{w}\in\mathbb{R}^{d}$, dan bias
+$b\in\mathbb{R}$, kita hitung satu skor dan memutuskan kelas dari tanda skor itu.
+
+\kamus{perceptron}{perceptron}{Pengklasifikasi yang memutuskan hanya dari sisi mana sebuah
+titik jatuh terhadap satu garis atau satu bidang pemisah.}
+
+\begin{definisi}[Ambang linear]
+Fungsi $f:\mathbb{R}^{d}\to\{-1,+1\}$ disebut ambang linear bila ada $\mathbf{w}$ dan $b$
+sehingga $f(\mathbf{x})=\operatorname{sign}(\mathbf{w}^{\top}\mathbf{x}+b)$. Himpunan
+$\{\mathbf{x}:\mathbf{w}^{\top}\mathbf{x}+b=0\}$ adalah hiperbidang pemisah, dan hiperbidang
+itu satu-satunya bentuk pemisah yang dapat dipelajari model ini.\index{perceptron}
+\end{definisi}
+
+Aturan pelatihan perceptron bekerja dengan memperbaiki bobot hanya ketika ada kesalahan.
+Untuk label $y\in\{-1,+1\}$ dan contoh $\mathbf{x}$, bila
+$y\,\mathbf{w}^{\top}\mathbf{x}\le 0$ maka kita perbarui
+\[
+  \mathbf{w}\leftarrow\mathbf{w}+y\,\mathbf{x}.
+\]
+Perhatikan bahwa tidak ada laju belajar di sini: besarnya langkah ditentukan oleh besarnya
+contoh, dan pelatihan berhenti sendiri begitu semua contoh benar. Apakah ia selalu berhenti?
+
+\begin{teorema}[Kekonvergenan perceptron]
+Misalkan setiap contoh memenuhi $\lVert\mathbf{x}_{i}\rVert\le1$ dan terdapat vektor satuan
+$\mathbf{w}^{*}$ serta $\gamma>0$ sehingga $y_{i}\,\mathbf{w}^{*\top}\mathbf{x}_{i}\ge\gamma$
+untuk setiap $i$. Maka algoritme perceptron yang mulai dari $\mathbf{w}_{0}=\mathbf{0}$
+melakukan paling banyak $\lfloor1/\gamma^{2}\rfloor$ pembaruan.\index{perceptron}
+\end{teorema}
+
+\begin{proof}
+Misalkan pembaruan terjadi $k$ kali, pada contoh $\mathbf{x}_{1},\dots,\mathbf{x}_{k}$.
+Setiap pembaruan hanya terjadi ketika contoh itu salah klasifikasi, jadi
+$y_{j}\,\mathbf{w}_{j-1}^{\top}\mathbf{x}_{j}\le0$. Maka
+\[
+  \lVert\mathbf{w}_{j}\rVert^{2}
+  =\lVert\mathbf{w}_{j-1}\rVert^{2}+2y_{j}\mathbf{w}_{j-1}^{\top}\mathbf{x}_{j}
+   +\lVert\mathbf{x}_{j}\rVert^{2}
+  \le\lVert\mathbf{w}_{j-1}\rVert^{2}+1 .
+\]
+Dengan induksi, $\lVert\mathbf{w}_{k}\rVert^{2}\le k$.
+
+Sisi lain, hasil kali dengan $\mathbf{w}^{*}$ bertambah paling sedikit $\gamma$ setiap kali:
+\[
+  \mathbf{w}^{*\top}\mathbf{w}_{j}
+  =\mathbf{w}^{*\top}\mathbf{w}_{j-1}+y_{j}\mathbf{w}^{*\top}\mathbf{x}_{j}
+  \ge\mathbf{w}^{*\top}\mathbf{w}_{j-1}+\gamma ,
+\]
+sehingga $\mathbf{w}^{*\top}\mathbf{w}_{k}\ge k\gamma$. Karena $\mathbf{w}^{*}$ vektor
+satuan, ketaksamaan Cauchy-Schwarz memberi
+\[
+  k\gamma\le\mathbf{w}^{*\top}\mathbf{w}_{k}\le\lVert\mathbf{w}_{k}\rVert\le\sqrt{k}.
+\]
+Setelah dibagi $\sqrt{k}$ dan dikuadratkan, $k\gamma^{2}\le1$, yaitu
+$k\le1/\gamma^{2}$.
+\end{proof}
+
+Batas itu tidak bergantung pada dimensi maupun banyaknya contoh, dan itulah daya tariknya. Tetapi bila $\gamma$ tidak ada, teorema ini diam, dan perceptron memang berayun selamanya; ia juga bukan pernyataan generalisasi.
+
+Sekarang batas yang lebih mendasar. Empat titik pada bidang sudah cukup untuk menunjukkan
+bahwa tidak setiap pelabelan dapat dipisahkan oleh satu hiperbidang. Titik $(0,0)$ dan
+$(1,1)$ berlabel $0$, titik $(1,0)$ dan $(0,1)$ berlabel $1$. Pola ini biasa disebut XOR.
+
+\begin{proposisi}
+Keempat titik XOR tidak terpisah secara linear.
+\end{proposisi}
+
+\begin{proof}
+Andaikan ada $w_{1},w_{2},b$ yang memisahkan, dengan label $1$ pada sisi positif. Label $0$
+di $(0,0)$ memberi $b\le0$. Label $1$ di $(1,0)$ memberi $w_{1}+b>0$, sehingga
+$w_{1}>-b\ge0$. Dengan jalan yang sama, $w_{2}>-b\ge0$. Karena itu $w_{1}+w_{2}>-2b$, dan
+\[
+  w_{1}+w_{2}+b>-b\ge0 .
+\]
+Tetapi label $0$ di $(1,1)$ menuntut $w_{1}+w_{2}+b\le0$. Kontradiksi.
+\end{proof}
+
+Kontradiksi ini berlaku untuk setiap pilihan $\mathbf{w}$ dan $b$, bukan hanya untuk hasil
+pelatihan tertentu. Menambah contoh, mengganti laju belajar, atau menormalkan fitur tidak
+akan menolong. Yang harus berubah adalah bentuk fungsinya, dan perubahan terkecil yang
+tersedia adalah menyisipkan satu lapisan di antaranya.
+
+\kamus{lapisan tersembunyi}{hidden layer}{Lapisan unit yang tidak dilihat dunia luar:
+masukannya dari lapisan sebelumnya, keluarannya ke lapisan berikutnya.}
+
+Lapisan tersembunyi bekerja dengan dua langkah. Pertama, hitung
+$\mathbf{z}_{1}=\mathbf{W}_{1}\mathbf{x}+\mathbf{b}_{1}$ dengan
+$\mathbf{W}_{1}\in\mathbb{R}^{2\times4}$, lalu terapkan
+$\operatorname{ReLU}(t)=\max\{t,0\}$ pada setiap komponen, dan tulis hasilnya $\mathbf{h}$.
+Kedua, hitung skor linear dari $\mathbf{h}$. Untuk XOR, dengan
+\[
+  \mathbf{W}_{1}=\begin{pmatrix}1&1\\1&1\end{pmatrix},\qquad
+  \mathbf{b}_{1}=\begin{pmatrix}0\\-1\end{pmatrix},\qquad
+  \mathbf{w}_{2}=\begin{pmatrix}1\\-2\end{pmatrix},\qquad b_{2}=0,
+\]
+keempat titik memberi: $(0,0)$ menghasilkan $\mathbf{z}_{1}=(0,-1)$ dan
+$\mathbf{h}=(0,0)$ dengan skor $0$; titik $(1,0)$ dan $(0,1)$ keduanya menghasilkan
+$\mathbf{z}_{1}=(1,0)$ dan $\mathbf{h}=(1,0)$ dengan skor $1$; titik $(1,1)$ menghasilkan
+$\mathbf{z}_{1}=(2,1)$ dan $\mathbf{h}=(2,1)$ dengan skor $1(2)-2(1)=0$. Dengan ambang
+$0{,}5$ keempat titik terklasifikasi benar.
+
+Yang membuat ini bekerja bukan sihir, melainkan aritmetika sederhana. Unit pertama menghitung
+$\max\{x_{1}+x_{2},0\}$ dan unit kedua menghitung $\max\{x_{1}+x_{2}-1,0\}$. Keduanya
+linear, tetapi selisih keduanya adalah fungsi potongan yang berbelok di dua tempat.
+Kombinasi linear fungsi linear tetap linear; kombinasi linear fungsi potongan tidak.
+
+Batas seperti itu tersusun dari ruas garis. Setiap unit di lapis pertama menyumbang satu
+garis lurus, dan lapis kedua memilih sisi mana yang dipakai, sehingga batas akhirnya
+berupa poligon; Gambar~\ref{fig:dua-lapis} menunjukkan bentuknya.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[>=latex, font=\small]
+  % panel kiri: bagan dua lapis tersembunyi
+  \foreach \i/\yy in {1/1.5,2/-0.5}
+    \node[circle,draw=layergrey,fill=layergrey!10,inner sep=1.7pt] (I\i) at (0.4,\yy) {};
+  \foreach \i/\yy in {1/2.4,2/1.65,3/0.9,4/0.15,5/-0.6}
+    \node[circle,draw=layerteal,fill=layerteal!12,inner sep=1.7pt] (H1\i) at (2.1,\yy) {};
+  \foreach \i/\yy in {1/1.6,2/0.7,3/-0.2}
+    \node[circle,draw=layerteal,fill=layerteal!12,inner sep=1.7pt] (H2\i) at (3.7,\yy) {};
+  \node[circle,draw=layerindigo,fill=layerindigo!12,inner sep=1.7pt] (O) at (5.1,0.7) {};
+  \foreach \i in {1,2} \foreach \j in {1,...,5} \draw[layergrey!45] (I\i) -- (H1\j);
+  \foreach \i in {1,...,5} \foreach \j in {1,2,3} \draw[layergrey!45] (H1\i) -- (H2\j);
+  \foreach \j in {1,2,3} \draw[layergrey!45] (H2\j) -- (O);
+  \node[font=\scriptsize] at (0.4,-1.35) {masukan};
+  \node[font=\scriptsize] at (2.1,-1.35) {lima unit};
+  \node[font=\scriptsize] at (3.7,-1.35) {tiga unit};
+  \node[font=\scriptsize] at (5.1,-1.35) {keluaran};
+  % panel kanan: bidang masukan
+  \draw[layergrey] (6.7,-0.9) rectangle (14.4,2.9);
+  \node[font=\scriptsize] at (14.1,-1.35) {$x_{1}$};
+  \node[font=\scriptsize] at (6.4,2.75) {$x_{2}$};
+  \fill[layerorange!18] (8.3,0.3) -- (9.7,2.4) -- (12.6,2.55) -- (13.3,1.1) -- (11.2,0.0) -- cycle;
+  \draw[layerorange,thick] (8.3,0.3) -- (9.7,2.4) -- (12.6,2.55) -- (13.3,1.1) -- (11.2,0.0) -- cycle;
+  \draw[dashed,layergrey!70] (7.50,-0.9) -- (11.43,2.9);
+  \draw[dashed,layergrey!70] (6.70,2.23) -- (14.40,2.64);
+  \draw[dashed,layergrey!70] (12.43,2.9) -- (14.27,-0.9);
+  \draw[dashed,layergrey!70] (14.40,1.68) -- (9.48,-0.9);
+  \draw[dashed,layergrey!70] (6.70,0.50) -- (14.40,-0.33);
+  \foreach \xx/\yy in {9.9/1.6, 11.4/1.3, 10.6/0.6}
+    \draw[accent,thick] (\xx-0.09,\yy-0.09) -- (\xx+0.09,\yy+0.09)
+      (\xx-0.09,\yy+0.09) -- (\xx+0.09,\yy-0.09);
+  \foreach \xx/\yy in {7.7/1.4, 8.5/-0.3, 12.3/-0.5, 13.6/2.2}
+    \draw[layergrey,fill=white] (\xx,\yy) circle (2.1pt);
+  \draw[accent,thick] (11.0,-1.30) -- (11.15,-1.15) (11.0,-1.15) -- (11.15,-1.30);
+  \node[font=\scriptsize,anchor=west] at (11.2,-1.23) {kelas 1};
+  \draw[layergrey,fill=white] (13.0,-1.23) circle (2.1pt);
+  \node[font=\scriptsize,anchor=west] at (13.2,-1.23) {kelas 0};
+\end{tikzpicture}
+\caption{Skema bagaimana dua lapis tersembunyi mengubah satu garis menjadi lipatan.
+Kiri: setiap unit di lapis pertama menarik satu garis lurus pada bidang masukan, dan
+lapis kedua menggabungkan sisi-sisi garis itu. Kanan: batas keputusannya berupa poligon
+lima sisi, digambar tebal; garis putus-putus adalah perpanjangan tiap sisi, yaitu garis
+milik satu unit. Tanda silang adalah kelas 1 di dalam poligon, bulatan kelas 0 di luar.
+Gambar ini skema, bukan hasil latihan: banyaknya sisi mengikuti banyaknya unit di lapis
+pertama.}
+\label{fig:dua-lapis}
+\end{figure}
+
+
+\section{Fungsi aktivasi dan dua penyakit lapisan dalam}
+\tingkat{menengah}
+
+Tanpa fungsi taklinear di antara lapisan, seluruh jaringan runtuh menjadi satu matriks. Bila
+ReLU diganti identitas, keluarannya $\mathbf{W}_{2}\mathbf{W}_{1}\mathbf{x}$, yaitu
+perkalian matriks tunggal $\mathbf{W}\mathbf{x}$ dengan
+$\mathbf{W}=\mathbf{W}_{2}\mathbf{W}_{1}$. Karena itu setiap lapisan tersembunyi memerlukan
+aktivasi taklinear, dan pilihan aktivasinya menentukan penyakit apa yang akan muncul saat
+jaringan dibuat dalam.
+
+\kamus{fungsi aktivasi}{activation function}{Pintu yang menentukan seberapa besar sinyal
+sebuah unit diteruskan, dan sekaligus penentu bentuk turunannya.}
+
+\begin{definisi}[ReLU, sigmoid, dan tanh]
+Untuk $t\in\mathbb{R}$,
+\[
+  \operatorname{ReLU}(t)=\max\{t,0\},\qquad
+  \sigma(t)=\frac{1}{1+e^{-t}},\qquad
+  \tanh(t)=\frac{e^{t}-e^{-t}}{e^{t}+e^{-t}} .
+\]
+Turunan ReLU bernilai $1$ untuk $t>0$ dan $0$ untuk $t<0$; di $t=0$ turunannya tidak ada,
+dan buku ini memakai nilai $0$ sebagai konvensi. Turunan tanh memenuhi
+$\tanh'(t)=1-\tanh^{2}(t)$.\index{fungsi aktivasi}\index{relu}
+\end{definisi}
+
+Nilai $0$ di titik patah ReLU adalah konvensi: himpunan tempat turunan gagal hanya $\{0\}$, berukuran nol, sehingga tidak memengaruhi turunan di hampir semua tempat. Akibat praktisnya: unit yang masukannya selalu negatif menerima gradien nol dan tidak akan pernah berubah.
+
+Sigmoid punya sifat yang lebih rapi, dan sifat itulah sumber masalahnya.
+
+\begin{lemma}[Turunan sigmoid]
+Untuk setiap $t$ berlaku $\sigma'(t)=\sigma(t)\bigl(1-\sigma(t)\bigr)$, sehingga
+$0<\sigma'(t)\le\tfrac14$.\index{saturasi}
+\end{lemma}
+
+\begin{proof}
+Tulis $\sigma(t)=(1+e^{-t})^{-1}$. Maka
+\[
+  \sigma'(t)=-(1+e^{-t})^{-2}\cdot(-e^{-t})
+  =\frac{e^{-t}}{(1+e^{-t})^{2}}
+  =\frac{1}{1+e^{-t}}\cdot\frac{e^{-t}}{1+e^{-t}}
+  =\sigma(t)\bigl(1-\sigma(t)\bigr).
+\]
+Karena $0<\sigma(t)<1$, hasil kalinya positif. Dengan menulis $s=\sigma(t)$ diperoleh
+$s(1-s)=\tfrac14-(s-\tfrac12)^{2}\le\tfrac14$, dan kesamaan tercapai ketika $s=\tfrac12$.
+\end{proof}
+
+Batas $\tfrac14$ itu yang harus dipegang. Tabel berikut menghitung $\sigma$, $\sigma'$, dan
+$\tanh$ pada beberapa nilai; angkanya dihasilkan NumPy dan ditulis sampai enam desimal.
+
+\begin{center}
+\small
+\begin{tabular}{rrrrr}
+\hline
+$t$ & $\sigma(t)$ & $\sigma'(t)$ & $\tanh(t)$ & $1-\tanh^{2}(t)$ \\
+\hline
+$0$  & $0{,}500000$ & $0{,}250000$ & $0{,}000000$ & $1{,}000000$ \\
+$1$  & $0{,}731059$ & $0{,}196612$ & $0{,}761594$ & $0{,}419974$ \\
+$2$  & $0{,}880797$ & $0{,}104994$ & $0{,}964028$ & $0{,}070650$ \\
+$5$  & $0{,}993307$ & $0{,}006648$ & $0{,}999909$ & $0{,}000181$ \\
+$10$ & $0{,}999955$ & $0{,}000045$ & $0{,}999999$ & $0{,}000002$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Kolom keempat dan kelima menunjukkan apa yang disebut saturasi: begitu $t$ menjauh dari nol,
+keluaran hampir tidak berubah terhadap masukan, dan turunannya menuju nol. Pada $t=10$ turunannya tinggal $4{,}54\times10^{-5}$, sekitar seperdua puluh ribu dari maksimumnya.
+
+Akibatnya bisa dihitung. Bila galat merambat mundur melalui $L$ lapisan berturut-turut yang
+turunannya paling besar $\tfrac14$, sisa sinyalnya paling besar $4^{-L}$: untuk $L=5$ sekitar
+$9{,}77\times10^{-4}$, dan untuk $L=10$ sekitar $9{,}54\times10^{-7}$. Lapisan yang jauh dari
+keluaran menerima sinyal yang tinggal sepersejuta, sehingga praktis tidak belajar. Gejala ini
+disebut gradien hilang. ReLU menghindarinya dengan alasan yang berbeda: turunannya $1$ di sisi
+positif, jadi tidak ada penyusutan, tetapi turunannya $0$ di sisi negatif, jadi ada
+kematian unit. Kedua penyakit itu bukan kesalahan implementasi; keduanya konsekuensi bentuk
+fungsi.\index{gradien hilang}
+
+Satu pernyataan lagi yang sering dikutip melampaui isinya: satu lapisan tersembunyi cukup untuk semua fungsi kontinu.
+
+\begin{teorema}[Aproksimasi universal, pernyataan]
+Misalkan $\varphi$ terbatas, naik monoton, dan memiliki limit berbeda di $-\infty$ dan
+$+\infty$. Untuk setiap himpunan kompak $K\subset\mathbb{R}^{d}$, setiap fungsi kontinu
+$f:K\to\mathbb{R}$, dan setiap $\varepsilon>0$, terdapat $N$ dan parameter
+$\mathbf{w}_{i},b_{i},v_{i}$ sehingga
+\[
+  \sup_{\mathbf{x}\in K}\Bigl|f(\mathbf{x})-\sum_{i=1}^{N}v_{i}\,
+  \varphi(\mathbf{w}_{i}^{\top}\mathbf{x}+b_{i})\Bigr|<\varepsilon .
+\]
+\end{teorema}
+
+Bukti pernyataan ini tidak dimuat di sini; bukti aslinya ada pada Cybenko (1989) dan
+versi yang lebih umum pada Hornik (1991), dan perluasan ke ReLU ada pada Leshno dkk. (1993).
+Yang penting dibaca dengan hati-hati adalah apa yang \emph{tidak} dikatakan teorema itu. Ia
+menyatakan bahwa himpunan fungsi semacam itu padat, bukan bahwa jaringan tertentu sama
+dengan $f$. Ia tidak mengatakan berapa $N$ yang diperlukan untuk galat $\varepsilon$ pada dimensi $d$; dalam kasus terburuk $N$ tumbuh secara eksponensial terhadap $d$ (Goodfellow dkk., bagian 6.4.1). Ia juga tidak mengatakan bahwa parameter itu dapat ditemukan oleh penurunan gradien, dan tidak mengatakan apa pun tentang data yang belum dilihat.
+Kalimat ``jaringan bisa menghampiri apa saja'' karena itu benar sebagai pernyataan
+kepadatan dan menyesatkan sebagai janji praktis.
+
+\section{Dari skor ke kerugian}
+\tingkat{menengah}
+
+Keluaran jaringan harus dibandingkan dengan label melalui satu bilangan yang dapat
+diminimumkan, dan pilihan bilangan itu menentukan seberapa besar sinyal yang sampai ke
+lapisan bawah. Untuk klasifikasi biner dengan label $y\in\{0,1\}$ dan keluaran
+$a=\sigma(z_{2})$, kerugian yang dipakai adalah entropi silang biner
+\[
+  L(a,y)=-\bigl[y\ln a+(1-y)\ln(1-a)\bigr].
+\]
+Entropi silang adalah negatif logaritma kepercayaan yang diberikan model kepada kelas yang
+benar, sehingga kesalahan yang percaya diri dihukum jauh lebih berat daripada kesalahan yang
+ragu.
+
+\kamus{entropi silang}{cross-entropy}{Ukuran kejutan: makin yakin model pada jawaban yang
+salah, makin besar dendanya, dan dendanya tumbuh tanpa batas.}\index{entropi silang}
+
+\begin{proposisi}[Gradien entropi silang]
+Untuk $a=\sigma(z)$ dan $L$ entropi silang biner berlaku
+$\dfrac{\partial L}{\partial z}=a-y$.
+\end{proposisi}
+
+\begin{proof}
+Turunkan $L$ terhadap $a$:
+\[
+  \frac{\partial L}{\partial a}=-\frac{y}{a}+\frac{1-y}{1-a}
+  =\frac{a-y}{a(1-a)} .
+\]
+Dengan aturan rantai dan lemma turunan sigmoid,
+$\dfrac{\partial a}{\partial z}=a(1-a)$, sehingga
+\[
+  \frac{\partial L}{\partial z}=\frac{a-y}{a(1-a)}\cdot a(1-a)=a-y .
+\]
+Pembilang dan penyebut saling menghapus, dan itulah intinya.
+\end{proof}
+
+Bandingkan dengan kerugian kuadrat $L=\tfrac12(a-y)^{2}$, yang memberi
+$\partial L/\partial z=(a-y)\,a(1-a)$. Faktor $a(1-a)$ tidak hilang; ia mengecil persis ketika model paling salah dengan paling percaya diri. Untuk $z=10$ dan $y=0$, $a(1-a)=4{,}5396\times10^{-5}$, jadi sinyal ke bobot hanya $4{,}5394\times10^{-5}$ walaupun galatnya hampir satu. Dengan entropi silang sinyalnya
+tetap $a-y=0{,}999955$. Perbandingan kedua angka itu sekitar $2{,}2\times10^{4}$; inilah
+sebabnya keluaran sigmoid dipasangkan dengan entropi silang, bukan dengan kuadrat.
+
+Untuk $K$ kelas, pasangan yang sama berlaku, dan kali ini kita buktikan.
+
+\kamus{softmax}{softmax}{Mengubah deretan skor menjadi pembagian peluang yang jumlahnya
+satu, dengan cara membandingkan setiap skor terhadap jumlah semuanya.}\index{softmax}
+
+\begin{proposisi}[Softmax dan entropi silang]
+Misalkan $\mathbf{p}=\operatorname{softmax}(\mathbf{z})$ dengan
+$p_{k}=e^{z_{k}}/\sum_{j}e^{z_{j}}$, dan $L=-\sum_{k}y_{k}\ln p_{k}$ dengan
+$\sum_{k}y_{k}=1$. Maka $\dfrac{\partial L}{\partial z_{i}}=p_{i}-y_{i}$.
+\end{proposisi}
+
+\begin{proof}
+Turunan komponen softmax adalah
+$\dfrac{\partial p_{k}}{\partial z_{i}}=p_{k}(\delta_{ki}-p_{i})$, dengan $\delta_{ki}$
+delta Kronecker. Maka
+\[
+  \frac{\partial L}{\partial z_{i}}
+  =-\sum_{k}\frac{y_{k}}{p_{k}}\cdot p_{k}(\delta_{ki}-p_{i})
+  =-\sum_{k}y_{k}\delta_{ki}+p_{i}\sum_{k}y_{k}
+  =-y_{i}+p_{i},
+\]
+sebab $\sum_{k}y_{k}=1$.
+\end{proof}
+
+Untuk dua kelas, $\operatorname{softmax}((t,0))_{1}=\sigma(t)$, sehingga rumus ini kembali
+menjadi $a-y$ seperti sebelumnya. Perhatikan pula bahwa menambahkan tetapan $c$ pada semua $z_{k}$ tidak mengubah
+$\mathbf{p}$, karena faktor $e^{c}$ saling menghapus; hanya selisih skor yang bermakna,
+sekaligus sebabnya penambahan tetapan besar pada semua logit merusak ketelitian floating-point
+(Bab 22).
+
+\begin{untukanak}
+Pernahkah kamu main permainan menebak angka, dan setiap kali salah kamu hanya diberi tahu
+``terlalu besar'' atau ``terlalu kecil'', tanpa diberi tahu seberapa jauh? Kalau tebakanmu
+sembilan ratus dan jawabannya seratus, keterangan ``terlalu besar'' sama saja dengan kalau
+tebakanmu seratus satu.
+
+Jaringan saraf punya masalah yang sama, tetapi lebih rumit. Ia punya tiga belas tombol, dan
+setiap tombol memengaruhi jawaban lewat beberapa perantara. Kalau kita hanya tahu jawabannya
+salah, kita tidak tahu tombol mana yang harus diputar, ke arah mana, dan sejauh apa.
+
+Untungnya, jawaban salah itu punya derajat: seberapa jauh, dan ke arah mana. Dengan satu ukuran yang disebut kerugian, kita bisa bertanya pada setiap tombol: kalau kamu diputar sedikit, apakah kerugiannya naik atau turun, dan seberapa cepat? Jawabannya satu angka per tombol.
+
+Di bab ini kita akan tahu mengapa satu ukuran kerugian saja cukup untuk memberi tiga belas
+jawaban sekaligus, dan mengapa jawaban itu bisa dipercaya.
+\end{untukanak}
+
+\section{Turunan balik}
+\tingkat{lanjut}
+
+Jaringan adalah komposisi fungsi, jadi turunannya dihitung dengan aturan rantai Bab 12. Yang
+membuatnya murah adalah urutan pengerjaannya: dari keluaran mundur ke masukan, bukan dari
+masukan maju ke keluaran. Untuk setiap besaran antara $u$ dalam graf komputasi, kita
+tetapkan satu bilangan yang menyatakan seberapa besar kerugian berubah bila $u$ berubah.
+
+\kamus{adjoint}{adjoint}{Bayangan seberapa besar kesalahan akhir terpengaruh oleh satu
+besaran di tengah jaringan; satu angka per besaran.}
+
+\begin{definisi}[Adjoint]
+Misalkan $C$ kerugian pada satu contoh dan $u$ salah satu besaran antara. Adjoint $u$
+adalah $\bar{u}=\partial C/\partial u$.\index{adjoint}
+\end{definisi}
+
+\begin{proposisi}[Rekursi adjoint]
+Bila $u$ memengaruhi $C$ hanya melalui $v_{1},\dots,v_{m}$, maka
+$\bar{u}=\sum_{i=1}^{m}\bar{v}_{i}\,\dfrac{\partial v_{i}}{\partial u}$.
+\end{proposisi}
+
+\begin{proof}
+Ini aturan rantai untuk fungsi beberapa variabel (Bab 12) yang diterapkan pada $C$ sebagai
+fungsi dari $v_{1},\dots,v_{m}$, dengan setiap $v_{i}$ sebagai fungsi dari $u$. Karena $u$
+tidak memengaruhi $C$ dengan jalan lain, semua suku lain dalam aturan rantai itu nol.
+\end{proof}
+
+Rekursi itu mengubah pekerjaan menjadi satu kali telusur. Mulai dari $\bar{C}=1$, kita
+mengunjungi besaran antara dalam urutan terbalik dari hitung maju. Setiap besaran menerima
+sumbangan dari semua besaran yang memakainya, jadi tidak ada yang terlewat atau dihitung dua kali. Inilah turunan balik, dan ia bukan algoritme baru: ia hanya aturan rantai
+yang dijalankan pada graf dengan urutan yang tepat.\index{turunan balik}
+
+Gambar~\ref{fig:graf-balik} menaruh kedua arah itu pada satu graf. Panah penuh membawa
+nilai maju; panah putus-putus membawa adjoint, dan angka pada panah itu diambil dari
+contoh hitung di bagian berikutnya.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[>=latex, font=\small]
+  \node[draw=layerteal,rounded corners=2pt,fill=layerteal!10,inner sep=4pt] (X)  at (0,0)    {$\mathbf{x}$};
+  \node[draw=layerteal,rounded corners=2pt,fill=layerteal!10,inner sep=4pt] (Z1) at (2.7,0)  {$\mathbf{z}_{1}$};
+  \node[draw=layerteal,rounded corners=2pt,fill=layerteal!10,inner sep=4pt] (H)  at (5.3,0)  {$\mathbf{h}$};
+  \node[draw=layerteal,rounded corners=2pt,fill=layerteal!10,inner sep=4pt] (Z2) at (7.5,0)  {$z_{2}$};
+  \node[draw=layerteal,rounded corners=2pt,fill=layerteal!10,inner sep=4pt] (A)  at (9.3,0)  {$a$};
+  \node[draw=layerteal,rounded corners=2pt,fill=layerteal!10,inner sep=4pt] (L)  at (11.4,0) {$L$};
+  \node (W1) at (2.7,1.45) {$\mathbf{W}_{1},\mathbf{b}_{1}$};
+  \node (W2) at (7.5,1.45) {$\mathbf{w}_{2},b_{2}$};
+  \foreach \a/\b in {X/Z1,Z1/H,H/Z2,Z2/A,A/L} \draw[->,thick,ink] (\a) -- (\b);
+  \draw[->,thick,ink] (W1) -- (Z1);
+  \draw[->,thick,ink] (W2) -- (Z2);
+  \draw[->,dashed,accent] (L.south)  .. controls +(0,-1.0) and +(0,-1.0) .. (Z2.south);
+  \draw[->,dashed,accent] (Z2.south) .. controls +(0,-1.0) and +(0,-1.0) .. (H.south);
+  \draw[->,dashed,accent] (H.south)  .. controls +(0,-1.0) and +(0,-1.0) .. (Z1.south);
+  \draw[->,dashed,accent] (Z1.south) .. controls +(0,-1.0) and +(0,-1.0) .. (X.south);
+  \draw[->,dashed,accent] (3.05,0.25) -- (3.05,1.25);
+  \draw[->,dashed,accent] (7.85,0.25) -- (7.85,1.25);
+  \node[font=\scriptsize] at (9.9,-1.4)  {$\bar{z}_{2}=a-y=-0{,}2554$};
+  \node[font=\scriptsize] at (6.5,-2.0)  {$\bar{\mathbf{h}}=(-0{,}2043;\,0{,}1532)$};
+  \node[font=\scriptsize] at (4.0,-1.4)  {$\bar{\mathbf{z}}_{1}=\bar{\mathbf{h}}$};
+  \node[font=\scriptsize,align=center] at (1.1,-1.95)
+    {$\nabla_{\mathbf{x}}L=(-0{,}0868;\,0{,}1328;$\\$(-0{,}0971;\,-0{,}1430)$};
+  \node[font=\scriptsize] at (2.7,2.15) {$\nabla_{\mathbf{W}_{1}}L=\bar{\mathbf{z}}_{1}\mathbf{x}^{\top}$};
+  \node[font=\scriptsize] at (9.0,2.15) {$\nabla_{\mathbf{w}_{2}}L=\bar{z}_{2}\mathbf{h}$};
+\end{tikzpicture}
+\caption{Graf komputasi jaringan 4--2--1 pada contoh hitung. Panah tebal penuh adalah
+arah maju: masukan dan bobot menjadi $\mathbf{z}_{1}$, gerbang ReLU menjadi
+$\mathbf{h}$, lalu skor $z_{2}$, keluaran $a$, dan kerugian $L$. Panah putus-putus
+adalah arah mundur yang membawa adjoint: $\bar{z}_{2}=a-y=-0{,}2554$ masuk ke bobot
+keluaran, $\bar{\mathbf{h}}=(-0{,}2043;\,0{,}1532)$ masuk ke gerbang, dan
+$\nabla_{\mathbf{x}}L=(-0{,}0868;\,0{,}1328;\,-0{,}0971;\,-0{,}1430)$ keluar di
+masukan. Satu telusur mundur menghasilkan ketiga belas gradien sekaligus.}
+\label{fig:graf-balik}
+\end{figure}
+
+\begin{bacakeras}
+Dua suara. Suara pertama: ``Kerugiannya terlalu besar.'' Suara kedua: ``Siapa yang
+salah?'' Suara pertama: ``Bukan satu orang. Yang salah di ujung, dan kesalahannya dibagi
+ke belakang, sedikit demi sedikit.''
+
+Dengar sekali lagi, pelan. Kesalahan lahir di ujung, pada angka terakhir. Dari sana ia
+berjalan mundur, berhenti di setiap persimpangan, dan bertanya: lewat sini, berapa
+bagianmu? Yang paling dekat ujung menjawab paling besar. Yang jauh di belakang menjawab
+paling kecil, sebab jawabannya sudah disaring dua kali di jalan pulang.
+
+Suara kedua: ``Jadi yang di depan tidak bersalah?'' Suara pertama: ``Ia bersalah sebesar
+bagian yang sampai kepadanya. Tidak lebih. Karena itu kita tidak menuduh, kita
+menghitung.''
+
+Ulangi tiga kali sampai enak di telinga: salah di ujung, dibagi ke belakang, sedikit
+demi sedikit, sesuai jalannya.
+\end{bacakeras}
+
+
+Sekarang turunkan seluruhnya untuk jaringan 4--2--1 dengan ReLU di lapisan tersembunyi dan
+sigmoid di keluaran. Hitung majunya
+\[
+  \mathbf{z}_{1}=\mathbf{W}_{1}\mathbf{x}+\mathbf{b}_{1},\qquad
+  \mathbf{h}=\operatorname{ReLU}(\mathbf{z}_{1}),\qquad
+  z_{2}=\mathbf{w}_{2}^{\top}\mathbf{h}+b_{2},\qquad
+  a=\sigma(z_{2}),
+\]
+lalu $L$ entropi silang biner dari $a$ dan $y$. Setiap mata rantai punya turunan lokalnya
+sendiri, dan semuanya sudah kita punya:
+\[
+  \frac{\partial L}{\partial z_{2}}=a-y\ \text{(proposisi sebelumnya)},\qquad
+  \frac{\partial z_{2}}{\partial h_{i}}=w_{2}[i],
+\]
+\[
+  \frac{\partial h_{i}}{\partial z_{1}[i]}=\mathbb{1}\bigl[z_{1}[i]>0\bigr],\qquad
+  \frac{\partial z_{1}[i]}{\partial W_{1}[i,j]}=x_{j}.
+\]
+Mengalikan mundur sepanjang rantai itu memberi, satu per satu,
+\[
+  \bar{z}_{2}=a-y,\qquad
+  \nabla_{\mathbf{w}_{2}}L=\bar{z}_{2}\,\mathbf{h},\qquad
+  \frac{\partial L}{\partial b_{2}}=\bar{z}_{2},
+\]
+lalu sinyal yang sampai ke lapisan tersembunyi
+\[
+  \bar{\mathbf{h}}=\bar{z}_{2}\,\mathbf{w}_{2},
+  \qquad
+  \bar{\mathbf{z}}_{1}=\bar{\mathbf{h}}\odot\mathbb{1}\bigl[\mathbf{z}_{1}>0\bigr],
+\]
+dengan $\odot$ hasil kali per komponen. Perhatikan bahwa $\bar{\mathbf{z}}_{1}$ adalah
+$\bar{\mathbf{h}}$ yang dicukur oleh gerbang ReLU: komponen yang gerbangnya tertutup menjadi
+tepat nol, bukan kecil. Setelah itu
+\[
+  \nabla_{\mathbf{W}_{1}}L=\bar{\mathbf{z}}_{1}\mathbf{x}^{\top},\qquad
+  \nabla_{\mathbf{b}_{1}}L=\bar{\mathbf{z}}_{1},\qquad
+  \nabla_{\mathbf{x}}L=\mathbf{W}_{1}^{\top}\bar{\mathbf{z}}_{1}.
+\]
+Bentuk hasil kali luar pada $\nabla_{\mathbf{W}_{1}}L$ bukan kebetulan: turunan
+$\partial z_{1}[i]/\partial W_{1}[i,j]=x_{j}$ tidak bergantung pada $i$, sehingga seluruh
+baris ke-$i$ adalah $\bar{z}_{1}[i]$ dikali vektor $\mathbf{x}$. Setiap bobot menerima
+gradien yang besarnya sebanding dengan masukan yang dikalikannya, dan itu sebabnya fitur
+berskala besar otomatis menerima langkah besar.
+
+Tidak satu pun rumus itu bergantung pada $d=4$ atau pada dua unit tersembunyi; polanya sama untuk lapisan mana pun.
+
+Biayanya sebanding: satu langkah maju memerlukan satu perkalian matriks-vektor per lapisan, satu langkah mundur satu perkalian transpos dan satu hasil kali luar per lapisan. Selisih hingga terpusat untuk $P$ parameter memerlukan $2P$ langkah maju, sedangkan turunan balik hanya sekitar dua. Untuk $P=13$ di bab ini, dua puluh enam lawan dua; untuk sejuta parameter, dua juta lawan dua, dan di situlah seluruh bedanya. Nielsen menamakan pengamatan ini sebagai alasan mengapa turunan balik dianggap
+penemuan besar, bukan sekadar trik aljabar.
+
+\begin{tangan}
+Ambil tiga kertas dan sebatang pensil, lalu beri label di atasnya: MASUKAN, BOBOT,
+KELUARAN. Di kertas MASUKAN tulis empat angka: $1$; $0{,}5$; $-1$; $2$. Di kertas BOBOT
+tulis dua angka bobot ke keluaran: $0{,}8$ dan $-0{,}6$. Di kertas KELUARAN tulis
+$0{,}7446$, peluang yang diberikan jaringan, dan ingat label benarnya $1$.
+
+Letakkan ketiga kertas berjajar dari kiri ke kanan: MASUKAN, BOBOT, KELUARAN. Sekarang
+bekerja mundur, selalu dari kanan ke kiri. Di kertas KELUARAN, kurangkan $0{,}7446$ dari
+$1$ dan tulis $-0{,}2554$. Geser ke kertas BOBOT: kalikan $-0{,}2554$ dengan $0{,}8$,
+tulis $-0{,}2043$; kalikan dengan $-0{,}6$, tulis $0{,}1532$. Geser ke kertas MASUKAN:
+kalikan $-0{,}2043$ dengan tiap angka di kertas itu, lalu tulis barisnya: $-0{,}2043$;
+$-0{,}1022$; $0{,}2043$; $-0{,}4086$.
+
+Yang harus kamu lihat: setiap kali kertas bergeser satu langkah ke kiri, tanda angkanya
+bisa berbalik, dan besarnya mengikuti isi kertas yang sedang kamu pegang. Kalau arahnya
+kamu balik, dari MASUKAN ke KELUARAN, urutan pengerjaannya salah dan hasilnya tidak
+berarti apa-apa.
+\end{tangan}
+
+
+\section{Inisialisasi dan penurunan gradien}
+\tingkat{menengah}
+
+Setelah gradien ada, langkah berikutnya sederhana: bergerak sedikit ke arah yang menurunkan
+kerugian. Untuk seluruh parameter $\boldsymbol{\theta}$,
+\[
+  \boldsymbol{\theta}\leftarrow\boldsymbol{\theta}-\eta\,\nabla_{\boldsymbol{\theta}}L,
+\]
+dengan $\eta$ laju belajar. Untuk $B$ contoh dan kerugian rata-rata
+$L=\frac{1}{B}\sum_{i}L_{i}$, gradiennya juga rata-rata gradien per contoh; rumus
+turunan balik tidak berubah, hanya berapa kali telusur mundur.
+Syarat dan batas $\eta$ ada di Bab~23; karena jaringan tak
+konveks, jaminan di sana pembanding.
+
+\kamus{penurunan gradien stokastik}{stochastic gradient descent}{Menuruni lereng dengan
+memakai tebakan lereng dari sebagian kecil data, bukan dari seluruh data.}\index{penurunan gradien}
+
+Tiga varian perlu disebut. SGD mengambil $B$ kecil dan
+memperbarui parameter setiap kali; gradiennya berderau, dan simpangan derau itu mengecil
+seperti $1/\sqrt{B}$ karena variansi rata-rata $B$ peubah bebas adalah $\sigma^{2}/B$.
+Momentum menyimpan kecepatan,
+\[
+  \mathbf{v}\leftarrow\beta\mathbf{v}+\mathbf{g},\qquad
+  \boldsymbol{\theta}\leftarrow\boldsymbol{\theta}-\eta\mathbf{v},
+\]
+sehingga arah yang konsisten menumpuk dan arah yang berayun saling menghapus. Adam
+menormalkan setiap koordinat dengan taksiran momen keduanya,
+\[
+  \mathbf{m}\leftarrow\beta_{1}\mathbf{m}+(1-\beta_{1})\mathbf{g},\qquad
+  \mathbf{v}\leftarrow\beta_{2}\mathbf{v}+(1-\beta_{2})\mathbf{g}^{2},
+\]
+\[
+  \hat{\mathbf{m}}=\frac{\mathbf{m}}{1-\beta_{1}^{t}},\qquad
+  \hat{\mathbf{v}}=\frac{\mathbf{v}}{1-\beta_{2}^{t}},\qquad
+  \boldsymbol{\theta}\leftarrow\boldsymbol{\theta}
+  -\eta\,\frac{\hat{\mathbf{m}}}{\sqrt{\hat{\mathbf{v}}}+\epsilon},
+\]
+dengan $t$ nomor langkah. Faktor $1-\beta_{1}^{t}$ dan $1-\beta_{2}^{t}$ disebut koreksi
+bias, dan gunanya menghapus kecenderungan momen menuju nol pada langkah-langkah awal. Pada
+langkah pertama, $\hat{m}_{1}=g$ dan $\hat{v}_{1}=g^{2}$, sehingga pembaruannya tepat
+$-\eta\,g/(\lvert g\rvert+\epsilon)$: besarnya hampir tepat $\eta$, berapa pun besar
+gradiennya. Sifat itu membuat Adam tidak peka skala, dan sekaligus menjelaskan kelemahannya:
+karena langkahnya tidak mengecil ketika gradien mengecil, Adam tidak dijamin konvergen pada
+semua masalah konveks, dan contoh penyangkalnya bisa dibaca pada Reddi, Kale, dan Kumar
+(2018).
+
+Yang tersisa, dan yang paling sering diremehkan, adalah titik awal.
+
+\begin{proposisi}[Simetri yang tidak pernah pecah]
+Bila dua baris $\mathbf{W}_{1}$ identik dan $b_{1}[1]=b_{1}[2]$ pada awal pelatihan, maka
+keduanya tetap identik setelah setiap pembaruan gradien, untuk setiap himpunan data dan
+setiap laju belajar.\index{inisialisasi}
+\end{proposisi}
+
+\begin{proof}
+Kita buktikan dengan induksi atas langkah pembaruan. Andaikan baris pertama dan kedua
+$\mathbf{W}_{1}$ sama dan $b_{1}[1]=b_{1}[2]$. Maka untuk setiap masukan
+$z_{1}[1]=z_{1}[2]$, sehingga kedua gerbang ReLU memberi keputusan yang sama dan
+$\bar{z}_{1}[1]=\bar{z}_{1}[2]$. Karena
+$\nabla_{\mathbf{W}_{1}}L=\bar{\mathbf{z}}_{1}\mathbf{x}^{\top}$, kedua baris gradien itu
+identik, begitu pula kedua komponen $\nabla_{\mathbf{b}_{1}}L$. Pembaruan dengan laju yang
+sama mempertahankan kesamaan. Untuk sekumpulan contoh, gradien total adalah jumlah gradien
+per contoh, jadi kesamaan juga bertahan.
+\end{proof}
+
+Akibatnya tegas: delapan unit yang diinisialisasi seragam berperilaku seperti satu unit, seberapa pun lama ia dilatih. 
+
+Inisialisasi nol lebih buruk lagi. Bila seluruh $\mathbf{W}_{1}$ dan $\mathbf{b}_{1}$ nol,
+maka $\mathbf{z}_{1}=\mathbf{0}$, dan karena gerbangnya $\mathbb{1}[z>0]$, semua gerbang
+tertutup: gradien terhadap $\mathbf{W}_{1}$ tepat nol, dan bobotnya tetap nol selamanya.
+Yang masih bisa belajar hanya $b_{2}$, dan hasilnya adalah prediksi tetap sebesar proporsi
+kelas. Pada data lab, kerugian akhirnya $0{,}690923$, tepat sama dengan entropi label. Delapan unit, nol manfaat.
+
+\begin{tantangan}
+Rancang jaringan 2--2--1 dengan ReLU di lapis tersembunyi yang gradiennya tepat nol pada
+keenam bobot dan kedua bias lapis pertama sejak langkah pertama, sedangkan
+$\mathbf{W}_{1}$ tidak nol, dan jaringannya tetap salah pada sedikitnya satu titik.
+Hanya $b_{2}$ yang boleh bergerak. Tunjukkan mengapa pilihanmu bekerja.
+
+Tulis jawabanmu sebagai tabel: unit, $z_{1}[i]$ untuk setiap contoh, keadaan gerbangnya, dan gradien yang masuk.
+
+Petunjuk 1: yang membekukan bobot bukan nilai bobotnya, melainkan gerbang ReLU yang menutup untuk semua contoh.
+
+Petunjuk 2: pakai data di kuadran tak negatif, lalu ambil
+$\mathbf{W}_{1}=-\mathbf{1}\mathbf{1}^{\top}$ dan $\mathbf{b}_{1}=\mathbf{0}$. Maka
+$z_{1}[i]=-(x_{1}+x_{2})\le0$, sehingga $\mathbf{h}=\mathbf{0}$,
+$\bar{\mathbf{z}}_{1}=\mathbf{0}$, dan $\nabla_{\mathbf{W}_{1}}L=\mathbf{0}$ walaupun
+$\mathbf{W}_{1}\neq\mathbf{0}$.
+
+Kalau mentok, kembali ke bagian Inisialisasi dan penurunan gradien.
+\end{tantangan}
+
+
+Karena itu inisialisasi acak bukan hiasan, melainkan syarat agar unit-unit itu menjelajahi
+fungsi yang berbeda. Pertanyaan berikutnya: seberapa besar. Jawabannya berasal dari
+menghitung variansi. Bila komponen $\mathbf{x}$ saling bebas dengan rata-rata nol dan
+variansi $\sigma_{x}^{2}$, dan bobot saling bebas dengan variansi $\sigma_{w}^{2}$, maka
+\[
+  \operatorname{Var}\bigl(z_{1}[i]\bigr)
+  =\sum_{j=1}^{n_{\mathrm{in}}}\operatorname{Var}\bigl(W_{1}[i,j]x_{j}\bigr)
+  =n_{\mathrm{in}}\,\sigma_{w}^{2}\sigma_{x}^{2}.
+\]
+Agar variansi itu tidak bergantung pada $n_{\mathrm{in}}$, kita butuh
+$\sigma_{w}^{2}\propto1/n_{\mathrm{in}}$. Inisialisasi He memakai $\sigma_{w}^{2}=2/n_{\mathrm{in}}$,
+dan angka $2$ itu bukan hiasan: untuk $z$ yang simetris, ReLU memotong separuh sebaran,
+sehingga $\mathbb{E}[h^{2}]=\operatorname{Var}(z)/2=\sigma_{x}^{2}$, dan variansi itu
+bertahan lapisan demi lapisan. Inisialisasi Xavier memakai
+$\sigma_{w}^{2}=2/(n_{\mathrm{in}}+n_{\mathrm{out}})$, kompromi antara menjaga sinyal maju
+dan sinyal mundur. Kompromi itu tepat hanya bila $n_{\mathrm{in}}=n_{\mathrm{out}}$.
+
+Untuk lapisan sigmoid, inisialisasi yang terlalu besar langsung menghukum: pada jaringan dua lapis dengan simpangan $1{,}0$, kerugian awal mencapai $2{,}223899$, sedangkan dengan simpangan $0{,}5$ hanya $1{,}220409$. Kebalikannya lebih gawat: dengan simpangan $0{,}5$ dan delapan lapisan, pelatihan berhenti pada akurasi $0{,}5333$.
+Inisialisasi bukan detail administratif; ia menentukan apakah sinyal masih ada ketika
+sampai ke lapisan pertama.
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+\begin{resep}
+\begin{enumerate}
+  \item Mulai dari ujung: $\bar{z}_{2}=a-y$ untuk sigmoid dengan entropi silang, atau
+        $\mathbf{p}-\mathbf{y}$ untuk softmax. Tanpa angka ini tidak ada yang bisa dibagi.
+  \item Bobot keluaran: $\nabla_{\mathbf{w}_{2}}L=\bar{z}_{2}\mathbf{h}$ dan
+        $\partial L/\partial b_{2}=\bar{z}_{2}$.
+  \item Sinyal ke lapis sebelumnya: $\bar{\mathbf{h}}=\bar{z}_{2}\mathbf{w}_{2}$, lalu
+        cukur dengan gerbang
+        $\bar{\mathbf{z}}_{1}=\bar{\mathbf{h}}\odot\mathbb{1}[\mathbf{z}_{1}>0]$.
+  \item Bobot lapis pertama: $\nabla_{\mathbf{W}_{1}}L=\bar{\mathbf{z}}_{1}\mathbf{x}^{\top}$
+        dan $\nabla_{\mathbf{b}_{1}}L=\bar{\mathbf{z}}_{1}$; bila perlu gradien masukan
+        $\nabla_{\mathbf{x}}L=\mathbf{W}_{1}^{\top}\bar{\mathbf{z}}_{1}$.
+\end{enumerate}
+Peringatan urutan: langkah 3 tidak boleh mendahului langkah 1. $\bar{\mathbf{z}}_{1}$
+dihitung dari $\bar{z}_{2}$, dan gerbangnya memakai $\mathbf{z}_{1}$ dari hitung maju
+yang sudah tersimpan. Menukar kedua langkah itu mematikan seluruh gradien bobot lapis
+pertama.
+\end{resep}
+
+
+Kita pakai satu contoh dan menghitung semuanya dengan bilangan eksak. Masukannya
+$\mathbf{x}=(1{,}0;\,0{,}5;\,-1{,}0;\,2{,}0)$, label $y=1$, dan parameter awalnya
+\[
+  \mathbf{W}_{1}=\begin{pmatrix}
+  0{,}5&-0{,}5&0{,}25&1{,}0\\
+  0{,}1&0{,}2&-0{,}3&0{,}4\end{pmatrix},\quad
+  \mathbf{b}_{1}=\begin{pmatrix}0{,}1\\-0{,}2\end{pmatrix},\quad
+  \mathbf{w}_{2}=\begin{pmatrix}0{,}8\\-0{,}6\end{pmatrix},\quad b_{2}=0{,}05 .
+\]
+Itu seluruh parameternya.
+
+\emph{Langkah maju.} Unit pertama menerima
+$0{,}5(1)-0{,}5(0{,}5)+0{,}25(-1)+1(2)+0{,}1=0{,}5-0{,}25-0{,}25+2+0{,}1=2{,}1$.
+Unit kedua menerima
+$0{,}1(1)+0{,}2(0{,}5)-0{,}3(-1)+0{,}4(2)-0{,}2=0{,}1+0{,}1+0{,}3+0{,}8-0{,}2=1{,}1$.
+Keduanya positif, jadi $\mathbf{h}=(2{,}1;\,1{,}1)$ tanpa pemotongan. Skor keluarannya
+$z_{2}=0{,}8(2{,}1)-0{,}6(1{,}1)+0{,}05=1{,}68-0{,}66+0{,}05=1{,}07$, sehingga
+$a=\sigma(1{,}07)=0{,}7445969158$ dan kerugiannya $L=-\ln a=0{,}2949122596$.
+
+\emph{Langkah mundur.} Adjoint keluaran $\bar{z}_{2}=a-y=-0{,}2554030842$. Dari situ
+\[
+  \nabla_{\mathbf{w}_{2}}L=\bar{z}_{2}\mathbf{h}
+  =(-0{,}5363464768;\,-0{,}2809433926),\qquad
+  \frac{\partial L}{\partial b_{2}}=-0{,}2554030842 .
+\]
+Sinyal ke lapisan tersembunyi adalah
+$\bar{\mathbf{h}}=\bar{z}_{2}\mathbf{w}_{2}=(-0{,}2043224673;\,0{,}1532418505)$; kedua
+gerbang terbuka, jadi $\bar{\mathbf{z}}_{1}=\bar{\mathbf{h}}$. Hasil kali luar memberi
+\[
+  \nabla_{\mathbf{W}_{1}}L=
+  \begin{pmatrix}
+  -0{,}2043224673&-0{,}1021612337&0{,}2043224673&-0{,}4086449347\\
+  0{,}1532418505&0{,}0766209253&-0{,}1532418505&0{,}3064837010
+  \end{pmatrix},
+\]
+dan $\nabla_{\mathbf{b}_{1}}L=(-0{,}2043224673;\,0{,}1532418505)$. Dua pemeriksaan cepat: baris kedua tepat $-0{,}75$ kali baris pertama, karena $-0{,}6/0{,}8=-0{,}75$; dan setiap kolom sebanding dengan $x_{j}$, sehingga kolom keempat dua kali kolom pertama, kolom kedua setengahnya, dan kolom ketiga negatifnya. Norma Euclidean gradien seluruhnya
+$0{,}9796964023$.
+
+Satu langkah penurunan gradien dengan $\eta=0{,}5$ memperbarui setiap parameter menurut
+$\theta\leftarrow\theta-\eta\,\partial L/\partial\theta$, memberi
+\[
+  \mathbf{W}_{1}'=\begin{pmatrix}
+  0{,}6021612337&-0{,}4489193832&0{,}1478387663&1{,}2043224673\\
+  0{,}0233790747&0{,}1616895374&-0{,}2233790747&0{,}2467581495
+  \end{pmatrix},
+\]
+\[
+  \mathbf{b}_{1}'=(0{,}2021612337;\,-0{,}2766209253),\qquad
+  \mathbf{w}_{2}'=(1{,}0681732384;\,-0{,}4595283037),
+\]
+\[
+  b_{2}'=0{,}1777015421 .
+\]
+Setelah pembaruan itu $\mathbf{z}_{1}'=(2{,}8406689;\,0{,}5444983)$ dan
+$a'=0{,}9508189702$, sehingga kerugiannya turun menjadi $0{,}0504315919$; selisihnya
+$-0{,}2444806677$, atau sekitar $83\%$ dari kerugian awal.
+
+Angka $83\%$ itu mengundang salah baca. Yang diukur hanya satu contoh, tanpa data uji, pada lanskap yang tidak konveks. Kesimpulan yang sah bukan ``laju $0{,}5$ bagus'', melainkan ``arah gradien ini menurunkan kerugian pada contoh ini''.
+
+\kertas{Periksa satu baris tabel lab dengan tangan. Ambil $W_{1}[2,1]$ dan hitung
+$\bar{z}_{1}[2]\,x_{1}$ untuk mendapat $0{,}1532418505$. Lalu hitung sendiri selisih hingga
+terpusat untuk parameter itu: jalankan satu langkah maju dengan $W_{1}[2,1]+10^{-6}$ dan satu
+langkah maju dengan $W_{1}[2,1]-10^{-6}$, bagi selisih kerugiannya dengan $2\times10^{-6}$,
+dan bandingkan dengan angka analitik tadi. Setelah itu jelaskan mengapa hasilnya tidak sama
+persis, dan mengapa tanda selisihnya bisa berubah bila $h$ diperkecil menjadi $10^{-12}$.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Ketiga blok dijalankan dengan Python 3.14.4 dan NumPy 2.5.2, tanpa pustaka pembelajaran
+mesin; keluaran disalin apa adanya.
+
+Blok pertama memeriksa contoh tangan di atas, lalu membandingkan setiap gradien analitik
+dengan selisih hingga terpusat pada $h=10^{-6}$.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+np.set_printoptions(precision=10, suppress=True, linewidth=76)
+
+# jaringan 4-2-1: ReLU tersembunyi, sigmoid keluaran
+x  = np.array([1.0, 0.5, -1.0, 2.0])
+y  = 1.0
+W1 = np.array([[0.5, -0.5, 0.25, 1.0],
+               [0.1,  0.2, -0.3,  0.4]])
+b1 = np.array([0.1, -0.2])
+w2 = np.array([0.8, -0.6])
+b2 = 0.05
+
+def forward(x, W1, b1, w2, b2):
+    z1 = W1 @ x + b1
+    h  = np.maximum(z1, 0.0)
+    o  = w2 @ h + b2
+    p  = 1.0/(1.0+np.exp(-o))
+    return z1, h, o, p, -(y*np.log(p) + (1-y)*np.log(1-p))
+
+def backward(x, W1, b1, w2, b2):
+    z1, h, o, p, L = forward(x, W1, b1, w2, b2)
+    d   = p - y                    # dL/dz2 untuk sigmoid + entropi silang
+    dz1 = d*w2*(z1 > 0)            # gerbang ReLU
+    return dict(W1=np.outer(dz1, x), b1=dz1, w2=d*h, b2=d,
+                x=W1.T @ dz1), L, p, z1, h, dz1
+
+g, L, p, z1, h, dz1 = backward(x, W1, b1, w2, b2)
+print("z1 =", z1, "  h =", h)
+print("p = %.12f  L = %.12f" % (p, L))
+print("dz1 =", dz1)
+print("g_w2 =", g["w2"], " g_b2 = %.12f" % g["b2"])
+for i in range(2):
+    print("g_W1[%d] =" % i, np.array2string(g["W1"][i], precision=10,
+                                            suppress_small=False))
+print("g_x =", g["x"])
+
+# pemeriksaan beda hingga terpusat, satu parameter sekali jalan
+eps = 1e-6
+def loss_at(nama, idx, delta):
+    W, B, V, c = W1.copy(), b1.copy(), w2.copy(), b2
+    if nama == "W1":  W[idx] += delta
+    if nama == "b1":  B[idx] += delta
+    if nama == "w2":  V[idx] += delta
+    if nama == "b2":  c += delta
+    return forward(x, W, B, V, c)[4]
+
+daftar = [("W1", i, j) for i in range(2) for j in range(4)]
+daftar += [("b1", i) for i in range(2)] + [("w2", i) for i in range(2)]
+print("\nparameter     analitik        numerik     galat relatif")
+for nama, *idx in daftar + [("b2",)]:
+    idx = tuple(idx)
+    ana = {"W1": g["W1"], "b1": g["b1"], "w2": g["w2"], "b2": np.array(g["b2"])}
+    a = ana[nama][idx] if idx else ana[nama]
+    n = (loss_at(nama, idx, eps) - loss_at(nama, idx, -eps))/(2*eps)
+    rel = abs(a-n)/max(abs(a), abs(n), 1e-300)
+    print("%-10s %15.10f %15.10f %12.2e" %
+          (nama + "".join("[%d]" % i for i in idx), a, n, rel))
+
+# satu langkah penurunan gradien dengan laju 0.5
+eta = 0.5
+W1n, b1n = W1 - eta*g["W1"], b1 - eta*g["b1"]
+w2n, b2n = w2 - eta*g["w2"], b2 - eta*g["b2"]
+z1b, hb, ob, pb, Lb = forward(x, W1n, b1n, w2n, b2n)
+print("\nsatu langkah: p = %.12f  L = %.12f  selisih = %.12f"
+      % (pb, Lb, L - Lb))
+for i in range(2):
+    print("W1'[%d] =" % i, np.array2string(W1n[i], precision=10))
+print("w2' =", w2n, " b2' = %.12f" % b2n)
+
+# gradien terhadap masukan: analitik vs beda hingga
+E = np.eye(4)
+gx = np.array([(forward(x + eps*E[j], W1, b1, w2, b2)[4]
+              - forward(x - eps*E[j], W1, b1, w2, b2)[4])/(2*eps)
+               for j in range(4)])
+print("\ng_x analitik    =", g["x"])
+print("g_x beda hingga =", gx)
+print("galat relatif   =", ["%.1e" % v for v in np.abs(gx-g["x"])/np.abs(g["x"])])
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+z1 = [2.1 1.1]   h = [2.1 1.1]
+p = 0.744596915827  L = 0.294912259605
+dz1 = [-0.2043224673  0.1532418505]
+g_w2 = [-0.5363464768 -0.2809433926]  g_b2 = -0.255403084173
+g_W1[0] = [-0.2043224673 -0.1021612337  0.2043224673 -0.4086449347]
+g_W1[1] = [ 0.1532418505  0.0766209253 -0.1532418505  0.306483701 ]
+g_x = [-0.0868370486  0.1328096038 -0.097053172  -0.1430257271]
+
+parameter     analitik        numerik     galat relatif
+W1[0][0]     -0.2043224673   -0.2043224674     1.17e-10
+W1[0][1]     -0.1021612337   -0.1021612337     2.53e-10
+W1[0][2]      0.2043224673    0.2043224674     1.17e-10
+W1[0][3]     -0.4086449347   -0.4086449347     4.95e-11
+W1[1][0]      0.1532418505    0.1532418505     7.22e-11
+W1[1][1]      0.0766209253    0.0766209252     8.33e-10
+W1[1][2]     -0.1532418505   -0.1532418505     7.22e-11
+W1[1][3]      0.3064837010    0.3064837010     1.09e-10
+b1[0]        -0.2043224673   -0.2043224674     1.17e-10
+b1[1]         0.1532418505    0.1532418506     6.16e-10
+w2[0]        -0.5363464768   -0.5363464768     9.80e-11
+w2[1]        -0.2809433926   -0.2809433925     2.41e-10
+b2           -0.2554030842   -0.2554030842     3.59e-11
+
+satu langkah: p = 0.950818970185  L = 0.050431591881  selisih = 0.244480667724
+W1'[0] = [ 0.6021612337 -0.4489193832  0.1478387663  1.2043224673]
+W1'[1] = [ 0.0233790747  0.1616895374 -0.2233790747  0.2467581495]
+w2' = [ 1.0681732384 -0.4595283037]  b2' = 0.177701542086
+
+g_x analitik    = [-0.0868370486  0.1328096038 -0.097053172  -0.1430257271]
+g_x beda hingga = [-0.0868370486  0.1328096037 -0.097053172  -0.1430257272]
+galat relatif   = ['7.7e-10', '5.0e-10', '1.4e-10', '9.8e-11']
+\end{verbatim}
+\end{lab}
+
+Tabel itu adalah bukti yang diminta. Semua tiga belas parameter cocok sampai sembilan atau sepuluh digit, dengan galat relatif terbesar $8{,}33\times10^{-10}$ pada $W_{1}[1,2]$. Angka itu tidak seharusnya nol: selisih hingga terpusat membawa galat pemotongan orde $h^{2}$ dan galat pembulatan orde $\varepsilon_{\mathrm{mach}}/h$ (Bab 22), sehingga ada $h$ terbaik yang tidak dapat membuat galatnya nol. Untuk $h=10^{-6}$ orde $10^{-10}$ memang yang diharapkan.
+ 
+
+Gradien terhadap masukan cocok sampai $7{,}7\times10^{-10}$ pada komponen pertama. Angka itu berarti: menaikkan fitur kedua sedikit menaikkan kerugian paling cepat, sedangkan menaikkan fitur keempat menurunkannya paling cepat. Di Bab 29 arah ini dipakai terbalik, untuk menaikkan
+kerugian secepat mungkin pada masukan yang boleh diubah penyerang.
+
+Blok kedua melatih jaringan 2--8--1 dari nol pada data dua dimensi berpola XOR, lalu
+membandingkannya dengan garis dasar linear dan dengan dua inisialisasi yang cacat.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+rng = np.random.default_rng(7)
+n = 240
+X = rng.uniform(-1.0, 1.0, size=(n, 2))
+y = (X[:, 0]*X[:, 1] > 0).astype(float)        # label 1 bila tanda sama
+print("contoh =", n, " kelas 1 =", int(y.sum()))
+
+def sig(o):
+    return 1.0/(1.0+np.exp(-o))
+
+def bce(p, t):
+    p = np.clip(p, 1e-12, 1-1e-12)
+    return float(-np.mean(t*np.log(p) + (1-t)*np.log(1-p)))
+
+def init(mode, rs, nh=8):
+    if mode == "nol":
+        return np.zeros((nh, 2)), np.zeros(nh), np.zeros(nh), 0.0
+    if mode == "seragam":
+        return np.full((nh, 2), 0.5), np.zeros(nh), np.full(nh, 0.5), 0.0
+    return (rs.normal(0, np.sqrt(2/2), (nh, 2)), np.zeros(nh),
+            rs.normal(0, np.sqrt(2/nh), nh), 0.0)          # He
+
+def fwd(X, W1, b1, w2, b2):
+    Z1 = X @ W1.T + b1
+    H  = np.maximum(Z1, 0.0)
+    return Z1, H, sig(H @ w2 + b2)
+
+def grads(X, t, W1, b1, w2, b2):
+    Z1, H, P = fwd(X, W1, b1, w2, b2)
+    d  = (P - t)/len(t)
+    dZ = np.outer(d, w2)*(Z1 > 0)
+    return dZ.T @ X, dZ.sum(0), H.T @ d, d.sum()
+
+def latih(mode, langkah=3000, lr=0.5, seed=0):
+    W1, b1, w2, b2 = init(mode, np.random.default_rng(seed))
+    jejak = []
+    for t in range(langkah + 1):
+        gW1, gb1, gw2, gb2 = grads(X, y, W1, b1, w2, b2)
+        W1, b1 = W1 - lr*gW1, b1 - lr*gb1
+        w2, b2 = w2 - lr*gw2, b2 - lr*gb2
+        if t % 500 == 0:
+            jejak.append((t, bce(fwd(X, W1, b1, w2, b2)[2], y)))
+    Z1, H, P = fwd(X, W1, b1, w2, b2)
+    mati = int(np.sum(np.all(H <= 0, axis=0)))
+    return jejak, float(np.mean((P > 0.5) == (y > 0.5))), bce(P, y), mati
+
+jejak, akur, L, mati = latih("he")
+for t, v in jejak:
+    print("langkah %4d   L = %.6f" % (t, v))
+print("He      : akurasi = %.4f  unit mati = %d/8" % (akur, mati))
+for mode in ("nol", "seragam"):
+    j, a, l, m = latih(mode)
+    print("%-8s: L akhir = %.6f  akurasi = %.4f  unit mati = %d/8"
+          % (mode, l, a, m))
+
+w, b = np.zeros(2), 0.0             # garis dasar linear, tanpa lapisan
+for t in range(4000):
+    p = sig(X @ w + b)
+    w -= 0.5*(X.T @ (p - y))/n
+    b -= 0.5*np.mean(p - y)
+pl = sig(X @ w + b)
+print("linear  : L = %.6f  akurasi = %.4f"
+      % (bce(pl, y), float(np.mean((pl > 0.5) == (y > 0.5)))))
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+contoh = 240  kelas 1 = 112
+langkah    0   L = 0.648815
+langkah  500   L = 0.060245
+langkah 1000   L = 0.036445
+langkah 1500   L = 0.027164
+langkah 2000   L = 0.022039
+langkah 2500   L = 0.018717
+langkah 3000   L = 0.016349
+He      : akurasi = 1.0000  unit mati = 0/8
+nol     : L akhir = 0.690923  akurasi = 0.5333  unit mati = 8/8
+seragam : L akhir = 0.539475  akurasi = 0.7167  unit mati = 0/8
+linear  : L = 0.686130  akurasi = 0.7208
+\end{verbatim}
+\end{lab}
+
+Kurva kerugiannya menurun pada setiap pencuplikan, dari $0{,}648815$ menjadi $0{,}016349$. Akurasi latih mencapai $1{,}0000$ dengan delapan unit dan nol unit mati. Garis dasar linear, yang
+memakai optimasi dan data yang sama tetapi tanpa lapisan tersembunyi, berhenti pada
+$0{,}7208$. Selisih $0{,}28$ itu harga satu-satunya bidang pemisah, dan ia sejalan dengan proposisi XOR: pola ini tidak terpisah secara linear.
+
+Gambar~\ref{fig:kurva-kerugian} memplot ketujuh titik itu.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=12.0cm, height=5.6cm,
+  xlabel={langkah pelatihan}, ylabel={kerugian $L$},
+  xmin=-80, xmax=3080, ymin=0, ymax=0.75,
+  axis lines=left,
+  grid=major, grid style={layergrey!15},
+  tick label style={font=\scriptsize},
+  ytick={0,0.2,0.4,0.6}, yticklabels={$0$,$0{,}2$,$0{,}4$,$0{,}6$},
+  label style={font=\small},
+  legend style={font=\scriptsize, draw=none, fill=none,
+                at={(0.98,0.98)}, anchor=north east},
+]
+\addplot[thick, accent, mark=*, mark size=1.7pt] coordinates {
+  (0,0.648815) (500,0.060245) (1000,0.036445) (1500,0.027164)
+  (2000,0.022039) (2500,0.018717) (3000,0.016349) };
+\addplot[dashed, layergrey, domain=0:3000, samples=2] {0.693147};
+\legend{kerugian latih, $\ln 2=0{,}693147$}
+\end{axis}
+\end{tikzpicture}
+\caption{Kurva kerugian latih jaringan 2--8--1 pada blok kedua, dari $0{,}648815$ pada
+langkah $0$ menjadi $0{,}016349$ pada langkah $3000$. Garis putus-putus adalah
+$\ln 2=0{,}693147$, kerugian tebakan seragam; titik pertama sudah berada di bawahnya
+karena diukur sesudah pembaruan pertama.}
+\label{fig:kurva-kerugian}
+\end{figure}
+
+
+Inisialisasi nol memberi pelajaran yang lebih keras. Kerugian akhirnya $0{,}690923$, sama dengan entropi label sampai enam desimal, dan akurasinya $0{,}5333$, yaitu proporsi kelas mayoritas; kedelapan unit mati. Inisialisasi seragam memberi $0{,}7167$, praktis sama dengan garis dasar linear.
+
+Blok ketiga mengukur dua hal: sampai berapa lapisan sigmoid masih belajar, dan seberapa cepat sinyal menyusut dari keluaran ke lapisan pertama.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+rng = np.random.default_rng(7)
+n = 240
+X = rng.uniform(-1.0, 1.0, size=(n, 2))
+y = (X[:, 0]*X[:, 1] > 0).astype(float)
+
+def sig(o):
+    return 1.0/(1.0+np.exp(-o))
+
+def bce(p, t):
+    p = np.clip(np.ravel(p), 1e-12, 1-1e-12)
+    t = np.ravel(t)
+    return float(-np.mean(t*np.log(p) + (1-t)*np.log(1-p)))
+
+def bangun(dalam, std, seed=0):
+    rs = np.random.default_rng(seed)
+    ukuran = [2] + [16]*(dalam-1) + [1]
+    W = [rs.normal(0, std, (ukuran[i+1], ukuran[i])) for i in range(dalam)]
+    return W, [np.zeros(ukuran[i+1]) for i in range(dalam)]
+
+def maju(W, b, X):
+    A = [X]
+    for Wl, bl in zip(W[:-1], b[:-1]):
+        A.append(sig(A[-1] @ Wl.T + bl))
+    return A, sig(A[-1] @ W[-1].T + b[-1])
+
+def mundur(W, b, X, t):
+    A, P = maju(W, b, X)
+    d = (P - t[:, None])/len(t)
+    gW, gb = [None]*len(W), [None]*len(b)
+    gW[-1], gb[-1] = d.T @ A[-1], d.sum(0)
+    delta = d @ W[-1]
+    for l in range(len(W)-1, 0, -1):
+        delta = delta*A[l]*(1 - A[l])
+        gW[l-1], gb[l-1] = delta.T @ A[l-1], delta.sum(0)
+        if l > 1:
+            delta = delta @ W[l-1]
+    return gW, gb, bce(P, t), P
+
+print("dalam  std   L(awal)   L(akhir)  akurasi  ||gW1||/||gWakhir||")
+for dalam in (1, 2, 4, 8):
+    for std in (0.5, 1.0):
+        W, b = bangun(dalam, std)
+        gW, gb, L0, P = mundur(W, b, X, y)
+        rasio = np.linalg.norm(gW[0])/np.linalg.norm(gW[-1])
+        for t in range(2000):
+            gW, gb, L, P = mundur(W, b, X, y)
+            for l in range(dalam):
+                W[l] -= 0.5*gW[l]
+                b[l] -= 0.5*gb[l]
+        akur = float(np.mean((np.ravel(P) > 0.5) == (y > 0.5)))
+        print("%5d %5.1f %9.6f %9.6f %8.4f %14.2e"
+              % (dalam, std, L0, bce(P, y), akur, rasio))
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+dalam  std   L(awal)   L(akhir)  akurasi  ||gW1||/||gWakhir||
+    1   0.5  0.693190  0.686130   0.7208       1.00e+00
+    1   1.0  0.693951  0.686130   0.7208       1.00e+00
+    2   0.5  1.220409  0.332913   0.8417       1.66e-02
+    2   1.0  2.223899  0.299519   0.8542       2.16e-02
+    4   0.5  0.691597  0.147887   0.9458       5.77e-02
+    4   1.0  0.701977  0.023491   0.9958       2.05e-01
+    8   0.5  0.739920  0.690867   0.5333       1.26e-04
+    8   1.0  0.875314  0.002383   1.0000       3.76e-03
+\end{verbatim}
+\end{lab}
+
+Tiga baris pertama tabel itu adalah janji dan peringatan sekaligus. Kedalaman satu memberi $0{,}7208$, sama dengan garis dasar linear di blok sebelumnya; kedalaman dua memberi $0{,}8417$ dan kedalaman empat $0{,}9458$. Tetapi baris terakhir dengan simpangan $0{,}5$ memberi $0{,}5333$ dengan kerugian $0{,}690867$:
+delapan lapisan sigmoid dengan inisialisasi kecil praktis tidak belajar. Rasio norma gradien di kolom terakhir menjelaskan mengapa:
+$1{,}26\times10^{-4}$, empat orde lebih kecil daripada pada kedalaman empat.
+Baris yang sama dengan simpangan $1{,}0$ berhasil sempurna. Jadi kegagalan itu bukan soal kedalaman semata, melainkan soal ukuran awal.
+
+Dua batas hasil lab ini harus disebut. Data hanya 240 contoh dua dimensi buatan sendiri, tanpa himpunan uji, jadi seluruhnya akurasi latih; generalisasi adalah urusan Bab 26 dan Bab 27. Semua percobaan memakai satu benih, sehingga variasi antar benih tidak terlihat. Yang boleh
+disimpulkan hanya yang diperiksa langsung: turunan balik cocok dengan beda hingga, kerugian
+menurun, inisialisasi nol dan seragam gagal dengan cara yang dapat dijelaskan, dan jaringan
+dalam dengan inisialisasi kecil kehilangan sinyal.
+
+\begin{untukdosen}
+Urutan yang berhasil dipakai: mulai dari satu garis pemisah dan empat titik XOR, lalu tunjukkan
+konstruksi 2--2--1 di papan, baru setelah itu definisi umum. Bukti ketidakmungkinan XOR biasanya diterima dengan mudah; yang menghentikan mahasiswa adalah langkah mundur, jadi sediakan waktu paling banyak di turunan balik, bukan di fungsi aktivasi.
+
+Dua miskonsepsi khas. Pertama, ``turunan balik adalah algoritme lain, bukan aturan rantai'',
+sehingga mahasiswa menghafal rumus tanpa bisa menurunkannya untuk arsitektur lain; obatnya,
+minta mereka menurunkan ulang jaringan 4--2--1 dengan tiga unit tersembunyi di papan. Kedua,
+``galat relatif $10^{-10}$ berarti implementasinya terbukti benar''; galat kecil hanya
+memeriksa kecocokan pada satu titik, untuk satu himpunan parameter, dan tidak memeriksa tanda,
+penskalaan, maupun kasus gerbang yang tertutup.
+
+Aktivitas papan tulis yang paling menolong: beri satu jaringan dengan satu unit tersembunyi
+yang $z_{1}<0$, minta kelas menghitung gradien seluruh baris $\mathbf{W}_{1}$, lalu tanyakan
+apa yang terjadi pada unit itu setelah seratus langkah. Jawaban ``tidak terjadi apa-apa,
+selamanya'' biasanya membuka diskusi tentang kematian unit dan tentang mengapa laju belajar
+besar berbahaya.
+
+Tanda kesiapan lanjut: mahasiswa dapat menuliskan turunan balik untuk jaringan dengan dua
+lapisan tersembunyi tanpa melihat catatan, dan dapat menjelaskan mengapa inisialisasi nol
+gagal bukan karena ``kurang data'' melainkan karena simetri.
+\end{untukdosen}
+
+\section{Ringkasan}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Ambang linear hanya dapat memisahkan himpunan yang terpisah secara linear, dan empat
+        titik XOR bukan salah satunya. Buktinya tidak bergantung pada algoritme, jadi
+        menambah data tidak menolong. Satu lapisan tersembunyi dengan ReLU sudah cukup untuk
+        pola itu.
+  \item Tanpa aktivasi taklinear, jaringan berlapis runtuh menjadi satu matriks. Sigmoid dan
+        tanh menyusutkan sinyal karena turunannya paling besar $\tfrac14$ dan $1$; melalui
+        $L$ lapisan sigmoid, sisa sinyalnya paling besar $4^{-L}$, yaitu
+        $9{,}54\times10^{-7}$ untuk $L=10$. ReLU tidak menyusutkan, tetapi mematikan unit
+        yang masukannya selalu negatif.
+  \item Entropi silang berpasangan dengan sigmoid atau softmax sehingga adjoint keluarannya
+        tepat $a-y$ atau $\mathbf{p}-\mathbf{y}$. Dengan kerugian kuadrat, faktor $a(1-a)$
+        tertinggal dan sinyalnya mengecil justru ketika model paling salah dengan yakin;
+        pada $z=10$ perbandingannya sekitar $2{,}2\times10^{4}$.
+  \item Turunan balik adalah aturan rantai Bab 12 yang dijalankan pada graf komputasi dengan
+        urutan terbalik. Untuk 4--2--1, seluruh gradiennya:
+        $\bar{z}_{2}=a-y$, $\nabla_{\mathbf{w}_{2}}L=\bar{z}_{2}\mathbf{h}$,
+        $\bar{\mathbf{z}}_{1}=\bar{z}_{2}\mathbf{w}_{2}\odot\mathbb{1}[\mathbf{z}_{1}>0]$,
+        $\nabla_{\mathbf{W}_{1}}L=\bar{\mathbf{z}}_{1}\mathbf{x}^{\top}$,
+        $\nabla_{\mathbf{x}}L=\mathbf{W}_{1}^{\top}\bar{\mathbf{z}}_{1}$. Biayanya sekitar dua langkah maju, bukan $2P$. Pada contoh 4--2--1, ketiga belas gradien itu cocok dengan selisih hingga terpusat sampai galat relatif $8{,}33\times10^{-10}$.
+  \item Inisialisasi menentukan apakah jaringan dapat belajar. Nol mematikan semua gerbang
+        dan meninggalkan prediksi sebesar proporsi kelas; seragam mempertahankan simetri
+        sehingga kapasitas efektifnya satu unit; terlalu kecil menyusutkan sinyal sampai
+        lapisan pertama; terlalu besar menyaturasi sigmoid. He memakai
+        $\sigma_{w}^{2}=2/n_{\mathrm{in}}$, Xavier $2/(n_{\mathrm{in}}+n_{\mathrm{out}})$.
+  \item Penurunan gradien, SGD, momentum, dan Adam hanya berbeda pada cara memakai gradien
+        yang sama. Langkah pertama Adam besarnya hampir tepat $\eta$ berapa pun gradiennya,
+        dan sifat itu menjelaskan baik ketangguhannya maupun kegagalannya pada sebagian
+        masalah.
+  
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Untuk data dengan margin $\gamma=0{,}2$ dan $\lVert\mathbf{x}_{i}\rVert\le1$, berapa batas atas banyaknya pembaruan perceptron menurut teorema kekonvergenan, dan berapa pula untuk $\gamma=0{,}05$? Jelaskan mengapa batas itu tidak bergantung pada banyaknya contoh dan mengapa ia tidak berguna ketika $\gamma$ kecil.
+
+  \item Buktikan bahwa jaringan dua lapis dengan aktivasi identitas di lapisan tersembunyi
+        tidak lebih kuat daripada ambang linear, yaitu bahwa
+        $\mathbf{W}_{2}\operatorname{id}(\mathbf{W}_{1}\mathbf{x}+\mathbf{b}_{1})+\mathbf{b}_{2}$
+        dapat ditulis sebagai satu ambang linear. Jelaskan akibatnya untuk lapisan identitas berikutnya.
+
+  
+
+  \item Hitung $\nabla_{\mathbf{W}_{1}}L$ untuk jaringan pada contoh hitung bila $\mathbf{x}=(0{,}5;\,-1{,}0;\,0{,}25;\,2{,}0)$ dan $y=0$, dengan parameter yang sama. Tentukan unit mana yang gerbangnya tertutup, dan mengapa baris itu bergradien nol tanpa berarti kerugiannya minimum.
+
+  \item Nilai klaim ini: \emph{karena galat relatif terbesar hanya
+        $8{,}33\times10^{-10}$, implementasi turunan balik pada bab ini terbukti benar.}
+        Tentukan benar, salah, atau belum cukup bukti, dan sebutkan pemeriksaan tambahan
+        yang diperlukan.
+
+  \item Nilai klaim ini: \emph{teorema aproksimasi universal menjamin bahwa jaringan dengan
+        satu lapisan tersembunyi dapat mencapai galat sekecil apa pun pada data uji.}
+        Tentukan benar, salah, atau belum cukup bukti, dan sebutkan dua hal yang tidak
+        dinyatakan teorema itu.
+
+  \item Dengan $\bar{z}_{2}=-0{,}2554030842$, hitung satu langkah Adam untuk $b_{2}=0{,}05$
+        dengan $\eta=0{,}01$, $\beta_{1}=0{,}9$, $\beta_{2}=0{,}999$, $\epsilon=10^{-8}$,
+        pada $t=1$. Tunjukkan bahwa besar langkahnya praktis $\eta$, lalu hitung langkah yang sama bila gradiennya $100$ kali lebih besar.
+
+  \item Tunjukkan bahwa untuk dua unit ReLU di $\mathbb{R}^{2}$ keluarannya adalah fungsi
+        linear sepotong-sepotong, dan bahwa bidang masukan terbagi paling banyak empat
+        daerah dengan rumus linear masing-masing. Berapa daerah untuk $k$ unit ReLU di
+        $\mathbb{R}^{2}$ dalam susunan umum? (Petunjuk: setiap unit memberi satu garis
+        $z_{1}[i]=0$, dan di dalam setiap sel semua gerbang tetap.)
+
+  \item Hitung gradien terhadap masukan untuk contoh hitung, lalu tentukan gangguan
+        $\boldsymbol{\delta}$ dengan $\lVert\boldsymbol{\delta}\rVert_{\infty}\le0{,}05$
+        yang paling menaikkan kerugian menurut linearisasi, yaitu
+        $\boldsymbol{\delta}=0{,}05\operatorname{sign}(\nabla_{\mathbf{x}}L)$. Hitung kerugian pada $\mathbf{x}+\boldsymbol{\delta}$ dan bandingkan dengan ramalan linear $L+\nabla_{\mathbf{x}}L^{\top}\boldsymbol{\delta}$.
+
+  \item Tanpa menjalankan program, ramalkan apa yang terjadi bila seluruh $\mathbf{b}_{1}$ diinisialisasi $+10$ sementara $\mathbf{W}_{1}$ tetap acak kecil, dengan tabel saturasi; lalu bila $\mathbf{b}_{1}=-10$. Periksa ramalanmu dengan menjalankan blok lab kedua setelah mengubah satu baris.
+\end{enumerate}
+\end{latihan}
+
+Petunjuk untuk tiga butir tersulit. Butir 2: tulis $\mathbf{W}=\mathbf{W}_{2}\mathbf{W}_{1}$ dan $\mathbf{b}=\mathbf{W}_{2}\mathbf{b}_{1}+\mathbf{b}_{2}$, lalu bandingkan dengan definisi ambang linear. Butir 7: hitung jumlah daerah untuk $k=1,2,3$ (hasilnya $2,4,7$), lalu cari pola $1+k+k(k-1)/2$. Butir 9: blok lab kedua memakai ReLU, jadi $\mathbf{b}_{1}=+10$ tidak menyaturasi apa pun; yang jenuh adalah $\mathbf{b}_{1}=-10$, ketika semua unit mati dan turunannya nol. Pada blok ketiga yang memakai sigmoid, $z\approx10$ membuat turunan lapis tersembunyi sekitar $4{,}5\times10^{-5}$, jadi gradien ke $\mathbf{W}_{1}$ mengecil sebanding itu, sedangkan $\mathbf{b}_{1}$ masih menerima gradien penuh.
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini: ketidakmungkinan pemisahan linear untuk XOR; batas
+$\lfloor1/\gamma^{2}\rfloor$ pada perceptron, dengan bukti lengkap; turunan sigmoid dan
+batas $\tfrac14$; kesetaraan $\partial L/\partial z=a-y$ untuk sigmoid dengan entropi silang,
+dan $\mathbf{p}-\mathbf{y}$ untuk softmax, keduanya dengan bukti; rekursi adjoint sebagai
+aturan rantai; dan proposisi simetri inisialisasi. Yang dipinjam tanpa bukti: teorema
+aproksimasi universal, dengan bukti aslinya pada Cybenko (1989) dan Hornik (1991), keduanya
+memakai teorema representasi fungsi linear kontinu. Yang dipopulerkan melampaui buktinya:
+``jaringan bisa menghampiri apa saja'' sebagai janji praktis, padahal itu pernyataan tentang kepadatan fungsi, bukan keterjangkauan parameter oleh optimasi; dan ``Adam selalu lebih baik'', padahal contoh penyangkalnya ada pada Reddi, Kale, dan Kumar (2018).
+
+Bacaan primer yang membentuk bab ini: Nielsen bagian 2.4 dan 2.8 (empat persamaan turunan balik dan mengapa ia murah) serta bagian 3.1 (entropi silang, softmax); Goodfellow dkk. bagian 6.4.1 (aproksimasi universal) dan 6.5 (turunan balik). Untuk inisialisasi, Glorot dan Bengio (2010) serta He dkk. (2015); untuk Adam, Kingma dan Ba (2015).
+
+Batas keberlakuan: seluruh hitungan di bab ini untuk satu contoh pada jaringan dengan satu lapisan tersembunyi, dengan konvensi turunan ReLU nol di titik patah. Tidak ada pernyataan generalisasi di sini; itu isi Bab 26. Pertanyaan terbuka: mengapa jaringan lebar lebih mudah dilatih daripada yang sempit pada galat yang sama, mengapa jaringan dengan parameter jauh melebihi banyaknya contoh masih menggeneralisasi, dan apakah ada inisialisasi yang optimal untuk kedalaman berapa pun.
+\end{untukpeneliti}
+
+\peta{Bab ini mengikuti Nielsen, \emph{Neural Networks and Deep Learning}: bagian 1.1
+(perceptron), 1.2 (neuron sigmoid), 1.5 (penurunan gradien), 2.1 sampai 2.5 (notasi matriks, dua asumsi tentang fungsi kerugian, hasil kali Hadamard,
+empat persamaan turunan balik beserta buktinya), 2.8 (mengapa turunan balik cepat), 3.1
+(entropi silang, softmax), dan 3.3 (inisialisasi bobot). Untuk perumusan umum dan untuk sisi yang tidak dibuktikan Nielsen,
+dipakai Goodfellow, Bengio, dan Courville, \emph{Deep Learning}: bagian 6.2 (pembelajaran
+berbasis gradien, fungsi kerugian, dan unit keluaran), 6.3 (unit tersembunyi dan pilihan
+aktivasi), 6.4.1 (aproksimasi universal dan kedalaman), 6.5 (turunan balik dan graf
+komputasi), 8.3 (algoritme dasar: SGD, momentum), 8.4 (strategi inisialisasi parameter), dan
+8.5 (algoritme dengan laju belajar adaptif, termasuk Adam). Untuk gradien terhadap masukan sebagai dasar
+serangan, lihat pembahasan FGSM di Bab 27.}

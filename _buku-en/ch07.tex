@@ -1,0 +1,1231 @@
+\chapter{Basis, Dimension, and Linear Transformations}
+
+An anomaly detector does not read raw network traffic. It summarizes it first. Four
+counters, say failed connections, outbound packets, session length, and the number of
+unique ports, are compressed into three features by the linear map
+$F\colon\mathbb{R}^{4}\to\mathbb{R}^{3}$.
+The decision threshold only looks at $F(\mathbf{x})$.
+
+The decisive question: is there $\boldsymbol{\delta}\neq\mathbf{0}$ with
+$F(\mathbf{x}+\boldsymbol{\delta})=F(\mathbf{x})$? Because $F$ is linear, that condition is
+equivalent to
+$F(\boldsymbol{\delta})=\mathbf{0}$. The answer is a subspace of dimension
+$4-\operatorname{rank}F$; if $F$ has rank three, there is a whole line of blind directions,
+and an attacker can shift all four counters along that line without shifting a single one of
+the features.
+
+To answer it we need three things Chapter 6 has not yet given: the list of coordinates with
+respect to a basis, the rule for moving that list when the basis changes, and the translation
+of a linear map into a matrix so that the kernel can be computed by elimination. Chapter 6
+already established that a basis exists and that its size is unique; its axioms are not
+repeated here.
+
+\begin{untukanak}
+Imagine a bookcase with many shelves. Every book has a fixed place. If we rearrange the
+bookcase, the books do not change, but each book's address does. To say where a book is, we
+must name the arrangement currently in use. A friend who uses another arrangement will name a
+different address for the same book,
+and the two of you are both right.
+
+There is also a special shelf behind the bookcase. A book moved there cannot be seen from the
+front. As long as books only move within that shelf, the list of books in front does not
+change at all.
+
+Have you ever moved something to a place nobody inspects? We are going to find out why the
+list of addresses can change while the contents of
+the bookcase stay the same, why that hidden shelf always has a definite size, and why some
+changes do not shift the summary at all.
+\end{untukanak}
+
+\section{Coordinates and transition matrices}
+\tingkat{intermediate}
+
+Vectors in $\mathbb{R}^{3}$ are already lists of three numbers; vectors in $P_{2}$ or
+$M_{2\times2}(\mathbb{R})$ are not. So that both can be computed in the same way, we
+need a translation that turns every vector into a list of numbers. That translation depends
+on the basis, and that is where the difficulty of this section begins.
+
+Uniqueness we already have: the uniqueness lemma for coordinates in Chapter 6 states that the
+expression of a vector in a basis is always unique. Therefore the following definition is
+legitimate without choosing among several expressions.
+
+\kamus{coordinate vector}{koordinat}{the address of a book in the bookcase: its contents stay
+fixed, its address depends on how the shelves are arranged}
+
+\begin{definisi}[Coordinate vector]
+Let $B=(\mathbf{b}_{1},\dots,\mathbf{b}_{n})$ be an ordered basis of the vector space
+$V$
+over $\mathbb{R}$. For every $\mathbf{v}\in V$ there are unique scalars $a_{1},\dots,a_{n}$
+with $\mathbf{v}=a_{1}\mathbf{b}_{1}+\dots+a_{n}\mathbf{b}_{n}$. The column
+\[
+  [\mathbf{v}]_{B}=(a_{1},\dots,a_{n})^{\top}
+\]
+is called the \emph{coordinate vector} of $\mathbf{v}$ with respect to $B$.\index{coordinate}
+\end{definisi}
+
+The word ``ordered'' is not decoration. If two basis vectors are exchanged, two coordinate
+entries are exchanged with them while the vector stays put. A basis set alone does not
+determine the coordinate list;
+its order does as well.
+
+One warning: $[\mathbf{v}]_{B}$ is not $\mathbf{v}$. Those numbers live in
+$\mathbb{R}^{n}$, whereas $\mathbf{v}$ lives in $V$. For $M_{2\times2}(\mathbb{R})$
+the difference is palpable: the vector holds four numbers, and its coordinates are four
+numbers too, but arranged as a column that depends on the basis.
+
+The first important property of this translation: it respects both operations of the vector
+space.
+
+\begin{proposisi}
+For every basis $B$ of a space $V$ of dimension $n$, the map
+$\varphi_{B}\colon V\to\mathbb{R}^{n}$ with $\varphi_{B}(\mathbf{v})=[\mathbf{v}]_{B}$
+is linear, injective, and surjective.
+\end{proposisi}
+
+\begin{proof}
+Take $\mathbf{v}=\sum_{i}a_{i}\mathbf{b}_{i}$ and $\mathbf{w}=\sum_{i}c_{i}\mathbf{b}_{i}$.
+Then $\mathbf{v}+\mathbf{w}=\sum_{i}(a_{i}+c_{i})\mathbf{b}_{i}$. Uniqueness of coordinates
+forces $[\mathbf{v}+\mathbf{w}]_{B}=(a_{i}+c_{i})=[\mathbf{v}]_{B}+[\mathbf{w}]_{B}$.
+In the same way, $[c\mathbf{v}]_{B}=c[\mathbf{v}]_{B}$.
+
+For injectivity, suppose $[\mathbf{v}]_{B}=\mathbf{0}$. Then all its coefficients are zero,
+so $\mathbf{v}=\sum_{i}0\cdot\mathbf{b}_{i}=\mathbf{0}$. For surjectivity, take
+any $(a_{1},\dots,a_{n})\in\mathbb{R}^{n}$ and form
+$\mathbf{v}=\sum_{i}a_{i}\mathbf{b}_{i}$; its coordinates are exactly that list.
+\end{proof}
+
+The map $\varphi_{B}$ turns a question about $V$ into a question about columns in
+$\mathbb{R}^{n}$, then turns it back; that transfer depends on $B$. Coordinates
+are written as columns so that matrices act from the left: coordinates in, multiplied by the
+matrix, coordinates out. With row coordinates, every formula would have to be transposed.
+
+\begin{bacakeras}
+Two voices stand in front of the class.
+
+``How long is this table?''
+``Three.''
+``Three what?''
+``Three rulers. Or three spans. Or three paces. Choose the measuring instrument first.''
+
+It is the same with a vector space. A vector has no address until we choose a basis. The basis
+is
+the ruler: it supplies a scale, a direction, and an order. Change the ruler and you change
+the numbers. The object being measured does not change with them.
+
+One ruler, one number. Two rulers, two numbers. Without a ruler, no numbers
+at all.
+
+Be careful with a bad ruler: two of its scale marks are almost parallel. Numbers still come
+out,
+but the numbers wobble, and two people measuring patiently will obtain different
+numbers.
+
+Repeat together: a basis is not the object, a basis is the instrument. What changes is the
+address, what stays is the content.
+\end{bacakeras}
+
+Now two bases are used on the same space. Every vector has two coordinate lists,
+and we want a formula that turns the first list into the second. The matrix that
+performs that task is built from the coordinates of the old basis vectors in the new basis.
+
+\begin{definisi}[Transition matrix]
+Let $B=(\mathbf{b}_{1},\dots,\mathbf{b}_{n})$ and
+$C=(\mathbf{c}_{1},\dots,\mathbf{c}_{n})$
+be two bases of $V$. The \emph{transition matrix} from $B$ to $C$ is the $n\times n$ matrix
+\[
+P_{C\leftarrow
+B}=\Bigl(\,[\mathbf{b}_{1}]_{C}\;\Big|\;\cdots\;\Big|\;[\mathbf{b}_{n}]_{C}\,\Bigr),
+\]
+that is, the matrix whose $j$-th column is $[\mathbf{b}_{j}]_{C}$.\index{transition matrix}
+\end{definisi}
+
+What still needs proof: multiplying the old coordinate list by this matrix produces the new
+coordinate
+list.
+
+\begin{teorema}
+For every $\mathbf{v}\in V$ we have $[\mathbf{v}]_{C}=P_{C\leftarrow B}[\mathbf{v}]_{B}$.
+\end{teorema}
+
+\begin{proof}
+Write $\mathbf{v}=\sum_{j}a_{j}\mathbf{b}_{j}$, so that
+$[\mathbf{v}]_{B}=(a_{1},\dots,a_{n})^{\top}$.
+Linearity of $\varphi_{C}$ gives
+$[\mathbf{v}]_{C}=\sum_{j}a_{j}[\mathbf{b}_{j}]_{C}$. That right-hand side is exactly the
+matrix
+product $P_{C\leftarrow B}$ with the column $(a_{j})$, by the definition of matrix-vector
+multiplication.
+\end{proof}
+
+A corollary that makes the matrix usable in both directions.
+
+\begin{akibat}
+The transition matrix is always invertible, and $P_{B\leftarrow C}=P_{C\leftarrow B}^{-1}$.
+Moreover
+$P_{C\leftarrow B}=P_{C\leftarrow D}\,P_{D\leftarrow B}$ for three bases $B,C,D$ of $V$.
+\end{akibat}
+
+\begin{proof}
+The previous theorem gives $P_{B\leftarrow C}P_{C\leftarrow B}[\mathbf{v}]_{B}=[\mathbf{v}]_{B}$
+for all $\mathbf{v}$. Because $\varphi_{B}$ is surjective, that product equals the identity
+matrix. The same argument applies in the opposite order, so the two matrices are mutually
+inverse. For the chain rule, apply the theorem twice:
+$[\mathbf{v}]_{C}=P_{C\leftarrow D}[\mathbf{v}]_{D}=P_{C\leftarrow D}P_{D\leftarrow B}[\mathbf{v}]_{B}$,
+then compare with $[\mathbf{v}]_{C}=P_{C\leftarrow B}[\mathbf{v}]_{B}$ at $\mathbf{v}=\mathbf{b}_{j}$.
+\end{proof}
+
+Note that $P_{C\leftarrow B}$ and $P_{B\leftarrow C}$ are not transposes of each other; they are mutual inverses, and that is a different thing. The direction of the subscript is read from right to left, like the composition of maps: take the $j$-th basis vector of $B$, then ask for its address according to $C$. When $B$ is the standard basis, the columns of $P_{B\leftarrow C}$ are the vectors of $C$ themselves.
+
+Take $B=(\mathbf{e}_{1},\mathbf{e}_{2},\mathbf{e}_{3})$
+and $C=(\mathbf{b}'_{1},\mathbf{b}'_{2},\mathbf{b}'_{3})$ with
+\[
+  \mathbf{b}'_{1}=(1,1,0),\qquad \mathbf{b}'_{2}=(1,0,1),\qquad \mathbf{b}'_{3}=(0,1,1).
+\]
+Because $B$ is standard, the matrix $P_{B\leftarrow C}$ contains those three vectors as columns:
+\[
+  P_{B\leftarrow C}=\begin{pmatrix}1&1&0\\ 1&0&1\\ 0&1&1\end{pmatrix},
+  \qquad \det P_{B\leftarrow C}=-2\neq0 .
+\]
+Its inverse is
+\[
+  P_{C\leftarrow B}=\frac{1}{2}\begin{pmatrix}1&1&-1\\ 1&-1&1\\ -1&1&1\end{pmatrix}.
+\]
+For $\mathbf{v}=(3,8,11)$ we obtain
+\[
+  [\mathbf{v}]_{C}=P_{C\leftarrow B}[\mathbf{v}]_{B}
+  =\frac{1}{2}\begin{pmatrix}3+8-11\\ 3-8+11\\ -3+8+11\end{pmatrix}
+  =\begin{pmatrix}0\\ 3\\ 8\end{pmatrix}.
+\]
+The check is immediate: $3\mathbf{b}'_{2}+8\mathbf{b}'_{3}=(3,8,11)$. Conversely
+$\mathbf{w}=(1,0,0)$ has coordinates $(1/2,\,1/2,\,-1/2)$; a fractional entry is natural,
+because
+coordinates are nothing but an address.
+
+\section{Linear transformations, kernel, and range}
+\tingkat{basic}
+
+Chapter 6 discussed spaces and subspaces, but not maps between them. Yet the main work of
+linear algebra is moving vectors: rotating, projecting, differentiating, summarizing.
+
+A rule that respects addition and scalar multiplication is called a linear transformation:
+adding first and then mapping gives the same result as mapping first and then adding.
+
+\begin{definisi}[Linear transformation]
+A map $T\colon V\to W$ between two vector spaces over $\mathbb{R}$ is called a
+\emph{linear transformation} if $T(\mathbf{u}+\mathbf{v})=T(\mathbf{u})+T(\mathbf{v})$ and
+$T(c\mathbf{v})=cT(\mathbf{v})$ for all $\mathbf{u},\mathbf{v}\in V$ and $c\in\mathbb{R}$.
+\end{definisi}
+
+The two conditions are equivalent to a single condition,
+$T(c\mathbf{u}+\mathbf{v})=cT(\mathbf{u})+T(\mathbf{v})$. The first consequence,
+$T(\mathbf{0})=\mathbf{0}$, is used to reject linearity quickly: the map
+$T(\mathbf{x})=\mathbf{x}+\mathbf{a}$ with $\mathbf{a}\neq\mathbf{0}$ fails at once.
+
+Conversely $T(\mathbf{0})=\mathbf{0}$ is not enough. The map $T(x,y)=(x^{2},y)$ satisfies it,
+but
+$T(2,0)=(4,0)$ whereas $2T(1,0)=(2,0)$. Squaring breaks linearity.\index{linear
+transformation}
+
+A $90^{\circ}$ rotation, $R(x,y)=(-y,x)$, is linear: $R(3,1)=(-1,3)$. The derivative $D\colon P_{3}\to P_{2}$, $D(p)=p'$, is linear because $(p+q)'=p'+q'$. The map $T(x,y)=(x+y,\,2x+2y)$ is linear too, but all of $\mathbb{R}^{2}$ falls onto a single line; it is linear and simultaneously destroys information.
+
+Take
+$A=\begin{pmatrix}2&1\\1&2\end{pmatrix}$ and $T(\mathbf{x})=A\mathbf{x}$. The vector $(1,0)$ goes
+to $(2,1)$ and $(0,1)$ to $(1,2)$, so the unit square becomes a parallelogram with
+vertices
+$(0,0)$, $(2,1)$, $(3,3)$, $(1,2)$ of area $3$, since $|2\cdot2-1\cdot1|=3$.
+Figure~\ref{fig:kisi-07} shows the grid before and after the map: lines stay lines, the grid
+stays a grid, but distances and areas are no longer the same.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.38,>=stealth,font=\scriptsize]
+  \foreach \k in {0,1,2,3}{
+    \draw[layergrey!45] (\k,0)--(\k,3);
+    \draw[layergrey!45] (0,\k)--(3,\k);
+    \draw[layerteal,thick] (2*\k,\k)--(2*\k+3,\k+6);
+    \draw[layerteal,thick] (\k,2*\k)--(\k+6,2*\k+3);}
+  \fill[accent!15] (0,0)--(1,0)--(1,1)--(0,1)--cycle;
+  \draw[accent,thick] (0,0)--(1,0)--(1,1)--(0,1)--cycle;
+  \fill[layerorange!25] (0,0)--(2,1)--(3,3)--(1,2)--cycle;
+  \draw[layerorange,very thick] (0,0)--(2,1)--(3,3)--(1,2)--cycle;
+  \draw[->,ink,thick] (-0.6,0)--(9.8,0) node[below right]{$x$};
+  \draw[->,ink,thick] (0,-0.6)--(0,9.8) node[left]{$y$};
+  \foreach \x/\y in {2/1,1/2,3/3}{
+    \fill[ink] (\x,\y) circle (1.8pt);
+    \node[ink,anchor=north west] at (\x+0.05,\y-0.05) {$(\x,\y)$};}
+  \node[layergrey,anchor=north west] at (0,-1.0) {thin: original grid};
+  \node[layerteal,anchor=north west] at (4.0,-1.0) {thick: grid after mapping};
+\end{tikzpicture}
+\caption{The unit grid and its image under $T(\mathbf{x})=A\mathbf{x}$ with
+$A=\begin{pmatrix}2&1\\1&2\end{pmatrix}$. One cell becomes a parallelogram with
+vertices $(0,0)$, $(2,1)$, $(3,3)$, and $(1,2)$, so its area grows from $1$ to $3$.
+The old grid is drawn thin, the new grid thick; both remain grids.}
+\label{fig:kisi-07}
+\end{figure}
+
+\begin{tangan}
+Take a sheet of graph paper, a pencil, and a ruler. Draw a horizontal axis and a vertical
+axis,
+then mark their intersection as the center. Draw a small house: a square five cells wide, a
+triangular
+roof, a door one cell wide.
+
+Now translate. Move every point of the house three cells to the right and two cells up.
+Do not guess; count. A point that was one cell right and one cell up
+is now
+four cells right and three cells up. Redraw the house. Its shape and
+size are the same, only its place has moved.
+
+Now rotate. Turn the paper a quarter turn clockwise, then redraw the same
+house. The length of each side stays, the direction of each side changes.
+
+What should be visible: under translation, all directions are preserved but the center moves with the figure; under rotation, the center stays and all directions change. Because a translation moves the center, a translation is
+not
+a linear transformation. A rotation is.
+\end{tangan}
+
+The good news: to know a linear map, it is enough to know its values on the basis vectors.
+
+\begin{proposisi}
+Let $B=(\mathbf{b}_{1},\dots,\mathbf{b}_{n})$ be a basis of $V$ and let
+$\mathbf{w}_{1},\dots,\mathbf{w}_{n}\in W$ be arbitrary. There is exactly one linear map
+$T\colon V\to W$ with $T(\mathbf{b}_{j})=\mathbf{w}_{j}$ for every $j$.
+\end{proposisi}
+
+\begin{proof}
+For existence, define
+$T\bigl(\sum_{j}a_{j}\mathbf{b}_{j}\bigr)=\sum_{j}a_{j}\mathbf{w}_{j}$.
+This definition does not depend on the expression, because coordinates with respect to a basis
+are unique. For linearity, use the linearity of coordinates from the proposition in the
+previous section:
+$T(\mathbf{u}+\mathbf{v})=\sum_{j}(a_{j}+c_{j})\mathbf{w}_{j}=T(\mathbf{u})+T(\mathbf{v})$,
+and similarly for scalar multiplication.
+
+For uniqueness, suppose $S$ is linear and $S(\mathbf{b}_{j})=\mathbf{w}_{j}$. For
+$\mathbf{v}=\sum_{j}a_{j}\mathbf{b}_{j}$ we have
+$S(\mathbf{v})=\sum_{j}a_{j}S(\mathbf{b}_{j})=\sum_{j}a_{j}\mathbf{w}_{j}=T(\mathbf{v})$.
+\end{proof}
+
+The practical corollary: $n$ vectors in $W$ determine one linear map from an $n$-dimensional
+$V$.
+When $W=\mathbb{R}^{m}$, that data is nothing other than an $m\times n$ matrix.
+
+Every linear map carries two sets worth inspecting: the vectors mapped to zero,
+and the values that are actually attained.
+
+\kamus{kernel or null space}{inti}{the list of changes that do not shift the
+summary at all}
+
+\begin{definisi}[Kernel, range, rank, and nullity]
+For a linear $T\colon V\to W$, the \emph{kernel} is
+$\ker T=\{\mathbf{v}\in V: T(\mathbf{v})=\mathbf{0}\}$ and the \emph{range} is
+$\operatorname{im}T=\{T(\mathbf{v}):\mathbf{v}\in V\}$. When $V$ is finite-dimensional,
+$\operatorname{nullity}(T)=\dim\ker T$ and $\operatorname{rank}(T)=\dim\operatorname{im}T$.
+\end{definisi}
+
+Both are subspaces, not merely sets.\index{kernel}\index{range}
+
+\begin{lemma}
+$\ker T$ is a subspace of $V$ and $\operatorname{im}T$ is a subspace of $W$.
+\end{lemma}
+
+\begin{proof}
+Both contain $\mathbf{0}$ because $T(\mathbf{0})=\mathbf{0}$. If
+$\mathbf{u},\mathbf{v}\in\ker T$
+and $c\in\mathbb{R}$, then $T(\mathbf{u}+\mathbf{v})=\mathbf{0}$ and
+$T(c\mathbf{u})=\mathbf{0}$,
+so $\ker T$ is closed. If $\mathbf{u}=T(\mathbf{x})$ and $\mathbf{v}=T(\mathbf{y})$, then
+$\mathbf{u}+\mathbf{v}=T(\mathbf{x}+\mathbf{y})$ and $c\mathbf{u}=T(c\mathbf{x})$ belong to
+$\operatorname{im}T$.
+\end{proof}
+
+The kernel measures the failure of injectivity, and that is all that needs checking.
+
+\begin{proposisi}
+$T$ is injective if and only if $\ker T=\{\mathbf{0}\}$.
+\end{proposisi}
+
+\begin{proof}
+If $T$ is injective, only $\mathbf{0}$ maps to $\mathbf{0}$. Conversely, suppose
+$\ker T=\{\mathbf{0}\}$ and $T(\mathbf{u})=T(\mathbf{v})$. Then $T(\mathbf{u}-\mathbf{v})=\mathbf{0}$,
+so $\mathbf{u}-\mathbf{v}\in\ker T$, hence $\mathbf{u}=\mathbf{v}$.
+\end{proof}
+
+Rank counts the directions that survive, nullity counts the directions that vanish. Together
+they divide the dimension of the source space.
+
+\kamus{rank}{rank}{the number of independent directions that still survive after the map}
+
+A small example shows both fates. Take
+$B=\begin{pmatrix}1&2\\2&4\end{pmatrix}$. Then $B\mathbf{e}_{1}=(1,2)$ and
+$B\mathbf{e}_{2}=(2,4)$, two collinear vectors, so $\operatorname{rank}(B)=1$. The direction $(1,2)$
+survives and stretches: $B(1,2)=(5,10)$. The direction $(2,-1)$ vanishes: $B(2,-1)=(0,0)$.
+Figure~\ref{fig:arah} draws both, and rank-nullity closes the count: $2=1+1$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.60,>=stealth,font=\scriptsize]
+  \draw[layerjade!60,thin] (-0.7,-1.4)--(2.8,5.6);
+  \node[layerjade,anchor=west,rotate=63] at (2.0,4.3) {line in direction $(1,2)$};
+  \draw[->,ink,thick] (-1.0,0)--(3.3,0) node[below right]{$x$};
+  \draw[->,ink,thick] (0,-2.0)--(0,5.0) node[left]{$y$};
+  \draw[->,layergrey,thick] (0,0)--(1,0) node[below]{$\mathbf{e}_{1}$};
+  \draw[->,layergrey,thick] (0,0)--(0,1) node[left]{$\mathbf{e}_{2}$};
+  \draw[->,layerorange,very thick] (0,0)--(1,2) node[above left]{$B\mathbf{e}_{1}=(1,2)$};
+  \draw[->,layerbrown,very thick] (0,0)--(2,4) node[right]{$B\mathbf{e}_{2}=(2,4)$};
+  \draw[->,layerplum,thick,dashed] (0,0)--(1.8,-0.9) node[below right]{$(2,-1)$};
+  \node[layerplum,anchor=north] at (1.5,-1.6) {collapses to $\mathbf{0}$};
+  \fill[ink] (0,0) circle (1.6pt) node[below left,ink]{$\mathbf{0}$};
+\end{tikzpicture}
+\caption{Two directions under $B=\begin{pmatrix}1&2\\2&4\end{pmatrix}$. The direction $(1,2)$
+survives and stretches into $(5,10)$; the direction $(2,-1)$ collapses to $\mathbf{0}$. The
+images of the two basis vectors,
+$B\mathbf{e}_{1}=(1,2)$ and $B\mathbf{e}_{2}=(2,4)$, lie on a single line, so
+$\operatorname{rank}(B)=1$ and $\operatorname{nullity}(B)=1$.}
+\label{fig:arah}
+\end{figure}
+
+Now the central theorem of this chapter. Its content: no dimension is lost along the way.
+
+\begin{teorema}[Rank-nullity]
+If $V$ is finite-dimensional and $T\colon V\to W$ is linear, then
+\[
+  \dim V=\dim\ker T+\dim\operatorname{im}T .
+\]
+\end{teorema}
+
+\begin{proof}
+Let $\dim V=n$ and $\dim\ker T=k$. Take a basis
+$(\mathbf{u}_{1},\dots,\mathbf{u}_{k})$ of $\ker T$. By the basis extension corollary in Chapter 6,
+that basis can be completed to a basis of $V$ by adding $n-k$ vectors
+$\mathbf{w}_{1},\dots,\mathbf{w}_{n-k}$.
+
+First, the set $\{T(\mathbf{w}_{1}),\dots,T(\mathbf{w}_{n-k})\}$ spans
+$\operatorname{im}T$. For an arbitrary $T(\mathbf{v})$, write
+$\mathbf{v}=\sum_{i}\alpha_{i}\mathbf{u}_{i}+\sum_{j}\beta_{j}\mathbf{w}_{j}$. The terms
+$\mathbf{u}_{i}$ vanish because $T(\mathbf{u}_{i})=\mathbf{0}$, so
+$T(\mathbf{v})=\sum_{j}\beta_{j}T(\mathbf{w}_{j})$.
+
+Second, that set is linearly independent. Suppose $\sum_{j}\beta_{j}T(\mathbf{w}_{j})=\mathbf{0}$.
+Then $T\bigl(\sum_{j}\beta_{j}\mathbf{w}_{j}\bigr)=\mathbf{0}$, so
+$\sum_{j}\beta_{j}\mathbf{w}_{j}\in\ker T$, and there are scalars $\alpha_{i}$ with
+$\sum_{j}\beta_{j}\mathbf{w}_{j}=\sum_{i}\alpha_{i}\mathbf{u}_{i}$. Move all terms to
+one side:
+\[
+  \sum_{j}\beta_{j}\mathbf{w}_{j}-\sum_{i}\alpha_{i}\mathbf{u}_{i}=\mathbf{0}.
+\]
+That relation lies inside a basis of $V$, so all its coefficients are zero; in particular every
+$\beta_{j}=0$. Hence $\{T(\mathbf{w}_{j})\}$ is a basis of $\operatorname{im}T$, and
+$\operatorname{rank}(T)=n-k$.
+\end{proof}
+
+Figure~\ref{fig:batang} arranges that theorem as two bars. For a space of dimension
+$4$ the total length is always $4$: the identity gives $4+0$, the projection that discards one
+coordinate
+gives $3+1$, and the feature map $G$ later gives $2+2$. Only the position of the divider
+shifts.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm,font=\scriptsize,>=stealth]
+  \fill[layerjade!45] (0,2.4) rectangle (4,3.1);
+  \draw[layergrey] (0,2.4) rectangle (4,3.1);
+  \node at (2,2.75) {rank $4$};
+  \node[layerjade,anchor=east] at (-0.12,2.75) {identity};
+  \node[layerjade,anchor=west] at (4.12,2.75) {nullity $0$};
+  \fill[layerteal!45] (0,1.2) rectangle (3,1.9);
+  \fill[layerorange!45] (3,1.2) rectangle (4,1.9);
+  \draw[layergrey] (0,1.2) rectangle (4,1.9);
+  \draw[layergrey] (3,1.2)--(3,1.9);
+  \node at (1.5,1.55) {rank $3$};
+  \node at (3.5,1.55) {$1$};
+  \node[layerteal,anchor=east] at (-0.12,1.55) {projection};
+  \node[layerorange,anchor=west] at (4.12,1.55) {nullity $1$};
+  \fill[layerteal!45] (0,0) rectangle (2,0.7);
+  \fill[layerorange!45] (2,0) rectangle (4,0.7);
+  \draw[layergrey] (0,0) rectangle (4,0.7);
+  \draw[layergrey] (2,0)--(2,0.7);
+  \node at (1,0.35) {rank $2$};
+  \node at (3,0.35) {$2$};
+  \node[layerteal,anchor=east] at (-0.12,0.35) {feature map $G$};
+  \node[layerorange,anchor=west] at (4.12,0.35) {nullity $2$};
+  \draw[layergrey,dashed] (4,-0.25)--(4,3.4);
+  \node[layergrey,anchor=south] at (4,3.4) {$\dim V=4$};
+  \fill[layerteal!45] (0,-0.95) rectangle (0.35,-0.6);
+  \draw[layergrey] (0,-0.95) rectangle (0.35,-0.6);
+  \node[anchor=west] at (0.45,-0.78) {directions that survive};
+  \fill[layerorange!45] (3.3,-0.95) rectangle (3.65,-0.6);
+  \draw[layergrey] (3.3,-0.95) rectangle (3.65,-0.6);
+  \node[anchor=west] at (3.75,-0.78) {directions that vanish};
+\end{tikzpicture}
+\caption{Rank-nullity as two bars whose sum is fixed. For $\dim V=4$: the identity map
+gives $4+0$, the projection that discards one coordinate gives $3+1$, and the feature map $G$
+gives
+$2+2$. Only the position of the divider shifts; the total length stays $4$.}
+\label{fig:batang}
+\end{figure}
+
+Two corollaries that are used most often.
+
+\begin{akibat}
+Let $\dim V=\dim W$ be finite and let $T\colon V\to W$ be linear. Then $T$ is injective if and
+only if $T$ is surjective. Moreover
+$\operatorname{rank}(T)\le\min(\dim V,\dim W)$.
+\end{akibat}
+
+\begin{proof}
+By rank-nullity, $\dim\ker T=n-\operatorname{rank}T$ with $n=\dim V$. Injectivity holds exactly
+when $\dim\ker T=0$, that is $\operatorname{rank}T=n=\dim W$, which means
+$\operatorname{im}T=W$ because a subspace of full dimension fills the whole space. The
+reverse implication is obtained by reversing the order of the argument. The upper bound on the rank is clear from
+$\operatorname{im}T\subseteq W$ and from rank-nullity.
+\end{proof}
+
+As a numerical illustration, take $T\colon\mathbb{R}^{3}\to\mathbb{R}^{2}$ with
+$T(x,y,z)=(x-y,\,y-z)$. Because $T(t,t,t)=(0,0)$, its kernel is the line $\{(t,t,t)\}$ and its nullity is
+$1$.
+The images $T(1,0,0)=(1,0)$ and $T(0,0,1)=(0,-1)$ span $\mathbb{R}^{2}$, so the rank is $2$;
+rank-nullity: $3=1+2$.
+
+For machine learning, that corollary is harsh. A feature map $\mathbb{R}^{n}\to\mathbb{R}^{m}$
+with $n>m$ cannot possibly be injective, and its kernel has dimension at least $n-m$. Every dimensional
+compression stores blind directions; the question is not whether such a direction exists, but
+whether an attacker can find it.
+
+The standard procedure for a basis of the kernel: bring the matrix to reduced row echelon form, mark the columns
+without a pivot as free variables, then in turn give each free variable the value one and the other
+free variables zero. The pivot variables are read off from the rows. The result is one vector per
+column without a pivot, linearly independent because each has a one in a position no other
+one has.
+
+For the range, the procedure is different and is often confused with the kernel procedure above. The following
+four steps are worth memorizing.
+
+\begin{resep}
+\begin{enumerate}
+  \item Assemble the matrix $A$, then reduce it to reduced row echelon form by elimination.
+  \item Mark the columns that contain a pivot. A column without a pivot is not a candidate basis member.
+  \item Go back to the original matrix $A$, not to its echelon form. Take the original columns whose positions
+        coincide with the pivot columns.
+  \item Check: the number of selected vectors equals the number of nonzero rows, and those vectors are
+        linearly independent.
+\end{enumerate}
+A warning about order: step three must not take columns from the echelon form. Row operations
+change the columns, whereas the column space does not change. Taking columns from the echelon matrix
+gives a wrong answer even when the count is right.
+\end{resep}
+
+The kernel also answers a more general question: once a value has been attained, all its
+preimages are neatly arranged. Here $T^{-1}(\mathbf{w})$ denotes the set of preimages, not the inverse
+map.
+
+\begin{proposisi}
+Let $T\colon V\to W$ be linear and $T(\mathbf{v}_{0})=\mathbf{w}$. Then
+$T^{-1}(\mathbf{w})=\{\mathbf{v}_{0}+\mathbf{k}:\mathbf{k}\in\ker T\}$.
+\end{proposisi}
+
+\begin{proof}
+If $\mathbf{k}\in\ker T$, then $T(\mathbf{v}_{0}+\mathbf{k})=\mathbf{w}+\mathbf{0}=\mathbf{w}$,
+so every $\mathbf{v}_{0}+\mathbf{k}$ belongs to the preimage of $\mathbf{w}$. Conversely, if
+$T(\mathbf{v})=\mathbf{w}$, then $T(\mathbf{v}-\mathbf{v}_{0})=\mathbf{0}$, so
+$\mathbf{v}-\mathbf{v}_{0}\in\ker T$ and $\mathbf{v}=\mathbf{v}_{0}+(\mathbf{v}-\mathbf{v}_{0})$.
+\end{proof}
+
+The set of inputs that produce the same features is a shifted copy of the kernel: when the kernel
+has dimension one, the family is a line, namely the blind direction of the chapter opening; when it has dimension
+$k$,
+an attacker has $k$ directions.
+
+\section{Representation matrices and composition}
+\tingkat{intermediate}
+
+Now the two earlier tools are combined: coordinates turn a vector into a column, and a linear
+map is determined by its values on a basis. The combination produces a matrix, where all the
+computation takes place.
+
+The representation matrix stores the image of each basis vector as one column, written
+in the coordinates of the target basis.
+
+\begin{definisi}[Representation matrix]
+Let $B=(\mathbf{b}_{1},\dots,\mathbf{b}_{n})$ be a basis of $V$,
+$C=(\mathbf{c}_{1},\dots,\mathbf{c}_{m})$ a basis of $W$, and $T\colon V\to W$ linear.
+The \emph{representation matrix} of $T$ with respect to $B$ and $C$ is the $m\times n$ matrix
+\[
+[T]_{C\leftarrow
+B}=\Bigl(\,[T(\mathbf{b}_{1})]_{C}\;\Big|\;\cdots\;\Big|\;[T(\mathbf{b}_{n})]_{C}\,\Bigr).
+\]
+\end{definisi}
+
+Those columns are obtained by solving systems, not by guessing: for each $j$,
+solve $\sum_{i}x_{i}\mathbf{c}_{i}=T(\mathbf{b}_{j})$, then write the solution as
+column
+$j$. When $C$ is the standard basis, that solving need not be carried out, because coordinates
+with respect to the standard basis are the vector itself.
+
+The following claim explains why the matrix is useful: it works in the expected way.
+
+\begin{teorema}
+For every $\mathbf{v}\in V$ we have
+$[T(\mathbf{v})]_{C}=[T]_{C\leftarrow B}\,[\mathbf{v}]_{B}$.
+\end{teorema}
+
+\begin{proof}
+Write $\mathbf{v}=\sum_{j}a_{j}\mathbf{b}_{j}$, so $[\mathbf{v}]_{B}=(a_{j})$. Linearity of
+$T$ gives $T(\mathbf{v})=\sum_{j}a_{j}T(\mathbf{b}_{j})$. Taking coordinates is also
+linear,
+so $[T(\mathbf{v})]_{C}=\sum_{j}a_{j}[T(\mathbf{b}_{j})]_{C}$, which is exactly the matrix
+product with the column $(a_{j})$.
+\end{proof}
+
+Two immediate corollaries. A linear map and its matrix determine each other, because the values on a
+basis already suffice. And the rank does not change under that translation.
+
+\begin{proposisi}
+$\operatorname{rank}(T)$ equals the rank of the matrix $[T]_{C\leftarrow B}$, and $\ker T$
+corresponds to the null space of that matrix. The rank of a matrix here means the dimension of its column
+space, as already used in Chapter 6.
+\end{proposisi}
+
+\begin{proof}
+Column $j$ of the matrix is the coordinate vector of $T(\mathbf{b}_{j})$, and
+$\{T(\mathbf{b}_{j})\}$ spans $\operatorname{im}T$. Taking coordinates preserves
+linear combinations, so the dimension of the range equals the dimension of the column space. The previous theorem
+shows that $T(\mathbf{v})=\mathbf{0}$ exactly when $[T(\mathbf{v})]_{C}=[T]_{C\leftarrow B}[\mathbf{v}]_{B}=\mathbf{0}$,
+that is, when $[\mathbf{v}]_{B}$ lies in the null space of that matrix.
+\end{proof}
+
+Composition of maps corresponds to matrix multiplication. That is no coincidence; it is
+the reason matrix multiplication is defined the way it is.
+
+\begin{teorema}
+Let $T\colon V\to W$ and $S\colon W\to U$ be linear, with bases $B,C,E$ on the three spaces.
+Then $[S\circ T]_{E\leftarrow B}=[S]_{E\leftarrow C}\,[T]_{C\leftarrow B}$.
+\end{teorema}
+
+\begin{proof}
+For every $\mathbf{v}\in V$,
+\[
+  [(S\circ T)(\mathbf{v})]_{E}
+  =[S]_{E\leftarrow C}[T(\mathbf{v})]_{C}
+  =[S]_{E\leftarrow C}[T]_{C\leftarrow B}[\mathbf{v}]_{B}.
+\]
+So the matrix $[S]_{E\leftarrow C}[T]_{C\leftarrow B}$ satisfies the definition of the representation matrix
+for $S\circ T$. The representation matrix is unique: if two matrices give the same result on
+all $\mathbf{v}$, their results agree in particular at $\mathbf{v}=\mathbf{b}_{j}$, so
+their columns agree.
+\end{proof}
+
+Composition also provides a test for invertibility through matrices.
+
+\begin{proposisi}
+Let $B$ and $C$ be bases of a space $V$ of dimension $n$, and let $T\colon V\to V$ be linear. Then
+$T$ is invertible if and only if $[T]_{C\leftarrow B}$ is invertible, and in that case
+$[T^{-1}]_{B\leftarrow C}=([T]_{C\leftarrow B})^{-1}$.
+\end{proposisi}
+
+\begin{proof}
+If $T$ is invertible, then $T^{-1}\circ T=I$ and $T\circ T^{-1}=I$. The composition theorem gives
+$[T^{-1}]_{B\leftarrow C}[T]_{C\leftarrow B}=I$ and
+$[T]_{C\leftarrow B}[T^{-1}]_{B\leftarrow C}=I$, so the two matrices are mutually inverse.
+
+Conversely, suppose $A=[T]_{C\leftarrow B}$ is invertible. If $T(\mathbf{v})=\mathbf{0}$, then
+$A[\mathbf{v}]_{B}=\mathbf{0}$, so $[\mathbf{v}]_{B}=\mathbf{0}$ and
+$\mathbf{v}=\mathbf{0}$.
+Hence $T$ is injective. Because the source and target spaces both have dimension $n$, the
+rank-nullity corollary makes $T$ surjective, so $T$ is invertible. The equation for the matrix of
+$T^{-1}$
+then follows from the first part.
+\end{proof}
+
+With that, a question about the inverse of an operator becomes a question about the inverse of a
+matrix; the complete answer is in Chapter 8.
+
+The special case used most often is an operator on a single space, $T\colon V\to V$,
+with two different bases. Here the two matrices are linked by the transition matrix.
+
+\begin{teorema}[Change of basis]
+Let $T\colon V\to V$ be linear, $B$ and $B'$ two bases of $V$, and $P=P_{B\leftarrow B'}$.
+Then
+\[
+  [T]_{B'}=P^{-1}[T]_{B}P .
+\]
+\end{teorema}
+
+\begin{proof}
+Write $T=I\circ T\circ I$ with $I$ the identity map. By the composition theorem,
+\[
+  [T]_{B'\leftarrow B'}=[I]_{B'\leftarrow B}\,[T]_{B\leftarrow B}\,[I]_{B\leftarrow B'}.
+\]
+The identity matrix with respect to two bases is the transition matrix, so
+$[I]_{B'\leftarrow B}=P^{-1}$ and $[I]_{B\leftarrow B'}=P$.
+\end{proof}\index{representation matrix}
+
+Two square matrices linked in that way describe the same operator from
+different viewpoints, so they are given a name of their own.
+
+\begin{definisi}[Similar matrices]
+Matrices $A$ and $B$ of size $n\times n$ are called \emph{similar} if there is an invertible
+matrix $P$ with $B=P^{-1}AP$.\index{similarity}
+\end{definisi}
+
+Similarity is therefore another name for the same map seen from different bases.
+
+\begin{proposisi}
+Two $n\times n$ matrices are similar if and only if they are the representation matrices of
+one and the same linear operator with respect to two bases.
+\end{proposisi}
+
+\begin{proof}
+If $B=P^{-1}AP$, take the standard basis $B_{0}$ and the basis $B'$ whose columns are
+the columns of $P$. Then $P=P_{B_{0}\leftarrow B'}$, and the change of basis theorem gives
+$B=[T]_{B'}$ for the operator $T(\mathbf{x})=A\mathbf{x}$. Conversely, the same theorem
+gives
+that relation for every pair of bases.
+\end{proof}
+
+Rank is among the quantities that do not change: the rank of $[T]_{B'}$ equals the rank of $T$,
+and likewise the rank of $[T]_{B}$. Determinant and trace are also invariant, but both are only
+defined in Chapter 8 and discussed in Chapter 9.
+
+A small example for the derivative operator: $D\colon P_{2}\to P_{2}$, $D(p)=p'$, with basis
+$B=(1,x,x^{2})$. Because $D(1)=0$, $D(x)=1$, and $D(x^{2})=2x$,
+\[
+  [D]_{B}=\begin{pmatrix}0&1&0\\ 0&0&2\\ 0&0&0\end{pmatrix}.
+\]
+For $p=x^{2}+3x$ the coordinates are $(0,3,1)^{\top}$, and the matrix gives $(3,\,2,\,0)^{\top}$,
+namely $3+2x$, exactly the derivative of $p$.
+
+\section{Isomorphisms, dimensional invariance, and spaces of linear maps}
+\tingkat{advanced}
+
+Two different spaces can behave the same way. $P_{2}$ and $\mathbb{R}^{3}$ contain objects
+of different kinds, but both have three independent directions and addition rules of the same
+form.
+
+A correspondence that preserves the whole structure is called an isomorphism: bijective,
+linear, and therefore preserving bases, dimension, and kernels.
+
+\kamus{isomorphism}{isomorfisme}{two floor plans of a house whose drawings differ but whose
+number of rooms and connections between rooms are the same}
+
+\begin{definisi}[Isomorphism]
+A linear map $T\colon V\to W$ is called an \emph{isomorphism} if $T$ is bijective. Two spaces are called
+\emph{isomorphic} if there is an isomorphism between them, written $V\cong W$.
+\end{definisi}
+
+One lemma before the main theorem: an isomorphism carries bases to bases.
+
+\begin{lemma}
+If $T\colon V\to W$ is an isomorphism and $B$ is a basis of $V$, then $T(B)$ is a basis of $W$.
+\end{lemma}
+
+\begin{proof}
+Let $B=(\mathbf{b}_{1},\dots,\mathbf{b}_{n})$. For linear independence, suppose
+$\sum_{j}c_{j}T(\mathbf{b}_{j})=\mathbf{0}$. Because $T$ is linear, the vector
+$\sum_{j}c_{j}\mathbf{b}_{j}$ is mapped to $\mathbf{0}$, so that vector lies in the kernel. The kernel
+is only $\{\mathbf{0}\}$ because $T$ is injective, so all $c_{j}=0$.
+For spanning, take $\mathbf{w}\in W$. There is $\mathbf{v}\in V$ with $T(\mathbf{v})=\mathbf{w}$
+because $T$ is surjective, and $\mathbf{v}=\sum_{j}a_{j}\mathbf{b}_{j}$ because $B$ spans.
+Then
+$\mathbf{w}=\sum_{j}a_{j}T(\mathbf{b}_{j})$.
+\end{proof}
+
+With that lemma, equality of dimension turns out to be the only obstacle.
+
+\begin{teorema}
+Two finite-dimensional spaces over $\mathbb{R}$ are isomorphic if and only if their dimensions are equal.
+\end{teorema}
+
+\begin{proof}
+If $V\cong W$ via $T$, the previous lemma turns a basis of $V$ into a basis of $W$ with
+the same number of members, so $\dim V=\dim W$.
+
+Conversely, suppose $\dim V=\dim W=n$. Choose a basis $B$ of $V$ and $C$ of $W$. The coordinate
+maps $\varphi_{B}\colon V\to\mathbb{R}^{n}$ and $\varphi_{C}\colon W\to\mathbb{R}^{n}$ are
+bijective and linear. Then $\varphi_{C}^{-1}\circ\varphi_{B}$ is a bijective linear map
+from
+$V$ to $W$, because the composition of bijective linear maps is also bijective and linear.
+\end{proof}
+
+That conclusion is felt at once in the spaces we know.
+
+\begin{akibat}
+Every space of dimension $n$ is isomorphic to $\mathbb{R}^{n}$. In particular
+$P_{n-1}\cong\mathbb{R}^{n}$ and $M_{2\times2}(\mathbb{R})\cong\mathbb{R}^{4}$.
+\end{akibat}
+
+An isomorphism preserves everything defined from the operations: linear independence, span,
+kernel, range, rank, and nullity. Two isomorphic spaces cannot be distinguished
+by the tools of this chapter; dimension becomes the only number that needs computing in order to recognize
+a finite-dimensional space.
+
+There is a trap in interpretation. The isomorphism above depends on the choice of
+basis; there is no canonical isomorphism between $V$ and $\mathbb{R}^{n}$. Hence ``$V$ equals
+$\mathbb{R}^{n}$'' is false, while ``$V$ is isomorphic to $\mathbb{R}^{n}$'' is
+true.
+Polynomials of degree less than three and triples of real numbers are objects of different kinds,
+but the two are isomorphic because every polynomial is determined by its three coefficients.
+
+Now the collection of all linear maps between two spaces; that set is itself a vector space.
+
+\begin{teorema}
+The set $\mathcal{L}(V,W)$ of all linear maps $V\to W$, with the operations
+$(S+T)(\mathbf{v})=S(\mathbf{v})+T(\mathbf{v})$ and $(cT)(\mathbf{v})=cT(\mathbf{v})$,
+is
+a vector space. If $\dim V=n$ and $\dim W=m$, then $\dim\mathcal{L}(V,W)=mn$. The mapping
+$T\mapsto[T]_{C\leftarrow B}$ is an isomorphism $\mathcal{L}(V,W)\to M_{m\times n}(\mathbb{R})$.
+\end{teorema}
+
+\begin{proof}
+$\mathcal{L}(V,W)$ sits inside the space of all functions $V\to W$, which is a vector space
+by the example in Chapter 6. The zero map is linear. The sum of two linear maps is linear, and a scalar multiple of a
+linear
+map is also linear; so $\mathcal{L}(V,W)$ is a subspace, and therefore a vector space.
+
+For the isomorphism claim, let $\Phi(T)=[T]_{C\leftarrow B}$. Linearity of $\Phi$: column
+$j$ of $\Phi(S+cT)$ is $[S(\mathbf{b}_{j})+cT(\mathbf{b}_{j})]_{C}$, which equals
+$[S(\mathbf{b}_{j})]_{C}+c[T(\mathbf{b}_{j})]_{C}$ because coordinates are linear. Hence
+$\Phi(S+cT)=\Phi(S)+c\Phi(T)$.
+
+Injectivity: if $\Phi(T)$ is the zero matrix, then all $[T(\mathbf{b}_{j})]_{C}=\mathbf{0}$, so
+$T(\mathbf{b}_{j})=\mathbf{0}$ for all $j$, and $T=\mathbf{0}$ because a linear map is
+determined by its values on a basis.
+
+Surjectivity: given a matrix $A=(a_{ij})$ of size $m\times n$. Define
+$T(\mathbf{b}_{j})=\sum_{i}a_{ij}\mathbf{c}_{i}$ and extend linearly; by the
+proposition
+on values on a basis, that extension exists and is unique. Column $j$ of $\Phi(T)$ is
+$(a_{ij})_{i}$, so $\Phi(T)=A$.
+
+Because $\Phi$ is an isomorphism and $\dim M_{m\times n}(\mathbb{R})=mn$, we get
+$\dim\mathcal{L}(V,W)=mn$.
+\end{proof}
+
+That count gives an immediate corollary.
+
+\begin{akibat}
+$\dim\mathcal{L}(V,V)=n^{2}$ if $\dim V=n$. For example,
+$\dim\mathcal{L}(P_{2},P_{2})=9$ and $\dim\mathcal{L}(P_{2},\mathbb{R}^{2})=6$.
+\end{akibat}
+
+That last result explains why a matrix is more than a computational device. The space of operators
+and the space of matrices have the same dimension and are linked by an isomorphism that respects composition,
+so every statement about operators has a counterpart about matrices. What is not
+inherited
+is simplicity of form: the same operator can be complicated in one basis and simple
+in
+another; the search for the best basis is the program of Chapter 9.
+
+\begin{tantangan}
+Find one linear map $T\colon\mathbb{R}^{3}\to\mathbb{R}^{3}$ that maps the unit square
+in the $xy$ plane to another unit square of area still $1$, yet
+$\operatorname{rank}(T)=2$. Explain why an area preserved in one plane does not
+force
+full rank.
+
+Hint 1: examine one plane, not the whole space. After that, ask where the third axis
+goes.
+
+Hint 2: place a $90^{\circ}$ rotation on the first two coordinates and send the third coordinate to zero,
+so that $T(\mathbf{e}_{3})=\mathbf{0}$. Compute the rank from the images of $\mathbf{e}_{1}$ and
+$\mathbf{e}_{2}$.
+
+If you get stuck, return to the section Linear transformations, kernel, and range, especially the definition of
+rank and the rank-nullity corollary.
+\end{tantangan}
+
+\begin{untukanak}
+Two classes at school can differ in size, yet have the same number of chairs. If the
+number is
+the same, every pupil in the first class can be paired with one chair in the second, with no
+empty
+chair and no pupil getting two chairs. As far as counting chairs goes, the two classes are
+equivalent.
+
+What is not equivalent is the pupils' names and faces. The chair pairing does not say
+who sits where; it only pairs. Different people can make different pairings,
+and all of them are legitimate.
+
+In this chapter we will learn when two spaces that look different may be regarded as the same for
+computational purposes, and when that assumption is misleading. The equivalence always depends
+on
+our choice, not on something already present in the spaces.
+
+If two classes have the same number of chairs, may the headmaster simply swap the class names
+just
+like that? The answer is no, and the reason is in this chapter.
+\end{untukanak}
+
+\section{A worked example}
+\tingkat{intermediate}
+
+Consider the matrix
+\[
+  A=\begin{pmatrix}1&2&1\\ 2&5&3\\ 3&7&4\end{pmatrix},
+  \qquad \text{third row}=\text{first row}+\text{second row}.
+\]
+We determine its rank, its nullity, and both bases, then examine the same operator in another
+basis.\index{rank}\index{nullity}
+
+Row elimination:
+\[
+  \begin{pmatrix}1&2&1\\ 2&5&3\\ 3&7&4\end{pmatrix}
+  \xrightarrow[R_{3}\leftarrow R_{3}-3R_{1}]{R_{2}\leftarrow R_{2}-2R_{1}}
+  \begin{pmatrix}1&2&1\\ 0&1&1\\ 0&1&1\end{pmatrix}
+  \xrightarrow{R_{3}\leftarrow R_{3}-R_{2}}
+  \begin{pmatrix}1&2&1\\ 0&1&1\\ 0&0&0\end{pmatrix}.
+\]
+Then $R_{1}\leftarrow R_{1}-2R_{2}$ gives the reduced echelon form
+\[
+  \begin{pmatrix}1&0&-1\\ 0&1&1\\ 0&0&0\end{pmatrix}.
+\]
+There are two nonzero rows, so $\operatorname{rank}A=2$ and $\det A=0$; the pivot columns are the
+first and the second.
+
+Kernel: from $x_{1}-x_{3}=0$ and $x_{2}+x_{3}=0$ we obtain $x_{1}=x_{3}$ and
+$x_{2}=-x_{3}$.
+Hence
+\[
+  \ker A=\operatorname{span}\{(1,-1,1)^{\top}\},\qquad \operatorname{nullity}(A)=1 .
+\]
+Rank-nullity is satisfied: $3=2+1$.
+
+Range: the columns of $A$ are $\mathbf{c}_{1}=(1,2,3)^{\top}$,
+$\mathbf{c}_{2}=(2,5,7)^{\top}$, and $\mathbf{c}_{3}=(1,3,4)^{\top}$. The first and the
+second
+pivot columns give the basis $\{\mathbf{c}_{1},\mathbf{c}_{2}\}$. The third column is not independent:
+$\mathbf{c}_{2}-\mathbf{c}_{1}=\mathbf{c}_{3}$, and that relation is exactly the kernel vector
+$(1,-1,1)$: $\mathbf{c}_{1}-\mathbf{c}_{2}+\mathbf{c}_{3}=\mathbf{0}$.
+
+Now consider $T(\mathbf{x})=A\mathbf{x}$ and the basis
+$B'=(\mathbf{b}'_{1},\mathbf{b}'_{2},\mathbf{b}'_{3})$ with
+$\mathbf{b}'_{1}=(1,1,0)$, $\mathbf{b}'_{2}=(1,0,1)$, $\mathbf{b}'_{3}=(0,1,1)$. Its
+transition matrix from the standard basis $B$ is
+\[
+  P=P_{B\leftarrow B'}=\begin{pmatrix}1&1&0\\ 1&0&1\\ 0&1&1\end{pmatrix},
+  \qquad
+  P^{-1}=\frac{1}{2}\begin{pmatrix}1&1&-1\\ 1&-1&1\\ -1&1&1\end{pmatrix}.
+\]
+The images of the new basis vectors are computed first:
+\[
+  A\mathbf{b}'_{1}=\begin{pmatrix}3\\7\\10\end{pmatrix},\quad
+  A\mathbf{b}'_{2}=\begin{pmatrix}2\\5\\7\end{pmatrix},\quad
+  A\mathbf{b}'_{3}=\begin{pmatrix}3\\8\\11\end{pmatrix}.
+\]
+Hence
+\[
+  AP=\begin{pmatrix}3&2&3\\ 7&5&8\\ 10&7&11\end{pmatrix},
+  \qquad
+  [T]_{B'}=P^{-1}AP=\begin{pmatrix}0&0&0\\ 3&2&3\\ 7&5&8\end{pmatrix}.
+\]
+Check one entry: first row, first column $\tfrac{1}{2}(3+7-10)=0$; second row,
+third column $\tfrac{1}{2}(3-8+11)=3$. The rest follows the same pattern.
+
+A first row that is entirely zero is no accident: all three images lie inside
+$\operatorname{span}(\mathbf{b}'_{2},\mathbf{b}'_{3})$, for instance
+$A\mathbf{b}'_{3}=(3,8,11)=3\mathbf{b}'_{2}+8\mathbf{b}'_{3}$. Hence the first coordinate of
+every image is zero, and the range of $T$ is contained in the coordinate plane of the first
+coordinate.
+
+The pattern is general. A zero row signals a range contained in a coordinate subspace
+of lower dimension; a zero column signals a basis vector that goes into the kernel. Both symptoms
+are visible only in the chosen basis, whereas rank and nullity do not change.
+
+A complete check:
+\[
+  \operatorname{rank}[T]_{B'}=2,\qquad \operatorname{trace}[T]_{B'}=0+2+8=10=\operatorname{trace}A,
+  \qquad \det[T]_{B'}=0=\det A .
+\]
+The equality of traces is not an arithmetic accident. The $j$-th diagonal entry is the coefficient of
+$\mathbf{b}'_{j}$ in the image $T(\mathbf{b}'_{j})$, that is, how much $T$
+preserves
+that direction itself. The sum does not depend on the directions chosen, only on the operator,
+so the trace serves as a cheap fingerprint: different traces mean the matrices are not similar, equal
+traces
+guarantee nothing.
+
+For $\mathbf{v}=(3,8,11)$ we have $[\mathbf{v}]_{B'}=(0,3,8)^{\top}$ and
+\[
+  [T]_{B'}[\mathbf{v}]_{B'}=\begin{pmatrix}0\\30\\79\end{pmatrix},
+\]
+whereas $T(\mathbf{v})=A\mathbf{v}=(30,79,109)^{\top}$ and its coordinates are
+$(0,30,79)^{\top}$. The two agree.
+
+The feature map $G\colon\mathbb{R}^{4}\to\mathbb{R}^{3}$
+is given by the matrix
+\[
+  G=\begin{pmatrix}1&2&0&1\\ 0&1&1&1\\ 1&3&1&2\end{pmatrix},
+\]
+whose third row is the sum of the first two rows. Elimination gives the reduced echelon
+form
+\[
+  \begin{pmatrix}1&0&-2&-1\\ 0&1&1&1\\ 0&0&0&0\end{pmatrix},
+\]
+so $\operatorname{rank}G=2$ and $\operatorname{nullity}(G)=4-2=2$. From
+$x_{1}=2x_{2}+x_{4}$ and $x_{3}=-x_{2}-x_{4}$:
+\[
+  \mathbf{k}_{1}=(-2,1,-1,0)^{\top},\qquad \mathbf{k}_{2}=(-1,0,-1,1)^{\top}.
+\]
+Both satisfy $G\mathbf{k}_{i}=\mathbf{0}$ and are linearly independent, so the changes that the
+three features do not see form a two-dimensional plane, not a single line: an attacker can
+shift the input in any direction of that plane without moving the score.
+
+\kertas{Repeat the computation with the basis $B''=(\mathbf{b}'_{2},\mathbf{b}'_{3},\mathbf{b}'_{1})$,
+that is, with $B'$ permuted. Predict how the zero row and the other entries move, then compute
+$[T]_{B''}$ via $Q^{-1}[T]_{B'}Q$ with $Q$ the corresponding permutation matrix. Check that
+rank
+and trace do not change, and explain why $\det A=0$ can be concluded directly from ``the third
+row is the sum of the first two rows''.}
+
+All the numbers above were checked with exact arithmetic (SymPy); the numpy and
+scipy checks are in the next section, including one number that is not exactly zero because of machine
+rounding.
+
+\section{Computational lab}
+\tingkat{advanced}
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from scipy.linalg import null_space
+
+A = np.array([[1., 2., 1.],
+              [2., 5., 3.],
+              [3., 7., 4.]])
+print("rank A  :", np.linalg.matrix_rank(A))
+print("det A   :", np.linalg.det(A))
+K = null_space(A)
+print("dim ker :", K.shape[1])
+print("basis ker:\n", np.round(K, 4))
+print("A @ K   :\n", np.round(A @ K, 12))
+
+P = np.array([[1., 1., 0.],
+              [1., 0., 1.],
+              [0., 1., 1.]])
+B = np.linalg.inv(P) @ A @ P
+print("[T]_B'  :\n", np.round(B, 10))
+print("difference :", np.linalg.norm(B - np.linalg.inv(P) @ A @ P))
+print("trace   :", round(np.trace(B), 10), round(np.trace(A), 10))
+print("rank B  :", np.linalg.matrix_rank(B))
+print("cond P  :", np.linalg.cond(P))
+
+v = np.array([3., 8., 11.])
+print("[v]_B'  :", np.round(np.linalg.solve(P, v), 4))
+print("[Av]_B' :", np.round(np.linalg.solve(P, A @ v), 4))
+print("B[v]_B' :", np.round(B @ np.linalg.solve(P, v), 4))
+
+x0 = np.array([1., 0., 0.])
+d = 0.5 * K[:, 0]
+print("A@d     :", np.round(A @ d, 12))
+print("shift   :", np.linalg.norm(A @ (x0 + d) - A @ x0))
+\end{verbatim}
+Actual output:
+\begin{verbatim}
+rank A  : 2
+det A   : 6.66133814775094e-16
+dim ker : 1
+basis ker:
+ [[ 0.5774]
+ [-0.5774]
+ [ 0.5774]]
+A @ K   :
+ [[-0.]
+ [ 0.]
+ [ 0.]]
+[T]_B'  :
+ [[0. 0. 0.]
+ [3. 2. 3.]
+ [7. 5. 8.]]
+difference : 0.0
+trace   : 10.0 10.0
+rank B  : 2
+cond P  : 2.0000000000000004
+[v]_B'  : [0. 3. 8.]
+[Av]_B' : [ 0. 30. 79.]
+B[v]_B' : [ 0. 30. 79.]
+A@d     : [-0.  0.  0.]
+shift   : 6.280369834735101e-16
+\end{verbatim}
+\end{lab}
+
+Four things are worth reading from that output.
+
+First, $\det A$ is not zero but $6.66\times10^{-16}$. This matrix is singular
+exactly, but binary fraction arithmetic knows no exact zero.
+\texttt{matrix\_rank} compares the largest and smallest singular values, not a simple threshold,
+so the rank is still reported as $2$; Chapter 22 discusses why such a threshold is necessary.
+
+The choice of singular values rather than the determinant: the determinant measures volume, and a volume can be
+very
+small without the rank changing. What determines the rank is the ratio of the smallest singular value
+to the
+largest.
+
+Second, \texttt{null\_space} returns a unit vector with entries $0.5774$,
+$-0.5774$, and $0.5774$, that is $(1,-1,1)^{\top}$ divided by $\sqrt{3}$, and
+$1/\sqrt{3}=0.57735$ agrees. The direction is the same as in the hand computation; its length is normalized
+because
+scipy chooses an orthonormal basis. A kernel basis is not unique, its dimension is.
+
+Third, the $[T]_{B'}$ reported by numpy matches the hand computation exactly, and the traces
+of both matrices agree, $10$. The difference of $P^{-1}AP$ computed twice is $0.0$ because
+$P$
+contains small integers. The condition number of $P$ is $2.0000000000000004$, quite
+small;
+a bad basis inflates the error, and that is discussed in Chapter 10.
+
+Fourth, the kernel direction is genuinely blind to $T$. Pushing $\mathbf{x}_{0}=(1,0,0)$ by
+half the kernel vector changes $\mathbf{x}_{0}$ visibly, yet $A\mathbf{x}$ shifts only
+$6.28\times10^{-16}$, that is, zero at machine precision.
+
+A final warning concerns the choice of basis. A nearly dependent basis makes coordinates
+explode, and the reported numbers lose their meaning.
+
+\begin{lab}
+\begin{verbatim}
+Pb = np.array([[1., 1., 0.],
+               [1., 1.001, 0.],
+               [0., 0., 1.]])
+print("cond Pb:", np.linalg.cond(Pb))
+print("coord   :", np.linalg.inv(Pb) @ v)
+print("error   :", np.linalg.norm(np.linalg.inv(Pb) @ (Pb @ v) - v))
+\end{verbatim}
+Actual output:
+\begin{verbatim}
+cond Pb: 4002.00075012484
+coord   : [-4997.  5000.    11.]
+error   : 4.823324033076557e-13
+\end{verbatim}
+\end{lab}
+
+The first two basis vectors differ only in the third digit, and the condition number of $P_{b}$
+reaches $4002$. The coordinates $(3,8,11)$ explode into $(-4997,\,5000,\,11)$. The reconstruction
+error
+is still $4.8\times10^{-13}$, but the relative error in the coordinates grows by a factor of
+the
+condition number; with 16 digits of precision, about 12 remain. In a worse basis that remainder
+is
+used up and the reported rank cannot be trusted.
+
+\begin{untukdosen}
+A teaching order that works in practice: coordinates first, linear maps second. Students who
+know
+coordinates before the abstract definition are readier to accept the representation matrix, because
+the matrix appears as a list of coordinates, not as a new object. After rank-nullity, move to
+change of basis.
+
+Two typical misconceptions. First, equating a vector with its coordinate list, then getting confused
+when two bases give two lists for the same vector. Second, the direction of the transition matrix
+backwards. A quick check: the columns must contain the addresses of the basis vectors, and the subscript is read
+right to left.
+
+Blackboard activity: give one operator on $\mathbb{R}^{2}$ and two bases. Ask half the
+class to compute $[T]_{B'}$ via the column definition, half via $P^{-1}AP$, then compare
+on
+the board; the noise that arises is usually exactly about the direction of $P$.
+
+A sign of readiness for the next step: students can explain why a zero row appears in the new
+matrix, without recomputing. If they connect it with a range
+contained in a coordinate subspace, they are ready for Chapter 9.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item The coordinates $[\mathbf{v}]_{B}$ are the unique list of coefficients with respect to an ordered basis;
+        the map $\mathbf{v}\mapsto[\mathbf{v}]_{B}$ is linear and bijective, but depends on the
+        basis.
+  \item The transition matrix contains the coordinates of the old basis in the new basis:
+        $[\mathbf{v}]_{C}=P_{C\leftarrow B}[\mathbf{v}]_{B}$, with
+        $P_{B\leftarrow C}=P_{C\leftarrow B}^{-1}$.
+  \item A linear map is determined by its values on a basis; $T$ is injective exactly when
+        $\ker T=\{\mathbf{0}\}$.
+  \item Rank-nullity: $\dim V=\dim\ker T+\dim\operatorname{im}T$; in equal dimensions,
+        injective is equivalent to surjective.
+  \item The representation matrix satisfies
+$[T(\mathbf{v})]_{C}=[T]_{C\leftarrow B}[\mathbf{v}]_{B}$, composition becomes matrix
+        multiplication, and $[T]_{B'}=P^{-1}[T]_{B}P$.
+  \item $\dim\mathcal{L}(V,W)=mn$ if $\dim V=n$, $\dim W=m$; two finite-dimensional spaces
+        are isomorphic exactly when their dimensions are equal.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item With $B'=(\mathbf{b}'_{1},\mathbf{b}'_{2},\mathbf{b}'_{3})$ as in the worked
+example, determine $[\mathbf{w}]_{B'}$ for $\mathbf{w}=(2,-1,3)$, then check the result
+        by multiplying back.
+
+\item Prove that every isomorphism $V\to\mathbb{R}^{n}$ has the form $\varphi_{B}$ for
+        some basis $B$, and explain why an isomorphism to $\mathbb{R}^{n}$ is not unique.
+        (Hint: take the preimages of the standard basis, then show that this set is a basis.)
+
+  \item For $A=\begin{pmatrix}0&1&0\\ 0&0&2\\ 0&0&0\end{pmatrix}$, determine the rank, the nullity,
+        a basis of the kernel, and a basis of the range. Explain the connection with the derivative operator on
+        $P_{2}$.
+
+\item Prove $\operatorname{rank}(S\circ T)\le\min(\operatorname{rank}S,\operatorname{rank}T)$
+        for linear maps that are defined. Use
+        $\operatorname{im}(S\circ T)\subseteq\operatorname{im}S$ and compare the kernels.
+        (Hint: for the second bound, compare $\ker T$ with $\ker(S\circ T)$ via
+        rank-nullity.)
+
+\item Assess this claim: \emph{two square matrices of the same size that have the same rank
+are necessarily similar.} Decide whether it is true, false, or not supported by enough evidence, with reasons and a counterexample if needed.
+
+\item Let $T\colon\mathbb{R}^{3}\to\mathbb{R}^{2}$ with
+        $T(x,y,z)=(x+2y,\;y+z)$. Compute $[T]_{C\leftarrow B}$ for
+$B=(\,(1,0,0),(1,1,0),(1,1,1)\,)$ and $C=(\,(1,1),(1,0)\,)$, then check the formula at
+        $\mathbf{v}=(1,2,3)$.
+        (Hint: $[T]_{C\leftarrow B}=C^{-1}AB$; compute $AB$ first, then solve
+        $C\mathbf{x}=\mathbf{y}$ for each of its columns.)
+
+  \item Prove: if $U$ is a subspace of a finite-dimensional $V$ and $\dim U=\dim V$, then $U=V$.
+
+  \item Prove that if $A$ and $B$ are similar then $\operatorname{nullity}(A)
+        =\operatorname{nullity}(B)$. Explain why that statement is equivalent to
+        ``the kernel does not depend on the basis''.
+
+  \item The feature map $F\colon\mathbb{R}^{4}\to\mathbb{R}^{3}$ is given by the matrix
+        \[
+          F=\begin{pmatrix}1&0&2&1\\ 0&1&1&3\\ 1&1&3&4\end{pmatrix}.
+        \]
+        Determine the rank and nullity of $F$, give one nonzero kernel vector, and explain why
+        that vector is a direction of change that does not shift a single feature.
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+What is proved in this chapter are statements about finite dimension over the field $\mathbb{R}$:
+rank-nullity, uniqueness of the representation matrix, the equivalence of isomorphism with equality of
+dimension,
+and $\dim\mathcal{L}(V,W)=mn$. All of them are theorems, not conventions. The claim ``a matrix is its transformation'' is merely popular; without a choice of basis that claim is meaningless, and the zero-row
+example
+above shows that the form of a matrix depends on the basis.
+
+Primary sources: Axler, \emph{Linear Algebra Done Right} 4th edition, sections 3A to 3D,
+contain
+spaces of linear maps, kernel and range, matrices, isomorphisms, and change of basis;
+rank-nullity
+there is called the fundamental theorem for linear maps. Hoffman and Kunze, \emph{Linear
+Algebra}
+2nd edition, Chapter 3, is denser but equivalent.
+
+An honest open question. The classification of operators up to similarity is not given
+here; Chapter 9 stops at diagonalization. Numerically, the rank decision depends on a
+threshold and
+condition numbers; this chapter uses library output without discussing its stability, a debt paid
+in Chapter 22. Limit of validity: in infinite-dimensional spaces the whole argument collapses,
+rank-nullity
+fails, and isomorphism is no longer equivalent to equality of dimension.
+\end{untukpeneliti}
+
+\peta{This chapter follows Anton, \emph{Elementary Linear Algebra} 11th edition, sections 4.4, 4.6,
+4.8, and 8.1 to 8.5, with the abstract counterpart in Axler, \emph{Linear Algebra Done Right}
+4th
+edition, Chapter 3, and Hoffman-Kunze, \emph{Linear Algebra} 2nd edition, Chapter 3.}

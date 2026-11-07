@@ -1,0 +1,580 @@
+% Kunci jawaban Bab 6--15. Berkas ini di-\input langsung di dalam document.
+% Setiap angka berasal dari skrip cek di direktori kerja sementara.
+
+\section*{Bab 6: Ruang Vektor dan Subruang}
+\begin{enumerate}[label=\textbf{6.\arabic*}]
+  \item $W$ himpunan solusi sistem homogen $x-2y+z=0$, $x+y=0$, jadi tertutup
+        terhadap jumlah dan perkalian skalar. Dari $x=-y$ dan $z=3y$ didapat
+        $W=\operatorname{span}\{(-1,1,3)\}$: basis satu vektor, $\dim W=1$.
+
+  \item Himpunan $D=\{A:a_{11}=a_{22}=0\}$ tertutup terhadap jumlah dan skalar,
+        sebab kedua entri diagonal tetap nol. Setiap anggotanya
+        $\begin{pmatrix}0&b\\c&0\end{pmatrix}=bE_{12}+cE_{21}$, jadi
+        $\{E_{12},E_{21}\}$ basis dan $\dim D=2$.
+
+  \item $(1+x)+(1+x^{2})=2+x+x^{2}$: himpunan bergantung linear, sehingga
+        $\dim\operatorname{span}S=2$. Vektor $x$ tidak di rentang itu, sebab
+        $a(1+x)+b(1+x^{2})$ menuntut $a=1$ dan $a+b=0$ sekaligus. Jadi
+        $\{1+x,\ 1+x^{2},\ x\}$ basis $P_{2}$.
+
+  \item Kumpulkan koefisien: $(c_{1}+c_{3})\mathbf{v}_{1}+(c_{1}+c_{2})
+        \mathbf{v}_{2}+(c_{2}+c_{3})\mathbf{v}_{3}=\mathbf{0}$. Kebebasan
+        $\{\mathbf{v}_{1},\mathbf{v}_{2},\mathbf{v}_{3}\}$ memberi tiga persamaan
+        homogen dengan determinan $2\ne0$, jadi $c_{1}=c_{2}=c_{3}=0$.
+
+  \item $U$ bidang $xy$, $W$ bidang $x=y$. Irisannya
+        $U\cap W=\operatorname{span}\{(1,1,0)\}$, jadi $\dim(U\cap W)=1$ dan
+        $\dim(U+W)=2+2-1=3$. Rumus cocok: $U+W=\mathbb{R}^{3}$, dan numpy
+        memberi rank gabungan keempat vektor pembangun sama dengan $3$.
+
+  \item Eliminasi memberi pivot di kolom $1,2,4$, jadi rank $3$; basis ruang
+        kolomnya $(1,2,0)$, $(2,4,1)$, dan $(4,9,1)$. Nullity $4-3=1$ dengan
+        basis $\{(-1,-1,1,0)\}$; \texttt{matrix\_rank} dan
+        \texttt{null\_space} mengonfirmasi kedua angka.
+
+  \item Salah. Di $\mathbb{R}^{2}$ ambil $U_{1}=\operatorname{span}\{(1,0)\}$,
+        $U_{2}=\operatorname{span}\{(0,1)\}$, $U_{3}=\operatorname{span}\{(1,1)\}$.
+        Semua irisan berpasangan $\{\mathbf{0}\}$, tetapi
+        $(1,1)=(1,0)+(0,1)$: penyajian tidak tunggal, dan
+        $\dim U_{1}+\dim U_{2}+\dim U_{3}=3>2=\dim\mathbb{R}^{2}$.
+
+  \item Ambil basis $\mathbf{u}_{1},\dots,\mathbf{u}_{n-1}$ dari $U$. Himpunan itu
+        bebas linear dan berukuran kurang dari $n$, jadi belum merentang $V$;
+        ada $\mathbf{v}\in V$ di luar rentangnya. Teorema perluasan membuat
+        $\mathbf{u}_{1},\dots,\mathbf{u}_{n-1},\mathbf{v}$ basis $V$, sehingga
+        $V=U\oplus\operatorname{span}\{\mathbf{v}\}$.
+
+  \item Polinomial berderajat paling tinggi $4$ yang lenyap di $0$ dan $1$ habis
+        dibagi $x(x-1)$, jadi $p=x(x-1)(a+bx+cx^{2})$: tiga parameter bebas,
+        dimensi $3$. Basis $\{x(x-1),\,x^{2}(x-1),\,x^{3}(x-1)\}$. Matriks
+        evaluasi $2\times5$ berperingkat $2$, jadi nullity $5-2=3$.
+
+  \item Koordinat memenuhi $c_{1}+c_{2}+c_{3}+c_{4}=4$, $c_{2}+c_{3}+c_{4}=2$,
+        $c_{3}+c_{4}=-5$, $c_{4}=1$. Dari bawah: $c_{4}=1$, $c_{3}=-6$,
+        $c_{2}=7$, $c_{1}=2$. Jadi $[q]_{B}=(2,7,-6,1)$, sama dengan hasil
+        \texttt{numpy.linalg.solve}.
+\end{enumerate}
+
+\section*{Bab 7: Basis, Dimensi, dan Transformasi Linear}
+\begin{enumerate}[label=\textbf{7.\arabic*}]
+  \item Selesaikan $c_{1}(1,1,0)+c_{2}(1,0,1)+c_{3}(0,1,1)=(2,-1,3)$, yaitu
+        $c_{1}+c_{2}=2$, $c_{1}+c_{3}=-1$, $c_{2}+c_{3}=3$. Hasilnya
+        $c=(-1,3,0)$, jadi $[\mathbf{w}]_{B'}=(-1,3,0)$. Balik:
+        $-1(1,1,0)+3(1,0,1)+0=(2,-1,3)$.
+
+  \item Misal $\varphi$ isomorfisme. Karena $\varphi$ bijektif,
+        $\mathbf{b}_{i}=\varphi^{-1}(\mathbf{e}_{i})$ terdefinisi; karena
+        $\varphi^{-1}$ linear dan bijektif, $\{\mathbf{b}_{i}\}$ basis dan
+        $\varphi=\varphi_{B}$. Tidak tunggal sebab setiap basis $B$ memberi
+        isomorfisme yang berbeda.
+
+  \item $A$ berperingkat $2$ (pivot di kolom $2,3$), nullity $1$. Inti:
+        $x_{2}=0$, $2x_{3}=0$, jadi $\ker A=\operatorname{span}\{(1,0,0)\}$.
+        Jangkauan $\operatorname{span}\{(1,0,0),(0,2,0)\}$. Ini matriks turunan
+        pada $P_{2}$ dalam basis $(1,x,x^{2})$: $D(1)=0$, $D(x)=1$,
+        $D(x^{2})=2x$.
+
+  \item $\operatorname{im}(S\circ T)\subseteq\operatorname{im}S$ memberi
+        rank$(S\circ T)\le$ rank $S$. Selain itu
+        $\ker T\subseteq\ker(S\circ T)$, jadi nullity$(S\circ T)\ge$ nullity $T$;
+        rank-nullity pada kedua peta memberi rank$(S\circ T)\le$ rank $T$.
+
+  \item Salah. $\begin{pmatrix}1&0\\0&0\end{pmatrix}$ dan
+        $\begin{pmatrix}0&1\\0&0\end{pmatrix}$ sama-sama berperingkat $1$, tetapi
+        yang kedua nilpoten (jejak $0$, kuadrat nol) sedangkan yang pertama
+        berjejak $1$. Rank hanya mengukur dimensi jangkauan.
+
+  \item $T$ mengirim $\mathbf{b}_{1},\mathbf{b}_{2},\mathbf{b}_{3}$ ke $(1,0)$,
+        $(3,1)$, $(3,2)$. Koordinat terhadap $C$ ialah $(x,y)\mapsto(y,x-y)$,
+        jadi kolomnya $(0,1),(1,2),(2,1)$ dan
+        $[T]_{C\leftarrow B}=\begin{pmatrix}0&1&2\\1&2&1\end{pmatrix}$.
+        Untuk $\mathbf{v}=(1,2,3)$: $[\mathbf{v}]_{B}=(-1,-1,3)$ memberi
+        $(5,0)$, sama dengan $[T(\mathbf{v})]_{C}$.
+
+  \item Ambil basis $\mathbf{u}_{1},\dots,\mathbf{u}_{m}$ dari $U$ dengan
+        $m=\dim V$. Ia bebas linear dan berukuran $\dim V$, jadi merentang $V$;
+        maka setiap $\mathbf{v}\in V$ termuat di $U$, yaitu $U=V$.
+
+  \item $B=P^{-1}AP$, jadi $B\mathbf{x}=\mathbf{0}\iff AP\mathbf{x}=\mathbf{0}
+        \iff P\mathbf{x}\in\ker A$. Pemetaan $\mathbf{x}\mapsto P\mathbf{x}$
+        isomorfisme dari $\ker B$ ke $\ker A$, sehingga nullity sama. Kesamaan
+        itu persis pernyataan bahwa dimensi inti tidak bergantung basis.
+
+  \item Baris ketiga jumlah dua baris pertama, jadi rank $2$ dan nullity
+        $4-2=2$. Vektor inti tak nol $(-2,-1,1,0)$: $F(-2,-1,1,0)=\mathbf{0}$.
+        Arah itu tidak menggeser satu pun fitur, sebab
+        $F(\mathbf{x}+t\mathbf{k})=F(\mathbf{x})$ untuk semua $t$.
+\end{enumerate}
+
+\section*{Bab 8: Sistem Persamaan Linear, Determinan, dan Invers}
+\begin{enumerate}[label=\textbf{8.\arabic*}]
+  \item Pivot yang muncul $1$, $1$, $-1$; tidak ada baris yang perlu ditukar, jadi
+        $\det A=1\cdot1\cdot(-1)=-1$. Mundur: $z=3$, $y=-1$, $x=2$. Cramer
+        memberi $\det A_{x}=-2$, $\det A_{y}=1$, $\det A_{z}=-3$; dibagi $-1$
+        hasilnya $(2,-1,3)$.
+
+  \item Ekspansi kofaktor memberi $\det M=0$. Penyangkalnya
+        $\mathbf{v}=(1,-1,-1,1)$: tiap baris memberi $0$, misalnya
+        $0-1-2+3=0$. Jadi $\det M=0$ tanpa ekspansi. numpy memberi
+        $5{,}3\times10^{-15}$, bukan nol, karena eliminasi mengurangkan bilangan
+        hampir sama dan galat pembulatan ikut terhitung.
+
+  \item Rumus Leibniz: $\det A=\sum_{\sigma}\operatorname{sgn}(\sigma)
+        \prod_{i}a_{i\sigma(i)}$. Bila kolom $j$ dan $k$ sama, pasangkan tiap
+        $\sigma$ dengan $\sigma\circ(j\,k)$; hasilkali sukunya sama tetapi
+        tandanya berlawanan, jadi jumlah seluruh suku nol.
+
+  \item Kalikan $A\operatorname{adj}A=(\det A)I$ dengan determinan:
+        $\det A\cdot\det(\operatorname{adj}A)=(\det A)^{n}$, sebab
+        $\det(cI)=c^{n}$. Bila $\det A\ne0$, bagi dengan $\det A$. Bila
+        $\det A=0$, kedua ruas nol untuk $n\ge2$, jadi kesamaannya tetap sah.
+
+  \item Salah sebagai pernyataan umum. Kepekaan diukur
+        $\kappa(A)=\lVert A\rVert\,\lVert A^{-1}\rVert$, bukan $\det A$:
+        $A=\varepsilon I$ punya $\det A=\varepsilon^{n}$ sangat kecil tetapi
+        $\kappa=1$. Determinan kecil baru berbahaya bila disertai
+        $\lVert A^{-1}\rVert$ besar.
+
+  \item $\lVert A\rVert_{1}=2+\varepsilon$ dan
+        $A^{-1}=\frac1\varepsilon\begin{pmatrix}1+\varepsilon&-1\\-1&1\end{pmatrix}$
+        memberi $\lVert A^{-1}\rVert_{1}=(2+\varepsilon)/\varepsilon$. Jadi
+        $\kappa_{1}(A)=(2+\varepsilon)^{2}/\varepsilon$. Syarat $\kappa>10^{6}$
+        ialah $\varepsilon<4{,}000016\times10^{-6}$; pada
+        $\varepsilon=4\times10^{-6}$ numpy memberi $1{,}000004\times10^{6}$.
+
+  \item Menambah kelipatan baris berarti mengalikan kiri dengan
+        $E=I+cE_{ij}$, dan $\det E=1$, jadi $\det B=\det A$. Karena $B=EA$,
+        maka $B^{-1}=A^{-1}E^{-1}$ dengan $E^{-1}=I-cE_{ij}$.
+
+  \item $A+AD=A(I+D)$, dan $I+D$ diagonal, jadi
+        $\det(A+AD)=\det A\prod_{i}(1+d_{i})$. Invertibel tepat bila
+        $\det A\ne0$ dan tidak ada $d_{i}=-1$. Contoh $\det A=5$ dengan
+        $D=\operatorname{diag}(2,-\tfrac12,3)$: kiri $30$, kanan
+        $5\cdot3\cdot\tfrac12\cdot4=30$.
+
+  \item Dengan $A=\begin{pmatrix}1&2&3\\0&1&4\\5&6&0\end{pmatrix}$,
+        $\det A=1$ dan
+        \[
+          \operatorname{adj}A=A^{-1}=
+          \begin{pmatrix}-24&18&5\\20&-15&-4\\-5&4&1\end{pmatrix},
+        \]
+        sama dengan \texttt{numpy.linalg.inv} sampai galat mesin. Untuk
+        $\det A=7$:
+        $\begin{pmatrix}2&1&0\\1&1&0\\0&0&7\end{pmatrix}^{-1}$ memuat
+        $1/7$ di entri ketiga, sebab pembagian oleh $7$ tidak terhindarkan.
+\end{enumerate}
+
+\section*{Bab 9: Nilai Eigen dan Diagonalisasi}
+\begin{enumerate}[label=\textbf{9.\arabic*}]
+  \item $\operatorname{tr}A_{1}=5$ dan $\det A_{1}=4$, jadi $\lambda=4$ dan
+        $\lambda=1$. Vektor eigen: $(1,1)$ untuk $\lambda=4$, $(1,-2)$ untuk
+        $\lambda=1$. Maka $P=\begin{pmatrix}1&1\\1&-2\end{pmatrix}$ dan
+        $D=\operatorname{diag}(4,1)$; $P^{-1}A_{1}P=D$ terverifikasi.
+
+  \item $\lambda=5,2$ dengan vektor eigen $(2,1)$ dan $(1,-1)$. Untuk
+        $k\ge1$,
+        \[
+          G^{k}=\frac13
+          \begin{pmatrix}2\cdot5^{k}+2^{k}&2\cdot5^{k}-2\cdot2^{k}\\
+          5^{k}-2^{k}&5^{k}+2\cdot2^{k}\end{pmatrix},
+        \]
+        sehingga
+        $G^{10}=\begin{pmatrix}6510758&6509734\\3254867&3255891\end{pmatrix}$,
+        sama dengan \texttt{matrix\_power}.
+
+  \item $A\mathbf{v}=\lambda\mathbf{v}$ memberi
+        $A^{2}\mathbf{v}=\lambda^{2}\mathbf{v}$; induksi memberi
+        $A^{k}\mathbf{v}=\lambda^{k}\mathbf{v}$. Kebalikannya gagal:
+        $A=\begin{pmatrix}0&-1\\1&0\end{pmatrix}$ punya $A^{2}=-I$ dengan nilai
+        eigen $-1$, sedangkan $A$ sendiri tidak punya nilai eigen real.
+
+  \item $0$ nilai eigen $\iff$ ada $\mathbf{v}\ne\mathbf{0}$ dengan
+        $A\mathbf{v}=\mathbf{0}$ $\iff$ $\ker A\ne\{\mathbf{0}\}$ $\iff$ $A$ tak
+        invertibel. Bila $A$ invertibel dan $A\mathbf{v}=\lambda\mathbf{v}$, maka
+        $\lambda\ne0$ dan $A^{-1}\mathbf{v}=\lambda^{-1}\mathbf{v}$.
+
+  \item Salah. $\begin{pmatrix}1&0\\0&1\end{pmatrix}$ dan
+        $\begin{pmatrix}1&1\\0&1\end{pmatrix}$ sama-sama berpolinomial
+        karakteristik $(\lambda-1)^{2}$, tetapi yang kedua defektif:
+        $\operatorname{rank}(J-I)=1$, jadi nullity $1<2$.
+
+  \item $\lambda I-A$ dan transposnya berdeterminan sama, sebab
+        $\det X=\det X^{\top}$; maka polinomial karakteristik $A$ dan
+        $A^{\top}$ sama dan nilai eigennya sama. Vektor eigennya tidak:
+        $A$ dan $A^{\top}$ punya ruang eigen berbeda begitu $A$ tak simetris.
+
+  \item $K-2I=\begin{pmatrix}0&1&0\\0&0&0\\0&0&-1\end{pmatrix}$ berperingkat $2$,
+        jadi nullity $=1$. Multiplisitas aljabar $\lambda=2$ adalah $2$,
+        geometriknya $1$; karena $1<2$, $K$ tidak dapat didiagonalkan.
+
+  \item $\lambda=1$ dan $0{,}5$. Titik tetap dari $x=4y$ dengan $x+y=1$ ialah
+        $(0{,}8;0{,}2)$. Galat menyusut seperti $0{,}5^{k}$; karena
+        $0{,}5^{19}=1{,}91\times10^{-6}>\allowbreak10^{-6}$ dan
+        $0{,}5^{20}=9{,}54\times10^{-7}$, perlu $20$ langkah.
+
+  \item Matriks tercetak memberi
+        $\operatorname{tr}(B^{10})=(-19)+21+1024=1026$, dan $1^{10}+1^{10}+2^{10}=1026$: cocok. Untuk $A$ yang
+        dapat didiagonalkan, $A^{k}=PD^{k}P^{-1}$ memberi
+        $\operatorname{tr}(A^{k})=\operatorname{tr}(D^{k})=\sum_{i}\lambda_{i}^{k}$.
+        Untuk $B$ yang defektif langkah itu tidak tersedia, sebab $B$ tidak punya
+        $P$ dan $D$. Gantinya pakai bentuk segitiga Schur, $B=QTQ^{-1}$ dengan $T$
+        segitiga atas berdiagonal $\lambda_{i}=1,1,2$; maka $B^{k}=QT^{k}Q^{-1}$,
+        dan $T^{k}$ tetap segitiga atas dengan diagonal $\lambda_{i}^{k}$, sehingga
+        $\operatorname{tr}(B^{k})=\operatorname{tr}(T^{k})
+        =\sum_{i}\lambda_{i}^{k}=1026$. Jejak invarian terhadap basis
+        ($\operatorname{tr}XY=\operatorname{tr}YX$), jadi hasilnya tidak bergantung
+        pada $Q$. Kesimpulannya: diagonalisasi dipakai pada bukti hanya untuk kasus
+        yang dapat didiagonalkan; untuk kasus defektif bukti berganti ke bentuk
+        segitiga, rumusnya tetap sama, dan faktor $k$ yang muncul di entri $B^{k}$
+        tidak pernah menyentuh diagonal.
+\end{enumerate}
+
+\section*{Bab 10: Ortogonalitas, SVD, dan Kuadrat Terkecil}
+\begin{enumerate}[label=\textbf{10.\arabic*}]
+  \item $(1,0,0)$ dan $(0,1,1)$ sudah ortogonal, jadi
+        $\operatorname{proj}_{W}\mathbf{b}=1\cdot(1,0,0)+\frac{4}{2}(0,1,1)
+        =(1,2,2)=\mathbf{b}$. Karena $\mathbf{b}\in W$, jaraknya $0$;
+        \texttt{qr} memberi $QQ^{\top}\mathbf{b}=(1,2,2)$ juga.
+
+  \item $\mathbf{b}=\mathbf{p}+\mathbf{r}$ dengan $\mathbf{r}\perp W$, jadi
+        $\mathbf{r}\perp\mathbf{p}$ dan Pythagoras memberi
+        $\lVert\mathbf{b}\rVert^{2}=\lVert\mathbf{p}\rVert^{2}
+        +\lVert\mathbf{r}\rVert^{2}$. Bila $\mathbf{p}$ bukan proyeksi
+        ortogonal, $\mathbf{r}$ tidak tegak lurus $\mathbf{p}$; pada basis miring
+        di $\mathbb{R}^{2}$ muncul suku silang $2\langle\mathbf{p},\mathbf{r}
+        \rangle\ne0$.
+
+  \item Kolom ortonormal: $(A^{\top}A)_{ij}=\mathbf{a}_{i}^{\top}\mathbf{a}_{j}
+        =\delta_{ij}$, jadi $A^{\top}A=I$. Persamaan normal
+        $A^{\top}A\hat{\mathbf{x}}=A^{\top}\mathbf{b}$ langsung memberi
+        $\hat{\mathbf{x}}=A^{\top}\mathbf{b}$. Semua nilai singular $A$ sama
+        dengan $1$, jadi $\kappa(A)=1$.
+
+  \item Salah. $A=\begin{pmatrix}1&0\\0&1\\1&1\end{pmatrix}$ memberi
+        $A^{\top}A=\begin{pmatrix}2&1\\1&2\end{pmatrix}$ yang invertibel
+        ($\det=3$), tetapi barisnya bergantung: baris ketiga jumlah dua baris
+        pertama. Yang dijamin $A^{\top}A$ invertibel hanyalah kebebasan kolom.
+
+  \item Nilai singular $2$ dan $0$, jadi rank $1$;
+        $U=V=\frac{1}{\sqrt2}\begin{pmatrix}1&1\\1&-1\end{pmatrix}$ (sampai
+        tanda). $A^{+}=\frac14\begin{pmatrix}1&1\\1&1\end{pmatrix}$, sehingga
+        $A^{+}\mathbf{b}=(1,1)$ dan sisanya $(-1,1)$ dengan norma
+        $\sqrt2=1{,}4142$; \texttt{pinv} sama.
+
+  \item 
+Tulis $\mathbf{b}=A\hat{\mathbf{x}}+\mathbf{r}$ dengan
+        $A\hat{\mathbf{x}}\in\operatorname{col}A$. Untuk
+        $\mathbf{h}\in\operatorname{col}A$, fungsi
+        $t\mapsto\lVert\mathbf{b}-A(\hat{\mathbf{x}}+t\mathbf{h})\rVert^{2}$ minimum
+        di $t=0$, sehingga $\langle\mathbf{r},\mathbf{h}\rangle=0$; ini arah
+        ``perlu''. Sebaliknya, bila $\langle\mathbf{r},\mathbf{h}\rangle=0$ untuk
+        setiap $\mathbf{h}\in\operatorname{col}A$, maka
+        $\lVert\mathbf{b}-A\mathbf{x}\rVert^{2}=\lVert\mathbf{r}\rVert^{2}+\lVert
+        A(\hat{\mathbf{x}}-\mathbf{x})\rVert^{2}\ge\lVert\mathbf{r}\rVert^{2}$, jadi
+        $\hat{\mathbf{x}}$ meminimumkan. Kebebasan kolom dipakai agar
+        $\hat{\mathbf{x}}$ tunggal.
+
+  \item $\mathbf{u}_{1}=(1,1,1)/\sqrt3$; sisa $(1,1,0)-\frac23(1,1,1)
+        =\frac13(1,1,-2)$, jadi $\mathbf{u}_{2}=(1,1,-2)/\sqrt6$; lalu
+        $\mathbf{u}_{3}=(1,-1,0)/\sqrt2$. $\lVert Q^{\top}Q-I\rVert$:
+        $6{,}7\times10^{-16}$ (tangan), $3{,}1\times10^{-16}$ (\texttt{qr}).
+        Tanda boleh berbeda sebab tiap $\mathbf{u}_{i}$ hanya tertentu sampai
+        $\pm$.
+
+  \item $AA^{\top}\mathbf{x}=\mathbf{0}$ memberi
+        $\lVert A^{\top}\mathbf{x}\rVert^{2}=\mathbf{x}^{\top}AA^{\top}
+        \mathbf{x}=0$, jadi $A^{\top}\mathbf{x}=\mathbf{0}$; kebebasan baris
+        membuat $\mathbf{x}=\mathbf{0}$. Maka $AA^{\top}$ persegi dan invertibel.
+        Untuk $\mathbf{x}=A^{\top}(AA^{\top})^{-1}\mathbf{b}$ berlaku
+        $A\mathbf{x}=\mathbf{b}$ dan
+        $\mathbf{x}\in\operatorname{col}A^{\top}=(\ker A)^{\perp}$.
+
+  \item Dengan bacaan terakhir $314{,}3$: $\sum y=1540{,}5$,
+        $\sum Ty=157161{,}7$, determinan $50$. Cramer:
+        $a=(52030\cdot1540{,}5-510\cdot157161{,}7)/50=-5{,}04$ dan
+        $b=(5\cdot157161{,}7-510\cdot1540{,}5)/50=3{,}07$;
+        \texttt{lstsq} sama. Intercept bergeser $-10{,}10$, lereng $+0{,}10$;
+        titik ujung berleverage $0{,}6$, terbesar di antara kelimanya.
+
+  \item $B$ berperingkat $1$, jadi $B^{+}$ memberi
+        $\mathbf{x}^{+}=\frac{1}{70}(1,2)\approx(0{,}01429;\,0{,}02857)$ dan
+        $\mathbf{k}=(-2,1)$. Semua penyelesaian $\mathbf{x}^{+}+t\mathbf{k}$;
+        karena $\mathbf{x}^{+}\perp\mathbf{k}$,
+        $\lVert\mathbf{x}^{+}+t\mathbf{k}\rVert^{2}=\lVert\mathbf{x}^{+}
+        \rVert^{2}+t^{2}\lVert\mathbf{k}\rVert^{2}$ minimum di $t=0$.
+\end{enumerate}
+
+\section*{Bab 11: Kekontinuan dan Kekontinuan Seragam}
+\begin{enumerate}[label=\textbf{11.\arabic*}]
+  \item $\lvert(2x-1)-5\rvert=2\lvert x-3\rvert$, jadi $\delta=\varepsilon/2$
+        sah dan terbesar: pada $x=3+\delta$ nilainya tepat $\varepsilon$.
+        Pilihan $\delta=\varepsilon/3$ juga sah, tetapi hanya memakai sepertiga
+        ruang yang tersedia.
+
+  \item $\lvert x^{2}-c^{2}\rvert=\lvert x-c\rvert\,\lvert x+c\rvert$; dengan
+        $\lvert x-c\rvert<1$ didapat $\lvert x+c\rvert\le2\lvert c\rvert+1$,
+        jadi $\delta=\min(1,\varepsilon/(2\lvert c\rvert+1))$. Di $c=2$:
+        $\delta=0{,}002$; di $c=100$: $\delta=4{,}975\times10^{-5}$.
+
+  \item Sebagian benar. $1/x$ memang kontinu di setiap titik $(0,1]$. Tetapi
+        kesimpulan seragamnya keliru: $(0,1]$ tidak kompak dan $1/x$ tak terbatas
+        di dekat $0$. Penyangkalnya $x_{n}=1/n$, $y_{n}=1/(n+1)$:
+        $\lvert x_{n}-y_{n}\rvert\to0$ tetapi selisih nilainya $1$.
+
+  \item Diberi $\varepsilon$, ambil $\delta_{f}$ dan $\delta_{g}$; dengan
+        $\delta=\min(\delta_{f},\delta_{g})$,
+        $\lvert(f+g)(x)-(f+g)(y)\rvert\le\varepsilon/2+\varepsilon/2$.
+        Untuk $fg$: $f=g=x$ pada $\mathbb{R}$ dengan $x_{n}=n$,
+        $y_{n}=n+1/n$ memberi selisih $2+1/n^{2}\ge2$.
+
+  \item $\lvert\sqrt x-\sqrt y\rvert^{2}\le\lvert x-y\rvert$ (rasionalkan
+        penyebutnya), jadi $\delta=\varepsilon^{2}$ bekerja untuk semua
+        $x,y\ge0$. Yang dipakai hanya $x,y\ge0$ agar akarnya terdefinisi;
+        ketertutupan tidak perlu sebab bukti tidak menyentuh titik limit di luar
+        daerah.
+
+  \item 
+$(1+\delta)^{3}-1=\varepsilon$ memberi
+        $\delta=(1+\varepsilon)^{1/3}-1=0{,}0033223$. Pilihan
+        $\delta=\varepsilon/3=0{,}0033333$ justru terlalu besar:
+        $(1+\varepsilon/3)^{3}-1-\varepsilon=\varepsilon^{2}/3+\varepsilon^{3}/27>0$
+        untuk setiap $\varepsilon>0$, jadi batasnya dilanggar dan pilihan itu tidak
+        sah.
+
+  \item Dengan $\delta=\varepsilon/2$: selisih terbesar
+        $2\delta-\delta^{2}=0{,}009975<\varepsilon$, jadi aman tetapi tidak
+        optimal. Dengan $\delta=1-\sqrt{1-\varepsilon}=0{,}0050126$: selisih
+        terbesar $1-(1-\delta)^{2}=\varepsilon$ tepat, dicapai di
+        $x=1-\delta$.
+
+  \item $\lvert f\rvert$ kontinu pada $[a,b]$ kompak, jadi mencapai minimum $m$;
+        karena $f\ne0$ di mana-mana, $m>0$ dan $\lvert f\rvert\ge m$. Untuk
+        $f(x)=x$ pada $(0,1)$ kesimpulannya gagal: infimumnya $0$ dan tidak
+        tercapai.
+
+  \item Di $c\ne0$ ambil $q_{n}\to c$ rasional dan $r_{n}\to c$ irasional; nilai
+        fungsinya menuju $c$ dan $-c$, berbeda, jadi $f$ tidak kontinu. Di $0$:
+        $\lvert f(x)\rvert=\lvert x\rvert\to0=f(0)$. Fungsi $\lvert f\rvert$
+        ialah $x\mapsto\lvert x\rvert$, kontinu di mana-mana; tidak ada
+        kontradiksi karena $\lvert f\rvert$ membuang informasi tanda.
+\end{enumerate}
+
+\section*{Bab 12: Turunan: Satu dan Banyak Variabel}
+\begin{enumerate}[label=\textbf{12.\arabic*}]
+  \item $\bigl((2+h)^{3}-8\bigr)/h=12+6h+h^{2}\to12$. Untuk $\sqrt x$:
+        $(\sqrt{2+h}-\sqrt2)/h=1/(\sqrt{2+h}+\sqrt2)\to1/(2\sqrt2)
+        =0{,}3535534$. Pada kedua kasus $h$ hilang dari penyebut.
+
+  \item $f'(c)>0$ membuat $(f(c+h)-f(c))/h>f'(c)/2>0$ untuk $h$ cukup kecil,
+        jadi $f(c+h)>f(c)$. Itu hanya pernyataan satu sisi. Contoh
+        $f(x)=x+2x^{2}\sin(1/x^{2})$ punya $f'(0)=1>0$ tetapi tidak naik pada
+        lingkungan mana pun di sekitar $0$: turunannya berganti tanda sekehendak
+        dekat $0$.
+
+  \item Turunkan $1/g$ lebih dulu: $(1/g)'=-g'/g^{2}$; di sini kekontinuan $g$
+        dipakai, agar $g(x+h)\to g(x)\ne0$. Lalu
+        $(f/g)'=f'\cdot(1/g)+f\cdot(1/g)'$, yang disederhanakan menjadi
+        $(f'g-fg')/g^{2}$.
+
+  \item Salah. $f(x,y)=xy/(x^{2}+y^{2})$ untuk $(x,y)\ne(0,0)$ dan
+        $f(0,0)=0$: kedua turunan parsial di titik asal ada dan bernilai $0$,
+        tetapi sepanjang $y=x$ nilainya $\tfrac12$, jadi $f$ tidak kontinu di
+        sana.
+
+  \item $\nabla f=(3x^{2}y-y^{3},\,x^{3}-3xy^{2})$, di $(2,1)$ sama dengan
+        $(11,2)$. Arah naik tercepat $(11,2)/\sqrt{125}$, laju maksimumnya
+        $\sqrt{125}=11{,}1803$. Beda pusat $h=10^{-4}$ memberi galat relatif
+        $9{,}1\times10^{-10}$ dan $1{,}0\times10^{-8}$, sesuai orde $h^{2}$ pada
+        komponen kedua.
+
+  \item Menurut teorema nilai rata-rata,
+        $f(b)-f(a)=f'(\xi)(b-a)=0$ untuk setiap pasangan $a<b$ di interval, jadi
+        $f$ konstan. Pada himpunan tak terhubung langkah itu gagal karena $\xi$
+        belum tentu berada di himpunan; contohnya $f=0$ pada $(0,1)$ dan $f=1$
+        pada $(2,3)$.
+
+  \item Di $(0,1)$: $J_{H}=\begin{pmatrix}1&1\\1&2\end{pmatrix}$; di
+        $H(0,1)=(1,1)$: $J_{G}=\begin{pmatrix}2&1\\1&-1\end{pmatrix}$. Hasilkali
+        matriksnya $\begin{pmatrix}3&4\\0&-1\end{pmatrix}$, dan turunan langsung
+        memberi matriks yang sama.
+
+  \item $f_{x}=3x^{2}-3y$, $f_{y}=3y^{2}-3x$; keduanya nol memberi $y=x^{2}$ dan
+        $x=y^{2}$, jadi $x(x^{3}-1)=0$: titik $(0,0)$ dan $(1,1)$. Hessian
+        $\begin{pmatrix}6x&-3\\-3&6y\end{pmatrix}$: di $(0,0)$ determinannya
+        $-9<0$ (pelana), di $(1,1)$ determinannya $27>0$ dengan $f_{xx}=6>0$
+        (minimum lokal, $f=-1$). Bila determinan nol, uji itu bungkam.
+
+  \item $p_{2}(x)=1+\tfrac12h-\tfrac18h^{2}$ di $h=0{,}04$ memberi $1{,}0198$,
+        sedangkan $\sqrt{1{,}04}=1{,}0198039$; galatnya
+        $3{,}9\times10^{-6}$, sisa Lagrange
+        $\frac{3}{8}\xi^{-5/2}h^{3}/6\le4{,}0\times10^{-6}$. Batasnya rapat, bukan longgar, sebab $\xi$
+        hampir $1$: sisa Lagrange memang hampir menyamai galat sebenarnya.
+\end{enumerate}
+
+\section*{Bab 13: Integral Riemann dan Teorema Dasar Kalkulus}
+\begin{enumerate}[label=\textbf{13.\arabic*}]
+  \item $U_{n}=\frac1n\sum_{k=1}^{n}\frac kn=\frac{n+1}{2n}$ dan
+        $L_{n}=\frac{n-1}{2n}$, jadi $U_{n}-L_{n}=1/n\to0$: $f$ terintegralkan
+        dan $\int_{0}^{1}x\,dx=\tfrac12$.
+
+  \item $\bigl\lvert\lvert f(x)\rvert-\lvert f(y)\rvert\bigr\rvert
+        \le\lvert f(x)-f(y)\rvert$ (ketaksamaan segitiga terbalik), jadi
+        keterintegralan terbawa. Batasnya dari $-\lvert f\rvert\le f\le\lvert f\rvert$
+        dan monotonisitas integral. Kebalikannya salah: $f=1$ di rasional dan
+        $-1$ di irasional punya $\lvert f\rvert=1$ terintegralkan.
+
+  \item Salah. Bagian yang benar: jumlah atas dan bawah fungsi terbatas selalu
+        berhingga. Yang tidak didukung bukti ialah kesamaan
+        $\sup_{\mathcal{P}}L=\inf_{\mathcal{P}}U$. Fungsi Dirichlet terbatas
+        dengan $U-L=1$ untuk setiap partisi.
+
+  \item Pada partisi seragam tiap selang menyumbang osilasi
+        $f(x_{k})-f(x_{k-1})$, sehingga
+        $U-L\le\frac{b-a}{n}\sum_{k}\bigl(f(x_{k})-f(x_{k-1})\bigr)
+        =\frac{(b-a)(f(b)-f(a))}{n}$. Untuk fungsi tak monoton teleskop itu gagal
+        sebab tanda osilasinya tidak seragam.
+
+  \item $\int_{0}^{1}(3x^{2}-2x+1)\,dx=[x^{3}-x^{2}+x]_{0}^{1}=1$. Simpson
+        $n=100$ memberi $1{,}0000000000$ dan \texttt{quad} $1{,}0000000000$
+        (galat $1{,}1\times10^{-14}$); selisih ketiga angka nol sampai presisi
+        mesin.
+
+  \item $\int_{1}^{10}x^{-2}dx=1-\tfrac1{10}=0{,}9$ dan
+        $\int_{1}^{\infty}x^{-2}dx=1$. Selisihnya $0{,}1=\tfrac1{10}$ persis,
+        yaitu ekor $\int_{10}^{\infty}x^{-2}dx=1/10$; tidak perlu dihitung ulang
+        karena bagian yang hilang itulah ekornya.
+
+  \item Bila $f(x_{0})>0$, kekontinuan memberi $f>\tfrac12f(x_{0})$ pada selang
+        selebar $2\delta$ di sekitar $x_{0}$ (selebar $\delta$ bila $x_{0}$ titik
+        ujung), jadi integralnya paling sedikit
+        $\tfrac12\delta f(x_{0})>0$: kontradiksi. Untuk $f$ yang hanya terintegralkan
+        pernyataan gagal: $f=1$ di satu titik dan $0$ di tempat lain berintegral
+        $0$.
+
+  \item $u=\sin x$: $\int_{0}^{1}u\,du=\tfrac12$. Lewat identitas:
+        $\tfrac12\int_{0}^{\pi/2}\sin2x\,dx
+        =\tfrac12\bigl[-\tfrac12\cos2x\bigr]_{0}^{\pi/2}=\tfrac12$. \texttt{quad}
+        memberi $0{,}5$ juga.
+
+  \item Pada setiap selang bagian ada rasional (nilai $1$) dan irasional (nilai
+        $0$), jadi $U(\mathcal{P},D)=1$ dan $L(\mathcal{P},D)=0$; selisihnya $1$
+        untuk semua $\mathcal{P}$. Kriteria Riemann menuntut selisih itu bisa
+        dibuat sekecil apa pun, jadi $D$ tidak terintegralkan.
+
+  \item Batas integral memberi $\frac1{101}<\sum_{n=101}^{\infty}n^{-2}
+        <\frac1{100}$, yaitu $9{,}9010\times10^{-3}$ sampai
+        $1{,}0000\times10^{-2}$. Titik tengahnya $9{,}9505\times10^{-3}$,
+        sedangkan nilai sebenarnya $9{,}950167\times10^{-3}$; galat relatifnya
+        $3{,}3\times10^{-5}$.
+\end{enumerate}
+
+\section*{Bab 14: Deret Fungsi dan Pertukaran Limit}
+\begin{enumerate}[label=\textbf{14.\arabic*}]
+  \item $\sup_{[0,1]}\lvert x^{n}\rvert=1$ untuk semua $n$, dicapai di $x=1$.
+        Di $x=0{,}9$: $0{,}3487$ untuk $n=10$, $2{,}656\times10^{-5}$ untuk
+        $n=100$, $1{,}748\times10^{-46}$ untuk $n=1000$. Kolom pertama datar
+        sebab puncaknya selalu di ujung; kolom kedua menyusut sebab $0{,}9<1$.
+
+  \item Untuk $n\ge N$, $\lVert f_{n}-f\rVert_{\infty}<\varepsilon$, maka
+        $\lVert f\rVert_{\infty}\le\lVert f_{N}\rVert_{\infty}+1$ dan begitu
+        pula $\lVert f_{n}\rVert_{\infty}$. Titik demi titik tidak cukup:
+        $f_{n}=n\chi_{(0,1/n)}$ konvergen ke $0$ di setiap titik tetapi
+        $\lVert f_{n}\rVert_{\infty}=n$.
+
+  \item Puncaknya di $x=1/\sqrt n$ dengan
+        $\lVert f_{n}\rVert_{\infty}=1/(2\sqrt n)\to0$, dan batas itu berlaku
+        untuk semua $x$ sekaligus, jadi seragam. Syarat
+        $1/(2\sqrt n)<0{,}01$ menuntut $\sqrt n>50$, jadi $n=2501$.
+
+  \item Salah. Penalaran titik demi titik memberi satu $N$ untuk tiap $x$, bukan
+        satu $N$ untuk semua $x$. Penyangkalnya $x_{n}=2^{-1/n}$:
+        $x_{n}^{n}=\tfrac12$ untuk setiap $n$, jadi
+        $\sup_{[0,1)}\lvert x^{n}\rvert\ge\tfrac12$ dan tidak menuju $0$.
+
+  \item Galat $\lvert e-S_{N}(1)\rvert$ untuk $N=5,10,15$:
+        $1{,}615\times10^{-3}$, $2{,}731\times10^{-8}$,
+        $5{,}077\times10^{-14}$; batas $e/(N+1)!$ memberi
+        $3{,}775\times10^{-3}$, $6{,}810\times10^{-8}$,
+        $1{,}299\times10^{-13}$, selalu lebih besar. Di $N=20$ batasnya sudah
+        $5{,}32\times10^{-20}$, jauh di bawah presisi mesin, sehingga galat
+        terukur berhenti di $4{,}44\times10^{-16}$. Batas di bawah $10^{-16}$
+        pertama di $N=18$, dan di sana galat sebenarnya juga tak terukur.
+
+  \item Jumlahnya $(1-x)/(1-x)=1$ untuk $x\in[0,1)$, sedangkan di $x=1$
+        jumlahnya $0$. Limitnya tidak kontinu padahal setiap jumlah parsial
+        kontinu; limit seragam fungsi kontinu harus kontinu, jadi
+        kekonvergenannya tidak seragam.
+
+  \item Jari-jari: $R=1$ untuk $\sum x^{n}/n^{2}$, $R=e$ untuk
+        $\sum(n!/n^{n})x^{n}$, $R=\tfrac12$ untuk $\sum2^{n}x^{n}/n$. Nisbah
+        suku ke-$1001$ dan ke-$1000$: $0{,}998003$; $0{,}368063$ (jadi
+        $R\approx2{,}7169$); $1{,}998002$. Paling lambat $\sum x^{n}/n^{2}$,
+        sebab nisbahnya menuju $1$ seperti $(1-1/n)^{2}$.
+
+  \item $\lvert f_{n}g-fg\rvert=\lvert f_{n}-f\rvert\,\lvert g\rvert
+        \le\lVert f_{n}-f\rVert_{\infty}\lVert g\rVert_{\infty}\to0$. Tanpa
+        keterbatasan $g$: $f_{n}=x+1/n\to x$ seragam pada $(0,1)$, tetapi
+        $(x+1/n)/x=1+1/(nx)$ tak terbatas, jadi $f_{n}g$ tidak konvergen
+        seragam.
+
+  \item Puncak di $x=1/\sqrt{2n+1}$. Untuk $n=10$: tinggi $1{,}3397$ di
+        $x=0{,}2182$, $\int_{0}^{1}f_{10}=\tfrac{5}{11}=0{,}4545$. Untuk
+        $n=100$: tinggi $4{,}2835$ di $x=0{,}07053$, integralnya
+        $\tfrac{50}{101}=0{,}4950$. Tinggi mengikuti $\sqrt{n/(2e)}$; luasnya
+        menuju $\tfrac12$ sebab puncak makin sempit.
+
+  \item Turunan $\sum_{n\ge0}x^{n}=1/(1-x)$ memberi
+        $\sum_{n\ge1}nx^{n-1}=1/(1-x)^{2}$; di $x=\tfrac12$ didapat
+        $\sum_{n\ge1}n/2^{n}=2$. Sisa ekornya $(N+2)/2^{N}$, jadi
+        $N=39$ memberi $7{,}46\times10^{-11}<10^{-10}$.
+\end{enumerate}
+
+\section*{Bab 15: Integral Lipat, Perubahan Variabel, dan Teorema Lapangan Vektor}
+\begin{enumerate}[label=\textbf{15.\arabic*}]
+  \item Cartesius: $\int_{-1}^{1}\int_{-\sqrt{1-x^{2}}}^{\sqrt{1-x^{2}}}
+        (x^{2}+y^{2})\,dy\,dx=\pi/2$. Polar:
+        $\int_{0}^{2\pi}\int_{0}^{1}r^{3}\,dr\,d\theta
+        =2\pi\cdot\tfrac14=\pi/2=1{,}5708$. \texttt{dblquad} memberi
+        $1{,}5707963268$; di lingkungan uji ini cara Cartesius menuntut $8379$
+        evaluasi, cara polar $441$.
+
+  \item Untuk $T(\mathbf{u})=A\mathbf{u}$ linear, $DT=A$ konstan, jadi
+        determinan Jacobiannya $\det A$ dan $\lvert\det A\rvert$ adalah faktor
+        skala luas. Bila $\det A\ne0$ peta itu satu-satu pada $D$, sehingga
+        $\iint_{T(D)}f=\lvert\det A\rvert\iint_{D}f\circ T$.
+
+  \item Searah jarum jam tiap sisi ditempuh terbalik, jadi keempat suku contoh
+        berganti tanda: $-\tfrac13-2-\tfrac23+1=-2$, sedangkan ruas kanan tetap
+        $2$. Sisi bawah dan kanan yang tadinya menyumbang $+\tfrac13$ dan $+2$
+        menjadi negatif; sisi kiri yang tadinya $-1$ menjadi $+1$.
+
+  \item $x=au$, $y=bv$, $z=cw$ memberi Jacobian $abc$ dan bola satuan:
+        $V=abc\cdot\frac{4\pi}{3}=\frac{4\pi abc}{3}$. Pada $a=b=c=1$
+        hasilnya $4{,}1888$, yaitu rumus volume bola yang dikenal.
+
+  \item Salah. $\operatorname{curl}F=0$ memang berlaku di setiap titik tempat $F$
+        terdefinisi, tetapi daerahnya berlubang sehingga uji curl tidak berlaku.
+        Angka pendukungnya: $\oint_{\lvert\mathbf{r}\rvert=1}F\cdot d\mathbf{r}
+        =2\pi\ne0$, jadi $F$ tidak konservatif.
+
+  \item Bila integral tidak bergantung lintasan, dua lintasan $C_{1},C_{2}$ dari
+        $A$ ke $B$ memberi integral sama, jadi sirkulasi $C_{1}-C_{2}$ nol.
+        Sebaliknya bila setiap kurva tertutup bersirkulasi nol, $C_{1}-C_{2}$
+        tertutup sehingga integral keduanya sama.
+
+  \item $\operatorname{curl}F=(0,0,2)$; fluks melalui $z=1-x^{2}-y^{2}$ dengan
+        normal ke atas $=2\cdot\pi=2\pi$. Integral garis pada tepi
+        $x^{2}+y^{2}=1$, $z=0$:
+        $\int_{0}^{2\pi}(-\sin t,\cos t,0)\cdot(-\sin t,\cos t,0)\,dt=2\pi$.
+        Keduanya $6{,}2832$.
+
+  \item $\operatorname{div}F=0$ di luar titik asal, jadi integral lipatnya $0$,
+        sedangkan fluks melalui bola satuan $4\pi=12{,}5664$. Teorema Gauss
+        menuntut medan $C^{1}$ pada daerah yang memuat seluruh isi permukaan;
+        syarat itu dilanggar di titik asal yang terkurung.
+
+  \item $\det J=r^{2}\sin\varphi$, nol di $\varphi=0$ dan $\varphi=\pi$. Di kedua
+        kutub peta berhenti satu-satu: semua $\theta$ memberi titik yang sama.
+        Pada $0<\varphi<\pi$ peta satu-satu dan $\det J>0$, jadi rumus perubahan
+        variabel tetap sah walaupun determinannya nol di batas.
+\end{enumerate}

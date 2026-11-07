@@ -1,0 +1,1166 @@
+\chapter{Generalization, Regularization, and Training}
+
+A security team builds an intrusion detector from two raw quantities: how many
+requests per second and the average payload size. From those two quantities they
+derive twenty-one features by multiplying and raising both to the fifth power,
+then train a logistic classifier on sixty labeled connections. On the training
+data, the detector is wrong on zero of the sixty connections. On twenty thousand
+new connections it has never seen, it is wrong on thirty-two percent. The same
+model, the same weights, two numbers far apart.
+
+That zero is neither a coincidence nor an achievement. With twenty-one features
+and sixty examples, a separating plane can always be found that cuts every
+training example correctly, including the example whose label is wrong. What the
+model learns is not the shape of the correct separator but the position of those
+sixty points. As soon as the points change, the plane is in the wrong place.
+
+Chapter 25 taught us to compute gradients and follow them down until the training
+error is small; Chapter 20 taught us to read a single number together with its
+uncertainty. Neither answers the question that decides matters here: which
+quantity must be made small so that the number in the field shrinks as well, and
+how to choose training settings without deceiving ourselves.
+
+\begin{untukanak}
+A student is given sixty practice problems before an exam. He studies by
+memorizing: every problem together with its answer, down to the letter. On the
+practice problems he is always right, a hundred out of a hundred, and he goes
+home proud. On the exam the problems are different: different numbers, different
+sentences, different order. His grade collapses, and the teacher is puzzled,
+because this student looked like the most diligent one.
+
+A second student learns more slowly. He does not memorize answers; he looks for
+the pattern: when to divide, when to multiply, when an answer makes sense. On the
+practice problems he gets several wrong, and he is not proud. On the exam he does
+better.
+
+Now the part that makes one curious. Suppose the first student were given two
+thousand practice problems instead of sixty. Is memorizing still bad? It turns
+out that it is not always: if there are enough problems and they vary enough,
+memorizing becomes an expensive way of learning that works. So the problem is not
+memorizing but memorizing from few examples. In this chapter we will learn why
+the number of examples and the complexity of the learning method must be
+balanced, why adding complexity actually makes the exam grade worse, and how to
+measure that balance without waiting for the exam.
+\end{untukanak}
+
+\section{Two errors and one gap}
+\tingkat{basic}
+
+Every trained model has two numbers, and both are computed in exactly the same
+way: the proportion of mistakes on a set of examples. The only difference is
+which set is used. In everyday language: the grade on a test at home differs from
+the grade on a test at school, even though the problems are of the same kind.
+
+\kamus{generalization}{generalisasi}{the ability to work on new problems, not on problems
+that have already been memorized}
+
+\begin{definisi}[Training error, population error, and the gap]
+\index{generalization}
+Suppose the examples $(x_i,y_i)$ are drawn from an unknown distribution $\mathcal{D}$.
+For a hypothesis $h$ and 0-1 error, the \emph{population error} is
+$R(h)=\mathbb{P}_{(x,y)\sim\mathcal{D}}\bigl(h(x)\neq y\bigr)$, whereas the
+\emph{training error} on $n$ examples is
+$\hat R_n(h)=\frac1n\sum_{i=1}^n \mathbf{1}\{h(x_i)\neq y_i\}$.
+The difference $R(h)-\hat R_n(h)$ is called the \emph{generalization gap} for that $h$.
+\end{definisi}
+
+Training error can be computed; population error cannot, because the distribution
+is unknown. All we can do is estimate it on another set that is not used for
+training, and that estimate itself wobbles like every proportion in Chapter 20. So
+every "validation error" number in this chapter is an estimate, not the truth.
+
+Now two opposite diseases. In everyday language: a model that is too simple cannot
+capture the pattern, whereas a model that is too complex memorizes coincidence.
+
+\begin{definisi}[Underfitting and overfitting]
+\index{underfitting}
+\index{overfitting}
+A model \emph{underfits} when its training error and its population error are both
+high: the model is too rigid for the actual shape. A model \emph{overfits} when its
+training error is low but its generalization gap is large: the model adapts itself
+to the coincidence in the training data, not to the actual shape.
+\end{definisi}
+
+The two diseases are not symmetric in practice. Underfitting is visible: the
+training error is high, and adding features helps. Overfitting deceives, because
+the only number that is easily available, namely the training error, is precisely
+the one that looks perfect. The model in the chapter opening is the purest
+example: its largest weight is $406.204$, a sign that its score depends on small
+differences between points, not on a plausible scale.
+
+What governs both is \emph{capacity}: how rich the set of functions is that the
+model may choose from. For a linear classifier over $d$ features, capacity rises
+with $d$; for a neural network, with the number of units, the depth, and the number
+of training steps. Capacity is not merely a parameter count: a large model with
+strong regularization can behave like a small model.
+
+\begin{bacakeras}
+Two voices, alternating.
+
+``A hundred out of a hundred. That means he understands, doesn't it?''
+
+``Not necessarily. A hundred out of a hundred only means there was no new problem.''
+
+``So memorizing is wrong?''
+
+``Memorizing is not wrong. Memorizing from few examples is.''
+
+``Where is the difference?''
+
+``In the problems that are not in the notes. Memorization answers what has already
+been seen. Understanding answers what has not been seen.''
+
+``And if there are two thousand problems instead of sixty?''
+
+``Then memorization starts to help. Not because memorization turns into
+understanding, but because the stored coincidences are used again more often.''
+
+Say it once more, slowly: memorization answers what is already there, understanding
+answers what is not yet there. Repeat that line until it feels natural in the
+mouth: already there, not yet there.
+\end{bacakeras}
+
+The generalization gap shrinks as examples are added. In the capacity experiment
+with a fixed step budget, the gap is $0.1338$ at $n=60$, $0.0274$ at $n=150$,
+$0.0193$ at $n=600$, and $0.0097$ at $n=2400$, whereas the training error barely
+moves, staying in the range $0.17$ to $0.21$.
+
+\section{The bias-variance decomposition}
+\tingkat{intermediate}
+
+A sharper question: where the gap comes from. In everyday language: a shooter can
+miss because the sights are shifted to one side, or because his hands shake, and
+the two causes call for different remedies.
+
+\kamus{bias-variance}{bias-variansi}{a systematic miss versus shaking; both contribute
+error, and pressing one down sometimes raises the other}
+
+\begin{teorema}[Bias-variance decomposition]
+\index{bias-variance}
+Suppose $y=f(x)+\varepsilon$ with $\mathbb{E}[\varepsilon]=0$ and
+$\operatorname{Var}(\varepsilon)=\sigma^2$, and suppose $\hat f$ is trained on a
+random training set $D$ that is independent of $\varepsilon$. For every fixed $x$,
+\[
+\mathbb{E}_{D,\varepsilon}\bigl[(y-\hat f(x))^2\bigr]
+=\sigma^2
++\bigl(\mathbb{E}_D\hat f(x)-f(x)\bigr)^2
++\operatorname{Var}_D\bigl(\hat f(x)\bigr).
+\]
+\end{teorema}
+
+\begin{proof}[Proof]
+Write $y-\hat f(x)=\varepsilon+\bigl(f(x)-\mathbb{E}_D\hat f(x)\bigr)
++\bigl(\mathbb{E}_D\hat f(x)-\hat f(x)\bigr)$, namely three terms: noise that cannot
+be reduced, bias, and the deviation from the mean. Square it and take the
+expectation. The cross terms containing $\varepsilon$ vanish because
+$\mathbb{E}[\varepsilon]=0$ and $\varepsilon$ is independent of $D$; the cross term
+between bias and deviation vanishes because
+$\mathbb{E}_D[\hat f(x)-\mathbb{E}_D\hat f(x)]=0$. What remains is exactly the three
+terms of the theorem's statement.
+\end{proof}
+
+The first term cannot be reduced by any model; it belongs to the data, is called
+the irreducible error, and on the data of the chapter opening its value is about
+$0.21$ because the labels are random. The second and third terms can be traded:
+adding capacity lowers bias and raises variance, reducing capacity does the
+opposite. Regularization is the name for that trade.
+
+The cheapest example that contains both terms at once is the shrinkage estimator.
+To measure $\mu$ from $n$ noisy observations with variance $\sigma^2$, people
+usually use $\bar X_n$, which is unbiased. We may use $c\bar X_n$ for $c\in(0,1)$,
+and that estimator is deliberately biased. Its mean squared error
+\[
+\operatorname{MSE}(c)=(c-1)^2\mu^2+c^2\frac{\sigma^2}{n},
+\]
+is minimized at $c^\ast=\mu^2/(\mu^2+\sigma^2/n)$. For $\mu=2$, $\sigma=1$, and
+$n=25$ we obtain $c^\ast=0.990099$: the best estimator is in fact slightly shrunk.
+
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\hline
+$c$ & bias$^2$ & variance & MSE \\
+\hline
+0.70 & 0.360000 & 0.019600 & 0.379600 \\
+0.90 & 0.040000 & 0.032400 & 0.072400 \\
+0.99 & 0.000400 & 0.039204 & 0.039604 \\
+1.00 & 0.000000 & 0.040000 & 0.040000 \\
+1.10 & 0.040000 & 0.048400 & 0.088400 \\
+1.30 & 0.360000 & 0.067600 & 0.427600 \\
+\hline
+\end{tabular}
+\end{center}
+
+Three things must be read from that table. The gain from shrinking is small: MSE
+falls from $0.040000$ to $0.039604$, about one percent. The loss from deviating in
+the wrong direction is far larger: $c=1.3$ gives $0.4276$, whereas $c=0.7$ gives
+only $0.3796$. And the minimum is flat, so choosing a slightly wrong $c$ is not a
+disaster.
+
+The theorem does not give a formula for an $\hat f$ as complicated as a neural
+network. Its decomposition holds formally, but neither term can be computed from
+data alone; what is observed is only their sum, namely the validation error. For
+that reason the rest of this chapter works with observed numbers, not with the true
+bias and variance.
+\section{L2 and L1 regularization}
+\tingkat{intermediate}
+
+The most direct way to press down variance is to forbid the weights from growing
+large. In everyday language: we add a fine to the objective, so that the model has
+to pay for every large weight, and will pay only if the gain on the training data
+is worth it.
+
+\kamus{regularization}{regularisasi}{a fine that the model pays for large weights, so that
+it does not memorize the training data}
+
+\begin{definisi}[The regularized objective]
+\index{regularization}
+For an original objective $J(\mathbf{w})$ and a penalty $\Omega$, the objective being
+minimized is $\tilde J(\mathbf{w})=J(\mathbf{w})+\lambda\Omega(\mathbf{w})$ with
+$\lambda\ge0$ as a hyperparameter. For the L2 penalty, $\Omega=\frac12\|\mathbf{w}\|_2^2$;
+for the L1 penalty, $\Omega=\|\mathbf{w}\|_1=\sum_j|w_j|$.
+\end{definisi}
+
+For L2, the gradient of the objective is $\nabla J+\lambda\mathbf{w}$, so one
+gradient-descent step with rate $\eta$ has the form
+\[
+\mathbf{w}\leftarrow\mathbf{w}-\eta\bigl(\nabla J+\lambda\mathbf{w}\bigr)
+=(1-\eta\lambda)\mathbf{w}-\eta\nabla J .
+\]
+The factor $(1-\eta\lambda)$ is the origin of the name \emph{weight decay}: at every
+step, before the gradient is used, the weights are multiplied by a number slightly
+less than one. If the gradient is zero, the weights decay toward zero geometrically
+with half-life $\ln 2/(\eta\lambda)$ steps.
+
+\begin{akibat}[Weight decay is the same as an L2 penalty]
+\index{weight decay}
+For a rate $\eta$ and an L2 penalty with coefficient $\lambda$, gradient descent on
+the regularized objective is identical to gradient descent on the original
+objective followed by multiplying the weights by $1-\eta\lambda$. Thus $\lambda$ and
+$\eta$ appear only as the product $\eta\lambda$ in the decay step, so doubling the
+rate and halving $\lambda$ give the same decay trajectory.
+\end{akibat}
+
+The L2 penalty also has a Bayesian reading: it is equivalent to a Gaussian prior on
+the weights, so the solution is a MAP estimate, not a maximum-likelihood one. That
+explains why L2 believes small weights are more likely, and why it never forces a
+single weight to zero.
+
+L1 behaves differently, and the whole difference lies in the shape of its penalty
+near zero. In everyday language: a quadratic penalty pulls ever more weakly once the
+weight is small, whereas an absolute-value penalty pulls with constant strength
+until the weight is exactly zero.
+
+\begin{lemma}[Soft thresholding]
+\index{regularization}
+For $a\in\mathbb{R}$ and $t>0$, the minimizer of $u\mapsto\frac12(u-a)^2+t|u|$ is
+\[
+u^\ast=\operatorname{sign}(a)\max\{|a|-t,0\},
+\]
+so that $u^\ast=0$ exactly when $|a|\le t$.
+\end{lemma}
+
+For $u>0$ the function is $\frac12(u-a)^2+tu$ with derivative $u-a+t$, so its
+critical point is $u=a-t$, valid only when $a>t$. For $u<0$ the derivative is
+$u-a-t$ with critical point $u=a+t$, valid only when $a<-t$. At $u=0$ the
+subgradient is the interval $[-a-t,-a+t]$, which contains zero exactly when
+$|a|\le t$; in that case zero is the minimizer because the function is convex. The
+three cases join into the formula above.
+
+That lemma explains the whole behavior of L1. With a quadratic approximation around
+the unpenalized solution $w^\ast$ and curvature $H$, the objective is approximately
+$\frac H2(w-w^\ast)^2+\lambda|w|$, so that
+$w=\operatorname{sign}(w^\ast)\max\{|w^\ast|-\lambda/H,0\}$: every weight below
+$\lambda/H$ becomes exactly zero, not merely small. For L2 the solution is
+$w=w^\ast/(1+\lambda/H)$, which is never zero unless $w^\ast$ itself is zero.
+
+\begin{proposisi}[Why L1 produces true zeros]
+\index{regularization}
+Suppose $J$ is differentiable and convex around zero. The point $\mathbf{w}=\mathbf{0}$
+is a minimizer of $J(\mathbf{w})+\lambda\|\mathbf{w}\|_1$ if and only if
+$|\partial J/\partial w_j|\le\lambda$ for every $j$. For the L2 penalty, the same
+condition is $\partial J/\partial w_j=0$ for every $j$.
+\end{proposisi}
+
+\begin{proof}[Proof]
+The subgradient of $\|\cdot\|_1$ at zero is the box $[-1,1]^d$, so the condition
+$0\in\nabla J(\mathbf{0})+\lambda[-1,1]^d$ is equivalent to $|(\nabla J)_j|\le\lambda$
+for all $j$; for a convex function, that condition is necessary and sufficient. For
+the L2 penalty, the gradient is $\nabla J+\lambda\mathbf{w}$, which at $\mathbf{0}$
+equals $\nabla J$, so the condition is $\nabla J(\mathbf{0})=\mathbf{0}$.
+\end{proof}
+
+The practical consequence matters for reading results. L1 gives a flat region of
+width $2\lambda$ around zero, so that weights that are "almost useless" are switched
+off entirely; L2 only shrinks them. For that reason L1 is used as a feature
+selector, and for the same reason the number of zero weights under L1 is not a
+delicate measure of importance: it jumps, it does not shift slowly.
+
+Now the numbers. The same logistic classifier, the same data, twenty-one features
+on sixty training examples, everything computed with the script in the lab section.
+
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\hline
+$\lambda$ & $\max_j|w_j|$ & training error & validation error \\
+\hline
+0       & 406.204 & 0.0000 & 0.3262 \\
+0.001   &   3.056 & 0.1000 & 0.2927 \\
+0.003   &   1.814 & 0.1000 & 0.2688 \\
+0.010   &   1.018 & 0.1167 & 0.2475 \\
+0.030   &   0.631 & 0.1167 & 0.2433 \\
+0.100   &   0.399 & 0.1500 & 0.2406 \\
+0.300   &   0.268 & 0.2333 & 0.2452 \\
+1.000   &   0.142 & 0.2500 & 0.2695 \\
+3.000   &   0.062 & 0.3333 & 0.3205 \\
+10.000  &   0.022 & 0.3333 & 0.3395 \\
+100.000 &   0.003 & 0.3333 & 0.3395 \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=12.2cm, height=5.6cm,
+  xmin=-0.4, xmax=10.4, ymin=0, ymax=0.40,
+  axis lines=left,
+  xtick={0,3,5,7,10},
+  xticklabels={$0$,$10^{-2}$,$0.1$,$1$,$100$},
+  ytick={0,0.1,0.2,0.3,0.4},
+  yticklabels={$0$,$0.10$,$0.20$,$0.30$,$0.40$},
+  tick label style={font=\scriptsize},
+  xlabel={regularization strength $\lambda$ (capacity decreases to the right)},
+  ylabel={error},
+  xlabel style={font=\small},
+  ylabel style={font=\small},
+  legend style={font=\scriptsize,draw=none,at={(0.03,0.97)},anchor=north west},
+]
+\addplot[very thick,layerindigo,mark=*,mark size=1.5pt] coordinates {
+  (0,0.0000) (1,0.1000) (2,0.1000) (3,0.1167) (4,0.1167) (5,0.1500)
+  (6,0.2333) (7,0.2500) (8,0.3333) (9,0.3333) (10,0.3333)};
+\addlegendentry{training error}
+\addplot[very thick,accent,mark=square*,mark size=1.5pt] coordinates {
+  (0,0.3262) (1,0.2927) (2,0.2688) (3,0.2475) (4,0.2433) (5,0.2406)
+  (6,0.2452) (7,0.2695) (8,0.3205) (9,0.3395) (10,0.3395)};
+\addlegendentry{validation error}
+\addplot[only marks,mark=o,mark size=3.4pt,accent] coordinates {(5,0.2406)};
+\draw[densely dashed,layergrey] (axis cs:5,0)--(axis cs:5,0.2406);
+\node[accent,font=\scriptsize,anchor=north] at (axis cs:4.55,0.238)
+  {minimum $0.2406$};
+\end{axis}
+\end{tikzpicture}
+\caption{Training error and validation error against the regularization strength
+$\lambda$; the direction to the right means capacity decreases, because the weights
+are held back ever more tightly. The eleven points are the rows of the previous
+table. The training error rises monotonically from $0.0000$ to $0.3333$, whereas the
+validation error forms a valley: $0.3262$ at $\lambda=0$, a minimum of $0.2406$ at
+$\lambda=0.1$, then $0.3395$ at $\lambda=10$ and above. The bottom of the valley is
+wide, from $0.2433$ at $\lambda=0.03$ to $0.2452$ at $\lambda=0.3$.}
+\label{fig:lembah-kapasitas}
+\end{figure}
+
+Figure~\ref{fig:lembah-kapasitas} plots the third and fourth columns of that table
+as a single valley. Read that table as three regions, not eleven rows. Without
+regularization the training error is zero and the validation error is $0.3262$, with
+weights up to the hundreds because nothing holds them back. In the region of
+$\lambda$ between $0.001$ and $0.1$, the training error rises to $0.1500$ while the
+validation error falls to $0.2406$. In the region $\lambda\ge3$ both are bad:
+$0.3333$ and $0.3395$.
+
+The last row deserves emphasis. With $\lambda=10$ the validation error is $0.3395$,
+\emph{worse} than the $0.3262$ of the model without regularization. So regularization
+is not a medicine that always helps; it helps at a certain dose and does damage
+beyond it. At $\lambda=10$ the model practically always guesses the majority class,
+whose error is $0.3419$: its weights are so small that the score is almost entirely
+determined by the bias.
+
+The L1 penalty gives a similar picture with a different shape. At $\lambda=0.05$ its
+validation error is $0.2334$ with eleven of the twenty-one weights alive; at
+$\lambda=0.2$ only one weight remains, with error $0.3395$. The count of live weights
+does not fall monotonically: $\lambda=0.005$ leaves eleven, $\lambda=0.01$ leaves
+fourteen. That number is stable against a fourfold increase in iterations, so it is
+not an optimizer failure; the L1 trajectory for the logistic loss really does not
+guarantee a monotone count of zeros, and that is one more reason not to read it as a
+measure of importance.
+
+The final comparison: L1 reaches $0.2334$ and L2 $0.2406$. The difference $0.0072$ is
+smaller than the wobble between partitions, about $0.02$, so this data is not enough
+to conclude that L1 is better; all that can be concluded is that both improve on the
+model without regularization.
+\begin{untukanak}
+Imagine a class that has to guess a friend's body weight. The teacher gives two
+methods. Method one: every guess that is too far from the answer is fined an amount
+that grows the farther away it is. Method two: every guess that is not exactly the
+answer is fined a fixed amount, no matter whether the difference is small or large.
+
+Method one makes all guesses shift slightly toward the middle, but none of them
+becomes zero. Method two rounds guesses that are already close straight down to
+zero, because the fine is fixed and no longer worth the improvement that might be
+gained. That is the difference between two fines that look alike: one shrinks, the
+other switches off.
+
+The question: if we have twenty-one features and only sixty examples, what kind of
+fine makes the model stop memorizing? The answer is not "a large fine", because a
+fine that is too large switches everything off, including what is correct. In this
+chapter we will learn why there is a dose, why that dose must be searched for, and
+why a dose that is searched for on the wrong data will deceive us neatly.
+\end{untukanak}
+
+\section{Early stopping, dropout, and augmentation}
+\tingkat{intermediate}
+
+Three other ways of pressing down variance without touching the formula of the
+objective. In everyday language: we can stop learning before coincidence begins to
+be memorized, we can switch off part of the memory at random, and we can multiply
+examples by changing the examples we already have.
+
+Early stopping is the cheapest form of regularization, because it adds not a single
+line to the objective: it only stops the trajectory. During training, the training
+error almost always falls, but the validation error falls and then rises. The lowest
+point of the validation error is the one taken, and the number of steps becomes a
+hyperparameter to be searched for.
+
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\hline
+epoch & training error & validation error & $\max_j|w_j|$ \\
+\hline
+1    & 0.1333 & 0.2481 & 0.15 \\
+5    & 0.1333 & 0.2429 & 0.38 \\
+10   & 0.1333 & 0.2432 & 0.48 \\
+50   & 0.1167 & 0.2454 & 0.77 \\
+200  & 0.1167 & 0.2541 & 1.38 \\
+800  & 0.1000 & 0.2879 & 2.85 \\
+2400 & 0.0833 & 0.3109 & 4.81 \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=11.8cm, height=5.6cm,
+  xmode=log,
+  xmin=1, xmax=3000, ymin=0.05, ymax=0.35,
+  axis lines=left,
+  xtick={1,10,100,1000},
+  xticklabels={$1$,$10$,$100$,$1000$},
+  ytick={0.10,0.15,0.20,0.25,0.30},
+  yticklabels={$0.10$,$0.15$,$0.20$,$0.25$,$0.30$},
+  tick label style={font=\scriptsize},
+  xlabel={training epoch (log scale)},
+  ylabel={error},
+  xlabel style={font=\small},
+  ylabel style={font=\small},
+  legend style={font=\scriptsize,draw=none,at={(0.03,0.97)},anchor=north west},
+]
+\addplot[very thick,layerteal,mark=*,mark size=1.5pt] coordinates {
+  (1,0.1333) (5,0.1333) (10,0.1333) (50,0.1167) (200,0.1167) (800,0.1000)
+  (2400,0.0833)};
+\addlegendentry{training error}
+\addplot[very thick,accent,mark=square*,mark size=1.5pt] coordinates {
+  (1,0.2481) (5,0.2429) (10,0.2432) (50,0.2454) (200,0.2541) (800,0.2879)
+  (2400,0.3109)};
+\addlegendentry{validation error}
+\draw[densely dashed,layergrey] (axis cs:8,0.05)--(axis cs:8,0.2427);
+\addplot[only marks,mark=o,mark size=3.4pt,accent] coordinates {(8,0.2427)};
+\node[accent,font=\scriptsize,anchor=north west] at (axis cs:8.6,0.2325)
+  {epoch 8: $0.2427$};
+\end{axis}
+\end{tikzpicture}
+\caption{Both errors along one training trajectory, horizontal axis on a log scale.
+The training error falls without ever rising, from $0.1333$ at epoch 1 to $0.0833$
+at epoch 2400. The validation error falls to $0.2427$ at epoch 8 and then rises to
+$0.3109$. The dashed line marks the best stopping point: stopping there gives an
+error $0.0682$ lower than training all the way to epoch 2400, and the curves begin to
+separate just after that point.}
+\label{fig:dua-kurva}
+\end{figure}
+
+Figure~\ref{fig:dua-kurva} draws those two columns. The training error falls along
+the trajectory, from $0.1333$ to $0.0833$, without ever rising, whereas the
+validation error falls until epoch 8 with a best value of $0.2427$ and then rises to
+$0.3109$ at epoch 2400. The last column explains why: what grows throughout training
+is the size of the weights, and that is the variance we are paying for.
+
+Early stopping is not merely a tactic. For a quadratic objective and a small rate,
+stopping at step $\tau$ is nearly equivalent to an L2 penalty with coefficient about
+$1/(\tau\eta)$; that is an approximation, not an exact identity. For that reason the
+number of steps is a capacity hyperparameter, not a matter of "training until
+finished".
+
+\begin{resep}
+\begin{enumerate}
+  \item Split three sets before a single training step is run: train, validation,
+        test. The test set is sealed.
+  \item Train on the training set only; every few epochs compute the error on the
+        validation set, and record the three values (epoch, validation error,
+        training error).
+  \item Take the epoch with the smallest validation error, then return the weights to
+        that point; do not use the weights of the last epoch.
+  \item Only now open the test set, compute its error once, and report it together
+        with the chosen epoch and the width of the validation curve.
+\end{enumerate}
+A warning about order: step 1 must be finished before step 2, and step 4 must not be
+used to shift the choice made in step 3. If the test set is looked at while the epoch
+is being chosen, it is no longer a test set but a second validation set, and its
+numbers stop being an honest estimate.
+\end{resep}
+
+Dropout takes another route: during training every unit is switched off at random
+with probability $1-p$, and the ones that survive are divided by $p$ so that the
+expectation does not shift. In everyday language: at every step some members of the
+team do not show up, so that no member can be relied on alone.
+
+\begin{lemma}[Expectation and variance of the dropout mask]
+\index{dropout}
+Suppose $m=B/p$ with $B\sim\mathrm{Bernoulli}(p)$ and $0<p\le1$. Then
+$\mathbb{E}[m]=1$ and $\operatorname{Var}(m)=(1-p)/p$. For a unit with inputs
+$z_1,\dots,z_k$ and independent masks $m_1,\dots,m_k$, its output
+$s=\sum_j m_jw_jz_j$ satisfies $\mathbb{E}[s]=\sum_jw_jz_j$ and
+$\operatorname{Var}(s)=\frac{1-p}{p}\sum_j(w_jz_j)^2$.
+\end{lemma}
+
+\begin{proof}[Proof]
+$\mathbb{E}[m]=p/p=1$ and $\operatorname{Var}(m)=\mathbb{E}[m^2]-1=p/p^2-1=(1-p)/p$.
+For $s$, linearity of expectation gives the first term, and independence of the masks
+gives the variance of the sum, namely $\sum_j(w_jz_j)^2\operatorname{Var}(m_j)$.
+\end{proof}
+
+That variance formula explains two things that are often forgotten. Dropout noise is
+proportional to the sum of squared contributions, so units with large weights receive
+relatively more noise, and dropout points in the same direction as an L2 penalty. And
+that noise disappears entirely at test time, so that the model that is used differs
+from the model that was trained; on very small networks that price can exceed the
+benefit.
+
+Data augmentation multiplies examples by changing the examples that already exist,
+for instance shifting them or adding small noise, provided that the label does not
+change. For a linear model, its relation to L2 can be computed exactly.
+
+\begin{proposisi}[Gaussian noise on the input is the same as an L2 penalty]
+\index{data augmentation}
+Suppose $\hat y=\mathbf{w}^{\top}\mathbf{x}$ and $\boldsymbol{\delta}\sim
+N(\mathbf{0},\sigma^2I)$ is added to the input. Then
+\[
+\mathbb{E}_{\boldsymbol{\delta}}\bigl[(\mathbf{w}^{\top}(\mathbf{x}+\boldsymbol{\delta})-y)^2\bigr]
+=(\mathbf{w}^{\top}\mathbf{x}-y)^2+\sigma^2\|\mathbf{w}\|_2^2 .
+\]
+\end{proposisi}
+
+\begin{proof}[Proof]
+Expand: the linear term is $2(\mathbf{w}^{\top}\mathbf{x}-y)\,
+\mathbb{E}[\mathbf{w}^{\top}\boldsymbol{\delta}]=0$, and the quadratic term is
+$\mathbb{E}[(\mathbf{w}^{\top}\boldsymbol{\delta})^2]
+=\mathbf{w}^{\top}\mathbb{E}[\boldsymbol{\delta}\boldsymbol{\delta}^{\top}]\mathbf{w}
+=\sigma^2\|\mathbf{w}\|_2^2$.
+\end{proof}
+
+So adding small Gaussian noise to the input is the same as adding an L2 penalty with
+$\lambda=\sigma^2$: the two are one idea written twice. The numerical check, for
+$\mathbf{w}=(1,2)$, $\mathbf{x}=(1,0)$, $y=3$, and $\sigma=0.1$: the original
+objective is $4$, the formula predicts $4+0.01\cdot5=4.05$, and a simulation of one
+million noises gives $4.049107$. That difference of $0.0009$ is comparable to the
+random error of the simulation, not to a mistake in the formula.
+
+A warning for the security field: augmentation is valid only when the label is
+genuinely invariant to the change that is made. Adding small noise to traffic
+features is allowed, but reversing the order of packets or shifting arrival times can
+turn an attack into not-an-attack. Augmentation with a wrong label is not
+regularization but a lie that will keep looking good as long as the validation data
+is changed in the same way.
+\section{SGD, momentum, and Adam}
+\tingkat{advanced}
+
+Up to here we have treated "training" as a single box. The contents of that box
+determine how fast the error falls and, on a limited step budget, how low an error is
+reached. In everyday language: the right direction is not enough; what decides is how
+the step is taken and how large it is.
+
+Stochastic gradient descent replaces the full gradient by the gradient over one
+minibatch of size $b$. That estimate is unbiased, and its variance shrinks
+proportionally to $1/b$: $\operatorname{Var}(\hat{\mathbf{g}}_b)=\sigma_g^2/b$. So a
+large minibatch reduces the wobble, but does not change the mean direction. What
+changes the direction is momentum and Adam.
+
+\begin{definisi}[Momentum and Adam]
+\index{momentum}
+\index{adam}
+Momentum keeps a running average of the gradient:
+$\mathbf{v}_t=\beta\mathbf{v}_{t-1}+\mathbf{g}_t$ and
+$\mathbf{w}_t=\mathbf{w}_{t-1}-\eta\mathbf{v}_t$, with $0\le\beta<1$. Adam keeps two
+moments, $\mathbf{m}_t=\beta_1\mathbf{m}_{t-1}+(1-\beta_1)\mathbf{g}_t$ and
+$\mathbf{v}_t=\beta_2\mathbf{v}_{t-1}+(1-\beta_2)\mathbf{g}_t^2$ (squared per
+coordinate), then uses bias correction and the update
+$\mathbf{w}_t=\mathbf{w}_{t-1}-\eta\,\hat{\mathbf{m}}_t/(\sqrt{\hat{\mathbf{v}}_t}+\epsilon)$
+with $\hat{\mathbf{m}}_t=\mathbf{m}_t/(1-\beta_1^t)$ and
+$\hat{\mathbf{v}}_t=\mathbf{v}_t/(1-\beta_2^t)$.
+\end{definisi}
+
+That bias correction is not decoration: without it $\mathbf{m}_1=(1-\beta_1)\mathbf{g}_1$
+is very small, so the first step is almost zero. Division by $\sqrt{\hat{\mathbf{v}}}$
+matters even more for badly scaled problems: it makes the step size in each
+coordinate roughly $\eta$, no matter whether the gradient is large or small. Momentum
+only smooths the direction over time.
+
+The numbers on the following quadratic show the difference. Take
+$f(\mathbf{w})=\frac12\mathbf{w}^{\top}H\mathbf{w}$ with $H=\operatorname{diag}(1,10^4)$
+and $\mathbf{w}_0=(1,0)$; the condition number of $H$ is $10^4$, which means the curve
+is narrow in one direction and very flat in the other. We count steps until
+$f\le10^{-8}f(\mathbf{w}_0)$.
+
+\begin{center}
+\small
+\begin{tabular}{lrl}
+\hline
+method & rate & steps to $10^{-8}$ \\
+\hline
+gradient descent & $10^{-4}$ & 92099 \\
+momentum ($\beta=0.9$) & $10^{-4}$ & 9132 \\
+Adam & $0.1$ & 82 \\
+\hline
+\end{tabular}
+\end{center}
+
+Gradient descent needs $92099$ steps because its largest rate is limited by the
+largest curvature, while the flat direction moves only at that rate. Momentum cuts
+one digit, in line with the estimate that acceleration changes the dependence on the
+condition number $\kappa$ into about $\sqrt\kappa$. Adam cuts three digits, because
+per-coordinate division means the flat direction is no longer punished by the steep
+one. That is not a general promise: on well-scaled problems the advantage of Adam
+shrinks.
+
+On the logistic problem of this chapter, with minibatch eight and a target training
+error of $0.40$, the median of five random seeds gives SGD with rate $0.05$ a hundred
+steps, whereas Adam with rate $0.1$ needs only ten. The conclusion must be careful:
+the advantage is about one digit and partly comes from the larger rate, not from a
+better direction.
+
+The learning rate is usually not constant. Two common schedules are step decay,
+namely the rate divided by ten at certain epochs, and cosine decay
+$\eta_t=\eta_{\min}+\frac12(\eta_0-\eta_{\min})(1+\cos(\pi t/T))$: large steps at the
+start so as to approach quickly, small steps at the end so as not to jump around in
+the valley. With $3000$ minibatch steps and $\lambda=0.1$, a constant rate of $0.2$
+gives a median training error of $0.3866$, whereas a cosine from $0.5$ to $0.01$ gives
+$0.3549$.
+
+\section{Cross validation, hyperparameter selection, and leakage}
+\tingkat{advanced}
+
+All the validation numbers in this chapter come from a set that is not used for
+training. That is already correct, but it is not enough: as soon as we choose
+$\lambda$ with an eye that sees the validation error, that validation error stops
+being an unbiased estimate of the population error. In everyday language: if we
+choose the exam questions by the grade we get, that grade no longer measures our
+ability.
+
+\kamus{cross validation}{validasi silang}{rotating the roles of the data in turn, so that
+every example has once been an exam for a model that did not see it}
+
+\begin{definisi}[$k$-fold cross validation]
+\index{cross validation}
+The training data is split into $k$ folds that are disjoint and of similar size. For
+each $j$, the model is trained on $k-1$ folds and tested on fold $j$; the
+cross-validation error is the average error over those $k$ folds, and the
+hyperparameter that is chosen is the one that minimizes it. For $k=n$ this procedure
+is called \emph{leave-one-out}.
+\end{definisi}
+
+Cross validation answers one weakness of a single split: at $n=60$ the validation set
+contains twelve examples, and the error on twelve examples wobbles with a standard
+deviation of about $0.12$. With five folds every example is tested once, but the
+wobble does not disappear.
+
+\begin{center}
+\small
+\begin{tabular}{rrr}
+\hline
+$\lambda$ & CV error (average of 5 partitions) & spread between partitions \\
+\hline
+0     & 0.3233 & 0.1245 \\
+0.003 & 0.2400 & 0.0253 \\
+0.030 & 0.2467 & 0.0217 \\
+0.100 & 0.2467 & 0.0274 \\
+1     & 0.2967 & 0.0298 \\
+\hline
+\end{tabular}
+\end{center}
+
+The first row shows two things at once: without regularization the CV error is both
+the worst and the least stable, with a spread of $0.1245$, four times that of the
+other rows. The second to fourth rows are almost indistinguishable: $0.2400$,
+$0.2467$, and $0.2467$, with a spread of about $0.025$, and across five different
+partitions the winner keeps changing. This CV curve is flat around its minimum, so
+that choosing its exact value is an illusion of precision.
+
+The consequence is real: CV selects $\lambda=0.003$ with validation error $0.2688$,
+whereas the unselected $\lambda=0.1$ gives $0.2406$; that difference of $0.0282$ is
+not far from one standard deviation of the CV curve. The lesson is not that cross
+validation is broken, but that with sixty examples, hyperparameter selection carries
+an uncertainty as large as the effect being measured. Reporting "the best $\lambda$
+is $0.003$" without mentioning the width of the curve is the subtlest lie in
+this chapter.
+
+\begin{tangan}
+Materials: ten cards, a pencil, paper. Write one two-digit number on each card,
+shuffle, then lay out seven cards face up. Build a "rule" in the form of a list:
+position one is worth this much, position two is worth that much, through position
+seven.
+
+Cover one card with your palm and guess. Because your list contains that card, your
+guess is exact. Repeat for all seven positions: seven out of seven correct, and that
+is your training score.
+
+Now gather the ten cards, shuffle, lay out seven new cards, and use the same list.
+Cover one card, guess, uncover. What must be visible: your list does not contain the
+new cards, so your guess is pure luck. Repeat ten times with new layouts and record
+how often you are exact; that is your exam score. Finally write a second rule that
+uses only one property, for example "the card on the left is not larger than the card
+on its right", then compare the two scores.
+\end{tangan}
+
+There is a source of error larger than that wobble and invisible in any number:
+leakage, namely information from the test data entering the training process. Its
+most common form is standardizing features using the mean and standard deviation of
+all the data before the split is made.
+
+The numbers, with an artificial covariate shift: if validation is shifted by $0.5$,
+standardization with training statistics only gives $0.3765$, whereas pooled
+statistics give $0.3361$; at a shift of $1.0$ the numbers are $0.5387$ against
+$0.3819$. Pooled statistics always look better, and that is precisely the problem: they
+use information about where the test data lies that is not available in the field.
+Without a shift the two are equal, $0.2452$ against $0.2463$, a sign that the earlier
+difference came from leakage.
+
+The honest protocol is layered: separate train, validation, and test from the start;
+compute every quantity, including means, standard deviations, decision thresholds,
+and feature selection, inside the training folds only; choose hyperparameters on the
+validation set or through cross validation inside the training data; touch the test
+set once, then report it as it is.
+
+The relation between capacity and the amount of data can be made quantitative. For a
+finite hypothesis class, the generalization gap is controlled by the square root of
+the logarithm of the number of hypotheses divided by the number of examples.
+
+\begin{teorema}[A uniform bound for finite classes]
+\index{capacity}
+Suppose $\mathcal{H}$ is finite with $|\mathcal{H}|=m$, its error is 0-1, and $n$
+examples are drawn independently from $\mathcal{D}$. With probability at least
+$1-\delta$ over the drawing of the examples, it holds simultaneously for all
+$h\in\mathcal{H}$
+\[
+\bigl|R(h)-\hat R_n(h)\bigr|\le\sqrt{\frac{\ln m+\ln(2/\delta)}{2n}} .
+\]
+\end{teorema}
+
+\begin{proof}[Proof]
+For a fixed $h$, $\hat R_n(h)$ is the average of $n$ Bernoulli variables scaled to
+$[0,1]$, so Hoeffding's inequality gives
+$\mathbb{P}(|R(h)-\hat R_n(h)|>t)\le2e^{-2nt^2}$. Combine over all $h$ with the union
+bound: the probability that some $h$ exceeds $t$ is at most
+$2m\,e^{-2nt^2}$. Setting that expression equal to $\delta$ gives
+$t=\sqrt{(\ln m+\ln(2/\delta))/(2n)}$, and its complement is the statement of the
+theorem.
+\end{proof}
+
+For the class that "memorizes", namely a model that gives one label to every binary
+pattern over $d$ features, $m=2^d$. With $d=21$ and $\delta=0.05$ the bound is
+$\sqrt{(21\ln2+\ln40)/(2n)}$, namely $0.3899$ at $n=60$ and $0.0617$ at
+$n=2400$. The measured gap is $0.1338$ and $0.0097$ at the same $n$, so the bound
+holds but is loose; that looseness is not a defect, because the bound must hold for
+every distribution and every algorithm.
+
+What matters is not the numbers but their shape. The gap shrinks proportionally to
+$1/\sqrt n$, whereas the number of hypotheses enters through a logarithm. Quadrupling
+the data only halves the gap, and increasing capacity tenfold only raises the bound by
+the square root of the logarithmic increment. This is the honest reason why large
+models are still useful: as long as their gap is controlled by regularization, rising
+capacity does not automatically mean a rising gap.
+\section{Worked example: closed-form ridge on four points}
+\tingkat{intermediate}
+
+All the formulas above can be checked by hand on a small example: four points with
+one feature, $\mathbf{x}=(1,2,3,4)$ and $\mathbf{y}=(2,4,6,9)$, a model without an
+intercept $\hat y=wx$, and the objective $\frac12\sum_i(y_i-wx_i)^2+\frac{\lambda}{2}w^2$.
+Setting its derivative to zero gives
+\[
+w(\lambda)=\frac{\sum_ix_iy_i}{\sum_ix_i^2+\lambda}=\frac{64}{30+\lambda},
+\]
+since $\sum x_i^2=30$ and $\sum x_iy_i=2+8+18+36=64$.
+
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\hline
+$\lambda$ & $w$ & training SSE & $|w\cdot5-10|$ \\
+\hline
+0   & 2.133333 & 0.466667 & 0.666667 \\
+1   & 2.064516 & 0.608741 & 0.322581 \\
+2   & 2.000000 & 1.000000 & 0.000000 \\
+5   & 1.828571 & 3.253061 & 0.857143 \\
+10  & 1.600000 & 9.000000 & 2.000000 \\
+30  & 1.066667 & 34.600000 & 4.666667 \\
+100 & 0.492308 & 81.255621 & 7.538462 \\
+\hline
+\end{tabular}
+\end{center}
+
+Figure~\ref{fig:lintasan-bobot} plots both weight trajectories against $\lambda$ on
+this data: L2 shrinks without end, L1 stops exactly at zero. The last column uses one
+test point at $x=5$ with true value $10$, which does not take part in determining
+$w$. That is where the curve takes a U shape and its minimum falls exactly at
+$\lambda=2$: there $w=2$, so that the prediction at $x=5$ is $10$ and the error is
+zero. Without regularization, $w=64/30=2.1333$ is more attractive on the training data
+(SSE $0.466667$ against $1.000000$) but predicts $10.667$, off by $0.667$. This is the
+bias-variance trade in its barest form: the training SSE doubles, the test error
+becomes zero.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=11.8cm, height=5.4cm,
+  xmode=log,
+  xmin=0.5, xmax=300, ymin=-0.12, ymax=2.45,
+  axis lines=left,
+  xtick={1,2,10,64,100},
+  xticklabels={$1$,$2$,$10$,$64$,$100$},
+  ytick={0,0.5,1.0,1.5,2.0},
+  yticklabels={$0$,$0.5$,$1.0$,$1.5$,$2.0$},
+  tick label style={font=\scriptsize},
+  xlabel={regularization strength $\lambda$ (log scale)},
+  ylabel={weight $w$},
+  xlabel style={font=\small},
+  ylabel style={font=\small},
+  legend style={font=\scriptsize,draw=none,at={(0.97,0.97)},anchor=north east},
+]
+\addplot[domain=0.5:300,samples=200,very thick,layerindigo] {64/(30+x)};
+\addlegendentry{L2: $64/(30+\lambda)$}
+\addplot[domain=0.5:63.9,samples=200,very thick,layerorange] {(64-x)/30};
+\addlegendentry{L1: $\max\{(64-\lambda)/30,\,0\}$}
+\addplot[domain=64:300,samples=2,very thick,layerorange] {0};
+\draw[densely dashed,layergrey] (axis cs:2,-0.12)--(axis cs:2,2.20);
+\draw[densely dashed,layergrey] (axis cs:64,-0.12)--(axis cs:64,2.20);
+\addplot[only marks,mark=*,mark size=1.8pt,layerindigo] coordinates {(2,2.0000) (64,0.6809)};
+\addplot[only marks,mark=square*,mark size=1.8pt,layerorange] coordinates {(2,2.0667)};
+\addplot[only marks,mark=o,mark size=3.4pt,layerorange] coordinates {(64,0)};
+\node[font=\scriptsize,anchor=south] at (axis cs:2,2.24) {$\lambda=2$};
+\node[font=\scriptsize,anchor=south] at (axis cs:64,2.24) {$\lambda=64$};
+\node[font=\scriptsize,anchor=south west] at (axis cs:70,0.06) {L1 exactly zero};
+\end{axis}
+\end{tikzpicture}
+\caption{Weight trajectories against regularization strength on the worked example
+with four points, with $\sum x_i^2=30$ and $\sum x_iy_i=64$. The L2 penalty gives
+$w=64/(30+\lambda)$, which shrinks but never touches zero. The L1 penalty gives
+$w=\max\{(64-\lambda)/30,\,0\}$, which reaches zero exactly at $\lambda=64$. At
+$\lambda=2$ the two are nearly the same, $2.0000$ against $2.0667$; at $\lambda=64$ L2
+is still $0.6809$ whereas L1 is already $0.0000$. The dashed lines mark the two values
+of $\lambda$ that are compared.}
+\label{fig:lintasan-bobot}
+\end{figure}
+
+Note the right-hand wall. At $\lambda=100$, $w$ is only $0.4923$, the training SSE
+explodes to $81.255621$, and the test error is $7.538462$, worse than a model that
+learns nothing at all. This example also shows why searching for $\lambda$ on the
+training data is misleading: the training SSE curve rises monotonically, so that it
+always chooses $\lambda=0$.
+
+\begin{tantangan}
+A model reports a training error of $0.0000$ on $60$ examples and a test error of
+$0.4100$. A colleague proposes three changes: (i) train longer, (ii) add features up
+to degree seven, (iii) raise $\lambda$ from $0$ to $0.1$. For each proposal, predict
+the sign of the change in training error and in test error, then state which one
+cannot possibly help, with the reason.
+
+Hint 1: first ask in which direction capacity moves under each proposal.
+
+Hint 2: two of the three proposals enlarge capacity, and this model is already at zero
+training error, so that enlarging capacity only widens the gap. What helps is what
+narrows it, and that must raise the training error.
+
+If you get stuck, go back to the Definition of underfitting and overfitting in the
+first section.
+\end{tantangan}
+
+\kertas{Check the second column without a calculator: $64/32=2$ exactly, $64/31=2.064516$,
+and $64/40=1.6$. Then compute the SSE at $\lambda=2$ yourself: the residuals are
+$(0,0,0,1)$, so SSE $=1$. Finally answer: which $\lambda$ makes $w=1.28$, and what is
+the prediction at $x=5$ then? Hint: solve $64/(30+\lambda)=1.28$.}
+\section{Computational lab}
+\tingkat{advanced}
+
+Every number in this chapter comes from a single numpy script with no machine-learning
+library. The data is deliberately small so that it can be rechecked within minutes: two
+raw features, twenty-one polynomial features up to degree five, sixty training examples,
+and twenty thousand validation examples from the same distribution. The labels are not
+deterministic, so that there is an irreducible error of about $0.21$ which no model can
+go below.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+def data(n, rng):
+    x = rng.uniform(-1, 1, size=(n, 2))
+    p = 1/(1 + np.exp(-4.0*(0.9 - x[:,0]**2 - x[:,1]**2)))
+    return x, (rng.random(n) < p).astype(float)
+
+def poly(x, deg=5):
+    return np.column_stack([x[:,0]**i * x[:,1]**j
+                            for i in range(deg+1) for j in range(deg+1-i)])
+
+def sig(z):
+    return 1/(1 + np.exp(-np.clip(z, -400, 400)))
+
+def soft(t, l):
+    return np.sign(t)*np.maximum(np.abs(t) - l, 0.0)
+
+def er(Z, y, w, b):
+    return float(np.mean((sig(Z@w + b) > 0.5) != y))
+
+def fit(Z, y, lam, iters=30000, lr=0.05):
+    n, d = Z.shape
+    w = np.zeros(d); b = 0.0
+    mw = np.zeros(d); vw = np.zeros(d); mb = 0.0; vb = 0.0
+    for t in range(1, iters+1):
+        p = sig(Z@w + b); g = (p - y)/n
+        gw = Z.T@g + lam*w; gb = g.sum()
+        mw = 0.9*mw + 0.1*gw; vw = 0.999*vw + 0.001*gw*gw
+        mb = 0.9*mb + 0.1*gb; vb = 0.999*vb + 0.001*gb*gb
+        w -= lr*(mw/(1-0.9**t))/(np.sqrt(vw/(1-0.999**t)) + 1e-8)
+        b -= lr*(mb/(1-0.9**t))/(np.sqrt(vb/(1-0.999**t)) + 1e-8)
+    return w, b
+
+def fit_l1(Z, y, lam, iters=150000):
+    n, d = Z.shape
+    w = np.zeros(d); b = 0.0
+    st = 0.5/(0.25*np.linalg.eigvalsh(Z.T@Z/n).max())
+    for _ in range(iters):
+        p = sig(Z@w + b); g = (p - y)/n
+        w = soft(w - st*(Z.T@g + lam*w), st*lam); b -= st*g.sum()
+    return w, b
+\end{verbatim}
+\end{lab}
+
+The first part computes the error for eleven values of $\lambda$; the second part repeats
+that with the L1 penalty through proximal gradient descent, namely a gradient step
+followed by the soft threshold from the lemma above; the third part stops early; the
+fourth and fifth parts compare the optimizers; the sixth to eighth parts examine cross
+validation, leakage, and capacity. The actual output, cut only where it repeats:
+
+\begin{verbatim}
+d=21  n_train=60  n_validation=20000
+==1 L2: lam  |w|max  train  validation
+  0.0000 406.204  0.0000  0.3262
+  0.0010   3.056  0.1000  0.2927
+  0.0030   1.814  0.1000  0.2688
+  0.0100   1.018  0.1167  0.2475
+  0.0300   0.631  0.1167  0.2433
+  0.1000   0.399  0.1500  0.2406
+  0.3000   0.268  0.2333  0.2452
+  1.0000   0.142  0.2500  0.2695
+  3.0000   0.062  0.3333  0.3205
+ 10.0000   0.022  0.3333  0.3395
+100.0000   0.003  0.3333  0.3395
+==2 L1: lam  zeros/total  train  validation
+  0.0020 16/21  0.1167  0.2630
+  0.0050 11/21  0.1167  0.2455
+  0.0100 14/21  0.1167  0.2412
+  0.0200 14/21  0.1500  0.2369
+  0.0500 11/21  0.1833  0.2334
+  0.1000  7/21  0.2667  0.2492
+  0.2000  1/21  0.3333  0.3395
+==3 early stopping: epoch  train  validation  |w|max
+ep=   1  0.1333  0.2481  0.15
+ep=   5  0.1333  0.2429  0.38
+ep=  10  0.1333  0.2432  0.48
+ep=  50  0.1167  0.2454  0.77
+ep= 200  0.1167  0.2541  1.38
+ep= 800  0.1000  0.2879  2.85
+ep=2400  0.0833  0.3109  4.81
+best 0.2427 at epoch 8
+==4 quadratic diag(1,1e4): steps to error 1e-8
+GD=1e-4  92099 | momentum  9132 | Adam=0.1  82
+==5 logistic minibatch: steps to training error 0.40 (median of 5 seeds)
+sgd  lr=0.05 [100, 100, 90, 90, 100] median=100
+sgd  lr=0.2  [30, 50, 40, 40, 20] median=40
+adam lr=0.03 [30, 20, 20, 20, 30] median=20
+adam lr=0.1  [20, 10, 20, 10, 10] median=10
+==6 CV 5 partitions x 5 folds: lam  CV error (mean +- sd between partitions)
+ 0.000  0.3233 +- 0.1245
+ 0.003  0.2400 +- 0.0253
+ 0.030  0.2467 +- 0.0217
+ 0.100  0.2467 +- 0.0274
+ 1.000  0.2967 +- 0.0298
+==7 standardization: shift  training stats  pooled stats
+0.0  0.2452  0.2463
+0.5  0.3765  0.3361
+1.0  0.5387  0.3819
+==8 capacity vs data (d=21, lam=0, nested sets)
+n=   60 train=0.1667 validation=0.3005 diff=+0.1338 bound=0.3899
+n=  150 train=0.2133 validation=0.2407 diff=+0.0274 bound=0.2466
+n=  600 train=0.2067 validation=0.2260 diff=+0.0193 bound=0.1233
+n= 2400 train=0.2058 validation=0.2155 diff=+0.0097 bound=0.0617
+\end{verbatim}
+
+Three things need to be read from that output, and all three disappoint ordinary
+expectations.
+
+First, the training error is nearly useless as a guide: it moves in the opposite
+direction to the validation error. The validation curve is also not symmetric. From
+$\lambda=0$ to $0.1$ its error falls by $0.086$; from $0.1$ to $10$ it rises by $0.099$
+until it passes its starting point. When in doubt between two values, the smaller one
+is safer.
+
+Second, selection through cross validation is not automatically correct. CV chooses
+$\lambda=0.003$, whereas validation chooses $0.1$; the difference between their CV errors
+is $0.0006$, far below the spread between partitions of $0.025$, even though on the
+validation data the two differ by $0.0282$.
+
+Third, the theoretical bound is loose but its direction is right. The capacity
+experiment here trains the model with a budget of sixty thousand steps on nested sets,
+so that its training error is not zero. At $n=60$ the bound is $0.3899$ whereas the gap
+is $0.1338$; at $n=2400$ the bound is $0.0617$ whereas the gap is $0.0097$. The ratio is
+about three, so that the bound is useful for comparing settings, not for predicting
+numbers.
+
+\begin{untukdosen}
+The teaching order I suggest: start from the opening numbers of the chapter, sixty
+examples with training error zero and validation error $0.3262$, then ask whether that
+model "learned". The answer of the class usually splits in two, and that split is the
+best lecture material there is. After that the formal definitions, and let the
+bias-variance decomposition be derived on the board in five lines. L1 regularization is
+better introduced through the soft-threshold lemma than through a picture of the L1
+ball, because students can check that lemma themselves.
+
+The two misconceptions that appear most often. Students treat a low training error as
+proof of a good model, then are surprised when its validation error is high; another
+symptom is that they suggest "training longer" as the cure, when in the early-stopping
+table that is precisely what does the damage. And they treat regularization as always
+helpful, then install a large $\lambda$ with the conviction that it is "safer". The row
+$\lambda=10$ with error $0.3395$ is the cure for both.
+
+A blackboard activity that works: ask the class to guess, before it is computed, where
+the minimum of the validation curve lies, then compute just three rows together; the
+guess usually misses toward a $\lambda$ that is too small. The sign that the class is
+ready to go on: they can explain why choosing $\lambda$ with the validation data makes
+that number optimistic, and they can name one leakage that is invisible in the numbers.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Training error and population error are computed in the same way on different
+        sets; a training error of $0.0000$ with a validation error of $0.3262$ signals
+        memorization.
+  \item The population error decomposes into irreducible noise, squared bias, and
+        variance; regularization trades bias for variance, and that trade pays only as
+        long as the fall in variance is larger than the rise in bias.
+  \item The L2 penalty adds $\lambda\mathbf{w}$ to the gradient, equivalent to
+        multiplying the weights by $1-\eta\lambda$ at every step; L1 uses soft
+        thresholding so that weights below $\lambda/H$ become exactly zero. Both have a
+        dose: $\lambda=0.1$ gives $0.2406$, whereas $\lambda=10$ gives $0.3395$, worse
+        than without regularization.
+  \item Early stopping is regularization through the number of steps: $0.2427$ at
+        epoch 8 against $0.3109$ at epoch 2400. Dropout adds noise with variance
+        $(1-p)/p$ per unit, and Gaussian-noise augmentation with variance $\sigma^2$ is
+        equivalent to an L2 penalty of scale $\sigma^2$.
+  \item Optimizers differ on badly scaled problems: on a quadratic with condition
+        number $10^4$, gradient descent needs $92099$ steps, momentum $9132$, Adam
+        $82$; a cosine schedule lowers the training error from $0.3866$ to $0.3549$.
+  \item Cross validation reduces the wobble without removing it: the CV curve is flat
+        with a spread of $0.025$, and its choice misses by $0.0282$. Standardization
+        leakage makes the numbers look better ($0.3361$ against $0.3765$) without being
+        really better, and the generalization gap shrinks proportionally to $1/\sqrt n$:
+        from $0.1338$ at $n=60$ to $0.0097$ at $n=2400$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Assess this claim: "Because the training error of our model is zero, the model
+        is already good enough." True, false, or not enough evidence? Name the part that
+        is mistaken and one additional number that you need.
+  \item Prove the bias-variance decomposition for $y=f(x)+\varepsilon$ with
+        $\operatorname{Var}(\varepsilon)=\sigma^2$: write the three terms, show that both
+        cross terms vanish, and state where the independence of $D$ from $\varepsilon$
+        is used.
+  \item Derive $w(\lambda)=64/(30+\lambda)$ for the data in the worked example, then show
+        that $w$ decreases monotonically in $\lambda$ but is never zero. Compare it with
+        the L1 penalty on the same one-dimensional problem, and determine the $\lambda$
+        that makes $w=0$ exactly.
+  \item Compute the validation error for $c=0.95$ and $c=1.05$ in the shrinkage example
+        with $\mu=2$, $\sigma=1$, $n=25$, then compare them with $c=1$. Explain why two
+        deviations of equal size do not give losses of equal size.
+  \item A report writes: "We chose the best $\lambda$ through cross validation, so that
+        cross-validation number is an estimate of the error in the field." Fix that
+        sentence, and name two additional procedures that are needed.
+  \item Prove the soft-threshold lemma for $a<0$ in full, then explain why the result is
+        symmetric in the sign of $a$. Hint: treat the cases $u<0$ and $u=0$ separately.
+  \item Compute the number of weight-decay steps needed for a weight to become a quarter
+        of its initial value if $\eta=0.1$ and $\lambda=0.02$, using the half-life
+        $\ln2/(\eta\lambda)$. Check with a numpy simulation for a zero gradient.
+  \item On the data of this chapter, $\lambda=0.1$ gives a training error of $0.1500$ and
+        a validation error of $0.2406$. Compute the gap, compare it with the gap at
+        $\lambda=0$ and $\lambda=10$, then explain why a small gap is not enough to
+        conclude that a model is better.
+  \item Derive the uniform bound $\sqrt{(\ln m+\ln(2/\delta))/(2n)}$ from Hoeffding's
+        inequality and the union bound, then compute it for $d=10$, $n=200$, and
+        $\delta=0.01$. How many times must the data be doubled for the bound to halve?
+\end{enumerate}
+
+Hints for the three hardest items. Item 3: its one-dimensional objective is
+$\frac12\sum_i(y_i-wx_i)^2+\lambda|w|$; at $w=0$ its subgradient contains zero when
+$\lambda\ge|\sum_ix_iy_i|=64$, so that $w=0$ exactly at $\lambda=64$. Item 6: at $u=0$
+the subgradient is the interval $[-a-t,\,-a+t]$, which contains zero when $|a|\le t$.
+Item 9: with $m=2^{10}$ and $\delta=0.01$ the bound is
+$\sqrt{(10\ln2+\ln200)/400}=0.1749$; halving it demands four times the data.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is proved in this chapter: the bias-variance decomposition together with its
+conditions; the equivalence of the weight-decay step with an L2 penalty; the closed form
+of the minimizer of $\frac H2(w-w^\ast)^2+\lambda|w|$ and the subgradient condition that
+makes L1 produce true zeros; the equivalence of Gaussian-noise augmentation with an L2
+penalty for linear models; the formulas for the expectation and variance of the dropout
+mask; and the uniform bound for finite hypothesis classes. What is only popular: that
+regularization always helps; that Adam is always faster; that early stopping "is the
+same as" L2 (it is an approximation for a quadratic objective with a small rate); that
+the count of zeros under L1 measures feature importance.
+
+Primary sources: Goodfellow, Bengio, and Courville, \emph{Deep Learning}, Chapter 5
+(capacity, bias-variance), Chapter 7 (L1 and L2 penalties, augmentation, noise, early
+stopping, dropout), Chapter 8 (SGD, momentum, Adam, learning-rate schedules,
+hyperparameter selection). Wasserman, \emph{All of Statistics}, Chapter 13 and Chapter 20.
+The uniform bound is a direct consequence of Hoeffding's inequality and the union bound.
+
+Limits of validity: every number comes from one synthetic set with a single $60/20000$
+split, so that each validation error carries an uncertainty of order $0.01$ to $0.02$.
+For that reason the comparison of L1 and L2 here is not a recommendation. The uniform
+bound is only for finite classes and 0-1 error.
+
+Open questions: how large the leakage of batch normalization is, since it computes
+statistics from the minibatch and so mixes information between examples; how to choose
+$\lambda$ when the cost of mistakes is asymmetric; and whether a flat CV curve can be
+turned into a valid interval, not merely a spread between partitions.
+\end{untukpeneliti}
+
+\peta{Chapter 26 in Goodfellow, Bengio, and Courville, \emph{Deep Learning}: Chapter 5
+(capacity, overfitting and underfitting, the bias-variance decomposition), Chapter 7 (L1
+and L2 penalties, weight decay, data augmentation, noise as regularization, early
+stopping, dropout), Chapter 8 (SGD, momentum, Adam, learning-rate schedules,
+hyperparameter selection). In Wasserman, \emph{All of Statistics}: Chapter 13 (model
+selection and cross validation), Chapter 20 (bias-variance in smoothing). Backpropagation
+and network training are covered in Chapter 23; honest reading of evaluation metrics,
+including leakage and data splitting, continues in Chapter 25; the convex optimization
+underlying penalties and subgradients is in Chapter 21.}

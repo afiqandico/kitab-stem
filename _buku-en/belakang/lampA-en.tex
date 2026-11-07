@@ -1,0 +1,98 @@
+\appendix
+\renewcommand{\appendixname}{Appendix}
+\chapter{Table of Notation}
+\label{app:notasi}
+
+The following notation is used throughout the book. When a chapter uses a symbol that is
+not listed here, that symbol is introduced where it is used. The number at the end of each
+entry refers to the chapter that uses it.
+
+\section*{Sets, logic, and numbers (Chapters 1--5, 22)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$\mathbb{N}$, $\mathbb{Z}$, $\mathbb{Q}$, $\mathbb{R}$, $\mathbb{C}$]
+        the natural, integer, rational, real, and complex numbers.
+  \item[$\forall$, $\exists$, $\neg$] for all, there exists, and not.
+  \item[$\Rightarrow$, $\Leftrightarrow$] implies, and if and only if.
+  \item[$\in$, $\notin$, $\subseteq$, $\cup$, $\cap$, $\setminus$] membership,
+        not an element of, subset, union, intersection, difference (Chapter 2).
+  \item[$\mathcal{P}(S)$, $|S|$, $S\times T$] power set, cardinality,
+        Cartesian product (Chapter 2).
+  \item[$\sup S$, $\inf S$] least upper bound and greatest lower bound (Chapter 3).
+  \item[$a_n\to a$] the sequence $(a_n)$ converges to $a$ (Chapter 4).
+  \item[$\sum_{n=1}^{\infty} a_n$] series and its sum (Chapter 5).
+  \item[$\mathrm{fl}(x)$, $\mathrm{ulp}$] the rounded value of a real number and the
+        smallest unit that can be represented (Chapter 22).
+\end{description}
+
+\section*{Linear algebra (Chapters 6--10)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$\mathbf{x}$, $\mathbf{x}^{\top}$, $\|\mathbf{x}\|$] column vector,
+        transpose, and Euclidean norm.
+  \item[$\operatorname{span} S$, $\dim V$] span of a set of vectors and dimension of
+        a vector space.
+  \item[$\mathcal{L}(V,W)$] the space of all linear transformations from $V$ to $W$ (Chapter 7).
+  \item[$\ker T$, $\operatorname{im} T$] kernel and image of a transformation (Chapter 7).
+  \item[$\det A$, $\operatorname{tr} A$, $A^{-1}$] determinant, trace, and inverse of
+        a matrix (Chapter 8).
+  \item[$\lambda$, $\mathbf{v}$] eigenvalue and eigenvector (Chapter 9).
+  \item[$\sigma_i$, $A=U\Sigma V^{\top}$] singular values and the singular value
+        decomposition (Chapter 10).
+  \item[$A^{+}$, $\kappa(A)$] pseudoinverse and condition number (Chapters 10, 20).
+\end{description}
+
+\section*{Analysis and calculus (Chapters 11--16)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$\varepsilon$, $\delta$] small positive numbers in the definition of limit,
+        continuity, and uniform continuity.
+  \item[$f'(x)$, $\nabla f$] ordinary derivative and gradient.
+  \item[$J_f$, $H_f$] Jacobian and Hessian matrices (Chapter 12).
+  \item[$\int_a^b f$] Riemann integral on $[a,b]$ (Chapter 13).
+  \item[$\sum_{\mathcal{P}} M_i \Delta x_i$] upper sum for the partition
+        $\mathcal{P}$ (Chapter 13).
+  \item[$f_n \rightrightarrows f$] sequence of functions converging uniformly (Chapter 14).
+  \item[$\dfrac{\partial(x,y)}{\partial(u,v)}$] Jacobian determinant of a change of
+        variables (Chapter 15).
+  \item[$x'=f(t,x)$, $\dot{x}=F(x)$] ordinary differential equation and autonomous
+        system, where $'$ and $\dot{\ }$ both denote the derivative with respect to
+        time (Chapter 16).
+  \item[$\varphi_t(x_0)$] flow: the state at time $t$ when starting from $x_0$
+        (Chapter 16).
+  \item[$x^{*}$, $J_F(x^{*})$] equilibrium point and the Jacobian matrix at that point;
+        the sign of the real part of its eigenvalues determines stability (Chapter 16).
+\end{description}
+
+\section*{Probability and statistics (Chapters 17--21, 26)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$P(A)$, $P(A\mid B)$] probability of the event $A$ and conditional probability.
+  \item[{$\mathbb{E}[X]$, $\operatorname{Var}X$}] expectation and variance.
+  \item[$\operatorname{Cov}(X,Y)$] covariance of two random variables (Chapter 18).
+  \item[$\bar{X}_n$, $\mathrm{se}$] sample mean and its standard error.
+  \item[$\mathrm{CI}_{1-\alpha}$] confidence interval with level
+        $1-\alpha$ (Chapter 20).
+  \item[$\mathrm{TP}$, $\mathrm{FP}$, $\mathrm{FN}$, $\mathrm{TN}$] the four cells of
+        a confusion matrix (Chapter 27).
+  \item[$\hat{\beta}$, $\hat{y}=X\hat{\beta}$] least squares regression
+        coefficients and predicted values (Chapter 21).
+  \item[$e_i=y_i-\hat{y}_i$, $R^2$] residual and the proportion of variance explained
+        by the model (Chapter 21).
+  \item[$\mathrm{se}(\hat{\beta}_j)$, $\mathrm{VIF}_j$] standard error of a coefficient and
+        variance inflation factor (Chapter 21).
+\end{description}
+
+\section*{Optimization, machine learning, and verification (Chapters 23--30)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$\min f_0(x)$ with $f_i(x)\le 0$] standard form of an optimization problem (Chapter 23).
+  \item[$L(x,\lambda,\nu)$] Lagrangian; $\lambda,\nu$ multipliers (Chapter 23).
+  \item[$c^{\top}x$, $Ax\le b$, $x\in\mathbb{Z}^n$] LP form and integer program
+        (Chapter 24).
+  \item[$\sigma(\cdot)$, $\mathrm{softmax}$] activation function and exponential
+        normalization (Chapter 25).
+  \item[$\nabla_{\mathbf{x}}\ell$] gradient of the loss function with respect to the input;
+        the fuel for attacks (Chapters 25, 29).
+  \item[$L_2$, $L_1$, $\lambda_{\text{reg}}$] kinds of regularization and their strength
+        (Chapter 26).
+  \item[$\|\delta\|_{\infty}\le\varepsilon$] perturbation bound in adversarial
+        attacks (Chapters 29, 30).
+  \item[$\vdash$, \texttt{by}, \texttt{sorry}] provability, the tactic block opener,
+        and deferred proof in Lean~4 (Chapter 28).
+\end{description}

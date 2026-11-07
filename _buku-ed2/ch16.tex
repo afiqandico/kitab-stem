@@ -1,0 +1,1140 @@
+\chapter{Persamaan Diferensial dan Sistem Dinamik}
+
+Jam bandul di ruang tamu berayun dengan amplitudo enam puluh derajat, dan panjang
+lengannya satu meter. Buku pelajaran memberi periode
+\[
+T=2\pi\sqrt{L/g}=2.006409\ \text{detik},
+\]
+dan rumus itu memang benar untuk ayunan yang sangat kecil. Diukur pada amplitudo
+enam puluh derajat, bandul yang sama memerlukan $2{,}153242$ detik untuk satu ayunan
+penuh: $7{,}32$ persen lebih lama. Jam yang disetel memakai rumus kecil itu
+ketinggalan $5892$ detik, sekitar sembilan puluh delapan menit, setiap hari.
+
+Rumus itu bukan salah hitung. Ia jawaban tepat untuk persamaan yang berbeda.
+Ayunan sebenarnya memenuhi
+\[
+\frac{d^{2}\theta}{dt^{2}}=-\frac{g}{L}\sin\theta ,
+\]
+sedangkan rumus periode kecil berasal dari penggantian $\sin\theta$ dengan
+$\theta$. Pada $\theta=60^{\circ}$ penggantian itu mengubah $0{,}866025$ menjadi
+$1{,}047198$, selisih tujuh belas persen di titik terjauh, dan kesalahan periode
+yang tertinggal $7{,}32$ persen. 
+
+Bab 12 mengajari kita menurunkan, Bab 14 deret fungsi, Bab 15 medan vektor.
+Tidak satu pun menjawab pertanyaan di sini: bila laju perubahan diketahui,
+bagaimana mencari fungsinya, apakah ia tunggal, dan apa yang terjadi dalam jangka
+panjang. Bab ini mengisi keempat kekosongan itu: cara menyelesaikan, syarat
+keberadaan dan ketunggalan, bidang fase, dan uji kestabilan.
+
+\begin{untukanak}
+Bayangkan bak air di kamar mandi. Keran di atas mengalir tetap, lubang pembuangan
+di bawah mengalir keluar, dan semakin tinggi air, semakin deras yang keluar.
+Kalau kita membuka keran lalu pergi, tinggi air besok tidak dapat dihitung hanya
+dari besar keran: yang menentukan adalah tinggi air sekarang. Air yang tinggi
+mendorong keluar lebih cepat, kenaikannya melambat, dan akhirnya berhenti ketika
+air masuk sama dengan air keluar.
+
+Benda lain bekerja dengan cara yang sama. Kopi panas mendingin lebih cepat ketika
+masih sangat panas. Kuman berkembang biak lebih cepat ketika jumlahnya banyak,
+lalu melambat ketika makanan habis. Yang kita tahu adalah aturan perubahan, bukan
+hasil akhirnya.
+
+Sekarang pertanyaan yang membuat pekerjaan ini sulit. Dua bak sama, keran sama,
+lubang sama, tetapi satu mulai kosong dan satu mulai setengah penuh: apakah
+akhirnya tingginya sama? Kadang ya, kadang tidak. Dan ada lubang yang jahat,
+tersumbat sebagian lalu terbuka tiba-tiba: dua cerita berbeda bisa keluar dari
+keadaan awal yang sama.
+
+Di bab ini kita akan tahu mengapa aturan perubahan kadang cukup menentukan
+seluruh masa depan, dan kadang tidak.
+\end{untukanak}
+
+\section{Laju yang bergantung pada dirinya sendiri}
+\tingkat{dasar}
+
+Persamaan diferensial menyamakan laju perubahan sebuah fungsi dengan sesuatu
+yang memuat fungsi itu sendiri. Menyelesaikannya berarti mencari fungsi yang
+memenuhi kalimat itu pada seluruh sebuah selang. Turunan di Bab 12 dihitung di
+satu titik; solusi di sini adalah fungsi pada selang, dan perbedaan itu yang
+paling sering terlewat.
+
+\begin{definisi}[Persamaan diferensial biasa]\index{persamaan diferensial}
+Persamaan
+\[
+F\bigl(t,y,y',y'',\dots,y^{(n)}\bigr)=0
+\]
+disebut \emph{persamaan diferensial biasa} (PDB) orde $n$ untuk fungsi $y$ dari
+peubah $t$ bila $F$ memuat turunan ke-$n$ dan tidak memuat turunan yang lebih
+tinggi. PDB itu disebut \emph{linear} bila $F$ berbentuk
+\[
+a_{n}(t)\,y^{(n)}+\cdots+a_{1}(t)\,y'+a_{0}(t)\,y=b(t),
+\]
+dan disebut \emph{otonom} bila $F$ tidak memuat $t$ secara eksplisit.
+\end{definisi}
+
+ Semua contoh di
+bab ini orde satu atau orde dua, karena keduanya sudah memuat seluruh gagasan
+penting.
+
+\begin{definisi}[Solusi dan masalah nilai awal]\index{masalah nilai awal}
+Fungsi $y$ disebut \emph{solusi} PDB pada selang $I$ bila $y$ mempunyai turunan
+sampai orde $n$ pada $I$ dan memenuhi persamaan di setiap titik $I$. Bila
+ditambahkan syarat $y(t_{0})=y_{0}$, gabungan keduanya disebut \emph{masalah
+nilai awal}, dan $y_{0}$ disebut nilai awal.
+\end{definisi}
+
+Satu contoh untuk memastikan definisinya bekerja. Ambil model populasi
+\[
+y'=y(1-y),\qquad y(0)=\tfrac12 ,
+\]
+dengan $y$ menyatakan bagian populasi terhadap daya tampung. Calon solusinya
+\[
+y(t)=\frac{1}{1+e^{-t}} .
+\]
+Turunannya $y'(t)=e^{-t}/(1+e^{-t})^{2}$, dan ruas kanan
+$y(1-y)=e^{-t}/(1+e^{-t})^{2}$ sama persis. Nilai awalnya $y(0)=1/2$ juga cocok.
+Jadi fungsinya solusi, dan pemeriksaan itu hanya memakai aturan turunan hasil
+bagi dari Bab 12.
+
+Yang perlu diperhatikan: $y(t)=1$ dan $y(t)=0$ juga solusi, keduanya konstan,
+dan keduanya muncul saat kita menanyakan kapan ruas kanan nol. Jadi satu
+persamaan dapat punya banyak solusi; nilai awal memilih satu di antaranya.
+Koleksi semua solusi disebut \emph{solusi umum}, dan ia memuat satu konstanta
+untuk setiap orde.
+
+Selang tempat solusi hidup adalah bagian dari jawaban. Ambil
+\[
+y'=y^{2},\qquad y(0)=1 .
+\]
+Pemisahan variabel memberi $y(t)=1/(1-t)$, dan rumus itu hanya masuk akal pada
+$t<1$. Di $t=0{,}9$ nilainya $10$; di $t=0{,}99$ nilainya $100$; di $t=0{,}999$ nilainya
+$1000$. Tidak ada bilangan berhingga di $t=1$, dan tidak ada solusi yang
+melanjutkan fungsi itu melewatinya. Solusinya \emph{meledak} dalam waktu
+berhingga, dan program yang melaporkan nilai di $t=2$ tidak menemukan solusi; ia
+menemukan pembulatan.
+
+\kamus{persamaan diferensial}{differential equation}{Kalimat yang mengikat laju perubahan sebuah besaran dengan besar besaran itu sendiri.}
+
+\kamus{solusi umum}{general solution}{Keluarga semua fungsi yang memenuhi persamaan, biasanya memuat satu konstanta bebas per orde.}
+
+\begin{bacakeras}
+--- Kalau bola ini kulepas di lereng, ia akan bergerak ke bawah. Berapa cepat?
+--- Tergantung di mana bola itu sekarang. Di dekat puncak, pelan. Di tengah
+lereng, cepat.
+--- Jadi kecepatannya bukan satu angka tetap?
+--- Bukan. Ia aturan: di tiap titik, kecepatan ditentukan oleh titik itu.
+--- Kalau aturannya sudah tahu segalanya, apakah jalannya sudah tertentu?
+--- Belum. Aturan memberi arah di setiap titik; jalan lahir dari titik awal yang
+kau pilih.
+--- Dua bola, dua titik awal, satu aturan?
+--- Satu aturan, dua jalan.
+--- Kalau dua jalan bertemu di titik yang sama, bagaimana kita tahu mana yang
+datang dari mana?
+--- Kita tidak bisa. Karena itu bab ini menuntut satu titik awal untuk satu
+jalan.
+
+Ulangi sekali, dengan suara biasa: aturan sama, titik awal berbeda, jalan berbeda.
+\end{bacakeras}
+
+\section{Dua keluarga yang dapat diselesaikan dengan tangan}
+\tingkat{dasar}
+
+Tidak semua persamaan diferensial punya rumus penyelesaian, tetapi dua keluarga
+besar punya, dan keduanya muncul di hampir setiap penerapan tingkat pertama.
+Keluarga pertama memisahkan peubah; keluarga kedua linear orde satu.
+
+\subsection{Pemisahan variabel}
+
+Bila persamaan dapat ditulis $y'=f(t)g(y)$, kita memindahkan semua $y$ ke satu
+sisi dan semua $t$ ke sisi lain:
+\[
+\frac{dy}{g(y)}=f(t)\,dt,\qquad \int\frac{dy}{g(y)}=\int f(t)\,dt .
+\]
+Langkah itu bukan trik notasi, melainkan aturan rantai yang dibalik: bila $H$
+antiturunan $1/g$, maka $\frac{d}{dt}H(y(t))=H'(y)y'=y'/g(y)$, sehingga
+persamaan asal menjadi $\frac{d}{dt}H(y(t))=f(t)$ dan Bab 13 memberi
+$H(y)=\int f\,dt+C$. Hasilnya biasanya implisit, dan itu jawaban yang sah.
+
+Model logistik di atas dipakai sepanjang bab. Dengan
+$g(y)=y(1-y)$ dan pecahan parsial,
+\[
+\int\frac{dy}{y(1-y)}=\int\Bigl(\frac{1}{y}+\frac{1}{1-y}\Bigr)dy
+=\ln\Bigl|\frac{y}{1-y}\Bigr| ,
+\]
+maka $\ln|y/(1-y)|=t+C$ dan
+\[
+y(t)=\frac{1}{1+Ae^{-t}},\qquad A=\frac{1-y_{0}}{y_{0}} .
+\]
+Untuk $y_{0}=1/2$ diperoleh $A=1$, yaitu rumus yang kita periksa tadi. Perhatikan
+bahwa $A$ ditentukan oleh nilai awal, dan bahwa $A=0$ memberi solusi konstan $y=1$
+yang tidak tercakup pembagian di atas: saat memisahkan variabel kita membagi
+dengan $g(y_{0})$, dan pembagian itu hanya sah bila $g(y_{0})\ne0$.
+
+\subsection{Persamaan linear dan faktor integrasi}
+
+Bentuk baku persamaan linear orde satu adalah
+\[
+y'+p(t)\,y=q(t).
+\]
+Ruas kiri hampir merupakan turunan sebuah hasil kali, hanya kurang satu faktor.
+Faktor yang hilang itulah yang dicari teorema berikut.
+
+\begin{teorema}[Faktor integrasi]\index{faktor integrasi}
+Misalkan $p$ dan $q$ kontinu pada selang buka $I$ yang memuat $t_{0}$, dan
+misalkan
+\[
+\mu(t)=\exp\Bigl(\int_{t_{0}}^{t}p(s)\,ds\Bigr).
+\]
+Maka masalah nilai awal $y'+p(t)y=q(t)$, $y(t_{0})=y_{0}$ mempunyai tepat satu
+solusi pada $I$, yaitu
+\[
+y(t)=\frac{1}{\mu(t)}\Bigl(y_{0}+\int_{t_{0}}^{t}\mu(s)\,q(s)\,ds\Bigr).
+\]
+\end{teorema}
+
+\begin{proof}
+Karena $p$ kontinu, $\mu$ terdefinisi, positif, dan terdiferensialkan pada $I$,
+dengan $\mu'=p\mu$ menurut teorema dasar kalkulus (Bab 13). Kalikan persamaan
+dengan $\mu$:
+\[
+\mu y'+\mu p\,y=\mu q
+\quad\Longleftrightarrow\quad
+(\mu y)'=\mu q ,
+\]
+karena aturan turunan hasil kali memberi $(\mu y)'=\mu'y+\mu y'=\mu(py+y')$.
+Integralkan kedua ruas dari $t_{0}$ sampai $t$ dan pakai teorema dasar kalkulus:
+\[
+\mu(t)y(t)-\mu(t_{0})y(t_{0})=\int_{t_{0}}^{t}\mu(s)q(s)\,ds .
+\]
+Karena $\mu(t_{0})=1$, pembagian dengan $\mu(t)>0$ memberi rumus yang diminta.
+Ketunggalan: bila $y_{1},y_{2}$ dua solusi, selisihnya $w=y_{1}-y_{2}$ memenuhi
+$w'+pw=0$ dengan $w(t_{0})=0$; mengalikan dengan $\mu$ memberi $(\mu w)'=0$,
+jadi $\mu w$ konstan, dan karena nilainya nol di $t_{0}$ ia nol di mana-mana.
+\end{proof}
+
+Bukti itu tidak menebak apa pun: $\mu$ dicari dengan menuntut $\mu'=p\mu$,
+persamaan yang lebih mudah daripada asalnya. Pola ini berulang: satu persoalan
+diselesaikan dengan mengubahnya menjadi persoalan yang lebih sederhana.
+
+\begin{contoh}[Satu persamaan linear, dua pemeriksaan]
+Selesaikan $y'+2y=4t$ dengan $y(0)=1$. Di sini $p=2$ dan $q=4t$, sehingga
+$\mu=e^{2t}$ dan
+\[
+(e^{2t}y)'=4t\,e^{2t}.
+\]
+Integral parsial memberi
+\[
+\int 4t\,e^{2t}\,dt=\Bigl(2t-1\Bigr)e^{2t}+C ,
+\]
+sebab turunan $(2t-1)e^{2t}$ adalah $2e^{2t}+2(2t-1)e^{2t}=(4t)e^{2t}$. Jadi
+\[
+y(t)=2t-1+Ce^{-2t},
+\]
+dan syarat $y(0)=1$ memberi $C=2$, yaitu $y(t)=2t-1+2e^{-2t}$.
+
+Pemeriksaan: substitusi memberi $y'+2y=4t$, dan $y(1)=1+2e^{-2}=1{,}2706705665$;
+integrator adaptif dengan toleransi $10^{-12}$ memberi $1{,}270670566473$.
+\end{contoh}
+
+\subsection{Rangkaian RC: contoh nyata yang paling sederhana}
+
+Sebuah sumber tegangan $V_{s}$ dihubungkan seri dengan resistor $R$ dan
+kapasitor $C$. Hukum Kirchhoff tentang tegangan memberi $V_{s}=Ri+V_{C}$, dan
+hukum kapasitor memberi $i=C\,dV_{C}/dt$. Keduanya memberi
+\[
+RC\,\frac{dV_{C}}{dt}+V_{C}=V_{s},
+\qquad\text{atau}\qquad
+\frac{dV_{C}}{dt}+\frac{1}{RC}V_{C}=\frac{V_{s}}{RC}.
+\]
+Ini persamaan linear dengan $p=1/(RC)$ konstan. Menurut teorema tadi, dengan
+$V_{C}(0)=0$,
+\[
+V_{C}(t)=V_{s}\bigl(1-e^{-t/\tau}\bigr),\qquad \tau=RC .
+\]
+Angka $\tau$ disebut tetapan waktu. Untuk $R=1\,\mathrm{k}\Omega$ dan
+$C=1\,\mu\mathrm{F}$, $\tau=10^{-3}$ detik. Dengan $V_{s}=5$ volt, tegangan
+pada $t=\tau$ adalah $3{,}160603$ volt dan pada $t=5\tau$ adalah $4{,}966310$ volt,
+yaitu $99{,}33$ persen dari $5$ volt. Untuk mencapai $90$ persen dibutuhkan
+$t=\tau\ln10=2{,}302585$ milidetik.
+
+\begin{resep}
+\begin{enumerate}
+\item Tulis persamaan dalam bentuk baku $y'+p(t)y=q(t)$: bagi dengan koefisien
+  $y'$ sehingga koefisiennya tepat satu.
+\item Hitung $\mu(t)=\exp\bigl(\int p(t)\,dt\bigr)$, tanpa konstanta integrasi.
+\item Kalikan seluruh persamaan dengan $\mu$, lalu tulis ruas kiri sebagai
+  $(\mu y)'$. Bila ruas kiri tidak mau menjadi satu turunan, langkah 1 salah.
+\item Integralkan kedua ruas terhadap $t$, lalu bagi dengan $\mu$.
+\item Pakai nilai awal untuk menentukan konstanta, dan tulis selang berlakunya.
+\end{enumerate}
+Peringatan: langkah 1 tidak boleh dilewati, dan langkah 3 tidak boleh dikerjakan
+sebelum langkah 2. Menghitung $\mu$ dari koefisien yang belum dinormalkan memberi
+faktor integrasi yang salah, dan kesalahannya baru kelihatan saat solusinya
+diuji.
+\end{resep}
+
+\kamus{faktor integrasi}{integrating factor}{Pengali yang mengubah ruas kiri persamaan linear menjadi satu turunan hasil kali.}
+
+\section{Keberadaan, ketunggalan, dan iterasi Picard}
+\tingkat{menengah}
+
+Contoh $y'=y^{2}$ menunjukkan solusi bisa berhenti ada. Diberi $f$ dan satu titik
+awal, apakah solusinya ada dan apakah hanya satu? Jawabannya bergantung pada satu
+sifat $f$ terhadap $y$.
+
+\begin{definisi}[Syarat Lipschitz]\index{syarat Lipschitz}
+Fungsi $f(t,y)$ memenuhi syarat Lipschitz terhadap $y$ pada daerah
+$D\subseteq\mathbb{R}^{2}$ bila ada konstanta $L$ sehingga
+\[
+|f(t,y_{1})-f(t,y_{2})|\le L\,|y_{1}-y_{2}|
+\]
+untuk setiap $(t,y_{1}),(t,y_{2})\in D$. Konstanta terkecil yang mungkin disebut
+konstanta Lipschitz.
+\end{definisi}
+
+Kalimat sehari-harinya: $f$ tidak boleh berubah terlalu mendadak ketika $y$
+bergeser sedikit. Bila $f$ punya turunan parsial terhadap $y$ yang kontinu dan
+terbatas oleh $L$ pada $D$, syarat itu otomatis berlaku, karena teorema nilai
+rata-rata (Bab 12) memberi
+$f(t,y_{1})-f(t,y_{2})=\partial_{y}f(t,\xi)(y_{1}-y_{2})$.
+
+\begin{teorema}[Picard--Lindel\"of]\index{teorema Picard-Lindelof}
+Misalkan $f$ kontinu pada persegi panjang tertutup
+$D=[t_{0}-a,t_{0}+a]\times[y_{0}-b,y_{0}+b]$ dan memenuhi syarat Lipschitz
+terhadap $y$ pada $D$ dengan konstanta $L$. Misalkan $M=\max_{D}|f|$ dan
+$h=\min(a,\,b/M)$. Maka masalah nilai awal $y'=f(t,y)$, $y(t_{0})=y_{0}$
+mempunyai tepat satu solusi pada selang $|t-t_{0}|\le h$.
+\end{teorema}
+
+Bukti lengkapnya memakai teorema titik tetap Banach pada ruang fungsi kontinu
+dengan norma maksimum, yang lengkap karena kekontinuan seragam dibahas di Bab 11
+dan Bab 14. Saya berikan sketsanya, karena sketsa itu memuat seluruh gagasan dan
+dapat dijadikan algoritma.
+
+Tulis persamaan sebagai persamaan integral, yang setara karena kedua sisinya
+kontinu:
+\[
+y(t)=y_{0}+\int_{t_{0}}^{t}f\bigl(s,y(s)\bigr)\,ds .
+\]
+Definisikan pemetaan $T$ dengan rumus itu, mulai dari $y_{0}(t)=y_{0}$ konstan,
+lalu ulangi:
+\[
+y_{n+1}(t)=y_{0}+\int_{t_{0}}^{t}f\bigl(s,y_{n}(s)\bigr)\,ds .
+\]
+Setiap $y_{n}$ terletak di dalam $D$ selama $|t-t_{0}|\le h$, karena
+$|y_{n+1}-y_{0}|\le M|t-t_{0}|\le Mh\le b$. Selisih dua iterasi berturut-turut
+memenuhi
+\[
+|y_{n+1}(t)-y_{n}(t)|\le L\Bigl|\int_{t_{0}}^{t}|y_{n}(s)-y_{n-1}(s)|\,ds\Bigr|
+\le \frac{(L|t-t_{0}|)^{n}}{n!}\,\|y_{1}-y_{0}\| ,
+\]
+dan induksi pada $n$ memberi batas itu. Karena $\sum_{n}(Lh)^{n}/n!$ konvergen
+(uji rasio, Bab 5), deret $y_{0}+\sum(y_{n+1}-y_{n})$ konvergen seragam, dan
+batasnya adalah solusi. Ketunggalan datang dari pertidaksamaan yang sama: dua
+solusi berbeda akan memenuhi $|y_{1}-y_{2}|\le L|t-t_{0}|\,\|y_{1}-y_{2}\|$,
+yang untuk $Lh<1$ hanya mungkin bila selisihnya nol; kasus $Lh\ge1$ ditangani
+dengan memperkecil $h$, dan itulah sebab teorema hanya menjanjikan selang
+pendek.
+
+Jalankan iterasi itu pada $y'=y$, $y(0)=1$. Mulai dari $y_{0}=1$:
+\[
+y_{1}=1+t,\quad y_{2}=1+t+\frac{t^{2}}{2},\quad
+y_{3}=1+t+\frac{t^{2}}{2}+\frac{t^{3}}{6},
+\]
+sehingga $y_{n}$ adalah jumlah parsial deret eksponensial dari Bab 5. Di $t=1$,
+iterasi kedelapan memberi $2{,}718278769841$, sedangkan $e=2{,}718281828459$;
+galatnya $3{,}06\times10^{-6}$.
+
+Syarat Lipschitz tidak boleh dibuang. Ambil
+\[
+y'=\sqrt{|y|},\qquad y(0)=0 .
+\]
+Ruas kanannya kontinu, jadi solusi ada; tetapi ia tidak memenuhi syarat Lipschitz
+di sekitar $y=0$, karena kemiringannya tak terbatas di sana. Dan memang ada dua
+solusi: fungsi nol, $y(t)\equiv0$, dan
+\[
+y(t)=\frac{t^{2}}{4}\quad (t\ge0).
+\]
+Pemeriksaannya satu baris: $y'=t/2$ dan $\sqrt{|y|}=\sqrt{t^{2}/4}=t/2$ untuk
+$t\ge0$, sedangkan $y(0)=0$. Dua riwayat berbeda dari satu keadaan awal yang
+sama, persis seperti lubang bak yang terbuka tiba-tiba pada kotak pembuka bab.
+
+Lipschitz adalah syarat \emph{cukup}, bukan perlu. Keberadaan tanpa
+ketunggalan dijamin teorema Peano, yang memakai kekompakan (Bab 11) dan
+Arzel\`a--Ascoli; rujukannya Coddington dan Levinson, bab 1--2.
+
+\kamus{ketunggalan}{uniqueness}{Jaminan bahwa satu keadaan awal hanya melahirkan satu riwayat, tanpa cabang.}
+\section{Sistem, bidang fase, dan osilator}
+\tingkat{menengah}
+
+Satu persamaan orde dua bukan binatang baru; ia dua persamaan orde satu yang
+berjalan bersama. Dengan menamai $v=\theta'$, persamaan pendulum menjadi
+\[
+\theta'=v,\qquad v'=-\frac{g}{L}\sin\theta .
+\]
+Pasangan ini otonom: ruas kanannya tidak memuat $t$, sehingga keadaan awal
+menentukan seluruh riwayat (bila syarat Lipschitz dipenuhi) dan kita boleh
+melupakan waktu sebentar untuk bertanya apa yang terjadi pada bidang
+$(\theta,v)$.
+
+\begin{definisi}[Sistem otonom dan bidang fase]\index{bidang fase}
+Sistem
+\[
+\mathbf{x}'=\mathbf{f}(\mathbf{x}),\qquad \mathbf{x}\in\mathbb{R}^{n},
+\]
+disebut \emph{otonom}. Untuk $n=2$, bidang tempat titik $\mathbf{x}$ hidup
+disebut \emph{bidang fase}; kurva $\{\mathbf{x}(t)\}$ disebut \emph{lintasan},
+dan gambar seluruh panah $\mathbf{f}(\mathbf{x})$ disebut \emph{medan arah}.
+Titik $\mathbf{x}^{*}$ dengan $\mathbf{f}(\mathbf{x}^{*})=0$ disebut
+\emph{titik setimbang} atau titik tetap.
+\end{definisi}
+
+Sumbu mendatar bidang fase menyatakan posisi, sumbu tegak menyatakan laju, dan
+satu titik berarti "di sini, dengan kecepatan ini". Waktu tidak digambar; ia
+hanya parameter yang menyusuri kurva. Itulah keuntungannya: seluruh riwayat, untuk
+semua titik awal sekaligus, tampak sebagai satu gambar.
+
+Titik setimbang pendulum mudah dicari. $\theta'=0$ menuntut $v=0$, dan $v'=0$
+menuntut $\sin\theta=0$, jadi $\theta=k\pi$. Di $\theta=0$ bandul tergantung
+lurus ke bawah; di $\theta=\pi$ ia berdiri tegak ke atas. Yang pertama stabil
+dalam pengertian sehari-hari, yang kedua tidak: sentuhan sekecil apa pun
+menjatuhkannya.
+
+\begin{untukanak}
+Pergi ke taman, cari ayunan, dan duduklah. Minta seorang teman mendorongmu
+pelan, hanya sedikit. Hitung sepuluh ayunan dengan menghitung di dalam kepala:
+satu, dua, tiga, sampai sepuluh. Sekarang minta dorongan yang jauh lebih tinggi,
+sampai ayunan naik hampir setinggi mistar atas, lalu hitung sepuluh ayunan lagi.
+
+Yang akan kau lihat: ayunan tinggi memerlukan waktu lebih lama untuk satu
+putaran penuh, walaupun kau merasa seolah-olah ayunan tinggi lebih cepat. Rasa
+itu menipu karena jarak yang ditempuh jauh lebih panjang, sedangkan waktu satu
+putaran hampir sama.
+
+Sekarang lihat bagian atas ayunan. Saat kau berada di titik tertinggi, ada satu
+saat pendek ketika kau hampir berhenti dan menggantung. Di titik terendah, kau
+melaju paling cepat. Ayunan tidak pernah berhenti di tengah, dan tidak pernah
+paling cepat di ujung. Dua hal itu selalu bertukar tempat.
+
+Di bab ini kita akan tahu mengapa ayunan tinggi lebih lambat, dan mengapa
+bandul yang berdiri tegak di atas hampir tidak mungkin dipertahankan.
+\end{untukanak}
+
+Sekarang rumus periode yang tepat. Kalikan $v'=-(g/L)\sin\theta$ dengan $v=\theta'$
+dan integrasikan:
+\[
+\frac{d}{dt}\Bigl(\frac{v^{2}}{2}+\frac{g}{L}(1-\cos\theta)\Bigr)=0 .
+\]
+Kurung itu adalah energi per satuan massa, dan ia konstan sepanjang lintasan.
+Dengan $E$ menyatakan nilainya,
+\[
+\frac{v^{2}}{2}+\frac{g}{L}\bigl(1-\cos\theta\bigr)=E ,
+\]
+sehingga $v=\pm\sqrt{2E-2(g/L)(1-\cos\theta)}$. Lintasan di bidang fase adalah
+kurva-kurva energi itu; pada Gambar~\ref{fig:bidang-fase-pendulum} mereka
+digambar untuk satuan $g/L=1$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=1.05cm,y=1.0cm,font=\footnotesize]
+  \draw[->,layergrey] (-4.15,0) -- (4.15,0) node[right] {$\theta$};
+  \draw[->,layergrey] (0,-2.95) -- (0,2.95) node[above] {$v$};
+  \foreach \tick/\lab in {-3.1416/{$-\pi$},-1.5708/{$-\pi/2$},
+                          1.5708/{$\pi/2$},3.1416/{$\pi$}}{
+    \draw[layergrey!55] (\tick,0.07) -- (\tick,-0.07);
+    \node[layergrey,font=\scriptsize,below] at (\tick,-0.07) {\lab};}
+  \node[layergrey,font=\scriptsize,below left] at (-0.06,0.02) {$0$};
+  \foreach \th in {-3.5,-2.6,-1.7,-0.85,0.85,1.7,2.6,3.5}{
+    \foreach \w in {-2.4,-1.6,-0.8,0,0.8,1.6,2.4}{
+      \pgfmathsetmacro{\nn}{sqrt(\w*\w+sin(\th r)*sin(\th r))}
+      \pgfmathsetmacro{\dx}{0.32*\w/\nn}
+      \pgfmathsetmacro{\dy}{-0.32*sin(\th r)/\nn}
+      \draw[-{Latex[length=0.9mm]},layerteal!60]
+        (\th,\w) -- ({\th+\dx},{\w+\dy});}}
+  \foreach \En/\tm in {0.4/0.9273,1.0/1.5708,1.6/2.2143}{
+    \draw[layerindigo,thick]
+      plot[domain=-\tm:\tm,samples=121,variable=\t]
+        ({\t},{sqrt(max(0,2*(\En-1+cos(\t r))))});
+    \draw[layerindigo,thick]
+      plot[domain=-\tm:\tm,samples=121,variable=\t]
+        ({\t},{-sqrt(max(0,2*(\En-1+cos(\t r))))});}
+  \draw[accent,very thick]
+    plot[domain=-3.1416:3.1416,samples=161,variable=\t]
+      ({\t},{2*cos(\t r/2)});
+  \draw[accent,very thick]
+    plot[domain=-3.1416:3.1416,samples=161,variable=\t]
+      ({\t},{-2*cos(\t r/2)});
+  \draw[layerplum,thick,densely dashed]
+    plot[domain=-3.6:3.6,samples=161,variable=\t]
+      ({\t},{sqrt(2*(1.6+cos(\t r)))});
+  \fill[ink] (0,0) circle (1.6pt);
+  \node[ink,anchor=north east,font=\scriptsize] at (-0.12,-0.52) {pusat};
+  \fill[accent] (3.1416,0) circle (1.6pt);
+  \fill[accent] (-3.1416,0) circle (1.6pt);
+  \node[accent,anchor=north west,font=\scriptsize,align=left]
+    at (2.35,-0.18) {pelana};
+  \node[accent,anchor=west,font=\scriptsize,align=left]
+    at (2.30,1.30) {separatriks $E=2$};
+  \node[layerplum,anchor=west,font=\scriptsize,align=left]
+    at (0.55,2.72) {lintasan terbuka $E=2.6$};
+\end{tikzpicture}
+\caption{Bidang fase pendulum dalam satuan $g/L=1$, dengan sumbu mendatar sudut
+$\theta$ dan sumbu tegak kecepatan $v$. Panah kecil menunjukkan medan arah
+$(\theta',v')=(v,-\sin\theta)$. Kurva biru tua adalah tiga lintasan tertutup dengan
+energi $E=0{,}4$, $1{,}0$, dan $1{,}6$; makin besar $E$, makin lebar putarannya.
+Kurva merah adalah separatriks $E=2$, yaitu lintasan yang tepat mencapai
+$\theta=\pm\pi$ dengan kecepatan nol; ia memisahkan ayunan tertutup dari putaran
+terbuka. Kurva putus-putus adalah lintasan terbuka $E=2{,}6$, tempat bandul
+berputar penuh tanpa pernah berhenti. Titik di $\theta=0$ adalah pusat, titik di
+$\theta=\pm\pi$ adalah pelana.}
+\label{fig:bidang-fase-pendulum}
+\end{figure}
+
+Gambar itu memuat seluruh perilaku kualitatif pendulum tanpa satu persamaan
+diselesaikan; yang dibutuhkan hanya tanda $\sin\theta$ dan simetri energi.
+
+Untuk amplitudo kecil, $\sin\theta\approx\theta$ dan sistemnya menjadi
+osilator harmonik
+\[
+\theta'=v,\qquad v'=-\omega_{0}^{2}\theta,\qquad \omega_{0}=\sqrt{g/L},
+\]
+dengan solusi $\theta(t)=\theta_{0}\cos(\omega_{0}t)$ dan periode
+$2\pi/\omega_{0}=2{,}006409$ detik untuk $L=1$ meter. Lintasannya elips
+$v^{2}+\omega_{0}^{2}\theta^{2}=\text{konstan}$, dan itulah tiga lingkaran
+kecil di dekat pusat pada gambar tadi.
+
+Periode yang tepat diperoleh dari kekekalan energi, bukan dari linearisasi.
+Dengan $E=(g/L)(1-\cos\theta_{0})$ untuk bandul yang dilepas dari diam di
+$\theta_{0}$, waktu turun dari $\theta_{0}$ ke nol adalah
+\[
+\frac{T}{4}=\sqrt{\frac{L}{2g}}\int_{0}^{\theta_{0}}
+\frac{d\theta}{\sqrt{\cos\theta-\cos\theta_{0}}}
+=\sqrt{\frac{L}{g}}\,K(k),\qquad k=\sin\frac{\theta_{0}}{2},
+\]
+dengan $K$ integral eliptik lengkap jenis pertama. Untuk $\theta_{0}=60^{\circ}$
+diperoleh $k=0{,}5$ dan $K$ pada parameter $m=k^{2}=0{,}25$ bernilai $1{,}6857503548$,
+sehingga $T=2{,}153242$ detik. Kuadratur pada integral itu memberi angka yang sama
+sampai $9\times10^{-13}$; dua jalan berbeda, satu hasil. Untuk $\theta_{0}=5^{\circ}$
+rasionya $1{,}00047617$, yaitu kesalahan kurang dari seperdua ribu: di situlah
+rumus kecil pantas dipakai, dan di situlah batas keberlakuannya.
+
+\begin{tangan}
+Ambil tali sepanjang satu meter, sebuah mur logam sebagai beban, dan stopwatch
+di telepon. Ikat mur di ujung tali, tempelkan ujung lain ke kusen pintu dengan
+selotip, dan ukur panjang tali dari titik gantung ke pusat mur: usahakan tepat
+satu meter. Tarik mur ke samping hanya sekitar lima sentimeter, lepaskan, dan
+catat waktu untuk sepuluh ayunan penuh. Bagi sepuluh; hasilnya sekitar dua
+detik.
+
+Sekarang tarik jauh lebih tinggi, kira-kira setinggi setengah meter dari titik
+terendah, dan ulangi. Bandingkan kedua angka. Yang akan kau lihat: angka kedua
+lebih besar, tetapi tidak dua kali lebih besar. Selisihnya sekitar tujuh persen,
+dan itu cocok dengan hitungan di atas bila sudutnya sekitar enam puluh derajat.
+
+Ulangi dengan tali seperempat meter: periodenya menjadi setengah, karena
+periode bergantung pada akar panjang.
+\end{tangan}
+
+\section{Kestabilan: nilai eigen, linearisasi, dan Lyapunov}
+\tingkat{lanjut}
+
+Pertanyaan yang paling sering diajukan tentang sebuah sistem bukan "berapa
+nilainya pada $t=7$", melainkan "apakah ia kembali setelah diganggu". Untuk
+menjawabnya, kita tidak perlu solusi; cukup turunan di sekitar titik setimbang.
+
+\begin{definisi}[Kestabilan]\index{kestabilan}
+Misalkan $\mathbf{x}^{*}$ titik setimbang $\mathbf{x}'=\mathbf{f}(\mathbf{x})$.
+Titik itu disebut \emph{stabil} bila untuk setiap $\varepsilon>0$ ada
+$\delta>0$ sehingga $\|\mathbf{x}(0)-\mathbf{x}^{*}\|<\delta$ menjamin
+$\|\mathbf{x}(t)-\mathbf{x}^{*}\|<\varepsilon$ untuk setiap $t\ge0$. Titik itu
+disebut \emph{stabil asimtotik} bila stabil dan ada $\delta>0$ sehingga
+$\mathbf{x}(t)\to\mathbf{x}^{*}$ untuk $t\to\infty$. Bila tidak stabil, ia
+disebut \emph{tidak stabil}.
+\end{definisi}
+
+\begin{teorema}[Linearisasi]\index{linearisasi}
+Misalkan $\mathbf{f}$ mempunyai turunan parsial kontinu di sekitar titik
+setimbang $\mathbf{x}^{*}$ dan misalkan $A=J_{\mathbf{f}}(\mathbf{x}^{*})$
+matriks Jacobian dari Bab 12. Bila tidak ada nilai eigen $A$ yang bagian
+realnya nol (titik setimbang \emph{hiperbolik}), maka perilaku kualitatif sistem
+nonlinear di sekitar $\mathbf{x}^{*}$ sama dengan perilaku sistem linear
+$\mathbf{u}'=A\mathbf{u}$: jenis kestabilannya sama, dan lintasan di dekatnya
+dapat dipetakan satu-satu dan kontinu ke lintasan linear.
+\end{teorema}
+
+Ini teorema Hartman--Grobman; buktinya panjang dan memakai teorema titik tetap
+pada ruang fungsi, jadi saya kutip: Hartman, bab 9, Perko, bagian 2.8. Akibat
+praktisnya: kestabilan lokal dibaca dari nilai eigen.
+
+Untuk sistem dua dimensi, seluruh kemungkinan dibaca dari jejak
+$\tau=\operatorname{tr}A$ dan determinan $\Delta=\det A$; nilai eigennya akar
+$\lambda^{2}-\tau\lambda+\Delta=0$. Bila $\Delta<0$, akarnya real dan
+berlawanan tanda: \emph{pelana}. Bila $\Delta>0$ dan $\tau^{2}\ge4\Delta$,
+keduanya real dan bertanda sama: \emph{simpul}, stabil bila $\tau<0$. Bila
+$\tau^{2}<4\Delta$, akarnya konjugat dengan bagian real $\tau/2$:
+\emph{spiral}, stabil bila $\tau<0$, dan pusat bila $\tau=0$.
+
+Contoh: matriks $A=\begin{pmatrix}0&1\\-2&-3\end{pmatrix}$ punya $\tau=-3$
+dan $\Delta=2$, sehingga akarnya $\lambda^{2}+3\lambda+2=0$, yaitu $-1$ dan
+$-2$: simpul stabil. Matriks $B=\begin{pmatrix}0&1\\-2&0\end{pmatrix}$ punya
+$\tau=0$ dan $\Delta=2>0$, akarnya $\pm i\sqrt{2}$: pusat.
+
+Gambar~\ref{fig:potret-linear} memperlihatkan dua potret yang paling berbeda
+sifatnya: pelana, tempat hampir semua titik awal menjauh, dan spiral stabil,
+tempat semuanya berputar masuk.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \begin{scope}[x=1.35cm,y=1.35cm]
+    \begin{scope}
+      \clip (-1.62,-1.52) rectangle (1.62,1.52);
+      \foreach \c in {0.05,0.30,0.70,1.20}{
+        \draw[layerteal,thick] plot[domain=-1.55:1.55,samples=90,variable=\s]
+          ({sqrt(\c+\s*\s)},{\s});
+        \draw[layerteal,thick] plot[domain=-1.55:1.55,samples=90,variable=\s]
+          ({-sqrt(\c+\s*\s)},{\s});}
+      \draw[layerindigo,densely dashed] (-1.5,-1.5) -- (1.5,1.5);
+      \draw[layerindigo,densely dashed] (-1.5,1.5) -- (1.5,-1.5);
+    \end{scope}
+    \draw[->,layergrey] (-1.75,0) -- (1.75,0) node[right] {$x$};
+    \draw[->,layergrey] (0,-1.55) -- (0,1.55) node[above] {$y$};
+    \fill[ink] (0,0) circle (1.5pt);
+    \node[layerindigo,font=\scriptsize,anchor=south east] at (-1.52,1.30)
+      {arah eigen};
+    \node[layergrey,anchor=north] at (0,-1.62)
+      {(a) pelana: $\lambda=1,-1$};
+  \end{scope}
+  \begin{scope}[xshift=6.6cm,x=1.35cm,y=1.35cm]
+    \draw[->,layergrey] (-1.75,0) -- (1.75,0) node[right] {$x$};
+    \draw[->,layergrey] (0,-1.55) -- (0,1.55) node[above] {$y$};
+    \foreach \r in {0.35,0.7,1.1,1.5}{
+      \draw[accent,thick]
+        plot[domain=0:12.6,samples=200,variable=\t]
+          ({\r*exp(-0.3*\t)*cos(\t r)},{\r*exp(-0.3*\t)*(-sin(\t r))});}
+    \fill[ink] (0,0) circle (1.5pt);
+    \node[layergrey,anchor=north] at (0,-1.62)
+      {(b) spiral stabil: $\lambda=-0.3\pm i$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Dua potret fase linear yang berbeda jenis. (a) Sistem
+$x'=y$, $y'=x$: lintasan memenuhi $x^{2}-y^{2}=\text{konstan}$, hiperbola
+dengan asimtot $y=\pm x$, dan garis putus-putus adalah arah eigen, satu masuk
+dan satu keluar, sehingga titik asal adalah pelana dan tidak stabil. (b) Sistem $x'=-0{,}3x+y$, $y'=-x-0{,}3y$:
+nilai eigen $-0{,}3\pm i$, sehingga lintasan berputar sambil menyusut dengan
+faktor $e^{-0{,}3t}$ dan titik asal adalah spiral stabil. Empat lintasan di (b)
+berbeda hanya pada jari-jari awal, karena sistemnya linear.}
+\label{fig:potret-linear}
+\end{figure}
+
+Satu peringatan yang mahal. Bila $\tau=0$ dan $\Delta>0$, linearisasi memberi
+pusat, tetapi sistem nonlinear di titik itu belum tentu pusat. Ambil
+\[
+x'=-y+x(x^{2}+y^{2}),\qquad y'=x+y(x^{2}+y^{2}).
+\]
+Jacobiannya di titik asal adalah matriks rotasi, nilai eigennya $\pm i$:
+linearisasi berkata pusat. Tetapi dalam koordinat polar $r^{2}=x^{2}+y^{2}$,
+perkalian silang memberi
+\[
+\frac{1}{2}\frac{d}{dt}r^{2}=xx'+yy'=r^{2}(x^{2}+y^{2})=r^{4},
+\]
+jadi $r'=r^{3}>0$ untuk $r>0$: lintasan berputar keluar, dan titik asal tidak
+stabil. Linearisasi tidak salah; ia hanya tidak cukup ketika ada nilai eigen di
+sumbu imajiner. Di situlah teorema tadi meminta titik setimbang hiperbolik.
+
+Untuk kasus yang tidak hiperbolik, alat kedua dipakai: fungsi energi yang
+menurun, yang kita karang sendiri.
+
+\begin{definisi}[Fungsi Lyapunov]\index{fungsi Lyapunov}
+Fungsi $V$ yang kontinu dan mempunyai turunan kontinu pada lingkungan $U$ dari
+$\mathbf{x}^{*}$ disebut \emph{fungsi Lyapunov} bila $V(\mathbf{x}^{*})=0$ dan
+$V(\mathbf{x})>0$ untuk $\mathbf{x}\in U\setminus\{\mathbf{x}^{*}\}$. Turunannya
+sepanjang lintasan ditulis
+\[
+\dot V(\mathbf{x})=\nabla V(\mathbf{x})\cdot\mathbf{f}(\mathbf{x}).
+\]
+\end{definisi}
+
+Bukit buatan itu adalah $V$, dan $\dot V$ kecuraman turunnya.
+
+\begin{teorema}[Uji Lyapunov]
+Misalkan $V$ fungsi Lyapunov di sekitar titik setimbang $\mathbf{x}^{*}$.
+\begin{enumerate}
+\item Bila $\dot V\le0$ pada $U$, maka $\mathbf{x}^{*}$ stabil.
+\item Bila $\dot V<0$ pada $U\setminus\{\mathbf{x}^{*}\}$, maka
+  $\mathbf{x}^{*}$ stabil asimtotik.
+\end{enumerate}
+\end{teorema}
+
+\begin{proof}
+Untuk pernyataan pertama, ambil $\varepsilon>0$ kecil sehingga bola
+$\|\mathbf{x}-\mathbf{x}^{*}\|\le\varepsilon$ tinggal di dalam $U$. Di bola
+itu $V$ positif dan bola itu kompak, jadi
+$m=\min_{\|\mathbf{x}-\mathbf{x}^{*}\|=\varepsilon}V>0$. Pilih $\delta>0$
+sehingga $V(\mathbf{x})<m$ untuk $\|\mathbf{x}-\mathbf{x}^{*}\|<\delta$;
+mungkin karena $V$ kontinu dan $V(\mathbf{x}^{*})=0$. Lintasan dari bola $\delta$
+memenuhi $V(\mathbf{x}(t))\le V(\mathbf{x}(0))<m$, sebab $\dot V\le0$,
+sehingga ia tidak dapat menyeberangi bola $\varepsilon$; jadi stabil.
+
+Untuk pernyataan kedua, $V(\mathbf{x}(t))$ menurun dan terbatas di bawah oleh
+nol, jadi punya limit $L\ge0$. Andaikan $L>0$; lintasan itu tinggal di himpunan
+kompak $\{V\ge L\}$, dan di sana $-\dot V$ punya minimum positif, sehingga $V$
+harus turun melewati $L$ dalam waktu berhingga. Kontradiksi. Jadi $L=0$, dan
+karena $V$ hanya nol di $\mathbf{x}^{*}$, lintasan menuju ke sana.
+\end{proof}
+
+Contohnya pendulum teredam, $\theta'=v$, $v'=-(g/L)\sin\theta-bv$ dengan
+$b>0$, dan $V=v^{2}/2+(g/L)(1-\cos\theta)$, yaitu energi mekanik, positif
+kecuali di titik setimbang. Turunannya
+\[
+\dot V=v\Bigl(-\frac{g}{L}\sin\theta-bv\Bigr)+\frac{g}{L}\sin\theta\,v=-bv^{2}\le0 .
+\]
+Jadi titik setimbang bawah stabil dan energi tidak pernah bertambah. Uji ini
+tidak memberi kestabilan asimtotik, karena $\dot V$ nol di seluruh garis $v=0$;
+versi LaSalle menambahkan bahwa satu-satunya himpunan invarian
+di dalam $\{\dot V=0\}$ adalah titik setimbang, sehingga semua lintasan menuju
+ke sana.
+
+Linearisasi memberi jawaban yang sama. Pada $\theta=0$ Jacobiannya
+$\begin{pmatrix}0&1\\-g/L&-b\end{pmatrix}$, dengan $\tau=-b$ dan
+$\Delta=g/L>0$; untuk $b=0{,}5$ dan $g/L=9{,}80665$ akarnya $-0{,}25\pm3{,}121562\,i$,
+yaitu spiral stabil. Pada $\theta=\pi$ muncul $+g/L$ di pojok kanan bawah,
+sehingga $\Delta=-g/L<0$: pelana dengan nilai eigen $\pm3{,}131557$. Bandul yang
+berdiri tegak memang pelana, bukan kiasan: ada satu arah tepat yang
+mempertahankannya di atas, dan setiap gangguan membawanya pergi.
+
+\kamus{stabil asimtotik}{asymptotically stable}{Tetap dekat setelah diganggu, lalu benar-benar tiba kembali ke titik setimbang.}
+
+\kamus{fungsi Lyapunov}{Lyapunov function}{Bukit buatan yang dipakai sebagai penggaris: selama sistem menuruninya, ia tidak bisa lari jauh.}
+
+\section{Euler, Runge--Kutta, dan kekakuan}
+\tingkat{lanjut}
+
+Hampir tidak ada persamaan yang dapat diselesaikan dengan rumus, jadi metode
+numerik bukan pelengkap melainkan cara utama. Gagasannya kembali ke Bab 12: bila
+kita tahu nilai dan turunan di satu titik, kita dapat menaksir nilai di sedikit
+sebelah kanannya.
+
+Metode Euler melakukan hal paling sederhana. Dari $y'=f(t,y)$ dan nilai awal,
+\[
+y_{n+1}=y_{n}+h\,f(t_{n},y_{n}),\qquad t_{n+1}=t_{n}+h .
+\]
+Ia tepat merupakan dua suku pertama deret Taylor di sekitar $t_{n}$, sehingga
+galat satu langkahnya adalah suku $h^{2}y''(\xi)/2$, berorde $h^{2}$. Galat
+lokal itu menumpuk menjadi galat global berorde $h$: menggandakan ketelitian
+menuntut dua kali lipat jumlah langkah, bukan empat kali.
+
+Angka untuk $y'=y$, $y(0)=1$, pada $t=1$ dengan $h=0{,}1$: Euler memberi
+$(1{,}1)^{10}=2{,}5937424601$, sedangkan $e=2{,}7182818285$. Galatnya $0{,}1245$, yaitu
+$4{,}58$ persen, dan galat satu langkah pertamanya $5{,}171\times10^{-3}$.
+
+Metode Runge--Kutta orde empat memperbaiki ini dengan mengambil empat contoh
+kemiringan di setiap langkah:
+\[
+y_{n+1}=y_{n}+\frac{h}{6}\bigl(k_{1}+2k_{2}+2k_{3}+k_{4}\bigr),
+\]
+dengan $k_{1}=f(t_{n},y_{n})$, $k_{2}=f(t_{n}+h/2,\,y_{n}+hk_{1}/2)$,
+$k_{3}=f(t_{n}+h/2,\,y_{n}+hk_{2}/2)$, dan $k_{4}=f(t_{n}+h,\,y_{n}+hk_{3})$.
+Galat lokalnya berorde $h^{5}$ dan galat globalnya berorde $h^{4}$: separuh
+langkah berarti galat turun sekitar enam belas kali.
+
+Tabel berikut berasal dari program di bagian lab, pada model logistik dengan
+$y(0)=1/2$ dan $t=2$; nilai tepatnya $0{,}8807970780$.
+
+\begin{center}
+{\small
+\begin{tabular}{lrrr}
+\hline
+$h$ & galat Euler & galat RK4 & rasio Euler \\
+\hline
+$0{,}400$ & $1{,}958\times10^{-2}$ & $1{,}245\times10^{-5}$ & --- \\
+$0{,}200$ & $9{,}423\times10^{-3}$ & $7{,}237\times10^{-7}$ & $2{,}08$ \\
+$0{,}100$ & $4{,}630\times10^{-3}$ & $4{,}359\times10^{-8}$ & $2{,}04$ \\
+$0{,}050$ & $2{,}296\times10^{-3}$ & $2{,}674\times10^{-9}$ & $2{,}02$ \\
+$0{,}025$ & $1{,}143\times10^{-3}$ & $1{,}656\times10^{-10}$ & $2{,}01$ \\
+\hline
+\end{tabular}}
+\end{center}
+
+Kolom terakhir adalah bukti orde pertama: setiap kali $h$ dibagi dua, galat
+Euler turun hampir tepat dua kali; untuk RK4 rasionya sekitar $16$, sesuai orde
+keempat. Gambar~\ref{fig:galat-numerik} menampilkan angka yang sama pada skala
+logaritma kedua sumbu.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.80\linewidth,height=5.6cm,
+  xlabel={langkah $h$},ylabel={$|y(2)-y_{h}(2)|$},
+  xmode=log,ymode=log,xmin=0.02,xmax=0.5,ymin=1e-11,ymax=1e-1,
+  grid=both,minor tick num=1,
+  legend style={font=\scriptsize,at={(0.5,-0.22)},anchor=north,
+    legend columns=2,draw=none,fill=none},
+  tick label style={font=\scriptsize},label style={font=\small},
+  axis line style={layergrey},tick style={layergrey}]
+  \addplot[layerindigo,thick,mark=*,mark size=1.7pt] coordinates {
+    (0.4,0.01958) (0.2,0.009423) (0.1,0.004630)
+    (0.05,0.002296) (0.025,0.001143)};
+  \addplot[accent,thick,mark=square*,mark size=1.6pt] coordinates {
+    (0.4,0.00001245) (0.2,0.0000007237) (0.1,0.00000004359)
+    (0.05,0.000000002674) (0.025,0.0000000001656)};
+  \legend{Euler (kemiringan $1$), Runge--Kutta 4 (kemiringan $4$)}
+\end{axis}
+\end{tikzpicture}
+\caption{Galat di $t=2$ untuk model logistik sebagai fungsi langkah $h$, pada
+skala logaritma kedua sumbu. Garis Euler menurun dengan kemiringan satu: galat
+berbanding lurus dengan $h$. Garis Runge--Kutta menurun dengan kemiringan empat:
+galat berbanding dengan $h^{4}$. Pada $h=0{,}4$ kedua metode berjarak sekitar tiga
+orde, dan jarak itu melebar ketika $h$ diperkecil. Angka pada gambar adalah
+angka yang sama dengan tabel di teks.}
+\label{fig:galat-numerik}
+\end{figure}
+
+Sekarang sifat yang membuat banyak orang tertipu: kekakuan. Sebuah sistem
+disebut \emph{kaku} (\emph{stiff}) bila di dalamnya ada proses yang bergerak
+jauh lebih cepat daripada proses yang kita minati. Ciri praktisnya: metode
+eksplisit menuntut langkah sangat kecil untuk tetap \emph{stabil}, walaupun
+ketelitian yang kita minta hanya menuntut langkah besar.
+
+Contohnya kecil dan jujur: $y'=-50(y-\cos t)-\sin t$, $y(0)=1$, yang solusi
+tepatnya $y=\cos t$. Di sini $y$ mengikuti $\cos t$ dengan lambat, tetapi setiap
+penyimpangan diseret kembali dengan laju $50$ per detik. Euler stabil hanya bila
+$|1-50h|<1$, yaitu $h<0{,}04$.
+
+Hasil pada $t=3$, dengan nilai tepat $\cos3=-0{,}989992$: Euler dengan $h=0{,}02$
+memberi galat $1{,}98\times10^{-4}$, dengan $h=0{,}039$ memberi
+$7{,}97\times10^{-4}$, dan dengan $h=0{,}05$ memberi $-1{,}839\times10^{7}$. Satu
+kenaikan dari $0{,}039$ ke $0{,}05$ mengubah jawaban dari hampir benar menjadi tidak
+berarti. RK4 bertahan lebih lama, karena daerah stabilnya lebih lebar: pada
+$h=0{,}05$ galatnya $1{,}11\times10^{-3}$, tetapi pada $h=0{,}1$ ia memberi
+$-1{,}32\times10^{31}$; batas praktisnya $2{,}785/50=0{,}0557$.
+
+Pelajaran yang dapat dibawa: galat dan kestabilan dua hal berbeda. Galat lokal
+pada langkah pertama kecil dan tidak memperingatkan apa pun; yang meledak adalah
+kestabilan, dan itu urusan nilai eigen.
+
+Penawarnya metode implisit, yang paling sederhana Euler mundur:
+\[
+y_{n+1}=y_{n}+h\,f(t_{n+1},y_{n+1}),
+\]
+yang menuntut penyelesaian persamaan di setiap langkah, tetapi stabil untuk $h$
+besar pada persamaan kaku; untuk contoh di atas, Euler mundur dengan $h=0{,}5$
+memberi jawaban yang mendekati $\cos t$. Rujukan: Hairer dan Wanner, bab IV.
+
+\begin{tantangan}
+Linearisasi memberi pusat, tetapi sistem nonlinear tidak harus pusat. Susun satu
+sistem dua dimensi yang titik asalnya \emph{bukan} pusat walaupun linearisasinya
+pusat, tentukan sifat titik itu (stabil, stabil asimtotik, atau tidak stabil),
+dan sertakan rumus eksplisit, nilai eigen Jacobian di titik asal, serta bukti
+singkat klaimmu.
+
+Petunjuk 1: linearisasi hanya melihat suku berderajat satu. Tambahkan suku
+berderajat tiga yang simetris terhadap putaran, lalu tulis sistemnya dalam
+koordinat polar.
+
+Petunjuk 2: dalam koordinat polar, matriks rotasi menjadi $\theta'=1$, dan
+gangguan radial menjadi $r'=cr^{3}$ untuk suatu konstanta $c$. Tanda $c$
+menentukan segalanya, dan $V=r^{2}$ adalah fungsi Lyapunov yang bekerja untuk
+salah satu tanda.
+
+Kalau mentok, lihat kembali contoh $r'=r^{3}$ di bagian Kestabilan.
+\end{tantangan}
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Empat hitungan berikut adalah tulang bab ini; semuanya dapat diperiksa ulang
+dengan kalkulator atau program di bagian lab, dan semuanya pernah salah di tangan
+saya sendiri.
+
+\textbf{Model logistik: satu rumus, dua metode.}
+Ambil $y'=y(1-y)$ dengan $y(0)=1/2$ dan tanyakan nilai di $t=2$. Rumus dari
+bagian pemisahan variabel memberi $y(2)=1/(1+e^{-2})=0{,}8807970780$. Dengan
+$h=0{,}1$ ada dua puluh langkah: Euler memberi $0{,}8854273272$, galat
+$4{,}630\times10^{-3}$ atau $0{,}53$ persen, sedangkan Runge--Kutta dengan langkah
+yang sama memberi $0{,}8807970344$, galat $4{,}359\times10^{-8}$. Biayanya empat kali
+lipat, ketelitiannya sekitar seratus ribu kali.
+
+Perhatikan juga arah galatnya. Euler di sini terlalu tinggi, karena
+$y(1-y)$ cekung ke bawah pada selang itu sehingga garis lurus selalu berada di
+atas kurva. Memeriksa tanda galat adalah cara murah untuk mengetahui apakah program kita
+bekerja seperti seharusnya.
+
+\textbf{Koefisien variabel: $y'+y/t=t^{2}$, $y(1)=0$.}
+Di sini $p(t)=1/t$, sehingga
+\[
+\mu(t)=\exp\Bigl(\int\frac{dt}{t}\Bigr)=t
+\]
+pada $t>0$. Mengalikan persamaan dengan $t$ memberi
+\[
+t\,y'+y=t^{3}
+\quad\Longleftrightarrow\quad
+\bigl(t\,y\bigr)'=t^{3},
+\]
+jadi $t\,y=t^{4}/4+C$ dan
+\[
+y(t)=\frac{t^{3}}{4}+\frac{C}{t}.
+\]
+Syarat $y(1)=0$ memberi $C=-1/4$, sehingga
+\[
+y(t)=\frac{t^{3}}{4}-\frac{1}{4t}=\frac{t^{4}-1}{4t},
+\qquad y(2)=\frac{15}{8}=1.875 .
+\]
+Pemeriksaan: $y'=3t^{2}/4+1/(4t^{2})$ dan $y/t=t^{2}/4-1/(4t^{2})$, jumlahnya
+$t^{2}$, tepat ruas kanan. Integrator adaptif memberi $1{,}875000000000$.
+
+Tanpa $\mu=t$, ruas kiri $y'+y/t$ tidak tampak seperti turunan apa pun; setelah
+dikali $t$, ia menjadi turunan $ty$.
+
+\textbf{Berapa besar ayunan sebelum rumus kecil meleset satu persen.}
+Rasio periode tepat terhadap periode kecil adalah
+\[
+\frac{T(\theta_{0})}{T_{0}}
+=\frac{2}{\pi}K\Bigl(\sin^{2}\frac{\theta_{0}}{2}\Bigr),
+\]
+dengan $K$ integral eliptik lengkap. Beberapa nilainya:
+
+\begin{center}
+{\small
+\begin{tabular}{rrrr}
+\hline
+$\theta_{0}$ & $T/T_{0}$ & galat & keterangan \\
+\hline
+$5^{\circ}$ & $1{,}000476$ & $0{,}048$ persen & jam bandul \\
+$10^{\circ}$ & $1{,}001907$ & $0{,}191$ persen & masih aman \\
+$20^{\circ}$ & $1{,}007669$ & $0{,}767$ persen & mendekati batas \\
+$22{,}81^{\circ}$ & $1{,}010000$ & $1{,}000$ persen & batas satu persen \\
+$30^{\circ}$ & $1{,}017409$ & $1{,}741$ persen & perlu koreksi \\
+$60^{\circ}$ & $1{,}073182$ & $7{,}318$ persen & jam meleset sejam \\
+\hline
+\end{tabular}}
+\end{center}
+
+Jadi rumus kecil itu layak dipakai sampai sekitar dua puluh derajat, dan
+$22{,}81^{\circ}$ adalah ambang galat satu persen; galatnya tumbuh seperti kuadrat
+amplitudo, bukan amplitudo.
+Menggandakan amplitudo dari $10^{\circ}$ ke $20^{\circ}$ menaikkan galat dari
+$0{,}19$ menjadi $0{,}77$ persen, yaitu empat kali, cocok dengan
+$1+(\theta_{0}^{2}/16)$ sebagai dua suku pertama taksiran itu.
+
+\kertas{
+Uji sendiri dalam tiga langkah. (1) Kerjakan ulang contoh logistik dengan
+$h=0{,}2$; engkau harus mendapat galat Euler $9{,}423\times10^{-3}$ dan galat RK4
+$7{,}237\times10^{-7}$. (2) Turunkan sendiri rumus periode eliptik dari kekekalan
+energi, lalu periksa bahwa $K$ pada parameter $0{,}25$ bernilai $1{,}6857503548$.
+(3) Cari ambang $h$ untuk Euler pada $y'=-100y$; jawabannya $h<0{,}02$, dan pada
+$h=0{,}02$ tepat, metode itu berayun antara $+1$ dan $-1$ tanpa meluruh maupun
+meledak.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Kode berikut menghitung semua angka di atas: galat Euler dan RK4 pada model
+logistik, periode pendulum dengan dua jalan berbeda, dan ambang kekakuan. Ia
+hanya memakai NumPy dan SciPy.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from scipy import integrate, special
+
+def euler(f, y0, T, h):
+    y, t, n = y0, 0.0, int(round(T / h))
+    for _ in range(n):
+        y += h * f(t, y); t += h
+    return y
+
+def rk4(f, y0, T, h):
+    y, t, n = y0, 0.0, int(round(T / h))
+    for _ in range(n):
+        k1 = f(t, y); k2 = f(t + h/2, y + h*k1/2)
+        k3 = f(t + h/2, y + h*k2/2); k4 = f(t + h, y + h*k3)
+        y += h * (k1 + 2*k2 + 2*k3 + k4) / 6; t += h
+    return y
+
+logi = lambda t, y: y * (1 - y)
+ex = lambda t: 1 / (1 + np.exp(-t))
+print("logistik y(2) eksak %.10f" % ex(2.0))
+for h in (0.4, 0.2, 0.1, 0.05, 0.025):
+    ee = abs(euler(logi, 0.5, 2, h) - ex(2))
+    er = abs(rk4(logi, 0.5, 2, h) - ex(2))
+    print("h=%.3f euler %.3e rk4 %.3e" % (h, ee, er))
+
+g, L = 9.80665, 1.0
+T0 = 2 * np.pi * np.sqrt(L / g)
+th0 = np.radians(60.0)
+k = np.sin(th0 / 2)
+Tq = 4 * np.sqrt(L / (2*g)) * integrate.quad(
+        lambda th: 1/np.sqrt(np.cos(th) - np.cos(th0)), 0, th0, limit=200)[0]
+Te = 4 * np.sqrt(L / g) * special.ellipk(k**2)
+print("T0 %.6f T60kuad %.6f T60eliptik %.6f" % (T0, Tq, Te))
+print("rasio %.6f persen %.4f" % (Te / T0, 100 * (Te / T0 - 1)))
+
+stiff = lambda t, y: -50 * (y - np.cos(t)) - np.sin(t)
+for h in (0.02, 0.039, 0.05):
+    print("kaku euler h=%.3f y(3)=%.3e" % (h, euler(stiff, 1.0, 3, h)))
+for h in (0.05, 0.1):
+    print("kaku rk4 h=%.3f y(3)=%.3e" % (h, rk4(stiff, 1.0, 3, h)))
+print("eksak cos(3) %.10f" % np.cos(3))
+\end{verbatim}
+\end{lab}
+
+Keluaran sebenarnya, apa adanya:
+
+\begin{verbatim}
+logistik y(2) eksak 0.8807970780
+h=0.400 euler 1.958e-02 rk4 1.245e-05
+h=0.200 euler 9.423e-03 rk4 7.237e-07
+h=0.100 euler 4.630e-03 rk4 4.359e-08
+h=0.050 euler 2.296e-03 rk4 2.674e-09
+h=0.025 euler 1.143e-03 rk4 1.656e-10
+T0 2.006409 T60kuad 2.153242 T60eliptik 2.153242
+rasio 1.073182 persen 7.3182
+kaku euler h=0.020 y(3)=-9.902e-01
+kaku euler h=0.039 y(3)=-9.908e-01
+kaku euler h=0.050 y(3)=-1.839e+07
+kaku rk4 h=0.050 y(3)=-9.883e-01
+kaku rk4 h=0.100 y(3)=-1.317e+31
+eksak cos(3) -0.9899924966
+\end{verbatim}
+
+Tiga hal patut dibaca. Pertama, rasio galat Euler $2{,}08$, $2{,}04$, $2{,}02$, $2{,}01$
+dan RK4 menuju $16=2^{4}$: orde pertama dan keempat terlihat sebagai angka. Kedua,
+dua jalan untuk periode pendulum bertemu sampai enam digit, padahal kuadratur dan
+integral eliptik tidak memakai rumus yang sama. Ketiga, baris kaku: $h=0{,}039$
+masih wajar, $h=0{,}05$ tidak berarti, dan tidak satu pun baris memperingatkan
+kita.
+
+Program itu tidak memeriksa syarat teorema: apakah $f$ memenuhi Lipschitz,
+apakah titik setimbangnya hiperbolik. Itu tetap pekerjaan kita.
+
+\begin{untukdosen}
+Urutan mengajar yang saya pakai: mulai dari jam bandul dan selisih $7{,}32$
+persen, lalu definisi solusi beserta contoh ledakan $1/(1-t)$, baru pemisahan
+variabel dan faktor integrasi. Faktor integrasi sebaiknya dibuktikan penuh di
+papan, karena buktinya hanya memakai aturan hasil kali dan teorema dasar
+kalkulus, dua alat yang sudah mereka punya sejak Bab 13. Picard--Lindelof cukup
+sebagai sketsa dengan satu iterasi dijalankan; yang harus tinggal adalah arti
+syarat Lipschitz, bukan teknik titik tetapnya. Bidang fase sebelum nilai eigen:
+gambar dulu, hitung kemudian.
+
+Dua miskonsepsi yang hampir selalu muncul. Pertama, mahasiswa menganggap
+"solusi" berarti rumus tertutup, lalu menyimpulkan persamaan tanpa rumus tidak
+punya solusi; contoh $y'=\sqrt{|y|}$ membantu, karena di sana ada dua solusi dan
+tidak ada rumus tunggal. Kedua, mereka memperlakukan galat kecil sebagai bukti
+kebenaran, dan terkejut ketika Euler dengan $h=0{,}05$ memberi $-1{,}8\times10^{7}$.
+Tunjukkan baris keluaran itu, jangan hanya diperingatkan.
+
+Satu aktivitas papan tulis: gambar bidang fase pendulum kosong, lalu minta
+mahasiswa menandai di mana kecepatan nol, di mana percepatan nol, dan di mana
+energi tertinggi. Kelas akan berdebat tentang daerah di antara dua pelana, dan
+perdebatan itu persis isi teorema. Tanda kesiapan lanjut: mahasiswa dapat
+menebak jenis titik setimbang dari jejak dan determinan tanpa menghitung akar.
+
+\end{untukdosen}
+
+\section{Ringkasan}
+\begin{ringkasan}
+\begin{itemize}
+\item Persamaan diferensial menyamakan laju perubahan dengan keadaan; solusinya
+fungsi pada sebuah selang, dan selang itu bagian dari jawaban.
+\item Dua keluarga terpecahkan dengan tangan: pemisahan variabel dan persamaan
+linear orde satu dengan faktor integrasi $\mu=\exp(\int p\,dt)$.
+\item Picard--Lindel\"of menjamin solusi tunggal pada selang pendek bila $f$
+kontinu dan memenuhi syarat Lipschitz terhadap $y$; tanpa syarat itu, satu
+keadaan awal dapat melahirkan dua riwayat.
+\item Bidang fase mengganti waktu dengan gambar: titik setimbang, lintasan
+tertutup, separatriks, dan lintasan terbuka terbaca tanpa rumus solusi.
+\item Kestabilan lokal dibaca dari nilai eigen Jacobian, kecuali bila ada nilai
+eigen di sumbu imajiner; di situ linearisasi tidak memutuskan, dan fungsi
+Lyapunov dipakai.
+\item Euler berorde satu secara global dan RK4 berorde empat; keduanya eksplisit
+dan karena itu gagal pada sistem kaku, tempat kestabilan, bukan ketelitian,
+yang menentukan besar langkah.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\begin{latihan}
+\begin{enumerate}
+\item Selesaikan $y'=2ty$, $y(0)=1$, lalu hitung $y(1)$ dan bandingkan dengan
+  $e$. Hitung pula Euler dengan $h=0{,}1$ dan sebutkan galatnya. (Hasil saya:
+  $2{,}33463336$, galat $3{,}84\times10^{-1}$.)
+\item Buktikan bahwa $y'+p(t)y=q(t)$ dengan $p,q$ kontinu punya paling banyak
+  satu solusi, tanpa rumus eksplisit: selisih dua solusi memenuhi
+  $w'=-p(t)w$ dan $w(t_{0})=0$.
+\item Benar, salah, atau belum cukup: ``karena linearisasi di titik asal memberi
+  nilai eigen $\pm i$, titik asal adalah pusat yang stabil''. Beri satu contoh
+  pendukung atau satu penyangkal.
+\item Buktikan $E=v^{2}/2+\omega_{0}^{2}\theta^{2}/2$ konstan pada osilator
+  harmonik, lalu jelaskan mengapa lintasannya elips dan periodenya
+  $2\pi/\omega_{0}$.
+\item Rangkaian RC dengan $R=2{,}2\,\mathrm{k}\Omega$, $C=10\,\mu\mathrm{F}$,
+  $V_{s}=12$ volt, mulai dari nol. Hitung $\tau$, tegangan pada $t=\tau$, dan
+  waktu sampai $6$ volt. ($22$ milidetik; $7{,}585447$ volt; $15{,}249$ milidetik.)
+\item Tunjukkan bahwa $v=\pm2\cos(\theta/2)$ memenuhi $E=2$, lalu jelaskan
+  mengapa kurva itu menghubungkan $(-\pi,0)$ dengan $(\pi,0)$ dan disebut
+  separatriks.
+\item Bandul $L=0{,}25$ meter dilepas dari $30^{\circ}$. Hitung periode kecil dan
+  periode tepatnya, lalu sebutkan selisih persennya. ($1{,}003205$ detik;
+  $1{,}020669$ detik; $1{,}74$ persen.)
+\item Untuk $y'=-100y$ dengan $y(0)=1$, tentukan ambang $h$ yang membuat Euler
+  eksplisit tetap stabil, lalu jelaskan apa yang terjadi tepat pada ambang itu.
+  Periksa dengan program.
+\item Buktikan bahwa persamaan otonom skalar $y'=f(y)$ dengan $f$ kontinu dan
+  memenuhi Lipschitz tidak dapat mempunyai solusi periodik tidak konstan.
+\end{enumerate}
+
+\textbf{Petunjuk tiga butir tersulit.} Butir 3: linearisasi hanya melihat suku
+berderajat satu; tambahkan suku kubik simetris seperti pada contoh $r'=r^{3}$
+dan bandingkan dengan $r'=-r^{3}$. Butir 6: pakai
+$\cos\theta=2\cos^{2}(\theta/2)-1$ dan periksa nilai $v$ di $\theta=\pm\pi$.
+Butir 9: andaikan $y$ periodik tidak konstan; di titik maksimum $y'=0$, jadi
+$f(y_{\max})=0$, dan ketunggalan memaksa lintasan itu konstan.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini, dengan bukti yang ditulis: rumus faktor
+integrasi beserta ketunggalannya, sketsa lengkap Picard--Lindelof dengan
+batas galat iterasi, ketunggalan solusi linear lewat $w'=-pw$, uji Lyapunov
+untuk kedua pernyataannya, dan seluruh identitas energi pada osilator serta
+pendulum. Yang saya kutip tanpa bukti: teorema Hartman--Grobman (Hartman,
+\emph{Ordinary Differential Equations}, bab 9; Perko, \emph{Differential
+Equations and Dynamical Systems}, bagian 2.8), teorema Peano dan
+Arzel\`a--Ascoli, serta prinsip invarians LaSalle. 
+
+Yang dipopulerkan secara berlebihan adalah ungkapan "nilai eigen menentukan
+segalanya". Yang benar: nilai eigen menentukan perilaku lokal hanya bila tidak
+ada yang bagian realnya nol; di sumbu imajiner suku berderajat tiga dapat
+mengubah pusat menjadi spiral, seperti contoh $r'=r^{3}$ di sini. Untuk sistem
+berdimensi tinggi, "stabil asimtotik" lokal bahkan tidak berarti aman dari
+gangguan besar, karena daerah tariknya dapat sangat kecil.
+
+Pertanyaan terbuka: seberapa jauh sifat kualitatif dapat disertifikasi secara
+numerik? Galat kecil pada satu lintasan tidak memberi tahu apa pun tentang
+kestabilan; Euler dengan $h=0{,}039$ benar sampai empat digit, sedangkan $h=0{,}05$
+memberi $10^{7}$. Untuk sistem yang hanya diketahui lewat sampel medan, tidak ada
+cara umum memastikan tidak ada daerah kaku yang tersembunyi di antara dua titik
+sampel.
+
+Batas keberlakuan: semua fungsi di sini real dan cukup mulus; semua angka dari
+Python 3.14.4, NumPy 2.5.2, dan SciPy 1.18.0, dengan kuadratur bertoleransi
+$10^{-13}$ kecuali disebut lain; $g=9{,}80665\ \mathrm{m/s^{2}}$ dan gesekan
+diabaikan pada hitungan periode.
+\end{untukpeneliti}
+
+\peta{Bab 16 pada Boyce dan DiPrima, \emph{Elementary Differential Equations
+and Boundary Value Problems}, bab 1 (pengantar), 2 (persamaan orde satu), 3
+(persamaan linear orde dua), 4 (sistem orde satu dan bidang fase), dan 9
+(persamaan nonlinear dan kestabilan); pada Strogatz, \emph{Nonlinear Dynamics
+and Chaos}, bab 2 (aliran pada garis), 5 (sistem dua dimensi), 6 (bidang fase),
+7 (osilator), dan 8 (bifurkasi); pada Arnold, \emph{Ordinary Differential
+Equations}, bab 1--4 untuk keberadaan, ketunggalan, dan klasifikasi titik
+setimbang; pada Coddington dan Levinson, bab 1--2 untuk Picard--Lindelof dan
+Peano; pada Hartman, bab 9, dan Perko, bagian 2.8, untuk Hartman--Grobman;
+pada Hairer dan Wanner, \emph{Solving Ordinary Differential Equations II}, bab
+IV, untuk kekakuan dan metode implisit. Dasar hitungannya bab \emph{Turunan} (turunan parsial dan Jacobian), bab
+\emph{Deret Fungsi dan Pertukaran Limit} (limit seragam, yang membuat iterasi
+Picard konvergen), dan bab \emph{Integral Lipat} (medan vektor) pada edisi
+pertama buku ini; nilai eigen dari Bab 9 dipakai langsung tanpa diulang, dan
+analisis galat floating-point dari Bab 22 menjadi lanjutan bagian numerik bab
+ini.}

@@ -1,0 +1,1184 @@
+\chapter{Integral Riemann dan Teorema Dasar Kalkulus}
+
+Sebuah program menghitung luas di bawah $y=x^2$ pada $[0,1]$ dengan 1000 potong sama
+lebar. Bila tinggi persegi panjang diambil di ujung kiri, hasilnya $0.3328335$; bila di
+ujung kanan, $0.3338335$. Selisihnya $0.001$, dan tidak ada alasan memilih salah satu.
+Nilai yang benar adalah $1/3$, yang tidak muncul pada kedua hitungan itu. Menambah
+potongan menjadi sejuta tidak menolong: kedua jawaban tetap mengapit, tidak pernah
+menangkap.
+
+Yang diperlukan bukan partisi lebih halus, melainkan cara membaca dua hampiran itu
+sekaligus. Kalau selisihnya dapat dibuat lebih kecil dari bilangan positif mana pun,
+maka ada satu bilangan yang terkurung di antaranya, dan itulah integralnya. Seluruh
+bab ini berdiri di atas gagasan sederhana itu.
+
+Bab 12 mengajari kita membongkar perubahan menjadi laju: dari posisi ke kecepatan,
+dari fungsi ke turunan. Yang belum ada adalah jalan pulang. Kita tahu kecepatan pada
+detik ke-$t$ adalah $v(t)$, tetapi belum tahu berapa jarak yang ditempuh selama satu
+menit. Intuisinya jelas: jarak adalah jumlah kecepatan dikali potongan waktu kecil.
+Yang belum jelas adalah cara menjumlahkan tak berhingga banyak suku itu dengan benar.
+Bab ini menjawabnya, dan jawabannya mengejutkan: jalan pulang itu adalah antiturunan.
+
+\begin{untukanak}
+Bayangkan kita ingin tahu luas sebuah danau yang bentuknya tidak beraturan. Tidak ada
+rumus untuk bentuk seperti itu. Yang kita punya hanya kertas berpetak bening. Kita
+letakkan kertas itu di atas gambar danau, lalu hitung berapa petak yang seluruhnya
+berada di dalam air. Hasilnya terlalu kecil. Kita hitung lagi berapa petak yang
+tersentuh air, walau hanya sedikit. Hasilnya terlalu besar. Luas sebenarnya ada di
+antara dua angka itu.
+
+Sekarang potong petaknya menjadi sepuluh kali lebih kecil. Angka bawah naik, angka atas
+turun, dan keduanya makin rapat. Kalau petaknya sangat kecil, kedua angka hampir sama,
+dan kita bisa menyebut luas danau sampai ketelitian berapa pun.
+
+Ada satu syarat yang mudah terlewat. Kalau danau punya pulau karang sangat tipis yang
+tersebar di mana-mana, petak yang menyentuhnya bisa membuat taksiran atas tetap jauh
+dari taksiran bawah. Matematikawan menyebut syarat itu keterintegralan. Di bab ini kita
+akan tahu mengapa dua taksiran yang mengapit bisa dipercaya, dan kapan taksiran itu
+gagal.
+\end{untukanak}
+
+\section{Partisi, jumlah atas, dan jumlah bawah}
+\tingkat{dasar}
+
+Kita ingin memberi arti pada luas di bawah grafik tanpa mengandaikan luas itu sudah
+punya arti: tutup daerahnya dengan persegi panjang dari dalam dan dari luar, lalu
+persempit selisihnya.
+
+\begin{definisi}[Partisi dan jumlah atas-bawah]\index{partisi}
+Misalkan $[a,b]$ selang tertutup. Sebuah \emph{partisi} $\mathcal{P}$ dari $[a,b]$
+adalah himpunan berhingga titik
+\[
+a=x_0<x_1<\cdots<x_n=b .
+\]
+Lebar potongan ke-$i$ adalah $\Delta x_i=x_i-x_{i-1}$, dan \emph{mesh} partisi itu
+adalah lebar potongan terlebar, $\|\mathcal{P}\|=\max_i\Delta x_i$.
+
+Misalkan $f$ terbatas pada $[a,b]$. Pada potongan ke-$i$ tulis
+\[
+M_i=\sup\{f(x):x_{i-1}\le x\le x_i\},\qquad
+m_i=\inf\{f(x):x_{i-1}\le x\le x_i\}.
+\]
+\emph{Jumlah atas} dan \emph{jumlah bawah} partisi $\mathcal{P}$ adalah
+\begin{equation}
+U(\mathcal{P},f)=\sum_{i=1}^{n}M_i\,\Delta x_i,
+\qquad
+L(\mathcal{P},f)=\sum_{i=1}^{n}m_i\,\Delta x_i .
+\end{equation}
+\end{definisi}
+
+Kita memakai supremum dan infimum, bukan nilai terbesar dan terkecil, karena $f$ belum
+tentu mencapai ekstremnya pada potongan: fungsi yang bernilai $x$ untuk $x<1$ dan $0$
+di $x=1$ terbatas pada $[0,1]$, tetapi nilai terbesarnya pada potongan terakhir tidak
+ada, sedangkan supremumnya ada, yaitu $1$.
+
+Jumlah atas selalu paling sedikit sama dengan jumlah bawah, sebab $M_i\ge m_i$ untuk
+setiap $i$. Untuk $f(x)=x^2$ pada $[0,1]$ dengan empat potongan sama lebar, jumlah
+bawahnya
+\[
+L=\frac{1}{4}\Bigl(0+\frac{1}{16}+\frac{4}{16}+\frac{9}{16}\Bigr)=\frac{7}{32},
+\]
+dan jumlah atasnya $\frac{15}{32}$. Keduanya mengapit nilai yang dicari, dengan selisih
+$\frac14$ yang masih besar. Bila $f$ bernilai negatif, jumlah ini menghitung luas
+bertanda, dan tanda minusnya bagian dari definisi, bukan kekeliruan.
+
+Gambar~\ref{fig:rect-halus} memperlihatkan dua nilai $n$ sekaligus, dengan ujung kanan
+sebagai tinggi. Pada $n=4$ tangganya kasar dan $U_4=0.46875$; pada $n=16$ geriginya
+halus dan $U_{16}=0.3652343750$. Jarak tangga ke garis $1/3$ menyusut dari $0.1354$
+menjadi $0.0319$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.47\linewidth,height=4.6cm,
+  axis lines=left,xmin=0,xmax=1.02,ymin=0,ymax=1.12,
+  xtick={0,0.5,1},ytick={0,0.5,1},
+  tick label style={font=\scriptsize},label style={font=\scriptsize},
+  xlabel={$x$},
+  title={\scriptsize $n=4$: $U_4=0.46875$}]
+\pgfplotsinvokeforeach{1,2,3,4}{
+  \draw[fill=layerteal!18,draw=layerteal!65,line width=0.4pt]
+    (axis cs:{(#1-1)/4},0) rectangle (axis cs:{#1/4},{#1*#1/16});
+}
+\draw[densely dashed,layergrey,line width=0.6pt]
+  (axis cs:0,0.33333) -- (axis cs:1,0.33333);
+\addplot[thick,accent,domain=0:1,samples=80] {x^2};
+\node[font=\scriptsize,text=layergrey,anchor=west] at (axis cs:0.06,0.40) {$1/3$};
+\end{axis}
+\end{tikzpicture}\hfill
+\begin{tikzpicture}
+\begin{axis}[width=0.47\linewidth,height=4.6cm,
+  axis lines=left,xmin=0,xmax=1.02,ymin=0,ymax=1.12,
+  xtick={0,0.5,1},ytick={0,0.5,1},
+  tick label style={font=\scriptsize},label style={font=\scriptsize},
+  xlabel={$x$},
+  title={\scriptsize $n=16$: $U_{16}=0.3652343750$}]
+\pgfplotsinvokeforeach{1,...,16}{
+  \draw[fill=layerteal!18,draw=layerteal!65,line width=0.3pt]
+    (axis cs:{(#1-1)/16},0) rectangle (axis cs:{#1/16},{#1*#1/256});
+}
+\draw[densely dashed,layergrey,line width=0.6pt]
+  (axis cs:0,0.33333) -- (axis cs:1,0.33333);
+\addplot[thick,accent,domain=0:1,samples=80] {x^2};
+\node[font=\scriptsize,text=layergrey,anchor=west] at (axis cs:0.06,0.40) {$1/3$};
+\end{axis}
+\end{tikzpicture}
+\caption{Penghampiran $f(x)=x^{2}$ pada $[0,1]$ dengan persegi panjang berujung kanan.
+Pada $n=4$ jumlah atas $U_4=0.46875$, pada $n=16$ jumlah atas $U_{16}=0.3652343750$,
+dan keduanya masih di atas nilai sebenarnya $1/3=0.333\ldots$ (garis putus-putus).
+Selisih $U_n-L_n$ tepat $1/n$, jadi naik dari $n=4$ ke $n=16$ memotong jarak tangga ke
+garis itu menjadi seperempatnya.}
+\label{fig:rect-halus}
+\end{figure}
+
+
+Ada dua kenyataan yang akan dipakai berulang kali. Yang pertama: memperhalus partisi
+tidak memperburuk taksiran.
+
+\begin{lemma}[Penghalusan]\index{penghalusan}
+Jika $\mathcal{P}^{*}$ adalah penghalusan dari $\mathcal{P}$, artinya
+$\mathcal{P}\subseteq\mathcal{P}^{*}$, maka
+\[
+L(\mathcal{P},f)\le L(\mathcal{P}^{*},f)\le U(\mathcal{P}^{*},f)\le U(\mathcal{P},f).
+\]
+\end{lemma}
+
+\begin{proof}
+Cukup dibuktikan untuk penghalusan yang menambah satu titik $c$ di dalam potongan
+$[x_{i-1},x_i]$, sebab penghalusan umum diperoleh dengan mengulang langkah itu.
+Misalkan $m'$ dan $m''$ infimum $f$ pada $[x_{i-1},c]$ dan pada $[c,x_i]$. Kedua
+selang itu bagian dari $[x_{i-1},x_i]$, sehingga $m'\ge m_i$ dan $m''\ge m_i$.
+Akibatnya
+\[
+m'(c-x_{i-1})+m''(x_i-c)\ \ge\ m_i(c-x_{i-1})+m_i(x_i-c)=m_i\,\Delta x_i ,
+\]
+jadi jumlah bawah tidak turun. Argumen yang sama dengan supremum memberi $M'\le M_i$
+dan $M''\le M_i$, sehingga jumlah atas tidak naik.
+\end{proof}
+
+Kenyataan kedua lebih kuat: dua partisi berbeda tetap dapat dibandingkan, asal yang
+dibandingkan adalah jumlah bawah dengan jumlah atas.
+
+\begin{lemma}
+Untuk sebarang dua partisi $\mathcal{P}_1$ dan $\mathcal{P}_2$ dari $[a,b]$ berlaku
+\[
+L(\mathcal{P}_1,f)\le U(\mathcal{P}_2,f).
+\]
+\end{lemma}
+
+\begin{proof}
+Ambil $\mathcal{P}$ penghalusan bersama, yaitu gabungan titik kedua partisi. Menurut
+lemma sebelumnya, $L(\mathcal{P}_1,f)\le L(\mathcal{P},f)$ dan
+$U(\mathcal{P},f)\le U(\mathcal{P}_2,f)$. Karena $L(\mathcal{P},f)\le U(\mathcal{P},f)$
+selalu benar, rantai ketaksamaan itu memberi hasil yang diminta.
+\end{proof}
+
+Lemma itu memastikan setiap jumlah bawah merupakan batas bawah bagi seluruh jumlah
+atas. Karena itu himpunan semua jumlah bawah terbatas di atas, dan semua jumlah atas
+terbatas di bawah; kedua bilangan berikut selalu ada.
+
+\begin{definisi}[Terintegralkan Riemann]\index{terintegralkan riemann}
+Untuk $f$ terbatas pada $[a,b]$, \emph{integral bawah} dan \emph{integral atas}
+didefinisikan sebagai
+\[
+\underline{I}(f)=\sup_{\mathcal{P}}L(\mathcal{P},f),
+\qquad
+\overline{I}(f)=\inf_{\mathcal{P}}U(\mathcal{P},f),
+\]
+dengan supremum dan infimum diambil atas seluruh partisi $[a,b]$. Karena
+$\underline{I}(f)\le\overline{I}(f)$, fungsi $f$ disebut \emph{terintegralkan Riemann}
+pada $[a,b]$ bila kedua bilangan itu sama. Nilai bersamanya ditulis
+$\int_a^b f$ atau $\int_a^b f(x)\,dx$.
+\end{definisi}
+
+Perhatikan apa yang tidak ada pada definisi itu: tidak ada titik sampel dan tidak ada
+limit atas $n$. Ukuran keberhasilan sebuah hampiran adalah selisih kedua kurungannya,
+bukan kedekatannya pada tebakan.
+
+\kamus{partisi}{partition}{Cara memotong selang menjadi beberapa potongan, seperti
+membagi sebatang cokelat dengan pisau, bukan mengukur berapa panjang setiap potongan
+dengan tepat.}
+
+\kamus{jumlah atas}{upper sum}{Taksiran yang sengaja dibesar-besarkan, seperti
+menimbang barang bersama kotaknya.}
+
+\begin{bacakeras}
+Dua suara. Sebut yang pertama \emph{Pemotong}, yang kedua \emph{Penjumlah}.
+
+Pemotong: Aku punya sebatang pita. Aku potong jadi empat.
+Penjumlah: Aku jumlah keempat potong itu. Hasilnya terlalu kecil.
+Pemotong: Aku potong lagi. Jadi delapan.
+Penjumlah: Hasilnya naik sedikit. Masih terlalu kecil.
+Pemotong: Enam belas.
+Penjumlah: Naik lagi. Makin dekat, belum sampai.
+Pemotong: Seratus.
+Penjumlah: Dekat sekali.
+Pemotong: Seribu.
+Penjumlah: Lebih dekat lagi, tetap belum sampai.
+
+Pemotong: Kapan sampai?
+Penjumlah: Tidak pernah, kalau kau hanya menambah potongan. Berhenti mengejar angka,
+mulai mengejar kurungan.
+Pemotong: Kurungan apa?
+Penjumlah: Potongan yang kurus memberi batas bawah. Potongan yang gemuk memberi batas
+atas. Kalau dua batas itu bertemu di satu titik, titik itulah jawabannya.
+Pemotong: Jadi potonganku tidak pernah cukup?
+Penjumlah: Tidak pernah. Potongan hanya membuat dua batas itu berdekatan. Yang menjawab
+bukan potongan terakhir, melainkan pertemuan dua batas.
+
+Sekarang ulangi satu baris ini: potong tipis, kurung rapat, batas bertemu.
+\end{bacakeras}
+
+\section{Kriteria keterintegralan}
+\tingkat{menengah}
+
+Definisi tadi menyebut supremum dan infimum atas seluruh partisi, dan partisi itu tak
+berhingga banyaknya. Kriteria berikut menggantinya dengan satu pertidaksamaan yang
+dapat diperiksa pada satu partisi saja.
+
+\begin{teorema}[Kriteria keterintegralan]\index{kriteria keterintegralan}
+Fungsi terbatas $f$ terintegralkan Riemann pada $[a,b]$ jika dan hanya jika untuk
+setiap $\varepsilon>0$ terdapat partisi $\mathcal{P}$ dengan
+\[
+U(\mathcal{P},f)-L(\mathcal{P},f)<\varepsilon .
+\]
+\end{teorema}
+
+\begin{proof}
+Untuk setiap partisi berlaku
+$L(\mathcal{P},f)\le\underline{I}(f)\le\overline{I}(f)\le U(\mathcal{P},f)$; ketaksamaan
+pertama dari definisi supremum, yang terakhir dari definisi infimum.
+
+$(\Rightarrow)$ Andaikan $f$ terintegralkan dengan nilai $I$, dan ambil
+$\varepsilon>0$. Menurut definisi supremum, ada $\mathcal{P}_1$ dengan
+$L(\mathcal{P}_1,f)>I-\varepsilon/2$. Menurut definisi infimum, ada $\mathcal{P}_2$
+dengan $U(\mathcal{P}_2,f)<I+\varepsilon/2$. Ambil $\mathcal{P}$ penghalusan bersama
+keduanya. Lemma penghalusan memberi
+\[
+U(\mathcal{P},f)-L(\mathcal{P},f)
+<\Bigl(I+\tfrac{\varepsilon}{2}\Bigr)-\Bigl(I-\tfrac{\varepsilon}{2}\Bigr)
+=\varepsilon .
+\]
+
+$(\Leftarrow)$ Andaikan syarat itu dipenuhi. Untuk setiap $\varepsilon>0$ ada
+$\mathcal{P}$ dengan $U(\mathcal{P},f)-L(\mathcal{P},f)<\varepsilon$, sehingga
+\[
+0\le\overline{I}(f)-\underline{I}(f)\le U(\mathcal{P},f)-L(\mathcal{P},f)<\varepsilon .
+\]
+Bilangan $\overline{I}(f)-\underline{I}(f)$ tidak negatif dan lebih kecil dari setiap
+$\varepsilon>0$, jadi bilangan itu nol. Kedua integral sama, dan $f$ terintegralkan.
+\end{proof}
+
+Kriteria itu mengubah pertanyaan tentang tak berhingga banyak partisi menjadi satu
+pertidaksamaan. Akibat langsungnya: bila selisihnya kecil pada satu partisi, selisih
+itu tetap kecil pada setiap penghalusannya, sebab lemma penghalusan hanya dapat
+mempersempitnya.
+
+Sebelum mencari kelas fungsi yang lolos kriteria, kita catat sifat integral yang akan
+dipakai terus. Semuanya turunan dari definisi jumlah atas dan bawah, bukan asumsi
+baru.
+
+\begin{proposisi}[Sifat dasar integral]\index{integral, sifat dasar}
+Misalkan $f$ dan $g$ terintegralkan Riemann pada $[a,b]$. Maka:
+(a) $f+g$ terintegralkan dan $\int_a^b(f+g)=\int_a^b f+\int_a^b g$;
+(b) jika $f\le g$ pada $[a,b]$ maka $\int_a^b f\le\int_a^b g$;
+(c) jika $a<c<b$ maka $f$ terintegralkan pada $[a,c]$ dan pada $[c,b]$, dan
+$\int_a^b f=\int_a^c f+\int_c^b f$;
+(d) $|f|$ terintegralkan dan $\bigl|\int_a^b f\bigr|\le\int_a^b|f|$;
+(e) untuk setiap konstanta $k$, $\int_a^b k\,dx=k(b-a)$.
+\end{proposisi}
+
+\begin{proof}
+(a) Pada setiap potongan, $\sup(f+g)\le\sup f+\sup g$ dan $\inf(f+g)\ge\inf f+\inf g$.
+Jadi $U(\mathcal{P},f+g)\le U(\mathcal{P},f)+U(\mathcal{P},g)$ dan
+$L(\mathcal{P},f+g)\ge L(\mathcal{P},f)+L(\mathcal{P},g)$. Ambil $\varepsilon>0$ dan
+pilih $\mathcal{P}$ yang membuat $U-L$ kurang dari $\varepsilon/2$ untuk $f$ dan $g$
+sekaligus. Maka
+\[
+U(\mathcal{P},f+g)-L(\mathcal{P},f+g)
+\le\bigl[U(\mathcal{P},f)-L(\mathcal{P},f)\bigr]
++\bigl[U(\mathcal{P},g)-L(\mathcal{P},g)\bigr]<\varepsilon ,
+\]
+sehingga $f+g$ terintegralkan. Nilainya diperoleh dengan mengurung dua arah, karena
+$\varepsilon$ sebarang.
+
+(b) Bila $f\le g$, maka $M_i(f)\le M_i(g)$ pada setiap potongan, sehingga
+$U(\mathcal{P},f)\le U(\mathcal{P},g)$ untuk semua $\mathcal{P}$. Ambil infimum kedua
+ruas.
+
+(c) Bila $\mathcal{P}$ memuat $c$, jumlahnya terpecah menjadi bagian $[a,c]$ dan
+$[c,b]$, dengan $L(\mathcal{P},f)=L(\mathcal{P}_1,f)+L(\mathcal{P}_2,f)$ dan hal sama
+untuk $U$. Supremum memberi
+$\underline{I}(f)\le\underline{I}_{[a,c]}(f)+\underline{I}_{[c,b]}(f)$, infimum
+memberi arah sebaliknya. Untuk partisi tanpa $c$, tambahkan $c$ lebih dulu; lemma
+penghalusan menjaga ketaksamaan.
+
+(d) Karena $-|f|\le f\le|f|$, bagian (b) dan (a) memberi
+$-\int|f|\le\int f\le\int|f|$. Keterintegralkan $|f|$ menyusul dari
+$\bigl||f(x)|-|f(y)|\bigr|\le|f(x)-f(y)|$, yang memberi
+$M_i(|f|)-m_i(|f|)\le M_i(f)-m_i(f)$.
+
+(e) Pada setiap potongan, $M_i=m_i=k$, jadi $U=L=k(b-a)$ untuk semua partisi.
+\end{proof}
+
+Bagian (c) adalah alasan kita boleh memotong selang di titik mana pun; tanpanya fungsi
+akumulasi tidak dapat didefinisikan dengan tenang.
+
+\section{Kelas fungsi yang terintegralkan}
+\tingkat{menengah}
+
+Kriteria pada bagian sebelumnya adalah alat uji. Sekarang kita cari kelas fungsi yang
+lolos uji itu tanpa harus mencari partisi khusus untuk setiap kasus. Dua kelas paling
+berguna adalah fungsi kontinu dan fungsi monoton.
+
+\begin{akibat}[Kekontinuan menjamin keterintegralan]
+Jika $f$ kontinu pada $[a,b]$, maka $f$ terintegralkan Riemann pada $[a,b]$.
+\end{akibat}
+
+\begin{proof}
+Ambil $\varepsilon>0$. Karena $[a,b]$ kompak, $f$ kontinu seragam di sana (Bab 11):
+ada $\delta>0$ sehingga $|f(x)-f(t)|<\varepsilon/(b-a)$ bila $|x-t|<\delta$. Pilih
+partisi dengan mesh kurang dari $\delta$. Pada setiap potongan, untuk semua $x,t$ di
+potongan itu berlaku $|f(x)-f(t)|<\varepsilon/(b-a)$, sehingga
+$M_i-m_i\le\varepsilon/(b-a)$. Maka
+\[
+U(\mathcal{P},f)-L(\mathcal{P},f)
+=\sum_{i=1}^{n}(M_i-m_i)\,\Delta x_i
+\le\frac{\varepsilon}{b-a}\sum_{i=1}^{n}\Delta x_i=\varepsilon .
+\]
+Kriteria keterintegralan menutup bukti.
+\end{proof}
+
+Perhatikan peran kekontinuan seragam: satu $\delta$ harus bekerja untuk semua potongan
+sekaligus, sedangkan kekontinuan biasa hanya memberi $\delta$ yang bergantung pada
+titik. Di sinilah Bab 11 dipakai, bukan sebagai hiasan.
+
+Kelas kedua tidak memerlukan kekontinuan: fungsi monoton boleh melompat, asal
+lompatannya berhingga banyak.
+
+\begin{teorema}[Monoton menjamin keterintegralan]
+Jika $f$ monoton pada $[a,b]$, maka $f$ terintegralkan Riemann pada $[a,b]$.
+\end{teorema}
+
+\begin{proof}
+Andaikan $f$ naik. Bagi $[a,b]$ menjadi $n$ potongan sama lebar, $\Delta x=(b-a)/n$.
+Pada potongan ke-$i$, nilai terkecil ada di ujung kiri dan nilai terbesar di ujung
+kanan, sehingga $M_i-m_i=f(x_i)-f(x_{i-1})$. Maka
+\[
+U(\mathcal{P},f)-L(\mathcal{P},f)
+=\Delta x\sum_{i=1}^{n}\bigl(f(x_i)-f(x_{i-1})\bigr)
+=\frac{(b-a)\bigl(f(b)-f(a)\bigr)}{n},
+\]
+karena jumlah di tengah teleskopik. Pilih $n>(b-a)(f(b)-f(a))/\varepsilon$ dan kriteria
+terpenuhi. Bila $f$ turun, terapkan hasil ini pada $-f$ dan pakai linearitas.
+\end{proof}
+
+Bukti itu tidak memakai $\delta$: yang dipakai hanya bahwa jumlah semua lompatan tidak
+melebihi $f(b)-f(a)$, sehingga fungsi monoton mudah diintegralkan meski grafiknya penuh
+sudut.
+
+Kedua kelas itu dapat digabung: fungsi yang kontinu kecuali di berhingga banyak titik
+tetap terintegralkan (Rudin, Teorema 6.10, tidak diulang di sini).
+
+Sekarang sisi lain: fungsi terbatas yang gagal. Contoh paling bersih adalah fungsi
+Dirichlet, bernilai $1$ pada bilangan rasional dan $0$ pada bilangan irasional.
+
+\begin{contoh}[Fungsi Dirichlet tidak terintegralkan]\index{fungsi dirichlet}
+Misalkan $D(x)=1$ bila $x$ rasional dan $D(x)=0$ bila $x$ irasional, pada $[0,1]$.
+Setiap potongan memuat keduanya (Bab 3, kerapatan $\mathbb{Q}$), sehingga $M_i=1$ dan
+$m_i=0$ untuk setiap $i$, dan
+\[
+U(\mathcal{P},D)=\sum_{i=1}^{n}1\cdot\Delta x_i=1,
+\qquad
+L(\mathcal{P},D)=0
+\]
+untuk \emph{setiap} partisi. Selisihnya selalu $1$, tidak pernah lebih kecil dari
+$\varepsilon=1/2$, jadi menurut kriteria $D$ tidak terintegralkan meskipun terbatas.
+\end{contoh}
+
+Kegagalan itu bukan karena $D$ terputus-putus di banyak titik, melainkan karena
+lompatannya tersebar di mana-mana. Fungsi berikut menunjukkan bahwa banyaknya titik
+diskontinu bukan penghalang.
+
+\begin{teorema}[Fungsi Thomae]\index{fungsi thomae}
+Definisikan $T$ pada $[0,1]$ dengan $T(x)=1/q$ bila $x=p/q$ dalam bentuk paling
+sederhana dengan $q\ge1$, dan $T(x)=0$ bila $x$ irasional. Maka $T$ terintegralkan
+Riemann dan $\int_0^1 T=0$.
+\end{teorema}
+
+\begin{proof}
+Ambil $\varepsilon>0$. Himpunan $S=\{x:T(x)\ge\varepsilon\}$ berisi pecahan dengan
+penyebut $q\le1/\varepsilon$; untuk setiap $q$ hanya ada $q+1$ pecahan seperti itu di
+dalam $[0,1]$, sehingga $S$ berhingga. Tutup $S$ dengan berhingga banyak selang
+terbuka yang panjang totalnya kurang dari $\varepsilon$.
+
+Bentuk partisi yang memuat semua ujung selang penutup itu. Potongan yang memuat $S$
+panjangnya berjumlah kurang dari $\varepsilon$ dan di sana $M_i-m_i\le1$, jadi
+sumbangannya kurang dari $\varepsilon$. Potongan lain memenuhi $M_i\le\varepsilon$ dan
+$m_i\ge0$, sumbangannya paling banyak $\varepsilon$. Karena itu
+$U(\mathcal{P},T)-L(\mathcal{P},T)<2\varepsilon$, dan kriteria menutup bukti. Nilainya
+nol sebab setiap potongan memuat bilangan irasional, sehingga $L(\mathcal{P},T)=0$.
+\end{proof}
+
+Jadi $T$ terputus di setiap bilangan rasional, yang rapat di $[0,1]$, tetapi $T$ tetap
+terintegralkan. Yang menentukan bukan jumlah titik diskontinu, melainkan besar ruang
+yang ditempatinya: kriteria Lebesgue menyatakan fungsi terbatas terintegralkan Riemann
+jika dan hanya jika titik diskontinunya berukuran nol (Rudin, Teorema 11.33(b); Abbott,
+Bab 7). Kita mengutipnya tanpa bukti karena ukuran menuntut teori ukur.
+
+\begin{tantangan}
+Definisikan $h$ pada $[0,1]$ dengan $h(x)=1$ bila $x=p/q$ dalam bentuk paling sederhana
+dan penyebut $q$ ganjil, serta $h(x)=0$ untuk semua $x$ lain, termasuk setiap bilangan
+irasional. Apakah $h$ terintegralkan Riemann pada $[0,1]$? Bila ya, berapa nilai
+integralnya? Bila tidak, buktikan memakai kriteria keterintegralan, bukan dengan
+menghitung titik.
+
+Petunjuk 1: jangan menghitung banyaknya titik tempat $h$ bernilai satu. Banyaknya tak
+berhingga, dan kriteria tidak meminta hitungan itu.
+
+Petunjuk 2: ambil sebarang potongan $[x_{i-1},x_i]$ dengan $x_{i-1}<x_i$. Potongan itu
+memuat pecahan berpenyebut ganjil, jadi $M_i=1$, dan memuat bilangan irasional, jadi
+$m_i=0$. Dengan begitu $U-L=1$ untuk setiap partisi.
+
+Kalau mentok, kembali ke bagian Kelas fungsi yang terintegralkan, contoh Dirichlet.
+\end{tantangan}
+
+\kamus{keterintegralan}{Riemann integrability}{Sifat fungsi yang taksiran bawah dan
+atasnya dapat dirapatkan sampai selisihnya hilang.}
+
+\begin{untukanak}
+Pernahkah kita melihat speedometer mobil, lalu bertanya berapa jarak yang sudah
+ditempuh? Jarak tidak ditampilkan di situ, hanya kecepatan sesaat. Tetapi kalau kita
+mencatat kecepatan setiap detik, kita bisa menjumlahkannya: satu detik dengan
+kecepatan 10 meter per detik berarti 10 meter, detik berikutnya 12 meter, dan
+seterusnya. Jumlah semua potongan itu adalah jarak.
+
+Masalahnya, kecepatan berubah di tengah detik. Mobil bisa mempercepat lalu melambat
+dalam satu detik yang sama. Kalau kita memakai kecepatan di awal detik, jarak yang
+kita hitung terlalu kecil. Kalau memakai kecepatan di akhir detik, hasilnya terlalu
+besar. Yang benar ada di antaranya.
+
+Kalau kita mencatat sepuluh kali per detik, kedua taksiran makin dekat; seratus kali,
+lebih dekat lagi. Matematikawan bertanya lebih jauh: kalau pencatatan bisa serapat apa
+pun, apakah kedua taksiran itu menuju satu angka yang sama? Jawabannya tidak selalu ya,
+dan di bab ini kita akan tahu kapan ya dan mengapa.
+\end{untukanak}
+
+\section{Integral sebagai fungsi akumulasi}
+\tingkat{menengah}
+
+Sampai sini integral hanyalah bilangan yang melekat pada selang. Kita dapat
+memandangnya sebagai fungsi dengan membiarkan ujung atas bergerak: integralnya menjadi
+laporan tentang berapa banyak yang sudah terkumpul sampai titik itu.
+
+\begin{definisi}[Fungsi akumulasi]\index{fungsi akumulasi}
+Misalkan $f$ terintegralkan pada $[a,b]$. Untuk $x\in[a,b]$ didefinisikan
+\[
+F(x)=\int_a^x f(t)\,dt .
+\]
+Untuk $x<a$ dipakai kesepakatan $\int_a^x f=-\int_x^a f$, dan untuk $x=a$ nilainya
+nol. Fungsi $F$ disebut \emph{fungsi akumulasi} dari $f$ pada $[a,b]$.
+\end{definisi}
+
+Dengan kesepakatan itu sifat aditif berlaku untuk urutan titik apa pun, sehingga
+\begin{equation}
+F(y)-F(x)=\int_x^{y} f(t)\,dt
+\end{equation}
+untuk semua $x,y\in[a,b]$. Inilah bentuk yang dipakai pada semua bukti berikutnya:
+pertambahan tabungan antara dua waktu adalah integral laju pemasukan di antaranya.
+
+Fungsi akumulasi selalu lebih baik daripada fungsi asalnya: ia kontinu walaupun $f$
+tidak, dan terdiferensialkan di setiap titik tempat $f$ kontinu.
+
+\begin{proposisi}[Akumulasi selalu kontinu]
+Jika $f$ terbatas pada $[a,b]$ dengan $|f|\le M$ dan terintegralkan, maka $F$ yang
+didefinisikan di atas memenuhi
+\[
+|F(y)-F(x)|\le M\,|y-x|
+\]
+untuk semua $x,y\in[a,b]$. Khususnya $F$ kontinu pada $[a,b]$.
+\end{proposisi}
+
+\begin{proof}
+Untuk $x<y$, sifat monoton dan bagian (d) Proposisi sifat dasar memberi
+\[
+|F(y)-F(x)|=\Bigl|\int_x^{y}f\Bigr|\le\int_x^{y}|f|\le M(y-x).
+\]
+Untuk $y<x$ hasil yang sama dengan tanda berlawanan. Jadi $F$ memenuhi syarat
+Lipschitz dengan konstanta $M$, dan setiap fungsi Lipschitz kontinu.
+\end{proof}
+
+Sekarang arah pertama hubungan turunan-integral. Kalimat sehari-harinya: laju
+pertumbuhan tabungan pada suatu saat sama dengan laju pemasukan pada saat itu.
+
+\begin{teorema}[Teorema dasar kalkulus, bagian pertama]\index{teorema dasar kalkulus}
+Misalkan $f$ terintegralkan pada $[a,b]$ dan kontinu di titik $x_0\in(a,b)$. Maka
+fungsi akumulasi $F$ terdiferensialkan di $x_0$ dan
+\[
+F'(x_0)=f(x_0).
+\]
+\end{teorema}
+
+\begin{proof}
+Ambil $h\ne0$ dengan $x_0+h\in[a,b]$. Dari bentuk pertambahan,
+\[
+\frac{F(x_0+h)-F(x_0)}{h}-f(x_0)
+=\frac{1}{h}\int_{x_0}^{x_0+h}\bigl(f(t)-f(x_0)\bigr)\,dt ,
+\]
+sebab integral fungsi konstan $f(x_0)$ pada selang panjang $|h|$ bernilai
+$f(x_0)h$.
+
+Ambil $\varepsilon>0$. Karena $f$ kontinu di $x_0$, ada $\delta>0$ sehingga
+$|t-x_0|<\delta$ berakibat $|f(t)-f(x_0)|<\varepsilon$. Untuk $0<|h|<\delta$ seluruh
+selang integrasi berada di dalam $(x_0-\delta,x_0+\delta)$, sehingga dengan sifat
+monoton dan bagian (d) Proposisi sifat dasar,
+\[
+\left|\frac{1}{h}\int_{x_0}^{x_0+h}\bigl(f(t)-f(x_0)\bigr)dt\right|
+\le\frac{1}{|h|}\left|\int_{x_0}^{x_0+h}\bigl|f(t)-f(x_0)\bigr|\,dt\right|
+\le\frac{1}{|h|}\,\varepsilon\,|h|=\varepsilon .
+\]
+Karena $\varepsilon$ sebarang, hasil bagi selisih itu menuju $f(x_0)$.
+\end{proof}
+
+Teorema itu hanya menuntut kekontinuan di satu titik. Di tempat $f$ melompat, turunan
+$F$ boleh gagal ada, dan itu bukan kelemahan bukti: untuk $f(t)=\operatorname{sgn} t$
+pada $[-1,1]$ berlaku $F(x)=\int_0^x\operatorname{sgn} t\,dt=|x|$, yang tidak
+terdiferensialkan di $0$, persis di tempat tanda $f$ berubah.
+
+Satu akibat penting: setiap fungsi kontinu punya antiturunan, dan antiturunannya dapat
+ditulis sebagai integral. Bab 12 menurunkan aturan turunan tetapi tidak menjawab apakah
+setiap fungsi kontinu merupakan turunan dari sesuatu. Sekarang pertanyaan itu terjawab,
+dan jawabannya konstruktif.
+
+\begin{akibat}[Antiturunan selalu ada]
+Jika $f$ kontinu pada $[a,b]$, maka $F(x)=\int_a^x f$ terdiferensialkan pada $[a,b]$
+dengan $F'=f$. Jadi $F$ adalah antiturunan $f$ pada $[a,b]$.
+\end{akibat}
+
+\begin{proof}
+Kekontinuan $f$ memberi keterintegralan (Akibat sebelumnya) dan kekontinuan di setiap
+titik, sehingga teorema bagian pertama berlaku di setiap $x_0\in(a,b)$. Di titik ujung
+dipakai turunan satu sisi.
+\end{proof}
+
+Aturan rantai memberi satu keluwesan tambahan: bila batas atas bergantung pada $x$,
+\[
+\frac{d}{dx}\int_a^{g(x)}f(t)\,dt=f\bigl(g(x)\bigr)\,g'(x),
+\]
+asalkan $g$ terdiferensialkan. Contohnya,
+$\frac{d}{dx}\int_0^{x^2}e^{-t^2}dt=2x\,e^{-x^4}$.
+
+Kedua arah itu mudah tertukar, jadi ada baiknya digambar sekali.
+Gambar~\ref{fig:tdk-dua-arah} menaruh keduanya pada satu diagram: panah atas
+mengumpulkan potongan tipis, panah bawah menurunkan. Yang dijamin teorema adalah bahwa
+menurunkan hasil pengumpulan mengembalikan fungsi semula, bukan kebalikan aljabar yang
+rapi, sebab antiturunan hanya pasti sampai konstanta.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[>=Stealth,every node/.style={font=\footnotesize},
+  kotak/.style={draw,rounded corners=3pt,align=center,inner sep=5pt,
+    minimum height=10mm,text width=3.3cm}]
+\node[kotak,fill=layerindigo!8,draw=layerindigo] (f) at (0,0) {fungsi $f$};
+\node[kotak,fill=layerbrown!8,draw=layerbrown] (F) at (7.6,0)
+  {fungsi akumulasi $F$};
+\draw[->,line width=0.9pt,draw=layerindigo] ([yshift=2mm]f.north) to[bend left=24]
+  node[above,text=layerindigo,align=center]
+  {integral tentu: kumpulkan potongan tipis} ([yshift=2mm]F.north);
+\draw[->,line width=0.9pt,draw=layerbrown] ([yshift=-2mm]F.south) to[bend left=24]
+  node[below,text=layerbrown,align=center]
+  {turunan: $F'=f$, inilah bagian 1} ([yshift=-2mm]f.south);
+\node[draw=layergrey,dashed,rounded corners=3pt,align=center,inner sep=4pt]
+  at (3.8,-2.7)
+  {bagian 2 menutup lingkaran: $\int_a^b F'(x)\,dx=F(b)-F(a)$};
+\end{tikzpicture}
+\caption{Dua arah teorema dasar kalkulus sebagai panah bolak-balik. Panah atas:
+mengumpulkan potongan tipis menghasilkan $F(x)=\int_a^x f$. Panah bawah: menurunkan $F$
+mengembalikan $f$, dan itulah bagian pertama. Kotak putus-putus di bawah adalah bagian
+kedua, yang memakai antiturunan untuk menghitung integral. Untuk $f(x)=x^2$ pada
+$[0,1]$, $F(x)=x^3/3$, dan bagian kedua memberi $F(1)-F(0)=1/3$, angka yang sama dengan
+pengurungan pada Gambar~\ref{fig:rect-halus}.}
+\label{fig:tdk-dua-arah}
+\end{figure}
+
+\section{Teorema dasar kalkulus, bagian kedua}
+\tingkat{lanjut}
+
+Bagian pertama berjalan dari integral ke turunan. Bagian kedua berjalan sebaliknya:
+bila kita sudah memegang antiturunan, integral dapat dihitung dengan satu pengurangan.
+Kalimat sehari-harinya: total perubahan sama dengan nilai akhir dikurangi nilai awal.
+
+\begin{teorema}[Teorema dasar kalkulus, bagian kedua]
+Misalkan $F$ kontinu pada $[a,b]$, terdiferensialkan pada $(a,b)$, dan $F'$
+terintegralkan Riemann pada $[a,b]$. Maka
+\[
+\int_a^b F'(x)\,dx=F(b)-F(a).
+\]
+\end{teorema}
+
+\begin{proof}
+Ambil partisi $\mathcal{P}=\{x_0,\dots,x_n\}$ dari $[a,b]$. Pada setiap subselang, $F$
+kontinu pada $[x_{i-1},x_i]$ dan terdiferensialkan di dalamnya, sehingga teorema nilai
+rata-rata (Bab 12) memberi $t_i\in(x_{i-1},x_i)$ dengan
+\[
+F(x_i)-F(x_{i-1})=F'(t_i)\,\Delta x_i .
+\]
+Karena $m_i\le F'(t_i)\le M_i$, penjumlahan atas $i$ memberi
+\[
+L(\mathcal{P},F')\le\sum_{i=1}^{n}\bigl(F(x_i)-F(x_{i-1})\bigr)\le U(\mathcal{P},F').
+\]
+Jumlah di tengah teleskopik dan sama dengan $F(b)-F(a)$, jadi bilangan itu terkurung di
+antara jumlah bawah dan jumlah atas setiap partisi. Karena $F'$ terintegralkan, kedua
+kurungan menuju nilai yang sama, yaitu $\int_a^b F'$.
+\end{proof}
+
+\begin{resep}
+\begin{enumerate}
+\item Cari $F$ dengan $F'=f$, lalu periksa dengan menurunkan $F$. Bila turunannya tidak
+      kembali ke $f$, calonnya salah dan langkah berikutnya sia-sia.
+\item Tulis $F$ pada batas atas, tulis $F$ pada batas bawah, lalu kurangkan:
+      $F(b)-F(a)$. Jangan sisipkan $+C$; konstanta itu saling menghapus.
+\item Rapikan tandanya bila selangnya terbalik: $\int_b^a f=-\int_a^b f$, dan
+      $\int_a^a f=0$.
+\item Uji dengan satu potongan kasar, trapesium atau \texttt{quad}. Bila hasilnya jauh,
+      galatnya ada di langkah 1 atau 2, bukan di langkah 3.
+\end{enumerate}
+Peringatan urutan: memeriksa antiturunan harus terjadi sebelum mengurangkan. Dua nilai
+fungsi sembarang tetap memberi selisih yang rapi dan masuk akal, sehingga keliru di
+langkah 1 tidak terlihat dari bentuk jawabannya.
+\end{resep}
+
+Begitu pula kedua bagian itu tidak saling menggantikan: bagian pertama menurunkan
+fungsi akumulasi tanpa memerlukan antiturunan, sedangkan bagian kedua memerlukan
+antiturunan dan keterintegralan turunannya.
+
+Bagian kedua menjelaskan mengapa hasilnya disebut perubahan bersih, bukan luas. Untuk
+$F(x)=\frac{x^4}{4}-\frac{x^2}{2}$ pada $[-1,1]$, $F'(x)=x^3-x$, sehingga
+\[
+\int_{-1}^{1}(x^3-x)\,dx=F(1)-F(-1)=\Bigl(\frac14-\frac12\Bigr)-\Bigl(\frac14-\frac12\Bigr)=0 .
+\]
+Daerah di atas sumbu seluas $1/4$, daerah di bawah sumbu juga $1/4$, jadi luas totalnya
+$1/2$ sedangkan integralnya nol karena tandanya berlawanan.
+Gambar~\ref{fig:luas-bertanda} memperlihatkan keduanya.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[width=0.74\linewidth,height=5.4cm,
+  axis lines=middle,xmin=-1.3,xmax=1.3,ymin=-0.6,ymax=0.6,
+  xtick={-1,0,1},ytick=\empty,
+  tick label style={font=\scriptsize},
+  xlabel={$x$},ylabel={$y=x^3-x$},
+  xlabel style={font=\scriptsize},ylabel style={font=\scriptsize,rotate=-90}]
+\addplot[fill=layerjade!22,draw=layerjade!70,domain=-1:0,samples=60]
+  {x^3-x} \closedcycle;
+\addplot[fill=layerplum!22,draw=layerplum!70,domain=0:1,samples=60]
+  {x^3-x} \closedcycle;
+\addplot[thick,ink,domain=-1.2:1.2,samples=120] {x^3-x};
+\node[font=\scriptsize,text=layerjade!55!black] at (axis cs:-0.52,0.36)
+  {$+\frac14$};
+\node[font=\scriptsize,text=layerplum!55!black] at (axis cs:0.52,-0.36)
+  {$-\frac14$};
+\end{axis}
+\end{tikzpicture}
+\caption{Luas bertanda untuk $F'(x)=x^3-x$ pada $[-1,1]$. Daerah di atas sumbu-$x$
+menyumbang $+1/4$, daerah di bawah sumbu menyumbang $-1/4$, sehingga
+$\int_{-1}^{1}(x^3-x)\,dx=F(1)-F(-1)=0$. Luas geometrinya tetap $1/2$; yang nol adalah
+jumlah bertandanya, dan itulah yang dihitung teorema bagian kedua.}
+\label{fig:luas-bertanda}
+\end{figure}
+
+Hipotesis keterintegralan pada bagian kedua tidak berlebihan. Ada fungsi
+terdiferensialkan yang turunannya terbatas tetapi tidak Riemann-terintegralkan; contoh
+klasiknya ditemukan Volterra pada abad kesembilan belas, dan kita tidak
+membuktikannya di sini. Teorema bagian kedua bukan pernyataan tanpa syarat.
+
+\section{Substitusi dan integral parsial}
+\tingkat{lanjut}
+
+Dua aturan hitung integral yang paling sering dipakai bukan aksioma baru: keduanya
+aturan turunan yang dibalik, dan pembuktiannya hanya memakai teorema dasar kalkulus.
+Yang pertama membalik aturan rantai.
+
+\begin{proposisi}[Substitusi]\index{substitusi}
+Misalkan $\varphi$ terdiferensialkan dengan $\varphi'$ kontinu pada $[a,b]$, dan $f$
+kontinu pada selang yang memuat $\varphi([a,b])$. Maka
+\[
+\int_a^b f\bigl(\varphi(t)\bigr)\,\varphi'(t)\,dt
+=\int_{\varphi(a)}^{\varphi(b)}f(u)\,du .
+\]
+\end{proposisi}
+
+\begin{proof}
+Karena $f$ kontinu, ia mempunyai antiturunan $G(u)=\int_c^u f$, dengan $c$ di dalam
+selang nilai $\varphi$; menurut teorema bagian pertama, $G'=f$. Aturan rantai (Bab 12)
+memberi
+\[
+\frac{d}{dt}G\bigl(\varphi(t)\bigr)=G'\bigl(\varphi(t)\bigr)\varphi'(t)
+=f\bigl(\varphi(t)\bigr)\varphi'(t).
+\]
+Ruas kanan kontinu, jadi terintegralkan. Teorema bagian kedua pada fungsi
+$G\circ\varphi$ memberi
+\[
+\int_a^b f\bigl(\varphi(t)\bigr)\varphi'(t)\,dt
+=G\bigl(\varphi(b)\bigr)-G\bigl(\varphi(a)\bigr)
+=\int_{\varphi(a)}^{\varphi(b)}f(u)\,du .
+\]
+\end{proof}
+
+Aturan kedua membalik aturan perkalian.
+
+\begin{proposisi}[Integral parsial]\index{integral parsial}
+Misalkan $F$ dan $G$ terdiferensialkan pada $[a,b]$ dengan $F'$ dan $G'$ kontinu. Maka
+\[
+\int_a^b F(x)\,G'(x)\,dx=F(b)G(b)-F(a)G(a)-\int_a^b F'(x)\,G(x)\,dx .
+\]
+\end{proposisi}
+
+\begin{proof}
+Misalkan $H=FG$. Aturan perkalian memberi $H'=F'G+FG'$, dan ruas kanan kontinu
+sehingga $H'$ terintegralkan. Teorema bagian kedua pada $H$ memberi
+\[
+F(b)G(b)-F(a)G(a)=\int_a^b H'=\int_a^b F'G+\int_a^b FG' .
+\]
+Pindahkan suku pertama ke ruas kiri.
+\end{proof}
+
+\kamus{antiturunan}{antiderivative}{Fungsi yang turunannya adalah fungsi yang sedang
+kita integralkan, seperti arah pulang dari sebuah jalan: ia hanya berguna kalau arah
+berangkatnya sudah diketahui.}
+
+Sebagai pemeriksaan angka, ambil $\int_0^1 x\,e^{x^2}dx$. Substitusi $u=x^2$,
+$du=2x\,dx$ memberi
+\[
+\int_0^1 x\,e^{x^2}dx=\frac12\int_0^1 e^{u}du=\frac{e-1}{2}=0.8591409142295225 .
+\]
+\texttt{scipy.integrate.quad} memberi $0.8591409142295227$, selisih $2\times10^{-16}$
+dari pembulatan mesin. Untuk aturan kedua, $F(x)=x$ dan $G'(x)=e^x$ memberi
+$\int_0^1 xe^xdx=e-(e-1)=1$, dan \texttt{quad} mengembalikan $1.0$ dengan perkiraan
+galat $1.1\times10^{-14}$.
+
+\section{Teorema nilai rata-rata untuk integral}
+\tingkat{menengah}
+
+Rata-rata biasanya dihitung dengan menjumlah lalu membagi banyaknya data. Untuk fungsi
+yang berubah terus, penjumlahan diganti integral dan pembaginya panjang selang: rata-rata
+adalah tinggi persegi panjang yang luasnya sama dengan luas di bawah kurva.
+
+\begin{definisi}[Nilai rata-rata]
+Untuk $f$ terintegralkan pada $[a,b]$, \emph{nilai rata-rata} $f$ pada selang itu
+adalah
+\[
+\bar{f}=\frac{1}{b-a}\int_a^b f(x)\,dx .
+\]
+\end{definisi}
+
+\begin{teorema}[Nilai rata-rata untuk integral]\index{nilai rata-rata integral}
+Jika $f$ kontinu pada $[a,b]$, maka terdapat $c\in[a,b]$ dengan
+\[
+f(c)=\frac{1}{b-a}\int_a^b f(x)\,dx .
+\]
+\end{teorema}
+
+\begin{proof}
+Karena $f$ kontinu pada selang tertutup terbatas, ia mencapai nilai terkecil $m$ dan
+nilai terbesar $M$ di sana (Bab 11). Sifat monoton memberi
+\[
+m(b-a)\le\int_a^b f\le M(b-a),
+\]
+sehingga $\bar{f}\in[m,M]$. Menurut teorema nilai antara (Bab 11), fungsi kontinu $f$
+mengambil setiap nilai di antara $m$ dan $M$, jadi ada $c\in[a,b]$ dengan
+$f(c)=\bar{f}$.
+\end{proof}
+
+Sebagai angka, untuk $f(x)=x^2$ pada $[0,1]$ rata-ratanya $1/3$, dan titik yang
+dicapai teorema adalah $c=1/\sqrt3=0.5773502691896258$, sebab
+$c^2=0.3333333333333334$. Titik itu bukan titik tengah selang: teorema menjamin
+keberadaan, bukan lokasi.
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Sekarang kita kerjakan tiga hal: jumlah atas dan bawah $f(x)=x^2$ pada $[0,1]$,
+perbandingan lima aturan kuadratur, dan satu integral tanpa antiturunan elementer.
+Pecahan dihitung dengan \texttt{fractions.Fraction}, tanpa pembulatan.
+
+Mulai dari $n$ potong sama lebar dengan $x_i=i/n$ dan $\Delta x=1/n$, sehingga
+\[
+U_n=\sum_{i=1}^{n}\Bigl(\frac{i}{n}\Bigr)^2\frac1n=\frac{1}{n^3}\sum_{i=1}^{n}i^2
+=\frac{(n+1)(2n+1)}{6n^2}=\frac13+\frac{1}{2n}+\frac{1}{6n^2},
+\]
+memakai rumus jumlah kuadrat dari Bab 1. Dengan cara yang sama
+$L_n=\frac13-\frac{1}{2n}+\frac{1}{6n^2}$, sehingga
+\begin{equation}
+U_n-L_n=\frac1n .
+\end{equation}
+Hasil itu bukan hampiran. Untuk setiap $n$ selisihnya persis $1/n$; karena $1/n$ dapat
+dibuat lebih kecil dari $\varepsilon$ mana pun dengan $n>1/\varepsilon$, kriteria
+keterintegralan terpenuhi. Jadi tabel berikut sekaligus bukti bahwa
+$\int_0^1x^2dx=1/3$: kedua jumlah mengapit $1/3$, dan jaraknya menuju nol.
+
+\begin{center}\small
+\begin{tabular}{rrrr}
+\hline
+$n$ & $U_n$ & $L_n$ & $U_n-L_n$ \\
+\hline
+1 & $1.0000000000$ & $0.0000000000$ & $1$ \\
+4 & $0.4687500000$ & $0.2187500000$ & $1/4$ \\
+16 & $0.3652343750$ & $0.3027343750$ & $1/16$ \\
+64 & $0.3411865234$ & $0.3255615234$ & $1/64$ \\
+256 & $0.3352890015$ & $0.3313827515$ & $1/256$ \\
+1024 & $0.3338217735$ & $0.3328452110$ & $1/1024$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Pada $n=1024$ selisihnya $9.77\times10^{-4}$ dan jarak $U_n$ ke $1/3$ separuh dari itu.
+Setiap kali $n$ dilipatgandakan selisihnya tepat separuh, dan itulah sebabnya jumlah
+atas dan bawah bukan cara efisien untuk mencapai ketelitian tinggi.
+
+\begin{tangan}
+Bahan: satu lembar kertas berpetak, gunting, penggaris, selotip, pensil.
+
+Langkah. (1) Di kertas berpetak gambar kurva yang naik makin cepat: satu petak dari
+tepi kiri tingginya satu petak, dua petak tingginya empat petak, tiga petak tingginya
+sembilan petak. (2) Gunting daerah di bawah kurva menjadi jalur tegak selebar satu
+petak. (3) Susun jalur itu berdampingan di meja, dari terpendek ke terpanjang, alas
+rata. (4) Perhatikan sisi atasnya: yang muncul tangga bergerigi, bukan garis mulus.
+(5) Ulangi dengan jalur selebar setengah petak, lalu seperempat petak.
+
+Yang harus kita lihat: gerigi di sisi atas makin halus ketika jalur makin tipis,
+sedangkan luas totalnya tidak berubah, sebab memotong lalu menyusun ulang tidak
+menambah atau mengurangi kertas. Jadi luas daerah melengkung itu sama dengan luas
+bangun bergerigi, dan bangun bergerigi itu makin mirip satu persegi panjang. Tinggi
+persegi panjang itulah yang nanti kita sebut nilai rata-rata fungsi pada selang itu.
+\end{tangan}
+
+Sekarang bandingkan lima aturan kuadratur pada integral yang sama: ujung kiri, ujung
+kanan, titik tengah $x_i=(i-\frac12)/n$, trapesium, dan Simpson dengan bobot
+$1,4,2,4,\dots,4,1$ dibagi $3n$. Galat dihitung terhadap nilai eksak $1/3$.
+
+\begin{center}\small
+\begin{tabular}{rrrrrr}
+\hline
+$n$ & kiri & kanan & titik tengah & trapesium & Simpson \\
+\hline
+10 & $4.833\times10^{-2}$ & $5.167\times10^{-2}$ & $8.333\times10^{-4}$
+   & $1.667\times10^{-3}$ & $1.1\times10^{-16}$ \\
+100 & $4.983\times10^{-3}$ & $5.017\times10^{-3}$ & $8.333\times10^{-6}$
+   & $1.667\times10^{-5}$ & $0$ \\
+1000 & $4.998\times10^{-4}$ & $5.002\times10^{-4}$ & $8.333\times10^{-8}$
+   & $1.667\times10^{-7}$ & $0$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Tiga pola terbaca. Galat aturan kiri dan kanan turun sepuluh kali setiap $n$ naik
+sepuluh kali: orde $\mathcal{O}(1/n)$, sekitar $1/(2n)$ karena $f$ naik. Galat titik
+tengah dan trapesium turun seratus kali, orde $\mathcal{O}(1/n^2)$, dengan nilai
+$1/(12n^2)$ dan $1/(6n^2)$; keduanya berlawanan tanda dan trapesium dua kali lipat,
+sehingga $(2M+T)/3$ menghapus sukunya. Simpson tepat sampai pembulatan mesin, sebab
+aturannya eksak untuk polinomial berderajat paling tinggi tiga.
+
+Integral ketiga tidak punya antiturunan elementer:
+\[
+\int_0^1 e^{-x^2}dx .
+\]
+Ketiadaan itu akibat teorema Liouville, kita kutip tanpa bukti. Acuannya fungsi galat
+$\frac{\sqrt{\pi}}{2}\operatorname{erf}(1)=0.746824132812427$; \texttt{quad} memberi
+angka yang sama dengan perkiraan galat $8.3\times10^{-15}$. Aturan Simpson memberi galat
+$3.563\times10^{-4}$ pada $n=2$, $1.988\times10^{-6}$ pada $n=8$, dan
+$7.795\times10^{-9}$ pada $n=32$.
+
+\kertas{Untuk $f(x)=x^2$ pada $[0,1]$, turunkan sendiri rumus
+$U_n-L_n=1/n$ dari rumus jumlah kuadrat, lalu hitung $U_{10}$ dan $L_{10}$ sebagai
+pecahan. Periksa bahwa rata-ratanya $(U_{10}+L_{10})/2$ sama dengan
+$1/3+1/(6\cdot100)$, bukan $1/3$. Jelaskan mengapa rata-rata itu tetap bukan taksiran
+terbaik, padahal galatnya jauh lebih kecil daripada galat $U_{10}$ sendiri.}
+
+\section{Integral tak wajar dan kaitannya dengan deret}
+\tingkat{lanjut}
+
+Selang integrasi sejauh ini selalu terbatas dan fungsinya terbatas. Banyak perhitungan
+nyata tidak begitu: kita ingin luas daerah yang memanjang tanpa ujung, atau integral
+fungsi yang meledak di ujung selang. Caranya bukan memperluas definisi Riemann,
+melainkan menulis integral itu sebagai limit integral biasa.
+
+\begin{definisi}[Integral tak wajar]\index{integral tak wajar}
+Bila $f$ terintegralkan Riemann pada $[a,R]$ untuk setiap $R>a$, didefinisikan
+\[
+\int_a^\infty f=\lim_{R\to\infty}\int_a^R f ,
+\]
+asalkan limit itu ada dan berhingga. Bila $f$ terintegralkan pada $[c,b]$ untuk setiap
+$c\in(a,b]$ tetapi tidak terbatas di dekat $a$, didefinisikan
+\[
+\int_a^b f=\lim_{c\to a^{+}}\int_c^b f .
+\]
+Dalam kedua kasus, integral disebut \emph{konvergen} bila limitnya ada, dan
+\emph{berdivergen} bila tidak.
+\end{definisi}
+
+Contoh terpenting adalah keluarga $f(x)=x^{-p}$ pada $[1,\infty)$. Untuk $p\ne1$,
+\[
+\int_1^R x^{-p}dx=\frac{R^{1-p}-1}{1-p},
+\]
+sehingga limitnya ada hanya bila $p>1$, dengan nilai $1/(p-1)$; untuk $p=1$ hasilnya
+$\ln R$, yang menuju tak berhingga. Jadi $\int_1^\infty x^{-2}dx=1$, dan integral
+parsialnya menuju nilai itu dengan laju $1/R$: $0.9$, $0.99$, $0.999$ untuk
+$R=10,100,1000$.
+
+Kaitan dengan deret Bab 5 bukan kebetulan: untuk $f$ positif dan turun, luas persegi
+panjang setinggi $f(n)$ mengurung luas di bawah kurva, sehingga
+\[
+\sum_{n=N+1}^{\infty}f(n)\ \le\ \int_N^\infty f(x)\,dx\ \le\ \sum_{n=N}^{\infty}f(n) .
+\]
+Karena itu uji integral berlaku: $\sum f(n)$ konvergen jika dan hanya jika
+$\int_1^\infty f$ konvergen. Untuk $f(x)=1/x^2$ keduanya konvergen, dengan
+$\sum_{n=1}^{\infty}1/n^2=\pi^2/6=1.6449340668482264$. Ketaksamaan kiri juga memberi
+batas galat, dan makin besar $N$ makin dekat galat ke batas itu:
+
+\begin{center}\small
+\begin{tabular}{rrrr}
+\hline
+$N$ & galat jumlah parsial & $1/N$ \\
+\hline
+10 & $9.516634\times10^{-2}$ & $0.1$ \\
+100 & $9.950167\times10^{-3}$ & $0.01$ \\
+1000 & $9.995002\times10^{-4}$ & $0.001$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Perlu ditegaskan: integral tak wajar bukan integral Riemann, melainkan limitnya. Karena
+itu substitusi dan integral parsial hanya berlaku bila limitnya ada, dan untuk fungsi
+berganti tanda kekonvergenannya belum tentu mutlak.
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Kode berikut dijalankan dengan Python 3, \texttt{scipy} 1.18.0, dan modul
+\texttt{fractions} untuk aritmetika eksak. Semua partisi sama lebar pada $[0,1]$.
+
+\begin{lab}
+\begin{verbatim}
+import math
+from fractions import Fraction as F
+from scipy.integrate import quad
+
+def jumlah(n):
+    U = sum(F(i * i, n ** 3) for i in range(1, n + 1))
+    L = sum(F(i * i, n ** 3) for i in range(n))
+    return U, L
+
+print("n        U_n          L_n          U_n - L_n")
+for n in (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024):
+    U, L = jumlah(n)
+    print(f"{n:5d}  {float(U):.10f}  {float(L):.10f}  {float(U - L):.2e}")
+
+def aturan(f, n):
+    h = 1 / n
+    kiri = sum(f(i * h) for i in range(n)) * h
+    kanan = sum(f(i * h) for i in range(1, n + 1)) * h
+    tengah = sum(f((i + 0.5) * h) for i in range(n)) * h
+    trap = (f(0) / 2 + sum(f(i * h) for i in range(1, n)) + f(1) / 2) * h
+    simp = (f(0) + f(1) + sum((4 if i % 2 else 2) * f(i * h)
+                              for i in range(1, n))) * h / 3
+    return kiri, kanan, tengah, trap, simp
+
+f = lambda x: x * x
+print()
+print("galat |hampiran - 1/3|, integral x^2 pada [0,1]")
+print("   n      kiri      kanan     tengah   trapesium    Simpson")
+for n in (10, 100, 1000):
+    galat = [f"{abs(v - 1 / 3):.3e}" for v in aturan(f, n)]
+    print(f"{n:4d}  " + "  ".join(galat))
+
+g = lambda x: math.exp(-x * x)
+v, e = quad(g, 0, 1)
+acuan = math.sqrt(math.pi) / 2 * math.erf(1)
+print()
+print(f"quad exp(-x^2) = {v:.15f}   galat perkiraan {e:.1e}")
+print(f"acuan erf      = {acuan:.15f}   selisih {v - acuan:+.1e}")
+print(f"quad x^2       = {quad(f, 0, 1)[0]:.17f}")
+print()
+print("galat |Simpson - acuan| untuk exp(-x^2)")
+for n in (2, 4, 8, 16, 32):
+    print(f"  n={n:3d}  {abs(aturan(g, n)[4] - acuan):.3e}")
+print()
+print("galat |trapesium - acuan| untuk exp(-x^2)")
+for n in (10, 100, 1000):
+    print(f"  n={n:4d}  {abs(aturan(g, n)[3] - acuan):.3e}")
+\end{verbatim}
+\end{lab}
+
+Keluaran yang diperoleh, apa adanya:
+
+\begin{verbatim}
+n        U_n          L_n          U_n - L_n
+    1  1.0000000000  0.0000000000  1.00e+00
+    2  0.6250000000  0.1250000000  5.00e-01
+    4  0.4687500000  0.2187500000  2.50e-01
+    8  0.3984375000  0.2734375000  1.25e-01
+   16  0.3652343750  0.3027343750  6.25e-02
+   32  0.3491210938  0.3178710938  3.12e-02
+   64  0.3411865234  0.3255615234  1.56e-02
+  128  0.3372497559  0.3294372559  7.81e-03
+  256  0.3352890015  0.3313827515  3.91e-03
+  512  0.3343105316  0.3323574066  1.95e-03
+ 1024  0.3338217735  0.3328452110  9.77e-04
+
+galat |hampiran - 1/3|, integral x^2 pada [0,1]
+   n      kiri      kanan     tengah   trapesium    Simpson
+  10  4.833e-02  5.167e-02  8.333e-04  1.667e-03  1.110e-16
+ 100  4.983e-03  5.017e-03  8.333e-06  1.667e-05  0.000e+00
+1000  4.998e-04  5.002e-04  8.333e-08  1.667e-07  0.000e+00
+
+quad exp(-x^2) = 0.746824132812427   galat perkiraan 8.3e-15
+acuan erf      = 0.746824132812427   selisih +1.1e-16
+quad x^2       = 0.33333333333333337
+
+galat |Simpson - acuan| untuk exp(-x^2)
+  n=  2  3.563e-04
+  n=  4  3.125e-05
+  n=  8  1.988e-06
+  n= 16  1.246e-07
+  n= 32  7.795e-09
+
+galat |trapesium - acuan| untuk exp(-x^2)
+  n=  10  6.133e-04
+  n= 100  6.131e-06
+  n=1000  6.131e-08
+\end{verbatim}
+
+Empat hal terbaca. Selisih terbagi dua setiap kali $n$ berlipat dua, sesuai $1/1024$
+pada baris terakhir. Galat kiri dan kanan turun sepuluh kali lipat, titik tengah dan
+trapesium seratus kali lipat. Kolom Simpson berisi $1.110\times10^{-16}$ lalu nol, sisa
+pembulatan, dan galat Simpson untuk $e^{-x^2}$ turun sekitar enam belas kali lipat
+setiap $n$ berlipat dua.
+
+Kode itu tidak membuktikan satu pun teorema. Ia memeriksa bahwa rumus bab ini memberi
+angka yang disebutkan. Bukti keterintegralan $x^2$ ada pada perhitungan $U_n-L_n=1/n$
+di bagian sebelumnya: keluaran program adalah data, bukan argumen.
+
+\begin{untukdosen}
+Urutan mengajar yang saya sarankan: mulai dari dua jawaban yang berbeda di pembuka, lalu
+definisi partisi dan hitung $U$, $L$ untuk $x^2$ dengan empat potongan di papan. Setelah
+itu lemma penghalusan, kriteria, baru kelas fungsi. Jangan menunda teorema dasar
+kalkulus: mahasiswa perlu melihat kerja keras kriteria berbuah menjadi alat hitung.
+
+Dua miskonsepsi yang sering muncul. Pertama, integral dianggap sama dengan antiturunan,
+sehingga $F'=f$ dianggap berlaku karena definisi, padahal itu teorema. Kedua, fungsi
+dengan banyak titik diskontinu dianggap pasti tidak terintegralkan, karena contoh
+Dirichlet terlalu sering dipakai sebagai satu-satunya contoh. Fungsi Thomae menghapus
+anggapan itu dalam satu halaman.
+
+Aktivitas papan tulis: minta mahasiswa menebak $\int_0^1x^2dx$ hanya dari $U_n$ dan
+$L_n$ untuk $n=1,2,4$, lalu menyebutkan berapa $n$ yang diperlukan agar galat di bawah
+$10^{-3}$ tanpa menghitung integralnya. Jawaban $n>1000$ muncul dari $1/n$, dan momen
+itu menjelaskan mengapa antiturunan lebih berharga daripada kuadratur. Tanda siap
+lanjut: mahasiswa dapat menjelaskan perbedaan arah kedua bagian teorema dasar kalkulus,
+dan menyebutkan satu fungsi terintegralkan yang tidak kontinu.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+\item Integral Riemann adalah satu-satunya bilangan yang terkurung di antara semua
+      jumlah bawah dan semua jumlah atas; bila kedua kurungan bertemu, nilainya disebut
+      integral.
+\item Kriteria keterintegralan menggantikan pemeriksaan tak berhingga banyak partisi
+      dengan satu pertidaksamaan $U(\mathcal{P},f)-L(\mathcal{P},f)<\varepsilon$.
+\item Fungsi kontinu dan fungsi monoton terintegralkan; fungsi Dirichlet tidak, karena
+      setiap potongannya memuat rasional dan irasional, sedangkan fungsi Thomae
+      terintegralkan walaupun terputus di setiap bilangan rasional.
+\item Fungsi akumulasi $F(x)=\int_a^xf$ selalu kontinu dan turunannya $f$ di setiap
+      titik tempat $f$ kontinu, jadi setiap fungsi kontinu punya antiturunan.
+\item Bagian kedua menyatakan $\int_a^bF'=F(b)-F(a)$; buktinya teorema nilai rata-rata
+      ditambah teleskopik, dengan syarat $F'$ terintegralkan.
+\item Substitusi dan integral parsial adalah aturan rantai dan aturan perkalian yang
+      dibaca terbalik. Integral tak wajar adalah limit integral Riemann, dan uji
+      integral menghubungkannya dengan deret Bab 5.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Hitung $U_n$ dan $L_n$ untuk $f(x)=x$ pada $[0,1]$ dengan partisi seragam,
+        nyatakan keduanya sebagai pecahan dalam $n$, lalu tentukan $U_n-L_n$. Simpulkan
+        bahwa $f$ terintegralkan dan hitung integralnya.
+  \item Buktikan bahwa $f$ terintegralkan pada $[a,b]$ berakibat $|f|$ terintegralkan
+        dan $\bigl|\int_a^bf\bigr|\le\int_a^b|f|$. Tunjukkan kebalikannya salah dengan
+        satu contoh.
+  \item Nilai klaim ini: ``Setiap fungsi terbatas pada $[a,b]$ terintegralkan, sebab
+        jumlah atas dan jumlah bawahnya selalu berhingga.'' Benar, salah, atau belum
+        cukup bukti? Sebutkan bagian mana yang didukung bukti dan bagian mana yang
+        tidak.
+  \item Buktikan bahwa fungsi naik pada $[a,b]$ terintegralkan dengan menunjukkan
+        $U(\mathcal{P},f)-L(\mathcal{P},f)\le(b-a)\bigl(f(b)-f(a)\bigr)/n$ untuk
+        partisi seragam $n$ bagian. Jelaskan mengapa batas itu tidak berlaku untuk
+        fungsi yang tidak monoton.
+  \item Hitung $\int_0^1(3x^2-2x+1)\,dx$ dengan teorema dasar kalkulus, lalu periksa
+        hasilnya memakai aturan Simpson dengan $n=100$ dan fungsi
+        \texttt{scipy.integrate.quad}. Laporkan ketiga angka dan selisihnya.
+  \item Hitung $\int_1^{10}x^{-2}dx$ dan $\int_1^{\infty}x^{-2}dx$. Laporkan selisih
+        keduanya, lalu jelaskan mengapa selisih itu sama dengan $1/10$ tanpa
+        menghitung ulang.
+  \item Buktikan bahwa bila $f$ kontinu, $f\ge0$ pada $[a,b]$, dan $\int_a^bf=0$, maka
+        $f(x)=0$ untuk setiap $x\in[a,b]$. Tunjukkan juga bahwa pernyataan itu gagal
+        bila $f$ hanya terintegralkan.
+  \item Hitung $\int_0^{\pi/2}\sin x\cos x\,dx$ dengan dua cara: substitusi
+        $u=\sin x$, dan identitas $\sin2x=2\sin x\cos x$. Bandingkan hasilnya dengan
+        nilai numerik dari \texttt{quad}.
+  \item Tunjukkan bahwa fungsi Dirichlet pada $[0,1]$ memenuhi
+        $U(\mathcal{P},D)-L(\mathcal{P},D)=1$ untuk setiap partisi, lalu jelaskan
+        mengapa fakta itu cukup untuk menyimpulkan ketidakterintegralannya.
+  \item Taksir $\sum_{n=101}^{\infty}1/n^2$ dengan batas integral dan bandingkan dengan
+        nilai sebenarnya $9.950167\times10^{-3}$; berapa galat relatifnya?
+\end{enumerate}
+
+\noindent\textbf{Petunjuk.} Butir 3: klaim memuat dua pernyataan berbeda, tentang
+keterbatasan jumlah dan tentang kesamaan kedua integral. Butir 7: gunakan
+kekontinuan di satu titik untuk membuat integral kecil pada selang sempit di sekitar
+titik itu. Butir 10: pakai $\sum_{n=N+1}^\infty1/n^2\le\int_N^\infty x^{-2}dx=1/N$
+dengan $N=100$.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini: kriteria keterintegralan dengan kedua arahnya,
+keterintegralan fungsi kontinu (memakai kekontinuan seragam dari Bab 11), fungsi
+monoton, fungsi Thomae, kedua bagian teorema dasar kalkulus, teorema nilai rata-rata
+untuk integral, dan status substitusi serta integral parsial sebagai akibat, bukan
+aksioma.
+
+Yang dikutip tanpa bukti dan sebaiknya disebut begitu di kelas: kriteria Lebesgue
+(Rudin, Teorema 11.33(b); Abbott, Bab 7), contoh Volterra tentang turunan terbatas yang
+tidak terintegralkan, dan ketiadaan antiturunan elementer untuk $e^{-x^2}$ (teorema
+Liouville).
+
+Sumber primer: Rudin, \emph{Principles of Mathematical Analysis}, Bab 6, bagian
+Definition and Existence of the Integral (Teorema 6.4, 6.6, 6.8, 6.9, 6.10) dan bagian
+Integration and Differentiation (6.19--6.22). Rudin menyusunnya untuk integral
+Riemann-Stieltjes; integral Riemann adalah kasus $\alpha(x)=x$. Abbott,
+\emph{Understanding Analysis}, Bab 7, lebih lambat tetapi lebih terbaca; Stewart hanya
+untuk aturan hitung.
+
+Pertanyaan terbuka: seberapa tajam batas galat kuadratur bila hanya $|f''|$ yang
+diketahui, dan bagaimana memperkirakan galat tanpa turunan sama sekali; jawaban
+standarnya kuadratur adaptif dan selisih dua tingkat penghalusan. Batas keberlakuan:
+fungsi terbatas pada selang tertutup terbatas, integral tak wajar sebagai limit, tanpa
+teori ukur, dan integral bernilai vektor tidak disinggung.
+\end{untukpeneliti}
+
+\peta{Bab 13 pada Rudin, Bab 6: bagian Definition and Existence of the Integral
+(partisi, jumlah atas-bawah, Lemma penghalusan sebagai Teorema 6.4, kriteria sebagai
+6.6, fungsi kontinu dan monoton sebagai 6.8 dan 6.9) dan bagian Integration and
+Differentiation (6.19 perubahan variabel, 6.21 teorema dasar kalkulus, 6.22 integral
+parsial). Pada Abbott, Bab 7, dari The Definition of the Riemann Integral sampai
+Lebesgue's Criterion. Pada Stewart: The Substitution Rule dan Average Value of a
+Function (Bab 5), Integration by Parts dan Improper Integrals (Bab 7), serta 11.3
+The Integral Test, jembatan ke Bab 5 buku ini.}

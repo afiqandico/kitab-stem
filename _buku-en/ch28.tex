@@ -1,0 +1,1127 @@
+\chapter{Formal Methods with Lean 4}
+
+A file named \texttt{Sertifikat.lean} arrived together with a single sentence of introduction:
+``everything has already been proved by machine''. It contained forty one-line theorems, almost all
+of them ending with \texttt{by native\_decide}, and at the bottom there was one summary constant
+that mentioned the threshold $10^{-3}$. Not one of its lines can we inspect with our eyes in a
+reasonable amount of time: what is being compared are sixteen-digit integers that come from
+turning binary fractions into exact form. That introductory sentence is true in a narrow sense and
+misleading in an important sense. The machine does check every line, but it does not check whether
+what is being checked is what was meant.
+
+Testing and proving promise different things, and the difference is not a question of degree of
+confidence. Testing takes a number of inputs, runs the program, and then reports what happened on
+those inputs. The conclusion always has the form ``for $10^{4}$ test samples, nothing failed''. A
+formal proof promises more: one statement quantified over all inputs, together with an object that
+a third party can check without trusting its author. That promise is kept only when three
+conditions hold at once, namely that the statement is written correctly, that the object being
+checked really is a proof of that statement, and that the foundation of the checking has not been
+misused. This chapter takes those three conditions apart on one concrete system, Lean 4.
+
+The tools of the previous chapter are not enough for this work. Chapter 27 taught us how to report
+what is actually measured: keep the training data apart from the test data, state the distribution,
+report the variance across seeds. That is a discipline about \emph{empirical claims}. Here we face a
+claim of a different shape: not an average over samples, but a statement quantified as
+$\forall x,\ P(x)$. For a claim of that kind no confidence interval helps, because a single
+counterexample is enough to bring it down, and the absence of a counterexample is not a proof. What
+is needed is an object that can be rechecked by someone who does not believe us.
+
+\begin{untukanak}
+Imagine a very meticulous chess referee. He never asks whether the game is interesting, whether
+both players play well, or whether the rules of chess are in fact the rules that ought to be used.
+His task is only one: every time a move appears, he checks whether that move is legal according to
+the rule book. If all the moves are legal, he signs the board and says ``this game is valid''. He
+does not care who wins.
+
+Now imagine someone hands over a board full of legal moves, then says ``this proves that I can beat
+anyone''. The referee will answer honestly: what I checked is only that the moves are legal, not
+that your sentence is true. If the sentence is wrong, a legal board does not help at all, because
+what is wrong is not the moves but the question.
+
+Have you ever given a correct answer to the wrong problem? Or done your homework neatly when what
+was asked for was a different page? In this chapter we will find out why a computer can check a
+proof down to the smallest step, why that checking does not in the least guarantee that the
+question is right, and how people write the right question in a language that a machine can check.
+\end{untukanak}
+
+\section{Informal proof and formal proof}
+
+\tingkat{intermediate}
+
+A proof in a mathematics book is a text that convinces a trained reader. It contains jumps that are
+agreed on in common: ``clearly'', ``without loss of generality'', ``analogous for the other cases''.
+Those jumps are not cheating; they are a compression accepted by the community. The trouble is that
+such compression cannot be checked by a machine, and cannot be separated from the knowledge of its
+reader.
+
+A formal proof is another version of the same object. Its statement is written in a language with a
+strict grammar and strict types, and its proof is a \emph{term}, namely an expression whose type is
+that statement. The checking is carried out by the kernel of the system, a small piece of code that
+knows only a few rules and knows nothing at all about mathematics. Because the kernel is small, its
+checking can be trusted far more strongly than any large program around the system.
+
+\kamus{formal verification}{verifikasi formal}{Step-by-step checking by a clerk who is never bored
+and never trusts the author.}
+
+\begin{definisi}[Formal proof]
+Let $P$ be a statement written in the formal language of the system. A \emph{formal proof} of $P$ is
+a term $p$ such that $p:P$ can be derived by the kernel of the system from definitions, theorems
+that have already been checked, and axioms declared open. The system accepts $P$ if and only if a
+term of that kind is found and passes the type check.\\index{formal verification}
+\end{definisi}
+
+That definition contains three words that are easy to pass over. ``Can be derived'' means that
+there is a mechanical procedure, not that there is a person who agrees. ``Checked'' means that the
+outcome is binary: accepted or rejected, with no degrees of confidence. ``Declared open'' means that
+the axiom is recorded, not hidden; we will use that recording later as our main instrument.
+
+The difference that is most often misunderstood is the difference between \emph{truth} and
+\emph{provability}. Lean does not know whether a statement is true in the real world. It knows only
+whether there is a term whose type is that statement. If the statement is false, that term will
+never be found, but the absence of a term is not a proof that the statement is false; it may simply
+be that we have not found it yet.
+
+\begin{bacakeras}
+First voice: ``I have checked it, everything is correct.''
+Second voice: ``Show me how.''
+First voice: ``I read it again three times.''
+Second voice: ``That is a habit, not a method.''
+First voice: ``I am sure.''
+Second voice: ``Certainty is not proof. Give me the steps, one by one.''
+
+That is what a conversation with a machine is like. It does not ask whether we are good people,
+whether we have had breakfast, or whether we graduated with high marks. It asks one thing,
+patiently, every time, with no angry tone: show me the steps. If the steps are there, the door
+opens. If the steps are not there, the door stays shut, as tightly as before, even if we repeat the
+request a hundred times. The machine does not judge our intentions; it only checks the form.
+
+Say it together, slowly, then repeat it once more: the machine does not believe, it checks.
+\end{bacakeras}
+
+\section{Propositions as types, proofs as terms}
+
+\tingkat{intermediate}
+
+In Lean there is no gulf between a statement and its proof. Both are terms, checked by the same
+rules. Every sentence that can take the value true or false is given the type $\mathtt{Prop}$; a
+proof of that sentence is a term whose type is that sentence. The statement ``$P$ is proved''
+therefore does not mean that $P$ is true in some model, but that there is a term of type $P$ that
+passes the check.
+
+\kamus{proposition}{proposisi}{A sentence that can be judged true or false, like an exam question
+whose answer must be proved, not merely chosen.}
+
+\begin{definisi}[Inhabitant of a type]
+A type $T$ is called \emph{inhabited} when there is a term $t$ with $t:T$; the notation $t:T$ is
+read ``$t$ has type $T$''. If $P:\mathtt{Prop}$, then $P$ is called a \emph{proposition} and $t:P$
+is called a \emph{proof term} for $P$.\\index{proof term} Two terms are called \emph{definitionally
+equal} when both reduce to an identical form by symbolic computation.\\index{proposition-type}
+\end{definisi}
+
+This dictionary, namely the correspondence between logic and types, is known as
+Curry--Howard.\\index{Curry-Howard} Implication becomes a function type, because a proof of
+$P\Rightarrow Q$ must turn an arbitrary proof of $P$ into a proof of $Q$, and that is the work of a
+function. The universal quantifier becomes a dependent function, because a proof of
+$\forall x,\ P(x)$ must produce a proof of $P(a)$ for every $a$ that is given. Conjunction becomes
+a pair, because a proof of $P\wedge Q$ contains both of its proofs at once. The last row of the
+table below is the most important: $\bot$ has no inhabitant.
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Logic & Type in Lean & How to build the term \\
+\hline
+$P\Rightarrow Q$   & $P\to Q$              & \texttt{fun h => ...} \\
+$P\wedge Q$        & \texttt{And P Q}      & \texttt{And.intro} \\
+$P\vee Q$          & \texttt{Or P Q}       & \texttt{Or.inl}, \texttt{Or.inr} \\
+$\top$             & \texttt{True}         & \texttt{True.intro} \\
+$\bot$             & \texttt{False}        & no inhabitant \\
+$\forall x,\ P(x)$ & $\forall x,\ P\,x$    & \texttt{fun x => ...} \\
+$\exists x,\ P(x)$ & \texttt{Exists}       & \texttt{Exists.intro} \\
+\hline
+\end{tabular}
+\end{center}
+
+\kamus{proof term}{term bukti}{A building frame whose shape follows the blueprint of its statement
+exactly; if the shape does not fit, the building is rejected.}
+
+The following terms are the smallest useful proofs: the identity function as a proof of the identity
+implication, and the composition of two functions as a proof of the transitivity of implication.
+Both are checked without using any knowledge at all about the contents of $P$, $Q$, and $R$.
+
+\begin{verbatim}
+-- proof of the identity implication, term style
+def bukti_id {P : Prop} : P -> P := fun h => h
+
+-- composition of two implications
+def bukti_komposisi {P Q R : Prop} (h1 : P -> Q) (h2 : Q -> R) : P -> R :=
+  fun hp => h2 (h1 hp)
+
+#check bukti_id
+#check bukti_komposisi
+#check Prop
+\end{verbatim}
+
+The output of the last command, as it stands, is \texttt{Prop : Type}: the set of propositions is
+itself a type. The two lines before it print the types of the two definitions. Note that
+\texttt{\#check} does not prove anything; it only asks for the type, and that is also what the
+kernel of the system does when it checks.
+
+\begin{proposisi}
+For every $P:\mathtt{Prop}$ we have $P\to P$. For $P,Q,R:\mathtt{Prop}$ we have
+$(P\to Q)\to(Q\to R)\to P\to R$.
+\end{proposisi}
+
+\begin{proof}
+The term $\lambda h.\,h$ has type $P\to P$: in the context $h:P$, the variable $h$ itself is a
+proof of $P$, so abstraction over $h$ produces a function from $P$ to $P$. For the second statement,
+let $h_{1}:P\to Q$, $h_{2}:Q\to R$, and $h_{p}:P$. The application $h_{1}\,h_{p}$ has type $Q$, then
+the application $h_{2}\,(h_{1}\,h_{p})$ has type $R$. Three abstractions in succession over $h_{p}$,
+$h_{2}$, and $h_{1}$ give a term of type $(P\to Q)\to(Q\to R)\to P\to R$.
+\end{proof}
+
+The tree in Figure~\ref{fig:pohon-tipe} writes that second proof as a derivation tree: three leaves,
+two application stems, one root. The rightmost leaf is a hypothesis that is given, not a result of
+derivation.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small,
+  daun/.style={draw=layergrey,fill=layergrey!6,rounded corners=2pt,inner sep=4pt},
+  hip/.style={draw=layergrey,dashed,fill=layergrey!3,rounded corners=2pt,inner sep=4pt},
+  batang/.style={thick,layergrey}]
+  \node[daun] (h1) at (-3.7,2.7) {\texttt{h1 : P -> Q}};
+  \node[daun] (hp) at (-0.6,2.7) {\texttt{hp : P}};
+  \node[daun] (ap1) at (-2.2,1.35) {\texttt{h1 hp : Q}};
+  \node[hip]  (h2) at (2.7,1.35) {\texttt{h2 : Q -> R}};
+  \node[daun] (akar) at (0,0) {\texttt{h2 (h1 hp) : R}};
+  \draw[batang] (h1.south) -- (ap1.north west);
+  \draw[batang] (hp.south) -- (ap1.north east);
+  \draw[batang] (ap1.south) -- (akar.north west);
+  \draw[batang] (h2.south) -- (akar.north east);
+\end{tikzpicture}
+\caption{The type tree for the term \texttt{h2 (h1 hp)}: three leaves and two application stems, with
+a root of type $R$. The dashed boxes are hypotheses that are given, not results of derivation.}
+\label{fig:pohon-tipe}
+\end{figure}
+
+There is one property that must be mentioned because it explains why proofs are used as
+certificates rather than as data. The Lean kernel treats any two proofs of the same proposition as
+definitionally equal. This property is called \emph{proof irrelevance}, and its consequence is that
+a proof carries no information other than ``this statement is true''. For that reason a proof can be
+thrown away once it has been checked, and what remains is only the status of the statement.
+
+One warning is installed from the start. The Curry--Howard correspondence holds in full for
+constructive logic. As soon as we use the law of excluded middle, $\mathtt{Classical.em}:P\vee\neg
+P$, we add an axiom, and a proof that uses it stops being computational: it remains valid, but it is
+no longer read as a program that produces a witness. Many theorems of the large libraries carry the
+axiom of choice in their list of axioms, and the last part of this chapter shows how to ask Lean for
+that list directly.
+
+\section{Quantifiers: introduction and elimination rules}
+
+\tingkat{intermediate}
+
+An interesting statement is almost always quantified.\\index{quantifier} ``For every natural
+number'' and ``there is a natural number'' are not decorations of language; both change the kind of
+object that must be supplied. In the type view, that difference becomes the difference between a
+function and a pair.
+
+\kamus{quantifier}{kuantor}{The words ``every'' and ``there is''; the first demands a recipe for all
+cases, the second demands one example together with its proof.}
+
+The rule for the universal quantifier is entirely the same as the rule for a function. To prove
+$\forall x,\ P(x)$, we take an arbitrary $x$ and prove $P(x)$ for that $x$; that is abstraction. To
+use the hypothesis $\forall x,\ P(x)$, we apply that hypothesis to an object; that is application.
+The rule for the existential quantifier is the rule for a pair: to prove $\exists x,\ P(x)$ we
+supply one witness $a$ together with a proof of $P(a)$; to use an existential hypothesis we unpack
+that pair into the witness and its proof.
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Form of the statement & How to prove it & How to use it \\
+\hline
+$\forall x,\ P(x)$      & \texttt{intro x}              & apply to an object \\
+$\exists x,\ P(x)$      & \texttt{exact Exists.intro a h} & \texttt{cases} on the hypothesis \\
+$P\wedge Q$             & \texttt{constructor}          & \texttt{h.1}, \texttt{h.2} \\
+$P\vee Q$               & \texttt{left}, \texttt{right} & \texttt{cases} on the hypothesis \\
+$\neg P$                & \texttt{intro h} then reach $\bot$ & apply to a proof of $P$ \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{tangan}
+Prepare ten blank cards and one marker. On five cards write introduction rules: ``take an
+arbitrary'', ``supply a witness'', ``pair two proofs'', ``choose left'', ``choose right''. On the
+other five cards write use rules: ``apply to an object'', ``unpack the pair'', ``take the first
+component'', ``split into cases'', ``use it on the opponent's proof''.
+
+Lay one goal card at the end of the table, for example ``every natural number is zero or a
+successor''. Build a chain toward the goal card: the first card must be an introduction rule whose
+shape fits the goal, not a use rule. Every following card may only work on the part that is still
+open. A card that has no remainder to work on is pushed to the edge of the table; in Lean that card
+will never be used.
+
+What you must see: the chain gets shorter toward the goal, and there are never two cards working on
+the same remainder. If that happens, your chain branches, and the machine demands two proofs, not
+one.
+\end{tangan}
+
+The following example shows both at work on the natural numbers. The first statement is a tautology
+that requires no reasoning at all; the second statement says that every natural number is zero or
+the successor of something, and its proof requires case splitting on the shape of the number.
+
+\begin{verbatim}
+-- universal quantifier: take an arbitrary n, then compute
+theorem nol_kanan : forall n : Nat, n + 0 = n := by
+  intro n
+  rfl
+
+-- existential quantifier: supply a witness, then prove its property
+theorem ada_tiga : exists n : Nat, n = 3 := by
+  exact Exists.intro 3 rfl
+
+-- every natural number is zero or a successor
+theorem nol_atau_suksesor (n : Nat) : n = 0 \/ exists m : Nat, n = m + 1 := by
+  cases n with
+  | zero => left; rfl
+  | succ k => right; exact Exists.intro k rfl
+\end{verbatim}
+
+The three theorems are checked without any additional axiom, and that can be confirmed with the
+command \texttt{\#print axioms}, which we will use many times. Note also that
+\texttt{Exists.intro k rfl} uses \texttt{rfl} as a proof of equality: in the case
+\texttt{succ k}, the goal is $k+1=k+1$, which is true by definition.
+
+\begin{catatan}
+The reverse direction does not hold automatically. From $\exists x,\ P(x)$ we may not conclude
+$\forall x,\ P(x)$, and Lean will reject every attempt in that direction. The mistake of swapping
+the order of quantifiers is the most frequent specification error of all, and it slips through
+testing without complaint because all test samples satisfy it. The part on limits at the end of this
+chapter discusses its consequences.
+\end{catatan}
+
+\section{Tactics: turning the goal into a term}
+
+\tingkat{basic}
+
+Writing proof terms directly quickly becomes unreadable, because a deep term has to be read from the
+inside out. That is why Lean provides a tactic mode.\\index{tactic} After the word \texttt{by}, we
+do not write a term, but a sequence of commands that change the \emph{goal state}. The goal state is
+printed as a list of hypotheses, then a separator line, then the target.
+
+\kamus{tactic}{taktik}{A step-by-step cooking instruction, not a complete recipe that has to be
+memorized all at once.}
+
+\begin{verbatim}
+-- the goal state is printed after every tactic; the line "|-" reads "therefore"
+theorem imp_trans {P Q R : Prop} (h1 : P -> Q) (h2 : Q -> R) : P -> R := by
+  intro hp
+  trace_state          -- P Q R : Prop, h1 : P -> Q, h2 : Q -> R, hp : P, |- R
+  apply h2
+  trace_state          -- the target becomes |- Q
+  exact h1 hp
+\end{verbatim}
+
+The output of \texttt{trace\_state} on this test machine is the following two blocks. Lean prints
+the arrow as a Unicode character; here everything is rewritten in ASCII so as to be consistent with
+the whole chapter.
+
+\begin{verbatim}
+P Q R : Prop
+h1 : P -> Q
+h2 : Q -> R
+hp : P
+|- R
+
+P Q R : Prop
+h1 : P -> Q
+h2 : Q -> R
+hp : P
+|- Q
+\end{verbatim}
+
+The tactic \texttt{intro} takes a target of implication shape and moves its antecedent into the
+hypotheses; that is exactly function abstraction. The tactic \texttt{exact} closes the target with a
+term whose type fits exactly. The tactic \texttt{apply} matches the conclusion of a lemma against
+the target, then leaves the remaining arguments as new goals. These three tactics are already enough
+for all the pure-logic proofs in this chapter, and all three are surface forms of the same rule.
+
+Figure~\ref{fig:dua-keadaan} compresses those two states into two boxes. What changes is only the
+line below the bar: the target shrinks from $R$ to $Q$. The list of hypotheses does not grow by a
+single line, because \texttt{apply} does not create a new proof; it only lowers the demand.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small,
+  kotak/.style={draw=layergrey,fill=layergrey!6,rounded corners=3pt,align=left,inner sep=6pt,
+                text width=3.9cm},
+  panah/.style={-{Stealth[length=2.2mm]},thick,layerteal}]
+  \node[kotak] (awal) at (0,0) {\textbf{state 1}\\[3pt]
+    \texttt{P Q R : Prop}\\
+    \texttt{h1 : P -> Q}\\
+    \texttt{h2 : Q -> R}\\
+    \texttt{hp : P}\\[3pt]
+    \rule{3.6cm}{0.4pt}\\
+    $\vdash$ \texttt{R}};
+  \node[kotak] (akhir) at (6.7,0) {\textbf{state 2}\\[3pt]
+    \texttt{P Q R : Prop}\\
+    \texttt{h1 : P -> Q}\\
+    \texttt{h2 : Q -> R}\\
+    \texttt{hp : P}\\[3pt]
+    \rule{3.6cm}{0.4pt}\\
+    $\vdash$ \texttt{Q}};
+  \draw[panah] (awal.east) -- node[above,font=\scriptsize]{\texttt{apply h2}} (akhir.west);
+\end{tikzpicture}
+\caption{The two goal states in the proof of \texttt{imp\_trans}: the hypotheses stay at four lines,
+the target shrinks from $R$ to $Q$ after one tactic. The second box is still open; it is closed by
+\texttt{exact h1 hp}.}
+\label{fig:dua-keadaan}
+\end{figure}
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Tactic & What it does & When to use it \\
+\hline
+\texttt{intro}     & antecedent becomes a hypothesis   & target of shape $P\to Q$ \\
+\texttt{exact}     & closes the target with a term    & the term is already available \\
+\texttt{apply}     & lemma conclusion matches target & the lemma ends the same way \\
+\texttt{rw}        & rewrites with an equation & there is a hypothesis $a=b$ \\
+\texttt{simp}      & simplifies repeatedly      & many trivial steps \\
+\texttt{cases}     & splits the target by constructor & case analysis is needed \\
+\texttt{induction} & base case and inductive step     & recursive target over \texttt{Nat} \\
+\hline
+\end{tabular}
+\end{center}
+
+The tactic \texttt{rw} rewrites the target using an equation. It works in the direction that is
+given, and that direction matters: rewriting in the wrong direction will not find the pattern that
+is being looked for. Note the two attempts below, one of which succeeds and one of which is
+rejected.
+
+\begin{verbatim}
+theorem geser (a b : Nat) (h : a = b) : a + 1 = b + 1 := by
+  rw [h]        -- the target becomes b + 1 = b + 1, then it is closed by definition
+  rfl
+
+-- commutativity of addition does NOT hold by definition, so rfl fails
+theorem tukar_salah (n : Nat) : n + 1 = 1 + n := by
+  rfl           -- error: The rfl tactic failed
+
+-- the correct version: rewrite with the commutativity lemma
+theorem tukar_benar (n : Nat) : n + 1 = 1 + n := by
+  rw [Nat.add_comm]
+\end{verbatim}
+
+The failure in the middle is a lesson, not an accident. Addition on the natural numbers is defined
+by recursion on the second argument, so $n+1$ reduces to $\mathtt{succ}\,n$ whereas $1+n$ reduces to
+$\mathtt{succ}\,(0+n)$, and the two stop at different forms. What we call the ``commutative
+property'' at school is a theorem, not a definition, and Lean refuses to treat it as if it were a
+definition. This is the most noticeable difference between reading and writing formal proofs: every
+thing that we usually skip over has to be named.
+
+The tactic \texttt{cases} splits the target according to the constructors of the type. On the
+natural numbers it gives two cases, zero and successor. The tactic \texttt{simp} closes a goal by
+rewriting with a collection of lemmas that are marked; it is useful but also dangerous, because its
+output depends on the collection of lemmas that is currently active. A proof that begins with
+\texttt{simp} without arguments can stop working when the library changes, and that is why in this
+chapter \texttt{simp} is always mentioned together with the list of lemmas it uses.
+
+One warning about tactics that are not here. Names such as \texttt{linarith}, \texttt{ring},
+\texttt{norm\_num}, and \texttt{induction'} come from the Mathlib library, not from the Lean kernel.
+All the code fragments in this chapter were run with Lean 4.10.0 without Mathlib, so those tactics
+are not available and are not used; in their place we use \texttt{omega} (which is in the kernel)
+and \texttt{simp} with an explicit list of lemmas. This difference is not a matter of style: the
+library adds thousands of lemmas and several tactics, and every addition also determines what can be
+closed in one line.
+
+\begin{untukanak}
+Take a pile of small stones. You arrange one stone into the smallest square. Then you add three
+stones around it, and the result is a larger square. Add five more stones, and the result is a
+larger square still. Add seven, nine, eleven, and so on, always increasing by two, and every time
+the result is still a tidy square.
+
+Now the question: will this go on being so if we add up to a hundred times, up to a million times?
+You cannot try all of them. Nor do you need to. If you can show that the pattern of adding stones
+always closes one corner and one side of the square neatly, then one small explanation holds for
+every size, including sizes that you will never be able to arrange by hand.
+
+The lazy computer does not want to try a million cases, and the overconfident computer does not want
+to check anything. In this chapter we will find out why there is a third way: explain the pattern
+once, then ask the machine to check that explanation down to its last letter.
+\end{untukanak}
+
+\section{A complete inductive proof: the sum of odd numbers}
+
+\tingkat{advanced}
+
+We are going to prove one arithmetic statement that can be checked entirely by machine, namely that
+the sum of the first $n$ odd numbers equals $n^{2}$. This statement was chosen for three reasons:
+the formula can be computed with Python without Lean, the proof requires induction, and the
+algebraic step is small enough that every tactic can be accounted for.
+
+\kamus{induction}{induksi}{Explaining a pattern with only two things: the smallest case, and how to
+climb one step from any case.}
+
+Before writing code, we state the statement and its proof in ordinary language. The function is
+defined recursively: the sum of the first zero odd numbers is zero, and the sum of the first $n+1$
+odd numbers is the sum of the first $n$ odd numbers plus the odd number number $n+1$, namely
+$2n+1$.
+
+\begin{definisi}[Sum of odd numbers]
+The function $S:\mathbb{N}\to\mathbb{N}$ is defined by $S(0)=0$ and $S(n+1)=S(n)+(2n+1)$ for every
+$n\in\mathbb{N}$.\\index{induction}
+\end{definisi}
+
+The number $2n+1$ is not an arbitrary choice: the $n$th odd number really does have that form, and
+$2n+1$ is also the difference between $(n+1)^{2}$ and $n^{2}$. That last equality is the heart of the
+proof.
+
+\begin{lemma}
+For every $k\in\mathbb{N}$ we have $(k+1)^{2}=k^{2}+2k+1$.
+\end{lemma}
+
+\begin{proof}
+$(k+1)^{2}=(k+1)(k+1)=k(k+1)+(k+1)=k^{2}+k+k+1=k^{2}+2k+1$. Each step uses distributivity and
+associativity of addition on the natural numbers.
+\end{proof}
+
+\begin{teorema}
+For every $n\in\mathbb{N}$ we have $S(n)=n^{2}$.
+\end{teorema}
+
+\begin{proof}
+By induction on $n$. For $n=0$, both sides have the value $0$. Suppose the statement is true for
+$k$, namely $S(k)=k^{2}$. Then $S(k+1)=S(k)+(2k+1)=k^{2}+2k+1=(k+1)^{2}$, with the lemma above at
+the last step. So the statement is true for $k+1$. By the principle of induction, the statement is
+true for every $n\in\mathbb{N}$.
+\end{proof}
+
+The proof above is a complete informal proof, in the sense that no step is skipped. Now we write it
+for the machine. Note that the recursive definition and the theorem are almost word for word what we
+have just written, whereas the proof turns into a sequence of tactics.
+
+\begin{verbatim}
+-- recursive definition: two equations, without ":=" on the first line
+def oddSum : Nat -> Nat
+  | 0     => 0
+  | n + 1 => oddSum n + (2 * n + 1)
+
+theorem oddSum_sq (n : Nat) : oddSum n = n * n := by
+  induction n with
+  | zero => rfl
+  | succ k ih =>
+    rw [oddSum]        -- unfold the definition: oddSum (k+1) = oddSum k + (2*k+1)
+    rw [ih]            -- use the induction hypothesis: oddSum k = k*k
+    simp [Nat.succ_eq_add_one, Nat.mul_succ, Nat.add_mul, Nat.one_mul]
+    omega              -- close the linear remainder
+\end{verbatim}
+
+The line \texttt{induction n with} generates two goals. The first goal is labelled \texttt{zero} and
+reads $S(0)=0\cdot 0$, and it is closed by \texttt{rfl} because both sides reduce to zero. The
+second goal is labelled \texttt{succ k} and carries one extra hypothesis named \texttt{ih}, namely
+$S(k)=k\cdot k$. The name \texttt{ih} is chosen by us; its role is what matters.
+
+The line \texttt{rw [oddSum]} unfolds the definition on the left-hand side. After that line the goal
+reads $S(k)+(2k+1)=(k+1)(k+1)$. The line \texttt{rw [ih]} replaces $S(k)$ with $k\cdot k$, so the
+goal becomes $k\cdot k+(2k+1)=(k+1)(k+1)$.
+
+At this point we stand exactly where the lemma above does its work, but the machine does not yet know
+that $(k+1)(k+1)$ can be written as $k\cdot k+2k+1$. \texttt{simp} with four explicit lemmas changes
+the shape of the right-hand side into $k\cdot k+k+(k+1)$, which is a shape that is entirely linear in
+$k$. The last line, \texttt{omega}, closes a linear goal of that kind.
+
+It must be stressed that \texttt{omega} is not magic and is not a hidden axiom either. It is a
+decision procedure for linear arithmetic over the integers, and it accepts only goals all of whose
+operations are linear. If we call it before \texttt{simp}, the goal still contains both $k\cdot k$
+and $(k+1)(k+1)$. On this test machine, the temporary experiment file named \texttt{odd.lean}
+produces a rejection:
+
+\begin{verbatim}
+odd.lean:11:4: error: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  a - b + 2*c <= -2
+  ...
+\end{verbatim}
+
+That message is honest and useful: it names a possible counterexample, and precisely because of that
+we know that what fails is the shape of the goal, not the truth of the statement. The order of
+tactics is therefore not a matter of taste; it changes the kind of goal that the decision procedure
+faces.
+
+\begin{catatan}
+If \texttt{simp} above is run without \texttt{omega}, the remaining goal has the shape
+$k\cdot k+(1+2k)=k+(k+(k\cdot k+1))$. Mathematically that is true, but it is no longer linear, and
+the simplifier does not close it. On this test machine that experiment ends with
+\texttt{unsolved goals}. This is the most common shape of a failed formal proof: not that the
+statement is false, but that the shape of the goal does not fit the tool in use.
+\end{catatan}
+
+\begin{akibat}
+For every $n\in\mathbb{N}$, the sum of the first $n$ odd numbers is a perfect square.
+\end{akibat}
+
+That corollary is only a repetition of the theorem in other words, and that is precisely its use: it
+restates the result in the language used in this part, so that a reader who meets the formula
+elsewhere can recognize it.
+
+\section{Structures, typeclasses, and what is really guaranteed}
+
+\tingkat{advanced}
+
+A certificate is rarely a single loose theorem. Usually it is a collection of data together with
+claims about that data: thresholds, tables, file names, and several statements. Lean provides two
+tools for grouping things of this kind, namely \emph{structure} and \emph{typeclass}.
+
+\kamus{typeclass}{type class}{A list of capabilities that a type must have in order to be usable in
+a certain place, like the licensing requirement for driving a particular kind of vehicle.}
+
+\begin{definisi}[Structure and typeclass]
+A \emph{structure} is a type whose fields are named, so that a value of it is built by naming the
+fields. A \emph{typeclass} is a structure that is used to look for an \emph{instance}
+automatically: when a definition requires a certain capability from a type, Lean searches for a
+matching instance in the environment that is currently active.\\index{typeclass}
+\end{definisi}
+
+The practical difference is simple. A structure is used when the data itself is what matters, for
+example a certificate with a claim field and a threshold field. A typeclass is used when what
+matters is the capability: something that can be used as a proof, something whose norm can be
+computed, something that can be compared. In both, the checking remains equally strict: every field
+must be filled, and every instance must pass the type check.
+
+\begin{verbatim}
+-- structure: data with named fields
+structure Sertifikat where
+  klaim  : String
+  ambang : Nat
+
+-- typeclass: a capability that is looked up automatically
+class Terperiksa (a : Type) where
+  jumlah_teorema : a -> Nat
+
+instance : Terperiksa Sertifikat where
+  jumlah_teorema _ := 1
+
+def contoh : Sertifikat := { klaim := "oddSum", ambang := 100 }
+
+#eval (Terperiksa.jumlah_teorema contoh)   -- prints 1
+\end{verbatim}
+
+Now the part that is most often skipped in popular talk about Lean, namely the question of what the
+acceptance of a theorem actually guarantees. Four things are guaranteed, and four other things are
+not.
+
+Figure~\ref{fig:alur-periksa} puts those three stages on one line: the statement is written, the
+term is submitted, the kernel decides. There are only two outputs; there is no third box that says
+``perhaps''.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small,
+  tahap/.style={draw=layergrey,fill=layergrey!6,rounded corners=3pt,align=center,inner sep=5pt,
+                text width=2.9cm,minimum height=1.7cm},
+  panah/.style={-{Stealth[length=2.2mm]},thick,layergrey},
+  terima/.style={draw=layerjade,fill=layerjade!8,rounded corners=3pt,align=center,inner sep=5pt,
+                 text width=2.9cm},
+  tolak/.style={draw=accent,fill=accent!6,rounded corners=3pt,align=center,inner sep=5pt,
+                text width=2.9cm}]
+  \node[tahap] (s1) at (0,0) {\textbf{1. statement}\\$P$ has type \texttt{Prop}};
+  \node[tahap] (s2) at (3.9,0) {\textbf{2. term}\\$p$ is submitted for $P$};
+  \node[tahap] (s3) at (7.8,0) {\textbf{3. kernel}\\check whether $p:P$};
+  \draw[panah] (s1) -- (s2);
+  \draw[panah] (s2) -- (s3);
+  \node[terima] (ya) at (5.4,-2.9) {\textbf{accepted}\\there is a term of type $P$};
+  \node[tolak] (tidak) at (9.9,-2.9) {\textbf{rejected}\\there is no term};
+  \draw[panah] (s3.south west) -- node[above left,font=\scriptsize]{matches} (ya.north);
+  \draw[panah] (s3.south east) -- node[above right,font=\scriptsize]{does not match} (tidak.north);
+\end{tikzpicture}
+\caption{The checking flow: three stages (statement, term, kernel) and two outputs, accepted or
+rejected. There is no third output; a file that stops in the middle is reported as a goal that is
+not yet closed, not as ``almost correct''.}
+\label{fig:alur-periksa}
+\end{figure}
+
+What is guaranteed: (i) there is a term whose type is exactly the statement that was written; (ii)
+that term is checked by the kernel, not by the tactic that produced it; (iii) the checking uses only
+definitions, other theorems that have already been checked, and recorded axioms; (iv) the list of
+axioms that are used can be asked for at any time with \texttt{\#print axioms}. Point (iv) is the
+most useful instrument in this whole chapter, because it turns ``just believe me'' into ``check it
+yourself''.
+
+What is not guaranteed: (i) that the statement says what we mean; (ii) that the definitions model
+objects in the real world; (iii) that the kernel, the parser, and the hardware are free of errors;
+(iv) that the tactics in use do not add hidden assumptions. Point (iv) is not a theoretical flaw: it
+can be checked, and the result is often surprising.
+
+\begin{contoh}[Two ways to prove the same thing, two lists of axioms]
+Consider two proofs of the statement $S(10)=100$, both of them correct. The first uses
+\texttt{decide}, which runs the computation inside the kernel. The second uses
+\texttt{native\_decide}\\index{native-decide}, which compiles the computation into machine code and
+runs it. The two statements are the same, but their lists of axioms differ, and that difference is
+visible from the command \texttt{\#print axioms}.
+\end{contoh}
+
+\begin{verbatim}
+def oddSum : Nat -> Nat
+  | 0     => 0
+  | n + 1 => oddSum n + (2 * n + 1)
+
+theorem cek_native : oddSum 10 = 100 := by native_decide
+theorem cek_kernel : oddSum 10 = 100 := by decide
+
+#print axioms cek_native
+#print axioms cek_kernel
+\end{verbatim}
+
+The output on this test machine, as it stands:
+
+\begin{verbatim}
+'cek_native' depends on axioms: [Lean.ofReduceBool]
+'cek_kernel' does not depend on any axioms
+\end{verbatim}
+
+The first line is the heart of the whole discussion about \texttt{native\_decide}. The computation
+is not carried out by the kernel, but by compiled code, and Lean records that trust as an axiom
+named \texttt{Lean.ofReduceBool}. In practice this is not a disaster: the Lean compiler is used to
+compile Lean itself every day. In principle it is a large difference, because the boundary of trust
+moves from the small kernel to a long chain of compiler, linker, and processor. A certificate built
+on top of \texttt{native\_decide} is therefore weaker than a certificate built on top of
+\texttt{decide}, even though both print ``accepted'' without complaint.
+
+In the induction theorem above, the list of axioms is not empty either. The command
+\texttt{\#print axioms} for \texttt{oddSum\_sq} prints \texttt{[propext, Quot.sound]}. Both are
+standard axioms used for classical reasoning and for quotients, and both appear because
+\texttt{omega} proves the goal by contradiction inside the integers. This is not an error; it is a
+fact that ought to be mentioned when a certificate is used as the basis of a claim.
+
+\section{Limits: rejecting wrong proofs, \texttt{sorry}, and axioms}
+
+\tingkat{advanced}
+
+The ability to reject is as important as the ability to accept. The following file deliberately
+contains errors of different kinds, and the output is Lean's answer to each of them.
+
+\begin{verbatim}
+-- File: Salah.lean
+theorem salah_arit : 2 + 2 = 5 := by decide
+
+theorem salah_rfl (n : Nat) : n + 1 = 1 + n := by rfl
+
+axiom magic : 1 = 2
+theorem from_magic : 1 = 2 := magic
+#print axioms from_magic
+
+theorem belum_selesai (n : Nat) : n + 0 = n := by sorry
+\end{verbatim}
+
+The actual output, cut at the long part:
+
+\begin{verbatim}
+Salah.lean:2:37: error: tactic 'decide' proved that the proposition
+  2 + 2 = 5
+is false
+Salah.lean:4:50: error: The rfl tactic failed. Possible reasons:
+- The goal is not a reflexive relation ...
+- The arguments of the relation are not equal.
+...
+n : Nat
+|- n + 1 = 1 + n
+'from_magic' depends on axioms: [magic]
+Salah.lean:10:8: warning: declaration uses 'sorry'
+\end{verbatim}
+
+Three kinds of rejection appear here, and all three differ in nature. The first is the strongest
+rejection: \texttt{decide} does not merely fail to close the goal, it proves that the proposition is
+false. For a finite statement, failure and refutation are the same thing. The second is a subtler
+rejection: \texttt{rfl} refuses because the two sides are not equal by definition, even though the
+statement is true. Here Lean does not blame the statement, it blames the tool in use; the message
+even suggests an explicit reflexivity lemma. The third is not a rejection at all.
+
+The line \texttt{axiom magic : 1 = 2} is accepted without complaint. Lean does not check whether the
+content of an axiom is reasonable; it only records it.\\index{axiom} After that,
+\texttt{from\_magic} is accepted as well, and the whole of arithmetic can be taken apart with
+\texttt{False.elim} from there. The only danger sign is the \texttt{\#print axioms} line, which
+mentions \texttt{[magic]} calmly, without a warning and without the color red. This is the practical
+reason why inspecting the list of axioms is a compulsory habit: the system will not reproach us.
+
+\kamus{axiom}{aksioma}{A rule that we ask to be accepted without proof, like an opening assumption
+in a debate; legitimate, but it has to be named.}
+
+The last line of that file uses \texttt{sorry}, and its output is only the warning
+\texttt{declaration uses 'sorry'}.\\index{sorry} The file is still processed, the theorem still
+``exists'', and anyone who reads the output carefully will see the word \texttt{warning}, not
+\texttt{error}. In a large library, one \texttt{sorry} left behind among thousands of theorems is
+almost invisible. Lean provides the answer, and the answer is the same as the answer for axioms:
+\texttt{\#print axioms} prints \texttt{[sorryAx]}. Lean's mathematics library, namely Mathlib, uses
+a stricter policy: a file that contains \texttt{sorry} is rejected by the automatic check before it
+is accepted. That policy deserves to be copied by anyone who publishes certificates.
+
+\kamus{sorry}{sorry}{A note saying ``I will do it later'' that makes the work look finished; the
+machine accepts it, but records it as a debt.}
+
+Now the most important limit, and the one least often mentioned. Formal verification guarantees that
+the term fits the statement. It does not guarantee that the statement fits the intention. If the
+specification is too weak, the proof can be perfect and useless.\\index{specification} The following
+example shows this in its most naked form: the first statement says ``there is a small perturbation
+that does not change the output'', the second statement says ``every small perturbation does not
+change the output''. The first can be proved for \emph{all} functions, including the worst function
+imaginable, because the witness $\delta=0$ is always available.
+
+\begin{verbatim}
+def identitas (n : Nat) : Nat := n
+
+-- weak specification: THERE IS a delta that does not change the output (for all f)
+theorem ada_delta (f : Nat -> Nat) (x : Nat) :
+    exists delta : Nat, f (x + delta) = f x := by
+  exact Exists.intro 0 rfl
+
+-- the strong version is false for f = identity, so it cannot be proved
+theorem ada_penyangkal :
+    exists x : Nat, exists delta : Nat,
+      Not (identitas (x + delta) = identitas x) := by
+  exact Exists.intro 0 (Exists.intro 1 (by decide))
+\end{verbatim}
+
+Both theorems pass without additional axioms, and that is exactly the problem. The first theorem says
+nothing about $f$; it only says that $\delta=0$ is a perturbation that changes nothing, and that
+holds for every function, including a classifier that is wrong one hundred percent of the time. A
+certificate of this kind passes every check and protects nothing. The second theorem shows the other
+side: the statement we actually want, namely the universally quantified version, is false for the
+identity function, so no proof can possibly be found.
+
+\begin{tantangan}
+A certificate contains one line that looks impossible to be wrong: for every natural number $a$ and
+$b$ we have $(a-b)+b=a$. On paper the reason is simple: subtract, add again, and you are back where
+you started. Write that line in Lean and close it with \texttt{omega}; the checker rejects it, and
+the rejection is not because the tactic is not clever enough.
+
+Two questions. Why is that statement not true for all $a$ and $b$? And what additional condition
+makes it true while keeping it checkable by machine?
+
+Hint 1: do not trust the parentheses; ask what happens when $b$ is larger than $a$. Hint 2:
+subtraction on the natural numbers stops at zero, so $0-1=0$, hence the left-hand side becomes
+$0-1+1=1$ whereas the right-hand side becomes $0$.
+
+If you get stuck, go back to the section ``Tactics: turning the goal into a term'', where $n+1$ and
+$1+n$ stop at different forms.
+\end{tantangan}
+
+Before reading further, try to answer on your own. The output of this test machine, as it stands, is
+the comparison for your answer: the second file contains the same statement with the hypothesis
+$b\le a$.
+
+\begin{verbatim}
+$ lean t.lean
+t.lean:1:49: error: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  d >= 0
+  c >= 0
+  c - d >= 1
+where
+ c := b
+ d := a
+$ lean t2.lean
+'potong_benar' depends on axioms: [propext, Quot.sound]
+\end{verbatim}
+
+The first output mentions the constraint $b-a\ge 1$, that is a counterexample with $b>a$; at $a=0$
+and $b=1$ the left-hand side has the value $1$, the right-hand side $0$. The hypothesis $b\le a$
+makes the same line pass, with the two standard axioms that we already know from \texttt{omega}. The
+shape of the repair is not an additional tactic, but a condition.
+
+\kertas{The claim that may be made from this chapter: the Lean code fragments that are shown have
+been run with Lean 4.10.0 without Mathlib on the machine of writing, and their output is copied as
+it stands; Unicode output is reprinted in ASCII and cuts are marked with three dots. What was not
+run: the Mathlib tactics (\texttt{linarith}, \texttt{ring}, \texttt{norm\_num},
+\texttt{induction'}) and the Mathlib library itself, because it is not installed. What is not proved
+here and is not claimed: any certificate about neural networks, language models, or robustness to
+attack. Chapter 28 does not contain a single proof of that kind.}
+
+These limits have a direct connection with Chapter 27 and Chapter 29. An honest evaluation of a model
+demands that we state the distribution in which the numbers are measured; formal verification
+demands that we state the proposition that is proved. Both are the same disease in a different form:
+a claim that does not state its conditions. The certificate ``this model is proved safe'' without a
+formal statement behind it is as useless as ``99 percent accuracy'' without a note on the test data.
+In Chapter 29 and Chapter 30, when we discuss attacks and defenses, the first question that must be
+put to every robustness certificate is: how many quantifiers does it have, and in what space do those
+quantifiers run?
+
+\section{Worked example}
+
+\tingkat{intermediate}
+
+The numbers in this part are computed, not estimated. The first column is $n$, the second column is
+the $n$th odd number that is added at that step, the third column is $S(n)$, and the fourth column is
+$n^{2}$.
+
+\begin{center}
+\begin{tabular}{rrrr}
+\hline
+$n$ & term $n$ & $S(n)$ & $n^{2}$ \\
+\hline
+0  & --  & 0     & 0 \\
+1  & 1   & 1     & 1 \\
+2  & 3   & 4     & 4 \\
+5  & 9   & 25    & 25 \\
+10 & 19  & 100   & 100 \\
+20 & 39  & 400   & 400 \\
+100 & 199 & 10000 & 10000 \\
+\hline
+\end{tabular}
+\end{center}
+
+The value $S(100)=10000$ is worth checking by hand once, because it shows that the formula is not a
+coincidence for small numbers: the sum of a hundred odd numbers, from $1$ to $199$, equals
+$100\cdot 100$. A check with Python over all values $n<5000$ gives \texttt{True}, and a check of the
+algebraic identity $(k+1)^{2}=k^{2}+2k+1$ for all $k<100000$ also gives \texttt{True}. Neither check
+is a proof, but both rule out the possibility that the formula being proved has a typo.
+
+There is one more number that is more informative than the table above, namely the size of the proof
+after elaboration. The tactic script for \texttt{oddSum\_sq} is eight lines long. When Lean prints
+the term that results from elaborating it with \texttt{\#print}, the result is 10,783 characters in
+149 lines. That means one line of tactics expands on average into about nineteen lines of term. No
+human reads that term; what reads it is the kernel, and that is the division of labor that is the
+heart of the whole method.
+
+The last number concerns the limit of direct checking. In the default setting, the recursion-depth
+limit has the value 1000. With that limit, the tactic \texttt{decide} succeeds in proving
+$S(n)=n^{2}$ only for $n\le 122$. The first experiment that fails is $n=123$, and the message that
+appears mentions that the maximum recursion depth has been reached. If the limit is raised to 100000,
+the value $n=2000$ is proved successfully in 0.48 seconds. At $n=20000$ the check fails because the
+recursion is too deep for the stack space. So direct checking is not an alternative that scales,
+whereas an inductive proof does not care about the size of $n$.
+
+\section{Computational lab}
+
+\tingkat{advanced}
+
+This lab runs two things: the Lean file that is the same as the one discussed above, and a
+cross-check with Python. The Lean file is written without \texttt{import}, so it uses only the
+kernel.
+
+\begin{lab}
+\begin{verbatim}
+-- BilanganGanjil.lean : Lean 4.10.0, without Mathlib
+def oddSum : Nat -> Nat
+  | 0     => 0
+  | n + 1 => oddSum n + (2 * n + 1)
+
+theorem oddSum_sq (n : Nat) : oddSum n = n * n := by
+  induction n with
+  | zero => rfl
+  | succ k ih =>
+    rw [oddSum]
+    rw [ih]
+    simp [Nat.succ_eq_add_one, Nat.mul_succ, Nat.add_mul, Nat.one_mul]
+    omega
+
+#eval oddSum 0
+#eval oddSum 5
+#eval oddSum 10
+#eval oddSum 100
+#print axioms oddSum_sq
+\end{verbatim}
+
+\begin{verbatim}
+def odd_sum(n):
+    return sum(2 * i + 1 for i in range(n))
+
+print([odd_sum(n) for n in range(11)])
+print(odd_sum(20), odd_sum(100))
+print(all(odd_sum(n) == n * n for n in range(5000)))
+print(all((k + 1) * (k + 1) == k * k + 2 * k + 1 for k in range(100000)))
+\end{verbatim}
+\end{lab}
+
+The commands and the output, as they stand:
+
+\begin{verbatim}
+$ lean --version
+Lean (version 4.10.0, x86_64-unknown-linux-gnu, commit c375e19f6b65, Release)
+$ time lean BilanganGanjil.lean
+0
+25
+100
+10000
+'oddSum_sq' depends on axioms: [propext, Quot.sound]
+time 0.14 s
+$ python3 BilanganGanjil.py
+[0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
+400 10000
+True
+True
+\end{verbatim}
+
+The first four lines of the Lean output are the results of \texttt{\#eval}, and all four match the
+table in the previous part. The fifth line is the list of axioms, and its contents must be read
+carefully: \texttt{propext} and \texttt{Quot.sound} are not an error, but a consequence of the way
+\texttt{omega} works. The Python output confirms the same thing from the other direction: the list of
+the first eleven values is a list of perfect squares, $S(100)=10000$, and both exhaustive checks
+print \texttt{True}. The time 0.14 seconds is the time of this test machine, and a number of that
+kind depends on the hardware; what is meaningful is not the number, but the fact that the check
+finishes before we have time to read the file.
+
+A reader who wants to repeat this lab needs two things. First, Lean 4, which can be installed through
+\texttt{elan}, the official version manager of the Lean project; after installation, the command
+\texttt{lean --version} must print a version. Second, the file above is saved as
+\texttt{BilanganGanjil.lean} and run with \texttt{lean BilanganGanjil.lean} from the same directory;
+no \texttt{lake} project is needed because there is no import. To use \texttt{linarith} or
+\texttt{ring}, the reader needs a project with Mathlib, and from that moment \texttt{lean} alone is
+not enough; the command becomes \texttt{lake env lean}. This difference is often the first source of
+confusion for a beginner, and mentioning it is better than letting it be discovered through an
+\texttt{unknown tactic} message.
+
+\begin{resep}
+\begin{enumerate}
+  \item Create a plain text file named \texttt{Uji.lean}; that extension is what makes the command
+        \texttt{lean} recognize it as a source file.
+  \item Write all \texttt{import}s on the topmost lines, one per line, before any declaration.
+  \item Write the statement first, complete with the type of each variable, then the proof after
+        \texttt{:= by}.
+  \item Run \texttt{lean Uji.lean} from the directory of that file and read the output from the first
+        line; the first error is usually the real one.
+  \item Ask for \texttt{\#print axioms name\_of\_theorem} before calling the result proved.
+\end{enumerate}
+A warning about order: \texttt{import} must not be preceded by a declaration. One \texttt{def}
+slipped above it makes Lean reject the whole file with the message
+\texttt{invalid 'import' command}, and the file is not checked at all. The correct order is not the
+author's taste; it is a condition for the file to be checkable.
+\end{resep}
+
+\begin{untukdosen}
+The teaching order that works in class: start from the failure of \texttt{rfl} on $n+1=1+n$, not
+from the definition. Students who see that something ``obvious'' is rejected will ask, and that
+question is the doorway into Curry--Howard. Only after that come the definition of a proposition as a
+type, then the first three tactics, then induction. Leave one full session for \texttt{\#print
+axioms}; that is where students change from users into checkers.
+
+Two misconceptions appear most often. First, ``Lean proves that my program is correct''. What is
+true: Lean checks that a term has a certain type of statement. If the statement does not mention the
+important thing, for example a quantifier over perturbations, the certificate is empty. Second,
+``\texttt{simp} is a proof''. \texttt{simp} is a procedure whose output depends on the active
+collection of lemmas, so a proof that depends on it can stop working when the library changes; that
+is why we train students to write the list of lemmas explicitly.
+
+A blackboard activity that works: ask two groups to write a specification for ``a classifier that is
+robust to perturbation''. One group will almost always write an existential quantifier. Put both
+formulations on the board, then prove the weak one for a constant function. The class will see for
+itself that the sentence that is proved and the sentence that is meant are two different sentences.
+
+A sign of readiness to go on: students can explain why $n+1=1+n$ requires a lemma, can write an
+inductive proof without copying, and can name one axiom that their own theorem uses.
+\end{untukdosen}
+
+\section{Summary}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item An informal proof convinces a trained reader; a formal proof is a term whose type is its
+        statement, checked by a small kernel that knows no mathematics.
+  \item According to Curry--Howard, implication is a function type, conjunction is a pair, the
+        universal quantifier is a dependent function, and $\bot$ is uninhabited.
+  \item Tactics change the goal state; \texttt{intro}, \texttt{exact}, \texttt{apply},
+        \texttt{rw}, \texttt{cases}, and \texttt{induction} are enough for basic arithmetic.
+  \item Induction proves a statement for all $n$ with two goals, not by checking all $n$;
+        \texttt{decide} by contrast stops scaling very quickly.
+  \item \texttt{\#print axioms} is the main instrument of inspection. The tactic
+        \texttt{native\_decide} leaves behind the axiom \texttt{Lean.ofReduceBool}. The tactic
+        \texttt{sorry} leaves behind \texttt{sorryAx}. A homemade axiom leaves behind its own name.
+  \item Verification guarantees that the term fits the statement, not that the statement fits the
+        intention; a weak specification produces an empty certificate.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Assess this claim: \emph{if a Lean file is accepted without an error message, then all the
+        statements inside it are true}. Decide true, false, or not enough evidence, and name one
+        command that can be used to check that claim for a particular file.
+
+  \item Prove in Lean, without Mathlib, that for every $n$ we have $2\cdot S(n)=n\cdot(2n)$ with $S$
+        as in this chapter. State first the auxiliary lemma that you need.
+
+  \item Prove that the sum of the first $n$ even numbers, namely $0+2+\dots+(2n-2)$, equals
+        $n(n-1)$. Write the informal proof, then write the Lean version and name the tactic that is
+        used at every step.
+
+  \item Compute with Python: the sum of the first 37 odd numbers, the sum of the first 250 odd
+        numbers, and check that both are perfect squares. Include the code and its output.
+
+  \item Compute with Python how many cases must be checked if one wants to prove $S(n)=n^{2}$ by
+        direct checking for all $n\le 1000$, then compare it with the number of goals that an
+        inductive proof generates.
+
+  \item Explain why \texttt{rfl} closes the goal $n+0=n$ but does not close $0+n=n$. The hint lies
+        in the way addition on the natural numbers is defined recursively; name which argument is
+        reduced first.
+
+  \item Write a weak specification and a strong specification for the claim ``this classifier does
+        not change under a perturbation of size at most one''. Prove the weak version in Lean for an
+        arbitrary function, then explain why the strong version cannot be proved for the identity
+        function.
+
+  \item Inspect with \texttt{\#print axioms} three theorems that you wrote yourself: one using
+        \texttt{decide}, one using \texttt{omega}, one using \texttt{sorry}. Report the three lists
+        of axioms and explain the origin of every name.
+
+  \item A certificate contains \texttt{theorem aman : exists delta : Nat, f (x + delta) = f x} with
+        \texttt{delta} as a free variable in the context. Explain two errors that may be present in
+        that statement, and write the version that you consider correct.
+
+  \item Prove in Lean that $\neg(P\wedge\neg P)$ for every proposition $P$. Hint: start with
+        \texttt{intro h}, then take the components with \texttt{h.1} and \texttt{h.2}, and use the
+        second component on the first one.
+\end{enumerate}
+
+Hints for the three hardest items. Item 2: the auxiliary lemma that is needed has the shape
+$2\,(k\cdot k+(2k+1))=(k+1)\cdot(2(k+1))$, and after \texttt{rw} on the definition and on the
+induction hypothesis, the remaining goal is linear so that \texttt{omega} is enough. Item 7: in the
+weak version, the witness $\delta=0$ makes both sides equal by definition, so \texttt{rfl} closes it
+immediately; in the strong version, the identity function gives a counterexample with $\delta=1$.
+Item 9: note that the free \texttt{delta} can be chosen by the reader of the statement, not by the
+attacker, so that statement asserts no robustness at all; the second error is the absence of a
+quantifier over $x$.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is really proved in this chapter is only small arithmetic statements: $S(n)=n^{2}$ for all
+natural numbers, a few propositional tautologies, and two statements about specifications that are
+too weak. All of them are checked by the Lean 4.10.0 kernel without Mathlib, and their lists of
+axioms are reported. What is popularized far beyond that: the phrase ``formally verified'' is often
+used for ``checked by an automatic tool'' or even for ``tested exhaustively''. Only the first
+produces an object that a third party can recheck.
+
+Primary sources. Avigad, de Moura, Kong, and Ullrich, \emph{Theorem Proving in Lean 4}, the sections
+``Propositions and Proofs'' (propositions as types, proof irrelevance, the axiom warning),
+``Tactics'' (the goal state), and ``Induction and Recursion'' (\texttt{induction},
+\texttt{sorryAx}). Avigad and Massot, \emph{Mathematics in Lean}, Chapters 2, 3.1, 5.2, and 8; the
+Indonesian edition uses the same section numbering.
+
+Open questions. This chapter does not contain a formal proof about neural networks. An interesting
+robustness specification has the shape
+$\forall x\,\forall\delta,\ \lVert\delta\rVert\le\varepsilon\to f(x+\delta)=f(x)$, that is a
+statement over a continuous space with a function with hundreds of thousands of parameters.
+Formalizing it demands real arithmetic that is decidable at that scale, and the Lean libraries today
+do not provide it for trained models. The claim ``we verified the robustness of the model'' in a
+paper usually refers to verification with interval abstraction or with SMT, not to a Lean proof; both
+are legitimate, but their guarantees differ and must not be called by the same word.
+
+Limits of validity. All the claims in this chapter hold for Lean 4.10.0 with its default kernel, and
+the details of the output can change between versions. What does not change is the structure of the
+argument: statement, term, kernel, list of axioms.
+\end{untukpeneliti}
+
+\peta{This chapter follows Avigad, de Moura, Kong, and Ullrich, \emph{Theorem Proving in Lean 4}, the
+sections ``Propositions and Proofs'' (propositions as types, Curry--Howard, proof irrelevance, the
+axiom warning), ``Quantifiers and Equality'', ``Tactics'' (the goal state, \texttt{intro},
+\texttt{apply}, \texttt{exact}), and ``Induction and Recursion'' (\texttt{induction}, \texttt{sorry}
+and \texttt{sorryAx}). The counterpart in Avigad and Massot, \emph{Mathematics in Lean}, is in
+Chapter 2 (Basics, in particular 2.3 Using Theorems and Lemmas and 2.4 More Examples Using apply and
+rw), Chapter 3.1 (Implications and Universal Quantifiers), Chapter 5.2 (Induction and Recursion), and
+Chapter 8 (Hierarchies) for typeclasses; the Indonesian edition keeps the same section numbering. For
+the connection with evaluation practice, see Chapter 27 of this book; for attacks that make
+robustness specifications nontrivial, see Chapter 27 and Chapter 28.}

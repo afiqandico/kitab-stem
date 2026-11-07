@@ -1,0 +1,1092 @@
+\chapter{Probability and Conditional Probability}
+
+A clinic advertises a screening test for a rare disease: only one person in a thousand in
+that region has it. The test is good. Out of every hundred sick people, ninety-nine come
+back positive. Out of every hundred healthy people, only one is wrongly accused of being
+positive. The advertisement writes both numbers as ``99 percent accuracy''.
+
+Now the positive result is in our hands. What is the probability that we are really sick?
+In a population of $100{,}000$ people, about $100$ have the disease and $99$ of them are
+positive. The rest, $99{,}900$ healthy people, contribute $999$ false positives. So there
+are $1.098$ positive results and only $99$ that are right: $99/1.098=11/122$,
+that is $0.0902$. About one in eleven, not ninety-nine in a hundred.
+
+Both numbers are right and both answer different questions. The advertisement gives the
+probability of a positive result if the person is sick. The patient wants to know the
+probability that the person is sick if the result is positive. Swapping those two
+directions is not an arithmetic mistake; it is a mistake in naming the quantity, and the
+consequence is often a factor of ten.
+
+Chapter 2 already gave us a language for events: union, intersection, complement. Chapter 5
+gave us a way to sum infinitely many terms. Neither is enough, because a set carries no
+weight: $A\cup B$ is the same set whether $A$ is almost certain or almost certainly not.
+What we need is three things: a weight function with rules that must not be broken, a way
+to count weights, and a rule for updating weights when new information arrives. This
+chapter builds the three, then checks them with a seeded simulation.
+
+\begin{untukanak}
+Imagine the guard at a school gate checking bags with a device that beeps. The device is
+good: out of a hundred bags that really carry a forbidden object, ninety-nine make it
+beep. But the device also beeps for one out of a hundred bags whose contents are perfectly
+ordinary. Now suppose that at that school only one bag in a thousand really carries a
+forbidden object.
+
+The question is simple and surprising. If the device beeps, is that bag certainly
+dangerous? It turns out not. Dangerous bags are indeed rare, while ordinary bags are very
+many, so the false beeps from ordinary bags far outnumber the true ones. A guard who looks
+only at the red light will hold back many innocent children.
+
+The question that makes us curious: what fraction of all those beeps are right? The answer
+can be computed without guessing, as long as we know how many bags there are of each kind.
+In this chapter we shall learn why a device that is ``ninety-nine percent accurate'' can
+turn into a false accusation in nine cases out of ten, and why the direction of the
+question determines the answer.
+\end{untukanak}
+
+\section{Probability axioms and their consequences}
+\tingkat{basic}
+
+Before a single number is computed, we have to agree on what object is being weighted. In
+everyday language: probability is the weight we place on each possibility, under the rule
+that the total weight of all possibilities is one and no weight is ever negative. That rule
+does not explain the philosophical meaning of probability; it fixes the arithmetic that
+every computation has to obey.
+
+\kamus{probability}{peluang}{The weight placed on each possibility, with the total weight
+of all possibilities equal to one}
+
+\index{probability}
+\index{sample space}
+
+\begin{definisi}[Probability space]
+Let $\Omega$ be the set of outcomes, $\mathcal{F}$ a collection of events, that is, the
+subsets of $\Omega$ that contain $\Omega$ and are closed under complement and countable
+union, and $P\colon\mathcal{F}\to\mathbb{R}$. The function $P$ is called a
+\emph{probability} if
+\begin{enumerate}
+  \item $P(A)\ge 0$ for every $A\in\mathcal{F}$;
+  \item $P(\Omega)=1$;
+  \item if $A_{1},A_{2},\dots$ are pairwise disjoint, then
+        $P\bigl(\bigcup_{i\ge 1}A_{i}\bigr)=\sum_{i\ge 1}P(A_{i})$.
+\end{enumerate}
+\end{definisi}
+
+The third axiom, countable additivity, separates modern probability theory from the
+gambling computations of the seventeenth century. Without it, a probability series such as
+$\sum_{n\ge 1}2^{-n}=1$ has no foundation, even though that series is exactly what appears
+when we ask on which toss the first success occurs. This axiom is also what allows
+probability to be used in limits, the subject of Chapter 4 and Chapter 5.
+
+Three immediate consequences are used over and over, so they are worth proving once.
+
+\begin{proposisi}[Consequences of the axioms]
+\index{probability axioms}
+For events $A$ and $B$ in a probability space we have
+$P(A^{c})=1-P(A)$, $P(\varnothing)=0$, and if $A\subseteq B$ then
+$P(A)\le P(B)$. Moreover
+$P(A\cup B)=P(A)+P(B)-P(A\cap B)$.
+\end{proposisi}
+
+\begin{proof}
+Since $A$ and $A^{c}$ are disjoint and their union is $\Omega$, the second and third
+axioms give $1=P(\Omega)=P(A)+P(A^{c})$. For the second claim, take $A=\varnothing$ in the
+first result. For the third, write $B$ as the disjoint union of $A$ and
+$B\setminus A$; then $P(B)=P(A)+P(B\setminus A)\ge P(A)$ because probability is not
+negative. For the last, split $A\cup B$ into three disjoint parts $A\setminus B$,
+$A\cap B$, and $B\setminus A$. In the same way $A$ and $B$ each split into two parts, so
+that
+\[
+P(A\cup B)=P(A\setminus B)+P(A\cap B)+P(B\setminus A)
+=P(A)+P(B)-P(A\cap B).\qedhere
+\]
+\end{proof}
+
+That last property, inclusion--exclusion, is the reason ``or'' may not simply be added.
+For example, in a class of $30$ students, $18$ like coffee and $12$ like tea, and $8$ like
+both. Then the probability that a randomly chosen student likes coffee or tea is
+\[
+\frac{18+12-8}{30}=\frac{22}{30}=0.7333,
+\]
+not $30/30=1$ as the naive sum $18+12=30$ would give. Eight people are counted twice, and
+inclusion--exclusion subtracts them once.
+
+For three events the formula extends with alternating signs:
+\[
+P(A\cup B\cup C)=P(A)+P(B)+P(C)-P(A\cap B)-P(A\cap C)-P(B\cap C)+P(A\cap B\cap C).
+\]
+The proof applies the two-event version twice, and that is the first exercise of this
+chapter. The pattern of signs is not decoration: whatever was subtracted too often has to
+be added back.
+
+One warning for Chapter 18. In a finite space where every outcome has positive probability,
+$P(A)=0$ means that $A$ is empty; in a continuous space it does not, since a single point
+can have probability zero without being impossible. This chapter works in finite spaces.
+
+\begin{contoh}
+Two dice are thrown. What is the probability that the sum of the faces is $8$ or that both
+faces are equal? With $36$ equally likely outcomes, the first event contains $5$ outcomes,
+the second contains $6$, and their intersection is one outcome, namely $(4,4)$. So the
+probability is $(5+6-1)/36=10/36=0.2778$. Without subtracting the intersection the answer
+is $11/36=0.3056$, too large by $1/36$.
+\end{contoh}
+
+\section{Counting and equally likely outcomes}
+\tingkat{intermediate}
+
+If all outcomes are equally likely, the probability of an event is just the ratio of the
+number of favorable outcomes to the number of all outcomes. In everyday language: divide
+the number of ways we want by the number of ways there are. That definition is not a law of
+nature; it is an assumption about symmetry, and the assumption has to be checked, not
+presupposed.
+
+\index{counting}
+\index{combination}
+
+\kamus{combination}{kombinasi}{A choice of several objects without regard to their order,
+like taking five cards from one deck}
+
+\begin{proposisi}[Product rule and counting]
+\index{product rule}
+If $|A|=m$ and $|B|=n$, then $|A\times B|=mn$. The number of sequences of length $k$ from
+$n$ distinct objects without repetition is $n!/(n-k)!$, and the number of subsets of size
+$k$ is
+\[
+\binom{n}{k}=\frac{n!}{k!\,(n-k)!}.
+\]
+In particular $\sum_{k=0}^{n}\binom{n}{k}=2^{n}$.
+\end{proposisi}
+
+\begin{proof}
+For the product, every pair $(a,b)$ is determined by one choice from $m$ and one choice
+from $n$. For sequences there are $n$ choices for the first place, $n-1$ for the second,
+and so on up to $n-k+1$. For subsets, every set of size $k$ can be ordered in $k!$ ways, so
+the number of sequences divided by $k!$ gives the number of sets. The last identity counts
+all subsets in two ways: summing by size, or choosing in or out for every object.
+\end{proof}
+
+Neat counting often shortens a long computation. A full house in poker, three cards of one
+rank plus a pair of another rank, is a good example: choose the rank of the triple ($13$
+ways), choose three of its four suits ($\binom{4}{3}=4$), choose the rank of the pair ($12$
+ways), choose two of its four suits ($\binom{4}{2}=6$). The total is
+$13\cdot 4\cdot 12\cdot 6=3.744$ out of $\binom{52}{5}=2{,}598{,}960$ hands, so the
+probability is $0.001441$, that is one hand in $694.2$. In $694$ hands the expected number
+of full houses is $0.9998$, so we wait about seven hundred hands to see the first one.
+
+Counting also explains events that feel miraculous. Take the birthday problem: $k$ people
+in one room, every birthday equally likely among $365$ days, and birthdays independent
+between people. The probability that no two people share a birthday is
+\[
+P(\text{no pair})=\frac{365\cdot 364\cdots (365-k+1)}{365^{k}},
+\]
+so the probability that there is a pair is its complement.
+
+\index{birthday paradox}
+
+\begin{center}
+\small
+\begin{tabular}{rrr}
+\hline
+$k$ & $P(\text{no pair})$ & $P(\text{a pair})$ \\
+\hline
+$10$ & $0.8831$ & $0.1169$ \\
+$23$ & $0.4927$ & $0.5073$ \\
+$41$ & $0.0968$ & $0.9032$ \\
+$50$ & $0.0296$ & $0.9704$ \\
+$57$ & $0.0099$ & $0.9901$ \\
+\hline
+\end{tabular}
+\end{center}
+
+At $k=23$ the probability passes one half, and at $k=50$ it is already $0.9704$. The source
+of the confusion is the wrong unit: what collides is not people but pairs of people, and
+$23$ people form $\binom{23}{2}=253$ pairs. Every pair matches with probability $1/365$, so
+the expected number of pairs is $253/365=0.69315$. If collisions are treated as rare and
+independent, the probability of no collision approaches $e^{-0.69315}=0.5000$, differing by
+$0.0073$ from the exact value $0.4927$. That approximation is not a proof; it explains why
+the threshold falls near twenty-three.
+
+The counting above assumes every birthday equally likely. In real populations that
+inequality actually raises the probability of a collision; the symmetry assumption here is
+an approximation that has to be checked.
+
+Counting cannot answer the clinical question from before. The outcomes ``sick'' and
+``healthy'' are not equally likely: their ratio is one to nine hundred ninety-nine. What is
+needed is not a way to count outcomes but a way to use the information that someone has
+already been declared positive. That is conditional probability.
+
+\section{Conditional probability and the product rule}
+\tingkat{intermediate}
+
+New information narrows the world. If we know that $B$ occurred, the relevant world is no
+longer $\Omega$ but $B$, and all weights have to be read again inside that narrower world.
+In everyday language: conditional probability is the probability recomputed after part of
+the possibilities has been crossed out.
+
+\kamus{conditional probability}{peluang bersyarat}{The probability recomputed after we know
+that part of the possibilities no longer applies}
+
+\index{conditional probability}
+
+\begin{definisi}[Conditional probability]
+If $A$ and $B$ are events with $P(B)>0$, the probability of $A$ given $B$ is
+\[
+P(A\mid B)=\frac{P(A\cap B)}{P(B)}.
+\]
+\end{definisi}
+
+Dividing by $P(B)$ is the choice that makes conditional probabilities sum to one over $B$.
+If we also demand $P(B\mid B)=1$ and that ratios between events inside $B$ do not change,
+that division is the only possible choice; hence this definition is not an arbitrary
+convention.
+
+The narrowing can be seen directly in a cross table. Figure~\ref{fig:silang} arranges the
+clinical population into four cells. Before any result, the denominator is all $100{,}000$
+people and $P(S)=100/100{,}000=0.001$. After a positive result is known, only the $+$
+column, which holds $1.098$ people, is still counted, and
+$P(S\mid+)=99/1.098=0.0902$. The person does not change; only the set that may still be
+counted changes.
+
+    \begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small, x=1cm, y=1cm]
+  \fill[accent!10] (1.95,1.05) rectangle (3.25,-1.1);
+  \draw[layergrey, thick] (1.9,1.05)--(7.3,1.05);
+  \draw[layergrey] (1.9,0.35)--(7.3,0.35);
+  \draw[layergrey] (1.9,-0.35)--(7.3,-0.35);
+  \draw[layergrey, thick] (1.9,-1.1)--(7.3,-1.1);
+  \node[anchor=east] at (1.75,1.4) {test result};
+  \node at (2.6,1.4) {$+$};
+  \node at (4.3,1.4) {$-$};
+  \node at (6.5,1.4) {total};
+  \node[anchor=east] at (1.75,0.7) {sick $S$};
+  \node at (2.6,0.7) {99};
+  \node at (4.3,0.7) {1};
+  \node at (6.5,0.7) {100};
+  \node[anchor=east] at (1.75,0) {healthy $S^{c}$};
+  \node at (2.6,0) {999};
+  \node at (4.3,0) {98{,}901};
+  \node at (6.5,0) {99{,}900};
+  \node[anchor=east] at (1.75,-0.7) {total};
+  \node at (2.6,-0.7) {1.098};
+  \node at (4.3,-0.7) {98{,}902};
+  \node at (6.5,-0.7) {100{,}000};
+  \draw[->, accent, thick] (2.6,-1.65)--(2.6,-1.15);
+  \node[anchor=north, align=center, text width=10.4cm, font=\footnotesize] at (4.6,-1.95)
+    {once $+$ is known, only this column is counted:
+     $99/1.098=11/122=0.0902$};
+\end{tikzpicture}
+\caption{Cross table of a screening test on $100{,}000$ people. Rows are the true state,
+columns are the test result. Once a positive result is known, the sample space narrows
+from the whole table to the $+$ column, which holds $1.098$ people, and $99$ of them
+are really sick.}
+\label{fig:silang}
+\end{figure}    
+
+\begin{proposisi}[Conditional probability is a probability]
+\index{conditional probability}
+For fixed $B$ with $P(B)>0$, the function $A\mapsto P(A\mid B)$ satisfies the three axioms
+of probability on $\mathcal{F}$.
+\end{proposisi}
+
+\begin{proof}
+Nonnegativity comes from $P(A\cap B)\ge 0$. Normality comes from $P(\Omega\mid B)=1$,
+because $P(B)/P(B)=1$. For additivity, if $A_{1},A_{2},\dots$ are pairwise disjoint then
+$A_{i}\cap B$ are also pairwise disjoint, so that
+\[
+P\Bigl(\bigcup_{i}A_{i}\mid B\Bigr)
+=\frac{P\bigl(\bigcup_{i}(A_{i}\cap B)\bigr)}{P(B)}
+=\frac{\sum_{i}P(A_{i}\cap B)}{P(B)}
+=\sum_{i}P(A_{i}\mid B).\qedhere
+\]
+\end{proof}
+
+Hence all consequences of the axioms hold for conditional probability: complement,
+monotonicity, and inclusion--exclusion remain valid when every $P$ is replaced by
+$P(\cdot\mid B)$. What does not hold is swapping the direction of the condition.
+
+From the definition the product rule is born at once
+\[
+P(A\cap B)=P(A\mid B)\,P(B)=P(B\mid A)\,P(A),
+\]
+which extends to
+$P(A_{1}\cap\cdots\cap A_{n})=P(A_{1})P(A_{2}\mid A_{1})\cdots
+P(A_{n}\mid A_{1}\cap\cdots\cap A_{n-1})$. This rule reads a staged experiment as a
+product of probabilities at each stage.
+
+A single deck of $52$ cards gives an example of a direction that is easy to swap. Let $A$
+be the event that the first card is a heart and $B$ the event that the second card is red.
+Then
+\[
+P(A\cap B)=\frac{13\cdot 25}{52\cdot 51}=\frac{25}{204},
+\]
+so that
+\[
+P(A\mid B)=\frac{25/204}{1/2}=\frac{25}{102}=0.2451,
+\qquad
+P(B\mid A)=\frac{25/204}{1/4}=\frac{25}{51}=0.4902 .
+\]
+Two numbers that differ by a factor of two, from the same data. The mistake is not in the
+arithmetic but in the placement of the events to the left and right of the vertical bar.
+
+\begin{bacakeras}
+Two voices. The first does not know yet, the second already knows. Read them in turn.
+
+First voice: ``My world is as wide as a playing field. Every door is possible. I guess with
+my eyes closed.''
+
+Second voice: ``My world is one room. One door is already open, and I count only what is
+inside it.''
+
+First voice: ``If I know something, does my probability change?''
+
+Second voice: ``It is not your probability that changes. It is the world you count that
+changes. The world shrinks after we learn something: weight that was spread out now
+gathers in the places that are still possible. The denominator narrows, and the number that
+comes out sounds new even though the arithmetic has not changed since the beginning.''
+
+First voice: ``So it is the denominator that moves?''
+
+Second voice: ``The denominator moves, and what is left to be recounted is the remainder
+that may still take part.''
+
+Repeat together, three times, more and more slowly: ``The world shrinks, the probability
+does not betray us. Only what may still be counted changes.''
+\end{bacakeras}
+
+The second tool splits the population into several groups that do not overlap. If
+$B_{1},\dots,B_{k}$ are pairwise disjoint and their union is $\Omega$, then
+\[
+P(A)=\sum_{i=1}^{k}P(A\mid B_{i})\,P(B_{i}).
+\]
+
+\begin{proposisi}[Law of total probability]
+\index{total probability}
+If $B_{1},\dots,B_{k}$ are pairwise disjoint, their union is $\Omega$, and every
+$P(B_{i})>0$, then $P(A)=\sum_{i}P(A\mid B_{i})P(B_{i})$ for every event $A$.
+\end{proposisi}
+
+\begin{proof}
+The events $A\cap B_{1},\dots,A\cap B_{k}$ are pairwise disjoint and their union is $A$.
+So $P(A)=\sum_{i}P(A\cap B_{i})$, and every term is rewritten with the product rule as
+$P(A\mid B_{i})P(B_{i})$.
+\end{proof}
+
+This law looks like a formality until it is used on the clinical example: it is what turns
+two numbers from an advertisement into one useful number, and that is the content of the
+next section.
+
+Before that, one example showing that ordinary sentences and mathematical events do not
+always correspond. A family has two children, each child a boy or a girl with equal
+probability, and the sexes of the two children are independent. If we know that
+\emph{at least one} child is a boy, the probability that both are boys is $1/3=0.3333$: of
+the four equally likely arrangements three remain, and only one fits. If what we know is
+that \emph{the older child} is a boy, the probability is $1/2=0.5$. Two similar sentences
+give different answers, because the first excludes one arrangement and the second two.
+
+\section{Bayes' rule and the interpretation of test results}
+\tingkat{intermediate}
+
+Bayes' rule reverses the direction of the condition: from the probability of a result given
+sickness it computes the probability of sickness given the result. In everyday language: of
+all the ways a result can appear, what fraction comes through the path we are asking about.
+
+\index{Bayes' rule}
+\index{prevalence}
+
+\begin{teorema}[Bayes' rule]
+If $B_{1},\dots,B_{k}$ are pairwise disjoint with union $\Omega$ and $P(B_{i})>0$, then
+for every event $A$ with $P(A)>0$,
+\[
+P(B_{j}\mid A)=\frac{P(A\mid B_{j})\,P(B_{j})}
+{\sum_{i=1}^{k}P(A\mid B_{i})\,P(B_{i})}.
+\]
+\end{teorema}
+
+\begin{proof}
+By definition, $P(B_{j}\mid A)=P(A\cap B_{j})/P(A)$. The numerator is
+$P(A\mid B_{j})P(B_{j})$ by the product rule, and the denominator is $P(A)$ by the law of
+total probability. So the formula contains no new assumption; it is the definition of
+conditional probability written twice, in two different directions.
+\end{proof}
+
+Hence there is no ``Bayesian method'' standing on top of the axioms; what there is, is
+bookkeeping. The numerator is the path we are asking about, the denominator is the sum of
+all paths that produce the same result.
+
+\begin{resep}
+\begin{enumerate}
+  \item First name two things: the hypothesis $H$ we are asking about and the evidence $E$
+        that has already been seen. Write the question as $P(H\mid E)$, not $P(E\mid H)$.
+  \item Write the numerator as a single path: $P(E\mid H)\,P(H)$. That is the weight of the
+        world in which $H$ is true.
+  \item Write the denominator as the sum of all paths that produce $E$, including the path
+        through $H^{c}$: $P(E\mid H)P(H)+P(E\mid H^{c})P(H^{c})$.
+  \item Divide, then check for sense: the result lies between $0$ and $1$, and is smaller
+        than $P(E\mid H)$ when $H$ is rare.
+\end{enumerate}
+A warning about order: numerator and denominator both use $P(E\mid\cdot)$. Writing
+$P(\cdot\mid E)$ in the denominator is the mistake that happens most often, and the size of
+the number does not tell us that the direction has been swapped.
+\end{resep}
+
+The tree in Figure~\ref{fig:pohon} writes out every road to a positive result. Each leaf is
+the product of the probabilities on its branch, and the two leaves marked $+$ sum to
+$P(+)=0.01098$. The Bayes numerator is just the first leaf, while the denominator is the
+sum of those two leaves.
+
+    \begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small, every node/.style={inner sep=2pt}]
+  \node (r) at (0,0) {start};
+  \node (s) at (2.2,1.7) {$S$};
+  \node (sc) at (2.2,-1.7) {$S^{c}$};
+  \node (sp) at (4.6,2.5) {$+$};
+  \node (sm) at (4.6,0.9) {$-$};
+  \node (scp) at (4.6,-0.9) {$+$};
+  \node (scm) at (4.6,-2.5) {$-$};
+  \draw[->] (r)--(s) node[midway, above left=-2pt] {$0.001$};
+  \draw[->] (r)--(sc) node[midway, below left=-2pt] {$0.999$};
+  \draw[->, accent, thick] (s)--(sp) node[midway, above left=-2pt] {$0.99$};
+  \draw[->, layergrey] (s)--(sm) node[midway, below left=-2pt] {$0.01$};
+  \draw[->, accent, thick] (sc)--(scp) node[midway, above left=-2pt] {$0.01$};
+  \draw[->, layergrey] (sc)--(scm) node[midway, below left=-2pt] {$0.99$};
+  \node[anchor=west, font=\footnotesize] at (5.0,2.5) {$0.001\cdot 0.99=0.00099$};
+  \node[anchor=west, font=\footnotesize] at (5.0,0.9) {$0.001\cdot 0.01=0.00001$};
+  \node[anchor=west, font=\footnotesize] at (5.0,-0.9) {$0.999\cdot 0.01=0.00999$};
+  \node[anchor=west, font=\footnotesize] at (5.0,-2.5) {$0.999\cdot 0.99=0.98901$};
+  \node[anchor=north, align=center, text width=10.6cm, font=\footnotesize] at (4.4,-3.0)
+    {$P(+)=0.00099+0.00999=0.01098$, \quad $P(S\mid+)=0.00099/0.01098=0.0902$};
+\end{tikzpicture}
+\caption{Two-stage tree of a screening test. The first branch separates sick from healthy,
+the second separates positive results from negative ones; the product at each leaf is the
+probability of that path, and the two positive leaves sum to $P(+)=0.01098$.}
+\label{fig:pohon}
+\end{figure}    
+
+Back to the clinic. Write $S$ for the event of being sick and $+$ for a positive result.
+From the advertisement and the prevalence of the disease we have $P(S)=0.001$,
+$P(+\mid S)=0.99$, and $P(+\mid S^{c})=0.01$. The law of total probability gives
+\[
+P(+)=0.99\cdot 0.001+0.01\cdot 0.999=0.00099+0.00999=0.01098,
+\]
+so that
+\[
+P(S\mid +)=\frac{0.00099}{0.01098}=\frac{11}{122}=0.0902 .
+\]
+The false positive term, $0.00999$, is ten times larger than the true detection term,
+$0.00099$; their ratio is $999/99=10.09$. Not because the test is bad: healthy people are
+$999$ times more numerous, $99{,}900$ against $100$.
+
+A change of prevalence changes the answer far more strongly than a change in the quality of
+the test. With sensitivity and specificity fixed at $0.99$, the following table shows
+$P(S\mid +)$ for several prevalences.
+
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\hline
+$P(S)$ & $P(S\mid +)$ & $1/P(S\mid +)$ & reading \\
+\hline
+$0.0001$ & $0.0098$ & $102.0$ & one in a hundred and two \\
+$0.001$ & $0.0902$ & $11.09$ & one in eleven \\
+$0.010$ & $0.5000$ & $2.00$ & one in two \\
+$0.100$ & $0.9167$ & $1.09$ & eleven in twelve \\
+\hline
+\end{tabular}
+\end{center}
+
+At a prevalence of $1$ percent the same test gives $P(S\mid+)=1/2$ exactly, not $0.99$.
+At a prevalence of $10$ percent, $P(S\mid+)=11/12=0.9167$. These numbers explain a health
+policy that is often criticized: mass screening for a rare disease produces many false
+positives, and for that reason a positive result is usually followed by a second test
+rather than by treatment.
+
+The second test uses the same rule, with the prior already updated. If the second test is
+independent of the first and of the same quality, then
+\[
+P(S\mid +,+)=\frac{0.99\cdot (11/122)}{0.99\cdot (11/122)+0.01\cdot (111/122)}
+=\frac{10.89}{10.89+1.11}=\frac{363}{400}=0.9075 .
+\]
+Note that $0.9075$ is neither $0.99$ nor $0.9999$. Two positive tests raise the probability
+from $0.0902$ to $0.9075$, almost ten times, but they do not yet give certainty. What
+changes is only the prevalence inside the group that is already positive; the quality of
+the test is unchanged. With this quality of $0.99$, the posterior exceeds $0.99$ only when
+the initial prevalence is already past $1/2$.
+
+One technical point: $P(S\mid+)=0.0902$ applies to a population with prevalence $1/1000$,
+not to a patient who arrives with symptoms. Symptoms change the prevalence first, and that
+is why physicians ask about history before interpreting a laboratory result.
+
+The last example of this section releases Bayes from the clinical test. Three bags hold ten
+marbles each: bag $A$ one red, $B$ five red, $C$ nine red. We choose a bag at random, draw
+one marble, and the one that comes out is red. Before the draw the three bags each have
+probability $1/3$; afterwards they have $0.0667$, $0.3333$, and $0.6$, as in
+Figure~\ref{fig:bayes-batang}. No weight is lost; weight merely moves to the bag that more
+easily produces that evidence.
+
+    \begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small, x=1cm, y=1cm]
+  \draw[->, layergrey] (0,0)--(7.4,0);
+  \draw[->, layergrey] (0,0)--(0,4.3);
+  \foreach \y/\lab in {0/0, 1.2/0.2, 2.4/0.4, 3.6/0.6} {
+    \draw[layergrey] (0,\y)--(-0.08,\y);
+    \node[anchor=east, font=\footnotesize] at (-0.12,\y) {\lab};
+  }
+  \fill[layerindigo] (0.65,0) rectangle (1.20,2.0);
+  \fill[layerteal] (1.40,0) rectangle (1.95,2.0);
+  \fill[accent] (2.15,0) rectangle (2.70,2.0);
+  \fill[layerindigo] (4.35,0) rectangle (4.90,0.4);
+  \fill[layerteal] (5.10,0) rectangle (5.65,2.0);
+  \fill[accent] (5.85,0) rectangle (6.40,3.6);
+  \draw[dashed, layergrey] (0,2.0)--(6.9,2.0);
+  \node[font=\footnotesize, anchor=south] at (0.92,2.02) {$1/3$};
+  \node[font=\footnotesize, anchor=south] at (1.67,2.02) {$1/3$};
+  \node[font=\footnotesize, anchor=south] at (2.42,2.02) {$1/3$};
+  \node[font=\footnotesize, anchor=south] at (4.62,0.44) {$0.0667$};
+  \node[font=\footnotesize, anchor=south] at (5.37,2.02) {$0.3333$};
+  \node[font=\footnotesize, anchor=south] at (6.12,3.62) {$0.6$};
+  \node[font=\footnotesize, anchor=north] at (0.92,-0.08) {$A$};
+  \node[font=\footnotesize, anchor=north] at (1.67,-0.08) {$B$};
+  \node[font=\footnotesize, anchor=north] at (2.42,-0.08) {$C$};
+  \node[font=\footnotesize, anchor=north] at (4.62,-0.08) {$A$};
+  \node[font=\footnotesize, anchor=north] at (5.37,-0.08) {$B$};
+  \node[font=\footnotesize, anchor=north] at (6.12,-0.08) {$C$};
+  \node[font=\footnotesize] at (1.67,-0.85) {before};
+  \node[font=\footnotesize] at (5.37,-0.85) {after};
+\end{tikzpicture}
+\caption{Bayes update on three bags. Before any evidence the three bags share the weight
+$1/3$; after one red marble is seen, the weights move to $0.0667$, $0.3333$, and $0.6$. The
+bag that most easily produces that evidence rises the highest.}
+\label{fig:bayes-batang}
+\end{figure}    
+
+\section{Independence, and why disjoint is not independent}
+\tingkat{advanced}
+
+Two events are called disjoint if they cannot occur together. Two events are called
+independent if knowing one does not change the probability of the other. The two sentences
+sound similar, and swapping them is the most expensive mistake in this chapter. In everyday
+language: disjoint means never together; independent means no news from one to the other.
+
+\kamus{independent}{independen}{Events that send each other no news: knowing one does not
+change the probability of the other}
+
+\begin{untukanak}
+There are two things that are often swapped, and the difference can be seen without numbers.
+At one school, two students are never in class at the same time: one studies in the
+morning, one studies in the afternoon. If we know that Andi has come in, we know that Budi
+has not. They are never together, and precisely for that reason news about one gives news
+about the other.
+
+Now two other students. Both attend the same class, but they sit far apart and work on
+different exams. Their grades send each other no news: knowing Sari's grade does not help
+us guess Tono's.
+
+The first group is called never together. The second group is called no news to each other.
+Both sound like ``no relation'', even though the first is in fact the strongest relation:
+news about one determines the other. In this chapter we shall learn why two things that are
+never together cannot possibly send each other news, and why swapping the two makes the
+computation miss by more than a little.
+\end{untukanak}
+
+\index{independence}
+\index{disjoint events}
+
+\begin{definisi}[Independence of two events]
+Events $A$ and $B$ are \emph{independent} if
+\[
+P(A\cap B)=P(A)\,P(B).
+\]
+\end{definisi}
+
+This definition is symmetric, and when $P(B)>0$ it is equivalent to $P(A\mid B)=P(A)$. Note
+that the definition does not mention cause and effect: two events can be independent
+without one causing the other, and can be dependent without one causing the other.
+
+\begin{proposisi}[Disjoint is not independent]
+\index{disjoint events}
+If $A$ and $B$ are disjoint and $P(A)>0$ and $P(B)>0$, then $A$ and $B$ are not
+independent. More precisely $P(A\cap B)=0<P(A)P(B)$, and $P(A\mid B)=0<P(A)$.
+\end{proposisi}
+
+\begin{proof}
+Disjoint means $A\cap B=\varnothing$, so $P(A\cap B)=P(\varnothing)=0$. Since
+$P(A)P(B)>0$, the equality in the definition of independence fails. For the conditional
+statement, $P(A\mid B)=0/P(B)=0$, which is smaller than $P(A)>0$.
+\end{proof}
+
+The mistake moves in two directions, and both directions can be computed.
+
+Take one die and two pairs of events with the same marginals but a different relation. First
+pair: $A=\{1,2\}$ and $B=\{3,4\}$, disjoint, with $P(A)=P(B)=1/3$. Second pair:
+$C=\{1,2,3\}$ and $D=\{1,4\}$, with $P(C)=1/2$ and $P(D)=1/3$. For the first pair,
+\[
+P(A)P(B)=\frac{1}{9}=0.1111,\qquad P(A\cap B)=0,\qquad P(A\mid B)=0,
+\]
+so the gap in the definition of independence is $0.1111$ and the gap in conditional
+probability is $0.3333$, because $P(A)=1/3$. For the second pair,
+\[
+P(C)P(D)=\frac{1}{6}=0.1667=P(C\cap D),\qquad P(C\mid D)=\frac{1}{2}=P(C),
+\]
+so both gaps are zero.
+
+What matters is not the number $1/6$ but the fact that two pairs can have the same marginals
+with a completely opposite relation. The pair $E=\{1,2,3\}$ and $F=\{4,6\}$ also has
+marginals $1/2$ and $1/3$ but is disjoint. Marginals do not determine the relation; only the
+intersection determines it, so every claim of independence is an additional claim about the
+world.
+
+For three events, pairwise independence is not enough. The events $A,B,C$ are called
+mutually independent if $P(A\cap B)=P(A)P(B)$, $P(A\cap C)=P(A)P(C)$,
+$P(B\cap C)=P(B)P(C)$, and $P(A\cap B\cap C)=P(A)P(B)P(C)$.
+
+\begin{contoh}[Pairwise but not mutually independent]
+\index{pairwise independence}
+Two coins are tossed. Let $A$ be heads on the first coin, $B$ heads on the second coin, and
+$C$ both coins the same; each has probability $1/2$. Every
+pair intersects in one outcome, so $P(A\cap B)=P(A\cap C)=P(B\cap C)=1/4$, which equals
+$1/2\cdot 1/2$. But $A\cap B\cap C$ occurs only when both are heads,
+so its probability is $1/4$, whereas $P(A)P(B)P(C)=1/8$. So the three are pairwise
+independent and not mutually independent; the gap is $0.125$.
+\end{contoh}
+
+A final warning: independence does not survive conditioning. If $A$ and $B$ are independent
+with probability $1/2$, then given $A\cup B$, $P(A\mid A\cup B)=2/3$
+while $P(A\cap B\mid A\cup B)=1/3\neq 4/9$. Combining two independent events and then
+conditioning on their union actually creates dependence, so the sentence ``$A$ and $B$ are
+independent'' is always relative to the probability space in use.
+
+\begin{tangan}
+Materials: twelve cards, six pairs of equal rank (ace through six), each pair one red and
+one black.
+
+Step one, make the pairs. Lay the twelve cards face up in two rows; put each pair of equal
+rank side by side, red on the left, black on the right. Check with your eyes: rank sends no
+news about color, since every rank has a red and a black. Those two properties send each
+other no news.
+
+Step two, filter. Shuffle, cover them all, then turn over one card: say the four of hearts.
+Give one hint, ``this card's mate is black'', then set aside every red card that is still
+face down. Of the eleven face-down cards, only six are black.
+
+What you must see: the denominator changes from eleven to six, while the cards do not change
+at all. The probability of guessing its mate rises from one in eleven to one in six. Two
+properties that sent each other no news now send each other news, and that is what one hint
+does.
+\end{tangan}
+
+\section{Two paradoxes that demand a computation}
+\tingkat{advanced}
+
+Paradoxes in probability are almost always a collision between intuition and definition, and
+the collision is settled only by computing. The two examples below show different things:
+the answer depends on the rules of the game, and on the unit that is counted.
+
+\index{Monty Hall}
+
+Monty Hall. Three closed doors; one holds a car, two hold goats. We choose one door. The
+host, who knows what is behind all the doors, opens one other door with a goat, then offers
+the chance to switch to the door that is still closed. Does switching raise the
+probability?
+
+Compute with the law of total probability over the three possible locations of the car,
+each with probability $1/3$, and suppose that we first choose door $1$. If the car is
+behind door $1$, switching loses. If the car is behind door $2$, the host must open door
+$3$, so switching wins. If the car is behind door $3$, he opens door $2$, and switching
+wins. So switching wins in two of the three cases:
+\[
+P(\text{win by switching})=\frac{2}{3},\qquad
+P(\text{win by staying})=\frac{1}{3}.
+\]
+The gap is $1/3$, not zero.
+
+The argument ``two doors left, so $1/2$'' is wrong because it ignores that the host does not
+choose a door freely. He is forbidden to open the door with the car and forbidden to open
+the door we chose, so his action carries information about the door he does not open.
+
+That information disappears when the rule changes. Suppose the host opens one of the other
+two doors at random, without looking at what is behind it, and the game is cancelled if the
+car is revealed. Given that the game runs as far as the offer,
+\[
+P(\text{car behind door }1\mid \text{goat revealed})
+=\frac{1/3}{1/3+1/6+1/6}=\frac{1}{2},
+\]
+because if the car is behind door $2$ or $3$, he has only probability $1/2$ of showing a
+goat. Under that rule switching does not help: ``switching has probability $2/3$'' is not a
+property of the doors but a property of the protocol.
+
+\index{birthday paradox}
+
+Birthdays. The previous section already computed $0.5073$ for $23$ people and $0.9704$ for
+$50$ people. The paradox is not in the numbers but in the unit: we compare it with the
+probability that one particular person matches us, whereas what is computed is $253$
+pairs at once. The same mistake appears in hash tables and in DNA match tests.
+
+The prosecutor's fallacy is the same directional mistake in a criminal case. Suppose the
+probability that a feature appears by coincidence is one in a million, and the feature is
+found in a suspect taken from a database of a million people with no other evidence. Then
+$P(\text{match}\mid\text{innocent})=10^{-6}$, but
+\[
+P(\text{guilty}\mid\text{match})
+=\frac{10^{-6}\cdot 1}{10^{-6}\cdot 1+(1-10^{-6})\cdot 10^{-6}}=0.5000003,
+\]
+that is practically one half, not near certainty. The two numbers $10^{-6}$ are different
+quantities: the first is the probability of the feature by coincidence, the second is the
+prevalence of the suspect inside the database. Swapping them is another face of the same
+mistake, this time in a courtroom.
+
+\begin{tantangan}
+Three cards on a table. The first card is red on both sides, the second is black on both
+sides, the third is red on one side and black on the other. We shuffle the three face down,
+take one, and lay it on the table. The visible side is red. What is the probability that
+the side underneath is also red?
+
+Almost everyone answers one half: they say only two cards have a red side, so there are two
+possibilities. The correct answer is not one half.
+
+Hint 1: do not count cards, count sides. How many red sides are there in total, and how many
+of them sit next to a red side?
+
+Hint 2: the visible red side can come from three different red sides, and two of them are on
+the red-red card.
+
+If you are stuck, go back to the section on conditional probability and rewrite the sample
+space as six sides, not three cards.
+\end{tantangan}
+
+\section{Worked computations}
+\tingkat{intermediate}
+
+The three computations below are carried out with exact fractions, so that no rounding hides
+a step. All of them have been checked with Python, and the numbers that appear are the same
+numbers used in the previous sections.
+
+First, two-step Bayes. With $P(S)=1/1000$, $P(+\mid S)=99/100$, and
+$P(+\mid S^{c})=1/100$, the law of total probability gives
+\[
+P(+)=\frac{99}{100}\cdot\frac{1}{1000}+\frac{1}{100}\cdot\frac{999}{1000}
+=\frac{99+999}{100{,}000}=\frac{1098}{100{,}000}.
+\]
+The numerator is two separate groups: $99$ sick people who are detected and $999$ healthy
+people who are wrongly accused. Hence
+\[
+P(S\mid +)=\frac{99/100{,}000}{1098/100{,}000}=\frac{99}{1098}=\frac{11}{122}=0.090164 .
+\]
+A second test of the same quality uses $11/122$ as the new prevalence and gives $0.9075$,
+just as in the computation of the previous section. The denominator is $1200$, not a number
+in the millions: the factor $1/122$ appears in both terms and cancels, a sign that what
+changed is only the prevalence, not the quality of the test.
+
+Second, disjoint versus independent, with matched marginals.
+
+\begin{center}
+\small
+\begin{tabular}{lrrrr}
+\hline
+pair & $P(\text{first})$ & $P(\text{second})$ & $P(\text{intersection})$ & $P(\text{first}\mid\text{second})$ \\
+\hline
+$C=\{1,2,3\}$, $D=\{1,4\}$ & $0.5$ & $0.3333$ & $0.1667$ & $0.5$ \\
+$E=\{1,2,3\}$, $F=\{4,6\}$ & $0.5$ & $0.3333$ & $0$ & $0$ \\
+\hline
+\end{tabular}
+\end{center}
+
+In the first row $P(C)P(D)=1/6=0.1667$ equals the intersection, so the gap is $0$. In the
+second row $P(E)P(F)=1/6$ while the intersection is $0$, so the gap is $0.1667$; the
+conditional probability is $0$ while $P(E)=0.5$. Anyone who takes ``cannot happen together''
+to mean ``does not influence each other'' will report $0.1667$ where $0$ belongs.
+
+Third, Monty Hall with the protocol stated. If the host always opens a goat door, the
+probability of winning by switching is $2/3=0.6667$ and by staying $1/3=0.3333$. If he opens
+at random and the game is cancelled when the car is revealed, the game runs with probability
+$2/3$, and given that, both strategies are worth $1/2=0.5$. Two protocols, one set of doors,
+two answers.
+
+\kertas{For a test with prevalence $1/2000$, sensitivity $0.95$, and specificity
+$0.90$, compute $P(S\mid+)$ with the $100{,}000$ table as above, then compute it again with
+specificity $0.99$. Write both answers as fractions and as decimals with four digits, and
+explain which part changes the most: the numerator or the denominator. After that compute
+$P(S\mid +,+)$ for a second test of the same quality, and check whether the result is still
+below $0.95$.}
+
+\section{Computational lab: Monte Carlo as a verification tool}
+\tingkat{advanced}
+
+All the numbers in this chapter are derived, not measured. Simulation does not replace a
+derivation, but it catches the mistakes that happen most often: a swapped direction of the
+condition, a wrong denominator, and an independence assumption used without grounds.
+Generate the same experiment many times, compute the ratio of successes, then compare it
+with the exact value. By the law of large numbers (Chapter 19), that ratio tends to the true
+probability; what remains is only how fast, measured by the standard error
+$\sqrt{p(1-p)/m}$ with $m$ the number of trials that produce the event.
+
+\index{Monte Carlo}
+\index{standard error}
+
+A fixed seed is used so that the output can be checked again word for word. A fixed seed
+does not make the result more correct; it only makes it repeatable.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+rng = np.random.default_rng(20261024)
+
+print("== 1. diagnostic test: prevalence 0.1%, sens 99%, spec 99% ==")
+n = 1_000_000
+sick = rng.random(n) < 0.001
+positive = np.where(sick, rng.random(n) < 0.99, rng.random(n) < 0.01)
+m = int(positive.sum())
+ppv = sick[positive].mean()
+err = np.sqrt(ppv * (1 - ppv) / m)
+exact = 0.99 * 0.001 / (0.99 * 0.001 + 0.01 * 0.999)
+print("sick=%d  positive=%d  true_positive=%d"
+      % (sick.sum(), m, int((sick & positive).sum())))
+print("PPV empirical=%.6f  exact=%.6f  std error=%.6f  z=%.3f"
+      % (ppv, exact, err, (ppv - exact) / err))
+
+print("== 2. Monty Hall, 10^5 games ==")
+N = 100_000
+car = rng.integers(0, 3, N)
+pick = rng.integers(0, 3, N)
+opened = np.where(pick == car,
+                  (pick + 1 + rng.integers(0, 2, N)) % 3,
+                  3 - pick - car)
+switch = 3 - pick - opened
+win_stay = float((pick == car).mean())
+win_switch = float((switch == car).mean())
+se_switch = np.sqrt(win_switch * (1 - win_switch) / N)
+print("win without switch=%.4f  win switch=%.4f  std error=%.5f"
+      % (win_stay, win_switch, se_switch))
+print("exact 1/3=%.6f  2/3=%.6f" % (1/3, 2/3))
+
+print("== 3. host opens a door at random ==")
+open_random = (pick + 1 + rng.integers(0, 2, N)) % 3
+valid = open_random != car
+switch_random = 3 - pick - open_random
+print("valid games=%d of %d (%.4f)" % (valid.sum(), N, valid.mean()))
+print("win switch (valid)=%.4f  without switch (valid)=%.4f"
+      % (float((switch_random[valid] == car[valid]).mean()),
+         float((pick[valid] == car[valid]).mean())))
+
+print("== 4. birthday probability, 20,000 rooms ==")
+for k in (23, 50):
+    days = rng.integers(0, 365, size=(20000, k))
+    days.sort(axis=1)
+    dup = (np.diff(days, axis=1) == 0).any(axis=1)
+    q = 1.0
+    for i in range(k):
+        q *= (365 - i) / 365
+    f = float(dup.mean())
+    se = np.sqrt(f * (1 - f) / 20000)
+    print("k=%2d  empirical=%.4f  exact=%.4f  std error=%.5f  z=%+.2f"
+          % (k, f, 1 - q, se, (f - (1 - q)) / se))
+
+print("== 5. disjoint versus independent, 10^6 die throws ==")
+N = 1_000_000
+die = rng.integers(1, 7, N)
+A = np.isin(die, [1, 2])
+B = np.isin(die, [3, 4])
+C = np.isin(die, [1, 2, 3])
+D = np.isin(die, [1, 4])
+print("disjoint:  P(A)=%.4f P(B)=%.4f P(AnB)=%.4f P(A|B)=%.4f gap=%.4f"
+      % (A.mean(), B.mean(), (A & B).mean(), (A & B).sum() / B.sum(),
+         A.mean() * B.mean() - (A & B).sum() / B.sum()))
+print("independent:  P(C)=%.4f P(D)=%.4f P(CnD)=%.4f P(C|D)=%.4f gap=%.4f"
+      % (C.mean(), D.mean(), (C & D).mean(), (C & D).sum() / D.sum(),
+         abs(C.mean() - (C & D).sum() / D.sum())))
+print("exact disjoint: 1/3, 1/3, 0, 0, 1/9=%.6f" % (1 / 9))
+print("exact independent: 1/2, 1/3, 1/6, 1/2, 0")
+\end{verbatim}    
+\end{lab}
+
+The actual output, exactly as it came out:
+
+\begin{verbatim}
+== 1. diagnostic test: prevalence 0.1%, sens 99%, spec 99% ==
+sick=963  positive=11094  true_positive=952
+PPV empirical=0.085812  exact=0.090164  std error=0.002659  z=-1.637
+== 2. Monty Hall, 10^5 games ==
+win without switch=0.3325  win switch=0.6675  std error=0.00149
+exact 1/3=0.333333  2/3=0.666667
+== 3. host opens a door at random ==
+valid games=66472 of 100000 (0.6647)
+win switch (valid)=0.4998  without switch (valid)=0.5002
+== 4. birthday probability, 20,000 rooms ==
+k=23  empirical=0.5019  exact=0.5073  std error=0.00354  z=-1.54
+k=50  empirical=0.9701  exact=0.9704  std error=0.00120  z=-0.19
+== 5. disjoint versus independent, 10^6 die throws ==
+disjoint:  P(A)=0.3333 P(B)=0.3335 P(AnB)=0.0000 P(A|B)=0.0000 gap=0.1112
+independent:  P(C)=0.5001 P(D)=0.3334 P(CnD)=0.1667 P(C|D)=0.5000 gap=0.0001
+exact disjoint: 1/3, 1/3, 0, 0, 1/9=0.111111
+exact independent: 1/2, 1/3, 1/6, 1/2, 0
+\end{verbatim}    
+
+Four things deserve reading from that output, and two of them actually show the limits of
+simulation.
+
+First, the first line of part 1 reports $963$ sick people out of a million, whereas the
+expectation is $1{,}000$ with standard deviation $\sqrt{10^{6}(0.001)(0.999)}=31.6$. So
+$963$ lies $1.17$ standard deviations below the expectation: a normal swing, not a
+programming oversight. The expected number of positive results becomes
+$963\cdot 0.99+999{,}037\cdot 0.01=10{,}943.7$,
+and the observed $11{,}094$ is $1.4$ standard deviations away. The empirical conditional
+probability $0.0858$ differs from the exact $0.0902$ by $0.0044$, that is $1.64$ standard
+errors. That gap is far smaller than the distance from $0.09$ to $1$, so the interpretation
+does not change.
+
+Second, Monty Hall gives $0.6675$ and $0.3325$ with standard error $0.0015$, while the
+expected gap between the strategies is $1/3$. Agreement to three digits is not luck; the
+most useful form of verification is indeed not confirming the third digit but confirming
+that the gap we claim exists and has the right sign.
+
+Third, parts 3 and 5 show that the protocol and the relations between events enter the
+numbers. A host who opens doors at random lets only $66.472$ of
+$100{,}000$ games run as far as the offer, and among those switching wins
+$0.4998$ while staying wins $0.5002$; that gap of $0.0004$ is a quarter of a standard error.
+The disjoint pair gives $P(A)P(B)-P(A\cap B)=0.1112$, matching $1/9$ to
+three digits, while the independent pair gives $0.0001$, that is zero within random swing.
+The number $0.1112$ is the size of the mistake made by anyone who thinks two disjoint events
+must be independent.
+
+What the program does not prove: not one of the five parts proves a formula.
+The program only checks formulas that have already been proved, with a sample far larger
+than the reach of the hand; Chapter 19 explains why that is legitimate.
+
+\begin{untukdosen}
+The teaching order I suggest: start from the $100{,}000$ table, not from
+the axioms. Have the students fill in four cells: sick and positive, sick and negative,
+healthy and positive, healthy and negative. The numbers $99$, $1$, $999$, and $98{,}901$
+appear on their own, and from there $99/1.098$ becomes the conclusion of the class, not
+the result of a lecture. After that the axioms, their consequences, counting, conditional
+probability, Bayes, then independence. Monty Hall is best placed last, after the students
+can write the host's protocol as a conditional event.
+
+Two misconceptions appear most often. First, ``disjoint means independent''.
+The symptom shows up in the arithmetic: students add the probabilities of two events that
+should be multiplied, or the other way round, and then cannot explain why the result exceeds
+one. Second, ``sensitivity equals the probability of being sick given a positive result''.
+The symptom is the answer $0.99$ for the clinical problem, without using the prevalence
+already given in the problem.
+
+A blackboard activity that works: two students play the host with different written
+protocols, one always opening a goat door and one opening at random; the class records
+twenty games and then compares them with $2/3$ and $1/2$. Students are ready
+to go further when they can give one example of two independent events and one example of
+disjoint events with the same marginals, and compute a conditional probability from a
+two-way table without reversing the direction.
+\end{untukdosen}
+
+\section{Summary}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Probability is a function on events that is nonnegative, takes the value one on the
+        whole space, and is countably additive on disjoint events; complement,
+        monotonicity, and inclusion--exclusion follow from that.
+  \item When outcomes are equally likely, probability is a ratio of counts, with the product
+        rule and $\binom{n}{k}$; the assumption of equal likelihood has to be checked.
+  \item Conditional probability $P(A\mid B)=P(A\cap B)/P(B)$ recomputes inside $B$
+        and satisfies the three axioms; the product rule and the law of total probability
+        are its consequences.
+  \item Bayes' rule is not a new assumption but a definition read in two directions.
+        Prevalence determines the answer more strongly than the quality of the test: with
+        sensitivity and specificity $0.99$, a prevalence of $0.1$ percent gives
+        $P(S\mid+)=0.0902$.
+  \item Disjoint and independent are different; when both probabilities are positive,
+        disjoint events cannot be independent, and only the intersection determines the
+        relation.
+  \item The answer to a paradox depends on the protocol and the unit of counting: Monty Hall
+        $2/3$ under a fixed protocol and $1/2$ under a random one; birthdays $0.5073$ for
+        $23$ people because what is counted is $253$ pairs. A seeded simulation
+        checks, it does not prove.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Prove the inclusion--exclusion formula for three events by applying the two-event
+        version to $A\cup B$ and $C$. Show at which step the term
+        $P(A\cap B\cap C)$ appears, and why its sign is positive.
+  \item Assess this claim: ``Because $P(A\mid B)=0$, $A$ and $B$ are disjoint.'' True,
+        false, or not enough evidence? Give an example with $P(A\mid B)=0$ but
+        $A\cap B\neq\varnothing$, or explain why that is impossible.
+  \item A test has prevalence $2$ percent, sensitivity $0.95$, specificity $0.90$.
+        Compute $P(S\mid+)$ from a table of $10.000$ people, then repeat with
+        specificity $0.99$; state both as fractions.
+  \item Prove that if $A$ and $B$ are independent, then $A$ and $B^{c}$ are also
+        independent. Use $P(A)=P(A\cap B)+P(A\cap B^{c})$ and explain why
+        the same result holds for $A^{c}$ and $B^{c}$.
+  \item Compute the probability that a pair with the same birthday exists for $30$ people,
+        compare it with $1-e^{-\binom{30}{2}/365}$, then explain the source of the gap.
+  \item Prove the law of total probability for $k=2$ directly from the axioms, without using
+        the law for general $k$: write $A=(A\cap B)\cup(A\cap B^{c})$ and check
+        that the two parts are disjoint.
+  \item Four doors, one car, three goats. A host who knows the contents opens two
+        goat doors among the three other doors and offers a switch to the one door
+        that remains. Compute the probability of winning by switching, then check it with a
+        simulation of $10^{4}$ games.
+  \item Assess this claim: ``Two independent tests with sensitivity and specificity $0.99$
+        give certainty $0.9999$ when both are positive, as long as the prevalence is $0.1$
+        percent.'' Compute the correct number and state the assumptions.
+  \item Is pairwise independence for three events enough to conclude
+        $P(A\cap B\cap C)=P(A)P(B)P(C)$? Refute it with an example from two coin tosses,
+        and compute both values.
+\end{enumerate}
+
+Hints for the three hardest items. Item 2: in a finite space where every outcome has
+positive probability, $P(A\mid B)=0$ forces $A\cap B=\varnothing$, so for a die throw
+the claim is true; a counterexample has to come from a continuous space, for instance
+$A=\{1/2\}$ and $B=(0,1)$ with uniform probability, where $P(A)=0$ even though $A$ contains
+a point. Item 7: at first the car is behind the chosen door with probability $1/4$; if not,
+ the only door the host does not open must hold the car, so the probability of switching is
+$3/4$. Item 9: take $A$ heads on the first coin, $B$ heads on the second coin, and $C$ both
+coins the same; all three pairs give $1/4$ while the intersection is $1/4$, not $1/8$.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is genuinely proved in this chapter: the three axioms together with their consequences;
+Bayes' rule as a theorem derived from the definition of conditional probability; the
+impossibility of two disjoint events with positive probability also being independent; and
+the dependence of the Monty Hall answer on the protocol, an analysis stated sharply by
+Morgan, Chaganty, Dahiya, and Doviak, \emph{The American Statistician} 1991, in the article
+``Let's Make a Deal: The Player's Dilemma''. What is popular but not proved here
+is the claim that the natural frequency format improves prevalence reasoning in humans;
+that is an empirical claim about readers, not a theorem, and its evidence lies in the
+psychology of decision making literature.
+\end{untukpeneliti}
+
+Primary sources: Blitzstein and Hwang, \emph{Introduction to Probability}, Chapter 1 (Why
+probability, Naive definition of probability, How to count, Story proofs, Non-naive
+definition of probability) and Chapter 2 (The importance of thinking conditionally,
+Definition and intuition, Bayes' rule and the law of total probability, Conditional
+probabilities are probabilities, Independence of events, Coherency of Bayes' rule);
+as well as Wasserman, \emph{All of Statistics}, Chapter 1 in the section Probability for the
+formulation of the axioms and Chapter 2 in the section Independent Events.
+
+Limits of validity: the whole chapter works in finite spaces where every outcome has
+positive probability, where $P(A)=0$ is equivalent to $A=\varnothing$. In uncountable
+spaces, conditioning on an event of probability zero is not defined by the ratio formula
+and requires a regular conditional distribution; the Borel paradox shows that the answer
+can depend on how the limit is taken. Independence is not stable either: it can disappear
+or appear under conditioning, and in graphical models it appears as selection bias.
+
+An open question: how far must the prevalence be known before Bayes' rule is used
+honestly, and what can be said when the prevalence is known only from a small sample. The
+formal answer is Bayesian inference with a prior, which brings in the problem of choosing
+the prior; the frequentist answer is the hypothesis test of Chapter 20, which does not use
+a prior but answers a different question. This chapter does not choose either.
+
+\peta{Chapter 17 in Blitzstein and Hwang, \emph{Introduction to Probability}: Chapter 1
+(Probability and counting, including How to count and the birthday problem example) for the
+axioms, counting, and combinatorial probability; Chapter 2 (Conditional probability, Bayes'
+rule and the law of total probability, Independence of events) for conditional probability,
+Bayes, and independence. In Wasserman, \emph{All of Statistics}: Chapter 1 in the section
+Probability and Chapter 2 in the section Independent Events. Sets and complements are used
+from Chapter 2 of this book; the series underlying countable additivity from Chapter 5; the
+law of large numbers that supports the simulation is proved in Chapter 18. Random variables
+in Chapter 17 move the weight from events to numbers, while the hypothesis tests in Chapter
+19 use Bayes' rule and the law of total probability for a different question.}

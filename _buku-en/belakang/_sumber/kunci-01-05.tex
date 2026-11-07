@@ -1,0 +1,241 @@
+% Kunci jawaban Bab 1--5. Berkas ini di-\input langsung di dalam document.
+% Setiap angka berasal dari tools/cek-kunci-01-05.py di repositori ini.
+
+\section*{Bab 1: Bahasa Matematika dan Seni Membuktikan}
+\begin{enumerate}[label=\textbf{1.\arabic*}]
+  \item $\exists \varepsilon>0\ \forall N\in\mathbb{N}\ \exists n\ge N:\ |a_{n}-L|\ge
+        \varepsilon$. Dalam bahasa Indonesia: ada satu toleransi yang tidak pernah
+        tercapai, sebab berapa pun $N$ dipilih selalu ada suku sesudahnya yang
+        menyimpang paling sedikit sebesar $\varepsilon$ itu.
+
+  \item Negasi ``setiap prima $>2$ ganjil'' ialah ``ada prima $>2$ yang genap''.
+        Negasi itu \emph{salah}, jadi pernyataan aslinya benar dan tidak ada objek
+        penyangkal. Untuk klaim kedua, negasinya ``untuk setiap $n$,
+        $n^{2}+n+41$ prima''; penyangkalnya $n=40$ dengan $1681=41^{2}$.
+
+  \item $n^{2}+n=n(n+1)$. Kasus: $n=2k$ memberi $2k(2k+1)$, $n=2k+1$ memberi
+        $(2k+1)(2k+2)=2(2k+1)(k+1)$. Kontraposisi: bila $n(n+1)$ ganjil maka $n$
+        dan $n+1$ keduanya ganjil, padahal dua bilangan berurutan tidak mungkin
+        keduanya ganjil.
+
+  \item Periksa: $n=1$ memberi $1$, $n=2$ memberi $5$, $n=3$ memberi $14$, cocok
+        dengan $n(n+1)(2n+1)/6$. Langkah induksi: tambahkan $(k+1)^{2}$ pada kedua
+        ruas, lalu
+        $\frac{k(k+1)(2k+1)}{6}+(k+1)^{2}=\frac{(k+1)(k+2)(2k+3)}{6}$.
+
+  \item Induksi kuat pada $n$. Untuk $n=1$: $k=0$, $m=1$. Untuk $n$ genap tulis
+        $n=2j$ dengan $j<n$; hipotesis induksi memberi $j=2^{k}m$, sehingga
+        $n=2^{k+1}m$ dengan $m$ tetap ganjil. Hipotesis kuat dipakai tepat di sini:
+        $j<n$, bukan $j=n-1$.
+
+  \item (a) Benar, prinsip induksi biasa. (b) Salah: ambil $P(n)$ berarti
+        $n\le 10^{6}$; penyangkal $n=10^{6}+1$. (c) Salah: $n=40$ memberi
+        $1681=41^{2}$. (d) Salah: $n=3$ habis dibagi $3$ tetapi tidak oleh $6$.
+
+  \item Skrip: $87$ prima dari $101$ nilai untuk $n=0$ sampai $100$. Gagal pada
+        $40$, $41$, $44$, $49$, $56$, $65$, $76$, $81$, $82$, $84$, $87$, $89$,
+        $91$, $96$. Hanya $5$ dari $14$ berbentuk $p-1$ atau $p$: $40,41$ lewat
+        $p=41$, $82$ lewat $83$, $89$, $96$ lewat $97$.
+
+  \item $2^{1}=2>1$; $2^{2}=4=4$; $2^{3}=8<9$; $2^{4}=16=16$; $2^{5}=32>25$. Jadi
+        $n_{0}=5$. Induksi: bila $2^{k}>k^{2}$ dan $k\ge 5$, maka
+        $2^{k+1}>2k^{2}\ge(k+1)^{2}$ sebab $k^{2}-2k-1>0$.
+
+  \item 
+Klaimnya salah, sebab $n=40$ memberi $40^{2}+40+41=1\,681=41^{2}$, bukan
+        prima. Empat puluh titik pertama hanya menyokong, tidak membuktikan: satu
+        penyangkal sudah cukup membatalkan klaim ``untuk setiap $n\ge0$''.
+
+  \item Salah: $n=2$ memberi $4\mid 4$ tetapi $4\nmid 2$. Klaim yang benar:
+        $4\mid n^{2}$ mengakibatkan $2\mid n$. Bukti kontraposisi: bila
+        $n=2k+1$ maka $n^{2}=4k^{2}+4k+1\equiv 1 \pmod 4$.
+\end{enumerate}
+
+\section*{Bab 2: Himpunan, Relasi, Fungsi, dan Kardinalitas}
+\begin{enumerate}[label=\textbf{2.\arabic*}]
+  \item $x\in A\cap(B\cup C)\iff x\in A\wedge(x\in B\vee x\in C)\iff
+        (x\in A\wedge x\in B)\vee(x\in A\wedge x\in C)$, memakai distributivitas
+        $\wedge$ atas $\vee$. Kedua: $x\in A\setminus(B\setminus C)\iff x\in
+        A\wedge(\neg x\in B\vee x\in C)\iff x\in(A\setminus B)\cup(A\cap C)$.
+
+  \item Salah. Penyangkal terkecil: $A=\{1\}$ dengan $R=\varnothing$; relasi kosong
+        simetris dan transitif secara vakum, tetapi $(1,1)\notin R$. Yang hilang
+        ialah refleksivitas untuk elemen yang tidak muncul di pasangan mana pun.
+
+  \item Ambil $S_{1},S_{2}\subseteq A$ dengan $f(S_{1})=f(S_{2})$. Untuk $s\in S_{1}$
+        ada $t\in S_{2}$ dengan $f(s)=f(t)$, dan injektivitas memberi $s=t\in S_{2}$.
+        Tanpa injektif: $f$ konstan pada $\{1,2\}$ membuat $f(\{1\})=f(\{2\})$.
+
+  \item Arah $(\Leftarrow)$ sepele. Untuk $(\Rightarrow)$: bila $a=b$, kesamaan
+        $\{\{a\}\}=\{\{c\},\{c,d\}\}$ memaksa $\{c\}=\{c,d\}$, jadi $c=d=a$. Bila
+        $a\ne b$, maka $\{a\}$ harus sama dengan $\{c\}$, sebab $\{c,d\}$ berukuran
+        dua; jadi $a=c$ lalu $b=d$.
+
+  \item Definisikan $g:f(A)\to A$ dengan memilih satu pramasuk tiap $y\in f(A)$;
+        $g$ injektif, jadi $|f(A)|\le|A|$ menurut lemma sebelumnya. Bila $f$ tidak
+        injektif, dua anggota $A$ memberi satu nilai, sehingga $|f(A)|<|A|$.
+
+  \item $\binom{5}{2}=10$ partisi bertipe $2+3$ dan $5$ bertipe $1+4$, seluruhnya
+        $15=2^{4}-1=S(5,2)$. Skrip menghitung partisi secara langsung dan juga
+        memberi $15$; banyaknya seluruh relasi ekuivalensi pada $5$ anggota $52$.
+
+  \item $\pi(7,5)=T_{12}+5=78+5=83$. Untuk $1000$: $T_{44}=990\le 1000<T_{45}=1035$,
+        jadi $s=44$, $n=10$, $m=34$; pemeriksaan $\pi(34,10)=990+10=1000$.
+
+  \item Kumulatif sampai $k=9$ adalah $27$; tingkat $k=10$ memuat $1/9,\,3/7,\,7/3,\,
+        9/1$ pada posisi $28$--$31$, jadi $7/3$ di posisi ke-$30$. Karena
+        $\varphi(11)=10$, posisi ke-$41$ ialah suku terakhir tingkat $11$, yaitu
+        $10/1$.
+
+  \item Susun $A_{n}=\{a_{n1},a_{n2},\dots\}$ lalu jalankan diagonal Cantor pada
+        pasangan $(n,m)$: setiap anggota $\bigcup A_{n}$ muncul sedikitnya sekali,
+        dan pembuangan kemunculan ulang tidak menambah cacah.
+
+  \item $g(x)=\tan\bigl(\pi(x-\tfrac12)\bigr)$ bijektif dari $(0,1)$ ke
+        $\mathbb{R}$. Daerah asalnya harus dibatasi karena $\tan$ bernilai tak hingga
+        di $\pm\tfrac12\pi$; pada $[0,1]$ rumus itu tidak terdefinisi di kedua ujung.
+\end{enumerate}
+
+\section*{Bab 3: Aksioma Bilangan Real dan Supremum}
+\begin{enumerate}[label=\textbf{3.\arabic*}]
+  \item $a<b$ berarti $b-a>0$. Tambahkan $-a-b$ pada kedua ruas (tertutup terhadap
+        penjumlahan): $(-a)-(-b)=b-a>0$, yaitu $-b<-a$. Arah sebaliknya diperoleh
+        dengan menambahkan $a+b$. Maka mengali dengan $-1$ membalik arah.
+
+  \item Karena $a<b$, maka $2a<a+b$ dan $a+b<2b$; kalikan dengan $\tfrac12>0$,
+        didapat $a<\frac{a+b}{2}<b$. Hanya aksioma urutan yang dipakai. Sebaliknya
+        $\sup\{q:q^{2}<2\}$ tidak ada di $\mathbb{Q}$, jadi kelengkapan diperlukan.
+
+  \item $\sup S=2$: $2$ batas atas, dan $2-\varepsilon$ bukan batas atas karena
+        $2-1/n>2-\varepsilon$ untuk $n>1/\varepsilon$. $\inf S=1$ dicapai pada
+        $n=1$, jadi minimum ada; maksimum tidak ada sebab $2\notin S$.
+
+  \item Benar. Premisnya adalah sifat Archimedes: untuk setiap $x>0$ ada $n$ dengan
+        $1/n<x$. Akibatnya bila $m>0$ adalah yang terkecil, maka $m/2>0$ lebih kecil
+        dari $m$, kontradiksi.
+
+  \item $q=1$: $h=1/4$, jadi $q+h=5/4$ dengan $(5/4)^{2}=1{,}5625<2$. $q=7/5$:
+        $h=1/120$, jadi $q+h=169/120\approx 1{,}4083$ dengan kuadrat
+        $1{,}9834<2$. Kenaikan kedua $30$ kali lebih kecil: makin dekat $q$ ke
+        $\sqrt2$, koreksinya makin pendek.
+
+  \item $|x^{3}-y^{3}|=|x-y|\,|x^{2}+xy+y^{2}|\le|x-y|\bigl(|x|^{2}+|x||y|+|y|^{2}\bigr)
+        \le 12\,|x-y|$, sebab tiap suku paling besar $4$. Ketaksamaan segitiga
+        dipakai pada langkah kedua untuk memecah nilai mutlak jumlah.
+
+  \item Bila $S$ terbuka dan $x$ titik limit $S^{c}$ dengan $x\in S$, maka ada
+        $B(x,r)\subseteq S$, sehingga $B(x,r)\cap S^{c}=\varnothing$: kontradiksi.
+        Sebaliknya bila $S$ tertutup dan $x\in S^{c}$, ketiadaan bola di dalam
+        $S^{c}$ membuat $x$ titik limit $S\subseteq S$, kontradiksi.
+
+  \item $x_{1}=7/4$; $x_{2}=97/56\approx 1{,}732143$;
+        $x_{3}=18817/10864\approx 1{,}732050810$; $x_{4}$ dan $x_{5}$ sama sampai
+        $16$ angka, $1{,}732050807568877$. Galat relatif
+        lima langkah: $1{,}0363\times10^{-2}$, $5{,}3145\times10^{-5}$,
+        $1{,}4121\times10^{-9}$, $9{,}97\times10^{-19}$, $4{,}97\times10^{-37}$.
+        Nisbah $e_{k+1}/e_{k}^{2}$: $0{,}4330$, $0{,}4949$, $0{,}5000$, menuju $1/2$.
+
+  \item $0$ termuat di setiap $(-1/n,1/n)$. Untuk $x\ne0$ pilih $n>1/|x|$, maka
+        $x\notin(-1/n,1/n)$. Irisan berhingga himpunan buka tetap buka, sedangkan
+        irisan tak hingga ini sama dengan $\{0\}$ yang tidak buka.
+
+  \item Menurut kerapatan $\mathbb{Q}$, pada selang $(a/\sqrt2,\,b/\sqrt2)$ ada
+        $q\in\mathbb{Q}$ dengan $q\ne0$. Maka $a<q\sqrt2<b$, dan $q\sqrt2$ irasional
+        sebab bila rasional maka $\sqrt2$ rasional.
+\end{enumerate}
+
+\section*{Bab 4: Barisan dan Limit}
+\begin{enumerate}[label=\textbf{4.\arabic*}]
+  \item $|x_{n}-\tfrac23|=\Bigl|\frac{3(2n-1)-2(3n+4)}{3(3n+4)}\Bigr|
+        =\frac{11}{9n+12}$. Syaratnya $n>\frac{11/\varepsilon-12}{9}$, jadi
+        $N(\varepsilon)=\bigl\lfloor(11/\varepsilon-12)/9\bigr\rfloor$. Untuk
+        $\varepsilon=10^{-3}$: $N=1220$, sedangkan suku terkecil yang memenuhi
+        $n=1221$ dengan galat $9{,}9991\times10^{-4}$.
+
+  \item $\bigl||x_{n}|-|L|\bigr|\le|x_{n}-L|$ (ketaksamaan segitiga terbalik),
+        sehingga batas $\varepsilon$ yang sama berlaku. Kebalikannya salah:
+        $x_{n}=(-1)^{n}$ memberi $|x_{n}|=1$ konvergen, tetapi $x_{n}$ divergen.
+
+  \item Untuk $x_{n}$: suku genap $2+1/n\to2$, suku ganjil $1/n\to0$; jadi
+        $\limsup=2$, $\liminf=0$ (maksimum $2{,}5$ di $n=2$ bukan limsup). Untuk
+        $y_{n}$: genap $1+1/n\to1$, ganjil $-(1+1/n)\to-1$; jadi $\limsup=1$,
+        $\liminf=-1$. Numerik $n=1000$: $1{,}001$ dan $-1{,}001$.
+
+  \item Sebagian benar, kesimpulannya keliru. Benar bahwa $(1+1/n)^{n}$ naik dan
+        terbatas oleh $3$, sehingga limitnya ada dan paling besar $3$. Tetapi batas
+        atas bukan nilai limit: limitnya $e\approx 2{,}7183$.
+
+  \item $3=\bigl(3^{n}\bigr)^{1/n}\le(2^{n}+3^{n})^{1/n}\le 3\cdot 2^{1/n}$, dan
+        $2^{1/n}\to1$ karena $(1+\delta)^{n}\ge 1+n\delta$ (Bernoulli) memberi
+        $\delta\le 2^{1/n}-1\le 1/n$. Kedua pagar menuju $3$.
+
+  \item Galat $<10^{-6}$ pertama di $n=12$ ($2{,}6146\times10^{-7}$); $<10^{-12}$
+        di $n=21$. Nisbah galat berurutan menetap di $0{,}250000$, sesuai
+        $|x_{n+1}-2|=|x_{n}-2|/(\sqrt{2+x_{n}}+2)\to|x_{n}-2|/4$.
+
+  \item Cauchy terbatas: ambil $\varepsilon=1$, dapat $N$; semua suku sesudah $N$
+        berada dalam $(x_{N}-1,x_{N}+1)$, sisanya berhingga. Monoton terbatas:
+        dengan teorema kekonvergenan monoton ia konvergen, dan barisan konvergen
+        adalah Cauchy.
+
+  \item $\varepsilon=10^{-3}$ memberi ambang $5/\varepsilon-2=4998$, jadi
+        $N=4998$ sah. Galat: $n=4998$ tepat $10^{-3}$ (belum memenuhi), $n=4999$
+        memberi $9{,}9980\times10^{-4}$, $n=5000$ memberi $9{,}9960\times10^{-4}$.
+        $N-1=4997$ tidak sah sebab $n=4998>4997$ masih bergalat tepat
+        $\varepsilon$, bukan kurang.
+
+  \item Andaikan $x_{n}\not\to L$; maka ada $\varepsilon>0$ dan subbarisan
+        $(x_{n_{k}})$ dengan $|x_{n_{k}}-L|\ge\varepsilon$. Menurut
+        Bolzano--Weierstrass subbarisan itu punya subbarisan konvergen ke $L'$ dengan
+        $|L'-L|\ge\varepsilon$, bertentangan dengan hipotesis.
+\end{enumerate}
+
+\section*{Bab 5: Deret Tak Hingga}
+\begin{enumerate}[label=\textbf{5.\arabic*}]
+  \item $s_{20}=2{,}4999451576$, sedangkan jumlahnya $5/2=2{,}5$; galat
+        $5{,}4842\times10^{-5}$. Batas $\frac{r^{21}}{1-r}$ memberi angka yang sama
+        persis, $5{,}4842\times10^{-5}$, sebab ekornya geometri dengan suku positif.
+
+  \item $\frac{1}{n(n+2)}=\frac12\bigl(\frac1n-\frac1{n+2}\bigr)$, sehingga
+        $s_{N}=\frac12\bigl(1+\frac12-\frac{1}{N+1}-\frac{1}{N+2}\bigr)$; limitnya
+        $\frac12\cdot\frac32=\frac34$.
+
+  \item Karena $a_{n}\to0$, untuk $n\ge N$ berlaku $0\le a_{n}\le1$, jadi
+        $a_{n}^{2}\le a_{n}$; uji pembanding menutup. Kebalikannya salah:
+        $a_{n}=1/n$ memberi $\sum a_{n}^{2}$ konvergen tetapi $\sum a_{n}$ divergen.
+
+  \item Salah. Patah pada ``lebih kecil daripada suku geometri rasio $\tfrac12$ untuk
+        $n$ cukup besar'': $1/n<(1/2)^{n}$ justru gagal, sebab $(1/2)^{n}$ menyusut
+        jauh lebih cepat. Uji pembanding butuh ketaksamaan pada seluruh ekor. Deret
+        harmonik divergen.
+
+  \item (a) Konvergen, uji rasio: nisbah $\to\tfrac12<1$. (b) Divergen, uji rasio:
+        nisbah $2\bigl(\frac{n}{n+1}\bigr)^{2}\to2>1$. (c) Konvergen, uji rasio:
+        $\bigl(\frac{n}{n+1}\bigr)^{n}\to\frac1e\approx0{,}3679<1$. (d) Divergen,
+        deret-$p$ dengan $p=\tfrac13\le1$.
+
+  \item $s_{10^{6}}=1{,}6449330668$ dan $\pi^{2}/6=1{,}6449340668$; selisihnya
+        $9{,}9999950\times10^{-7}$, dekat $\frac1N$. Setelah koreksi
+        $\frac1N-\frac{1}{2N^{2}}$ hasilnya $1{,}6449340668$ dengan galat
+        $2{,}2\times10^{-16}$. Angka desimal benar: $5$ sebelum, $15$ sesudah.
+
+  \item Perlu $\frac{1}{\sqrt{N+1}}<10^{-3}$, yaitu $N+1>10^{6}$, jadi $N=10^{6}$.
+        Pada $N$ itu jumlahnya $0{,}6043986435$ sedangkan limitnya
+        $0{,}6048986434$; galat sebenarnya $5{,}0000\times10^{-4}$, tepat setengah
+        batas. Batasnya longgar sekitar faktor dua.
+
+  \item $|b_{n}|\le M$ memberi $|a_{n}b_{n}|\le M|a_{n}|$. Karena $\sum M|a_{n}|$
+        konvergen, uji pembanding menyimpulkan $\sum|a_{n}b_{n}|$ konvergen.
+
+  \item Setelah $K$ blok, suku positif terpakai sampai penyebut $6K-1$ dan suku
+        negatif sampai $\frac{1}{2K}$, jadi
+        $S_{K}=H_{6K}-\frac12H_{3K}-\frac12H_{K}\to\ln6-\frac12\ln3=\ln(2\sqrt3)
+        \approx1{,}2425$. Numerik $K=10^{6}$ memberi $1{,}2424531$. Nisbahnya ke
+        $\ln2$ ialah $1{,}7925$, jadi bukan kelipatan rasional $\ln2$.
+
+  \item Tulis $p_{n}=\max(a_{n},0)$ dan $q_{n}=\max(-a_{n},0)$; maka
+        $a_{n}=p_{n}-q_{n}$ dan $|a_{n}|=p_{n}+q_{n}$. Bila kedua deret itu
+        konvergen, $\sum|a_{n}|$ konvergen, bertentangan dengan kekonvergenan
+        bersyarat. Karena itu keduanya divergen, dan kedua tumpukan tak terbatas
+        itulah bahan bakar teorema susunan ulang Riemann.
+\end{enumerate}

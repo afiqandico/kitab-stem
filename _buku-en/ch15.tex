@@ -1,0 +1,1353 @@
+\chapter{Multiple Integrals, Change of Variables, and Vector Field Theorems}
+\chaptermark{Multiple Integrals and Vector Field Theorems}
+
+A cooling plate is a disk of radius one meter. Its thickness is
+uniform, but its density falls off from the center: $e^{-(x^{2}+y^{2})}$ kilograms
+per square meter. Its mass is the sum of the density over the whole disk: a numerical library reports
+$1.9858653038$ kilograms after $11907$ function evaluations.
+
+A colleague writes a different version of the same computation. He moves to
+polar coordinates and writes
+\[
+\int_{0}^{2\pi}\!\!\int_{0}^{1} e^{-r^{2}}\,dr\,d\theta ,
+\]
+and gets $4.6924344183$ kilograms. His program runs without a warning.
+That number is $2.36$ times larger than the first, and not one of the
+programs complains. The mistake is one letter: the factor $r$ is missing, so the area
+of every small cell is counted too large.
+
+Damage of that size also shows up on the other side of this chapter. Compute the work of
+$F(x,y)=(-y,x)/(x^{2}+y^{2})$ around the unit circle: the result is
+$6.2831853072$, even though the curl of that field is zero at every point where it
+is defined. If zero curl meant zero closed work, one of those two computations
+would lie. What lies is not the computation but the hypothesis that was left
+unchecked: the field is not defined at the origin, and the origin lies inside
+the circle.
+
+Chapter 13 built the integral on an interval, and Chapter 12 gave the Jacobian as the
+matrix of derivatives. Neither is enough yet: there is still no way to add up over a region
+of dimension greater than one, no rule for what happens to the area of a cell
+when the coordinates are changed, and no meaning for the sign on a boundary. This chapter
+fills in all three, then shows that Green, Gauss, and Stokes are in fact one
+statement.
+
+\begin{untukanak}
+Picture a tailor with a shirt pattern on squared paper. The pattern is square
+and regular; the cloth to be cut curves to follow the body. If that square pattern
+is pasted on as it is, the shirt is tight on one side and loose on the other,
+even though the number of cells stays the same.
+
+An experienced tailor does something else: every small cell will stretch
+or shrink by a certain ratio as it is carried onto the cloth. Cells near the waist stretch
+a little; cells near the shoulder shrink. He records that ratio, multiplies the area
+of the cell by it, and only then adds up.
+
+The same work appears with curved shapes: many objects, areas, or weights.
+If the stretch ratio is forgotten, the total is still a tidy number, and
+precisely because it is tidy it is hard to distrust. In this chapter we shall learn why
+that ratio has to be there, and how to compute it for round shapes.
+\end{untukanak}
+
+\section{From rectangles to general regions}
+\tingkat{basic}
+
+We begin with the simplest object: a rectangle, and a
+number we want to add up over its whole surface. The method is the same as in
+Chapter 13, only the pieces are now cells rather than segments.
+
+\begin{definisi}[The double integral]\index{double integral}
+Let $R=[a,b]\times[c,d]$ be a closed rectangle. A
+\emph{partition} $\mathcal{P}$ of $R$ is a division of $[a,b]$ into
+intervals and of $[c,d]$ into intervals; the result is $mn$ small
+rectangles $R_{ij}$. The \emph{mesh} of the partition is the longest diagonal among
+those cells, and is written $\|\mathcal{P}\|$.
+
+For $f$ bounded on $R$, write $M_{ij}=\sup_{R_{ij}}f$ and
+$m_{ij}=\inf_{R_{ij}}f$, then
+\[
+U(\mathcal{P},f)=\sum_{i,j}M_{ij}\,\mathrm{luas}(R_{ij}),
+\qquad
+L(\mathcal{P},f)=\sum_{i,j}m_{ij}\,\mathrm{luas}(R_{ij}).
+\]
+The function $f$ is called \emph{integrable} on $R$ when the supremum of all $L$ equals
+the infimum of all $U$; that common value is $\iint_{R}f\,dA$.
+\end{definisi}
+
+This definition says nothing about the order of integration. If $f$ is continuous, the upper
+and lower sums meet because the largest gap of $f$ on a single cell
+shrinks with the mesh: on a compact set, a continuous function is uniformly continuous
+(Chapter 11).
+
+The next question is practical. To add up over cells means computing
+something two-dimensional, whereas our hands can only compute one-variable
+integrals. The bridge: slice along one direction first, then add up
+the results of those slices.
+
+\begin{teorema}[Fubini]\index{Fubini's theorem}
+If $f$ is continuous on $R=[a,b]\times[c,d]$, then
+\[
+\iint_{R} f\,dA=\int_{a}^{b}\!\!\int_{c}^{d} f(x,y)\,dy\,dx
+=\int_{c}^{d}\!\!\int_{a}^{b} f(x,y)\,dx\,dy .
+\]
+\end{teorema}
+
+\begin{proof}
+A full proof demands matching the two-dimensional upper and lower sums with the one-dimensional
+integral uniformly, and it is in Spivak, the chapter \emph{Integration},
+Theorem 3-10. The idea runs like this.
+
+For $f\ge 0$, the double integral is the volume of the solid under the graph of $f$.
+Slice that solid with a plane of constant $x$. The slice is a region under the curve
+$y\mapsto f(x,y)$, so its area is
+\[
+A(x)=\int_{c}^{d}f(x,y)\,dy .
+\]
+The volume of the solid is the integral of the area of the slice:
+\[
+\iint_{R}f\,dA=\int_{a}^{b}A(x)\,dx=\int_{a}^{b}\!\!\int_{c}^{d}f(x,y)\,dy\,dx .
+\]
+Because $f$ is continuous on a compact set, $A$ is continuous. For $f$ of any
+sign, split $f=f^{+}-f^{-}$; the other direction comes from slices of constant $y$.
+\end{proof}
+
+What matters in this theorem is not the formula but the permission it grants: the order may
+be swapped. That permission lapses for functions that are not integrable, and that is
+discussed later.
+
+The solid sliced in that proof appears in Figure~\ref{fig:kolom-tipis}:
+each column contributes $f(x,y)\,\Delta A$.
+
+\begin{bacakeras}
+--- How much sand is in this pile?
+--- Add up its thin columns. Stand on the north side, slice the pile into
+strips, measure each strip, then add.
+--- What do you get?
+--- Eighteen buckets.
+--- Now stand on the east side, slice in the other direction, measure, add.
+--- What do you get?
+--- Eighteen buckets as well.
+--- The north-south strips and the east-west strips are not the same at all. Why
+is the answer the same?
+--- Because the pile is one. We are not adding two piles; we are slicing
+the same object with two knives in different directions.
+--- So the direction of the slice may be swapped?
+--- As long as the object is measurable. If the pile has a hole in the middle, the two
+directions still agree; what fails later is the hole, not the order.
+
+Say it once more, in an ordinary voice: the direction of the slice changes, the volume stays.
+\end{bacakeras}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.55,font=\small]
+  \fill[layergrey!10] (0,0) -- (6.1,0) -- (7.1,0.90) -- (1.0,0.90) -- cycle;
+  \draw[layergrey,thick] (0,0) -- (6.1,0) -- (7.1,0.90) -- (1.0,0.90) -- cycle;
+  \fill[layerteal!12] (0.91,0.82) rectangle (1.43,1.38);
+  \draw[layerteal!70,line width=0.4pt] (0.91,0.82) rectangle (1.43,1.38);
+  \fill[layerteal!30] (0.91,1.38) -- (1.08,1.47) -- (1.60,1.47) -- (1.43,1.38) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (0.91,1.38) -- (1.08,1.47) -- (1.60,1.47);
+  \fill[layerteal!12] (1.67,0.82) rectangle (2.19,1.60);
+  \draw[layerteal!70,line width=0.4pt] (1.67,0.82) rectangle (2.19,1.60);
+  \fill[layerteal!30] (1.67,1.60) -- (1.83,1.69) -- (2.35,1.69) -- (2.19,1.60) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (1.67,1.60) -- (1.83,1.69) -- (2.35,1.69);
+  \fill[layerteal!12] (2.42,0.82) rectangle (2.93,1.97);
+  \draw[layerteal!70,line width=0.4pt] (2.42,0.82) rectangle (2.93,1.97);
+  \fill[layerteal!30] (2.42,1.97) -- (2.58,2.06) -- (3.10,2.06) -- (2.93,1.97) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (2.42,1.97) -- (2.58,2.06) -- (3.10,2.06);
+  \fill[layerteal!12] (3.17,0.82) rectangle (3.68,2.30);
+  \draw[layerteal!70,line width=0.4pt] (3.17,0.82) rectangle (3.68,2.30);
+  \fill[layerteal!30] (3.17,2.30) -- (3.33,2.39) -- (3.85,2.39) -- (3.68,2.30) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (3.17,2.30) -- (3.33,2.39) -- (3.85,2.39);
+  \fill[layerteal!12] (3.92,0.82) rectangle (4.43,2.32);
+  \draw[layerteal!70,line width=0.4pt] (3.92,0.82) rectangle (4.43,2.32);
+  \fill[layerteal!30] (3.92,2.32) -- (4.08,2.41) -- (4.60,2.41) -- (4.43,2.32) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (3.92,2.32) -- (4.08,2.41) -- (4.60,2.41);
+  \fill[layerteal!12] (4.67,0.82) rectangle (5.18,2.00);
+  \draw[layerteal!70,line width=0.4pt] (4.67,0.82) rectangle (5.18,2.00);
+  \fill[layerteal!30] (4.67,2.00) -- (4.83,2.09) -- (5.35,2.09) -- (5.18,2.00) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (4.67,2.00) -- (4.83,2.09) -- (5.35,2.09);
+  \fill[layerteal!12] (5.42,0.82) rectangle (5.93,1.62);
+  \draw[layerteal!70,line width=0.4pt] (5.42,0.82) rectangle (5.93,1.62);
+  \fill[layerteal!30] (5.42,1.62) -- (5.58,1.71) -- (6.10,1.71) -- (5.93,1.62) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (5.42,1.62) -- (5.58,1.71) -- (6.10,1.71);
+  \fill[layerteal!12] (6.17,0.82) rectangle (6.68,1.39);
+  \draw[layerteal!70,line width=0.4pt] (6.17,0.82) rectangle (6.68,1.39);
+  \fill[layerteal!30] (6.17,1.39) -- (6.33,1.48) -- (6.85,1.48) -- (6.68,1.39) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (6.17,1.39) -- (6.33,1.48) -- (6.85,1.48);
+  \fill[layerteal!12] (0.59,0.50) rectangle (1.11,1.07);
+  \draw[layerteal!70,line width=0.4pt] (0.59,0.50) rectangle (1.11,1.07);
+  \fill[layerteal!30] (0.59,1.07) -- (0.76,1.16) -- (1.28,1.16) -- (1.11,1.07) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (0.59,1.07) -- (0.76,1.16) -- (1.28,1.16);
+  \fill[layerteal!12] (1.34,0.50) rectangle (1.86,1.33);
+  \draw[layerteal!70,line width=0.4pt] (1.34,0.50) rectangle (1.86,1.33);
+  \fill[layerteal!30] (1.34,1.33) -- (1.51,1.42) -- (2.03,1.42) -- (1.86,1.33) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (1.34,1.33) -- (1.51,1.42) -- (2.03,1.42);
+  \fill[layerteal!12] (2.09,0.50) rectangle (2.61,1.75);
+  \draw[layerteal!70,line width=0.4pt] (2.09,0.50) rectangle (2.61,1.75);
+  \fill[layerteal!30] (2.09,1.75) -- (2.26,1.84) -- (2.78,1.84) -- (2.61,1.75) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (2.09,1.75) -- (2.26,1.84) -- (2.78,1.84);
+  \fill[layerteal!12] (2.84,0.50) rectangle (3.36,2.14);
+  \draw[layerteal!70,line width=0.4pt] (2.84,0.50) rectangle (3.36,2.14);
+  \fill[layerteal!30] (2.84,2.14) -- (3.01,2.23) -- (3.53,2.23) -- (3.36,2.14) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (2.84,2.14) -- (3.01,2.23) -- (3.53,2.23);
+  \fill[layerteal!12] (3.59,0.50) rectangle (4.11,2.15);
+  \draw[layerteal!70,line width=0.4pt] (3.59,0.50) rectangle (4.11,2.15);
+  \fill[layerteal!30] (3.59,2.15) -- (3.76,2.24) -- (4.28,2.24) -- (4.11,2.15) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (3.59,2.15) -- (3.76,2.24) -- (4.28,2.24);
+  \fill[layerteal!12] (4.34,0.50) rectangle (4.86,1.79);
+  \draw[layerteal!70,line width=0.4pt] (4.34,0.50) rectangle (4.86,1.79);
+  \fill[layerteal!30] (4.34,1.79) -- (4.51,1.88) -- (5.03,1.88) -- (4.86,1.79) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (4.34,1.79) -- (4.51,1.88) -- (5.03,1.88);
+  \fill[layerteal!12] (5.09,0.50) rectangle (5.61,1.35);
+  \draw[layerteal!70,line width=0.4pt] (5.09,0.50) rectangle (5.61,1.35);
+  \fill[layerteal!30] (5.09,1.35) -- (5.26,1.44) -- (5.78,1.44) -- (5.61,1.35) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (5.09,1.35) -- (5.26,1.44) -- (5.78,1.44);
+  \fill[layerteal!12] (5.84,0.50) rectangle (6.36,1.08);
+  \draw[layerteal!70,line width=0.4pt] (5.84,0.50) rectangle (6.36,1.08);
+  \fill[layerteal!30] (5.84,1.08) -- (6.01,1.17) -- (6.53,1.17) -- (6.36,1.08) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (5.84,1.08) -- (6.01,1.17) -- (6.53,1.17);
+  \fill[layerteal!12] (0.26,0.17) rectangle (0.78,0.73);
+  \draw[layerteal!70,line width=0.4pt] (0.26,0.17) rectangle (0.78,0.73);
+  \fill[layerteal!30] (0.26,0.73) -- (0.43,0.82) -- (0.95,0.82) -- (0.78,0.73) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (0.26,0.73) -- (0.43,0.82) -- (0.95,0.82);
+  \fill[layerteal!12] (1.02,0.17) rectangle (1.54,0.95);
+  \draw[layerteal!70,line width=0.4pt] (1.02,0.17) rectangle (1.54,0.95);
+  \fill[layerteal!30] (1.02,0.95) -- (1.19,1.04) -- (1.71,1.04) -- (1.54,0.95) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (1.02,0.95) -- (1.19,1.04) -- (1.71,1.04);
+  \fill[layerteal!12] (1.76,0.17) rectangle (2.29,1.32);
+  \draw[layerteal!70,line width=0.4pt] (1.76,0.17) rectangle (2.29,1.32);
+  \fill[layerteal!30] (1.76,1.32) -- (1.93,1.41) -- (2.46,1.41) -- (2.29,1.32) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (1.76,1.32) -- (1.93,1.41) -- (2.46,1.41);
+  \fill[layerteal!12] (2.51,0.17) rectangle (3.04,1.65);
+  \draw[layerteal!70,line width=0.4pt] (2.51,0.17) rectangle (3.04,1.65);
+  \fill[layerteal!30] (2.51,1.65) -- (2.69,1.74) -- (3.21,1.74) -- (3.04,1.65) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (2.51,1.65) -- (2.69,1.74) -- (3.21,1.74);
+  \fill[layerteal!12] (3.26,0.17) rectangle (3.79,1.67);
+  \draw[layerteal!70,line width=0.4pt] (3.26,0.17) rectangle (3.79,1.67);
+  \fill[layerteal!30] (3.26,1.67) -- (3.44,1.76) -- (3.96,1.76) -- (3.79,1.67) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (3.26,1.67) -- (3.44,1.76) -- (3.96,1.76);
+  \fill[layerteal!12] (4.01,0.17) rectangle (4.53,1.35);
+  \draw[layerteal!70,line width=0.4pt] (4.01,0.17) rectangle (4.53,1.35);
+  \fill[layerteal!30] (4.01,1.35) -- (4.18,1.44) -- (4.70,1.44) -- (4.53,1.35) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (4.01,1.35) -- (4.18,1.44) -- (4.70,1.44);
+  \fill[layerteal!12] (4.76,0.17) rectangle (5.28,0.97);
+  \draw[layerteal!70,line width=0.4pt] (4.76,0.17) rectangle (5.28,0.97);
+  \fill[layerteal!30] (4.76,0.97) -- (4.93,1.06) -- (5.45,1.06) -- (5.28,0.97) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (4.76,0.97) -- (4.93,1.06) -- (5.45,1.06);
+  \fill[layerteal!12] (5.51,0.17) rectangle (6.03,0.74);
+  \draw[layerteal!70,line width=0.4pt] (5.51,0.17) rectangle (6.03,0.74);
+  \fill[layerteal!30] (5.51,0.74) -- (5.68,0.83) -- (6.20,0.83) -- (6.03,0.74) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (5.51,0.74) -- (5.68,0.83) -- (6.20,0.83);
+  \fill[accent!42] (2.69,0.17) rectangle (2.86,1.65);
+  \draw[accent,line width=1pt] (2.69,0.17) rectangle (2.86,1.65);
+  \fill[accent!55] (2.69,1.65) -- (2.78,1.70) -- (2.96,1.70) -- (2.86,1.65) -- cycle;
+  \draw[accent,line width=1pt] (2.69,1.65) -- (2.78,1.70) -- (2.96,1.70);
+  \draw[accent,densely dashed] (2.86,0.16) -- (3.42,-0.26);
+  \node[accent,anchor=north west,align=left]
+    at (3.50,-0.30) {one thin column: base $\Delta A$,\\ height $f(x,y)$, volume $\approx f(x,y)\,\Delta A$};
+  \node[layergrey,anchor=north west] at (-0.05,-0.08) {base $R$};
+  \node[layergrey,anchor=north] at (5.95,-0.02) {$x$};
+  \node[layergrey,anchor=west] at (7.15,0.55) {$y$};
+\end{tikzpicture}
+\caption{The solid under the graph of $f$ over a rectangle $R$, cut into
+thin columns. Each column is almost a box with base $\Delta A$ and height
+$f(x,y)$, so its volume is $f(x,y)\,\Delta A$; adding up all the columns gives
+$\iint_R f\,dA$. The column marked in red is one term in that sum.
+Slicing along the $x$ direction and along the $y$ direction gives different columns, but
+the total volume is the same.}
+\label{fig:kolom-tipis}
+\end{figure}
+
+The regions that appear in problems are rarely rectangles. We handle them
+with one extra step: extend the function by zero outside the region.
+
+\begin{lemma}[A region between two graphs]\index{type I region}
+Let $g_{1},g_{2}\colon[a,b]\to\mathbb{R}$ be continuous with $g_{1}\le
+g_{2}$, and
+\[
+D=\{(x,y): a\le x\le b,\ g_{1}(x)\le y\le g_{2}(x)\}.
+\]
+If $f$ is continuous on $D$, then
+\[
+\iint_{D}f\,dA=\int_{a}^{b}\!\!\int_{g_{1}(x)}^{g_{2}(x)}f(x,y)\,dy\,dx .
+\]
+\end{lemma}
+
+\begin{proof}
+Take a rectangle $R$ that contains $D$, and extend $f$ by the value $0$ on
+$R\setminus D$. The boundary of $D$ can be covered by finitely many rectangles of
+total area less than $\varepsilon$: on the graph, uniform continuity on a
+compact interval gives a partition whose oscillation of $g$ is small on each piece.
+A set that can be covered that way does not change the value of the integral, so
+\[
+\iint_{D}f\,dA=\iint_{R} f\cdot\mathbf{1}_{D}\,dA .
+\]
+By Fubini, the integral on the right is computed by integrating $x$ first;
+for fixed $x$, the integrand $\mathbf{1}_{D}f$ equals $f$ only on
+$g_{1}(x)\le y\le g_{2}(x)$.
+\end{proof}
+
+A type I region is enough for almost every problem in this chapter; a boundary that crosses a
+vertical line more than twice is split and then added up. The most important case is the disk:
+in Cartesian coordinates it demands two pieces, in polar only one.
+
+\begin{untukanak}
+Now take a closed room with several stoves inside it.
+Each stove gives off heat. The question: how much heat leaves that room
+every second, added up over all the walls, the floor, and the roof?
+
+The first way to compute it is hard: walk around every wall, measure the heat
+flow at each point, then add up. The second way is much easier: count
+how much heat all the stoves inside produce. If no heat escapes
+through other gaps, the two numbers must agree: the amount inside equals the
+amount through the skin.
+
+That sentence sounds too good to be true. The agreement holds only if
+the skin of the room is really closed and the direction ``out'' is fixed unambiguously. If one small
+hole is not counted, or if we mislabel which side is outside and
+which is inside, the numbers miss even though all our additions are correct.
+
+In this chapter we shall learn why the amount inside can be read off from the skin,
+for any curved shape, and how one small hole can ruin
+the whole conclusion.
+\end{untukanak}
+
+\section{Change of variables and the Jacobian determinant}
+\tingkat{intermediate}
+
+Changing coordinates means changing cells: a square cell in the $(u,v)$ plane
+becomes a curved cell in the $(x,y)$ plane, and its area changes. We need
+one number at each point.
+
+\begin{definisi}[Change of variables]
+\index{change of variables}\index{Jacobian} Let $D^{*}$ be an open region in
+$\mathbb{R}^{2}$ and $T\colon D^{*}\to\mathbb{R}^{2}$,
+$T(u,v)=(x(u,v),y(u,v))$, a function with continuous partial derivatives. $T$ is called a
+\emph{valid change of variables} if $T$ is one-to-one on the interior of
+$D^{*}$ and its Jacobian determinant
+\[
+\det J_{T}(u,v)=\frac{\partial x}{\partial u}\frac{\partial y}{\partial v}
+-\frac{\partial x}{\partial v}\frac{\partial y}{\partial u}
+\]
+is nonzero there. The matrix $J_{T}$ itself we already met in Chapter 12.
+\end{definisi}
+
+In everyday words: it is the number that tells how many times a small cell
+grows when it is carried by $T$. A value of $3$ means the cell becomes three times larger in area, $1/2$ means it shrinks
+by half, and zero means the cell is flattened into a line and its information is lost.
+
+Figure~\ref{fig:juring-jacobian} shows one cell and its image:
+area $0.04$ becomes $0.064$, and the number $1.6$ is $|{\det J}|$ at the center
+of the cell.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \begin{scope}[x=1.9cm,y=1.9cm]
+    \fill[layergrey!7] (1,0) rectangle (2.4,1.2);
+    \draw[layergrey!40,very thin] (1,0) grid[xstep=0.2,ystep=0.2] (2.4,1.2);
+    \draw[->,ink] (0.88,0) -- (2.62,0) node[right] {$u$};
+    \draw[->,ink] (1,-0.08) -- (1,1.42) node[above] {$v$};
+    \fill[layerindigo!30] (1.5,0.6) rectangle (1.7,0.8);
+    \draw[layerindigo,thick] (1.5,0.6) rectangle (1.7,0.8);
+    \node[layerindigo!85!black,anchor=north,align=center,fill=white,inner sep=1.2pt]
+      at (1.60,0.55) {cell $0.2\times0.2$\\ area $0.04$};
+    \node[layergrey,anchor=north] at (1.7,-0.10) {the $(u,v)$ plane};
+  \end{scope}
+  \draw[-{Latex[length=2.4mm]},ink,thick] (4.62,1.14) -- (5.85,1.14);
+  \node[ink,above] at (5.23,1.18) {$T$};
+  \node[ink,below,font=\scriptsize] at (5.23,1.06) {$\times\,1.6$};
+  \begin{scope}[xshift=5.9cm,x=1.9cm,y=1.9cm]
+    \foreach \r in {1,1.2,1.4,1.6,1.8,2,2.2,2.4}{
+      \draw[layergrey!40,very thin] (\r,0) arc (0:69:\r);}
+    \foreach \a in {0,11.5,23,34.5,46,57.5,69}{
+      \draw[layergrey!40,very thin] (0,0) -- (\a:2.4);}
+    \draw[->,ink] (-0.08,0) -- (2.62,0) node[right] {$x$};
+    \draw[->,ink] (0,-0.08) -- (0,2.52) node[above] {$y$};
+    \fill[accent!30] (34.4:1.5) arc (34.4:45.8:1.5) -- (45.8:1.7)
+      arc (45.8:34.4:1.7) -- cycle;
+    \draw[accent,thick] (34.4:1.5) arc (34.4:45.8:1.5) -- (45.8:1.7)
+      arc (45.8:34.4:1.7) -- cycle;
+    \node[accent,anchor=west,align=left] at (1.62,1.42)
+      {curved sector\\ area $0.064=1.6\times0.04$};
+    \node[layergrey,anchor=north] at (1.6,-0.10) {the $(x,y)$ plane};
+  \end{scope}
+\end{tikzpicture}
+\caption{One small cell in the $(u,v)$ plane and its image in the $(x,y)$ plane under
+$T(u,v)=(u\cos v,\;u\sin v)$. The cell $0.2\times0.2$ of area $0.04$ becomes a sector of
+area $0.064$, that is $1.6$ times as large, exactly the value $|{\det J}|=u$ at the center of the cell
+($u=1.6$). Note that its sides curve as well: what changes is not only the size
+but also the shape, and one number at each point is enough to record the change.}
+\label{fig:juring-jacobian}
+\end{figure}
+
+\begin{tangan}
+Take a square sheet of paper $12$ cm by $12$ cm, a ruler, a pencil, scissors, and
+tape. Draw $1$ cm cells over the whole sheet; there are $144$ cells. Cut the paper
+into twelve vertical strips, each $1$ cm by $12$ cm. On every
+strip, mark the point $3$ cm to the right on the top edge, draw a line from the bottom left
+corner to that point, then cut along the line. Each strip is now two slanted
+pieces. Arrange all the pieces into one tight parallelogram, then
+tape them together.
+
+Watch what happens: the outer frame is $15$ cm by $12$ cm, wider by $3$ cm
+than the original sheet, but the parallelogram inside still has base
+$12$ cm and height $12$ cm. Measure both with the ruler, perpendicular, not
+along the slanted side: the result is $144$ square centimeters, the same as the area of the sheet
+before it was cut. If your number is different, the height is almost certainly what went wrong.
+\end{tangan}
+
+\begin{teorema}[Change of variables in a double integral]
+\index{change of variables theorem} Let $T$ be a valid change of variables
+from $D^{*}$ to $D=T(D^{*})$, and $f$ continuous on $D$. Then
+\[
+\iint_{D}f(x,y)\,dx\,dy
+=\iint_{D^{*}} f\bigl(T(u,v)\bigr)\,\bigl|\det J_{T}(u,v)\bigr|\,du\,dv .
+\]
+\end{teorema}
+
+\begin{proof}
+We prove the idea; the full proof is in Spivak, the chapter \emph{Integration},
+the section on change of variables, and in Rudin, the chapter \emph{Integration of Differential
+Forms}.
+
+Partition $D^{*}$ into small cells. On a cell around $(u_{0},v_{0})$,
+the map $T$ is almost linear: $T(u_{0}+h,v_{0}+k)\approx
+T(u_{0},v_{0})+J_{T}(u_{0},v_{0})(h,k)$. That cell is mapped onto a
+parallelogram with sides $h\,\partial T/\partial u$ and $k\,\partial T/\partial v$,
+whose area is computed with a determinant (Chapter 7):
+\[
+\mathrm{luas}
+=\Bigl|h\,k\,\det\Bigl(\frac{\partial T}{\partial u},
+\frac{\partial T}{\partial v}\Bigr)\Bigr|
+=|h\,k|\,|\det J_{T}(u_{0},v_{0})| .
+\]
+Each cell contributes $f(T(u_{0},v_{0}))$ times its original area times
+$|\det J_{T}|$, and the sum is the Riemann sum for the integral on the right-hand
+side; because the derivative of $T$ is continuous on a compact set, the error of the linear
+approximation shrinks uniformly with the mesh.
+\end{proof}
+
+The absolute value on the determinant is not decoration: a determinant can be negative, an area cannot.
+The negative sign stores an orientation; in the double integral that orientation is discarded, but
+in the line and surface integrals later that sign decides the answer.
+
+Now the determinants for the two coordinate systems used most often,
+beginning with polar.
+
+\begin{proposisi}[Polar coordinates]\index{polar coordinates}
+With $x=r\cos\theta$, $y=r\sin\theta$, $r>0$, we have
+\[
+\det J=\begin{vmatrix}\cos\theta & -r\sin\theta\\ \sin\theta & r\cos\theta
+\end{vmatrix}=r\cos^{2}\theta+r\sin^{2}\theta=r ,
+\]
+so that
+$\iint_{D}f\,dx\,dy=\iint_{D^{*}}f(r\cos\theta,r\sin\theta)\,r\,dr\,d\theta$.
+\end{proposisi}
+
+That factor $r$ is the one missing from the program in the opening of the chapter. At $r=1$
+it is $1$, but at $r=0.1$ it is $0.1$: a cell near the center
+contributes ten times less than a guess that ignores it, and
+the total error can be more than a factor of two.
+
+\begin{proposisi}[Cylindrical and spherical coordinates]
+\index{cylindrical coordinates}\index{spherical coordinates} For cylindrical coordinates
+$x=r\cos\theta$, $y=r\sin\theta$, $z=z$, the Jacobian determinant is $r$. For
+spherical coordinates
+\[
+x=\rho\sin\varphi\cos\theta,\quad
+y=\rho\sin\varphi\sin\theta,\quad
+z=\rho\cos\varphi ,
+\]
+with $\rho\ge0$, $0\le\varphi\le\pi$, $0\le\theta<2\pi$, the Jacobian
+determinant is $\rho^{2}\sin\varphi$.
+\end{proposisi}
+
+\begin{proof}
+For the cylinder, the third column $(0,0,1)$ leaves the determinant as the $2\times2$
+polar block determinant, namely $r$.
+
+For the sphere, compute the $3\times3$ determinant by cofactor expansion. With
+$s_{\varphi}=\sin\varphi$, $c_{\varphi}=\cos\varphi$,
+$s_{\theta}=\sin\theta$, $c_{\theta}=\cos\theta$, the matrix is
+\[
+J=\begin{pmatrix}
+s_{\varphi}c_{\theta} & \rho c_{\varphi}c_{\theta} & -\rho s_{\varphi}s_{\theta}\\
+s_{\varphi}s_{\theta} & \rho c_{\varphi}s_{\theta} & \rho s_{\varphi}c_{\theta}\\
+c_{\varphi} & -\rho s_{\varphi} & 0
+\end{pmatrix}.
+\]
+The entry in the third row and third column is zero, so expansion along the third column leaves two
+terms:
+\[
+\det J=\rho^{2}s_{\varphi}s_{\theta}^{2}+\rho^{2}s_{\varphi}c_{\theta}^{2}
+=\rho^{2}s_{\varphi}\bigl(s_{\theta}^{2}+c_{\theta}^{2}\bigr)=\rho^{2}s_{\varphi}.
+\]
+\end{proof}
+
+The factor $\rho^{2}\sin\varphi$ is zero at the poles $\varphi=0$ and $\varphi=\pi$,
+because there the whole sphere of radius $\rho$ collapses to a single point and the map stops being
+one-to-one; that is why the poles are excluded from $D^{*}$. It is largest at the
+equator, where a small change in $\varphi$ carries a point farthest.
+
+\begin{resep}
+\begin{enumerate}
+\item Write $T$ explicitly: $x=x(u,v)$, $y=y(u,v)$, and check that $T$
+  is one-to-one on the interior of $D^{*}$.
+\item Compute the four partial derivatives, assemble the $2\times2$ matrix, then compute
+  $\det J(u,v)$. Keep its sign; the absolute value is put in later.
+\item Translate the boundary: draw $D$ in the $(x,y)$ plane, ask which values of $(u,v)$
+  land there, then write $D^{*}$.
+\item Replace every $x,y$ in $f$ by $x(u,v),y(u,v)$, multiply by
+  $|\det J(u,v)|$, then close with $du\,dv$ in the order of the limits.
+\end{enumerate}
+A warning about order: steps 2 and 3 may not be swapped. The determinant must already
+be in terms of $(u,v)$ before the limits are put in. If the limits are written first, that factor is left in $x$ and $y$ and
+the integral cannot be computed.
+\end{resep}
+
+\kamus{Jacobian determinant}{determinan Jacobian}{The number that says how many times a small cell stretches when the coordinates are changed.}
+
+\kamus{double integral}{integral lipat dua}{Adding up values on small cells of a surface, then narrowing the cells.}
+
+\kamus{orientation}{orientasi}{An agreement about which direction of rotation counts as positive.}
+
+\section{Line integrals and conservative fields}
+\tingkat{intermediate}
+
+Now we stop adding up over a surface and start adding up
+along a path. Picture a small object dragged along a curved path by a force whose
+direction and size change at every point. The work of that force is the sum of the component of the force along the path times the piece of
+length of the path.
+
+\begin{definisi}[Line integral]\index{line integral}
+Let $\gamma\colon[a,b]\to\mathbb{R}^{2}$ be a curve with piecewise continuous
+derivative, and $F=(P,Q)$ a continuous vector field on its trace.
+The \emph{line integral} of $F$ along $\gamma$ is
+\[
+\int_{\gamma}F\cdot d\mathbf{r}
+=\int_{a}^{b}\Bigl(P(\gamma(t))\,\gamma_{1}'(t)
++Q(\gamma(t))\,\gamma_{2}'(t)\Bigr)\,dt .
+\]
+If $\gamma$ is closed, meaning $\gamma(a)=\gamma(b)$, that integral is called
+the \emph{circulation} of $F$ around $\gamma$.
+\end{definisi}
+
+That formula does not choose a starting point, only a direction. Changing the parameter to a
+different speed does not change the value, because substitution (Chapter 13) absorbs
+the speed factor; reversing the direction changes the sign. So a line integral is oriented,
+and that is its first difference from the double integral.
+
+Figure~\ref{fig:sirkulasi} shows such a rotating field, with one
+closed curve for measuring how much rotation is caught.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.45,font=\footnotesize]
+  \draw[->,layergrey] (-2.85,0) -- (2.85,0) node[right] {$x$};
+  \draw[->,layergrey] (0,-2.85) -- (0,2.85) node[above] {$y$};
+  \foreach \x in {-2.4,-1.6,-0.8,0,0.8,1.6,2.4}{
+    \foreach \y in {-2.4,-1.6,-0.8,0,0.8,1.6,2.4}{
+      \draw[-{Latex[length=1.2mm]},layerteal!75]
+        (\x,\y) -- ({\x-0.30*\y},{\y+0.30*\x});}}
+  \draw[accent,very thick] (0,0) circle (1.75);
+  \draw[-{Latex[length=2.8mm]},accent,very thick]
+    (1.126,-1.341) -- (1.340,-1.126);
+  \node[accent,anchor=north west,align=left] at (0.28,-1.86)
+    {closed curve, positive direction};
+  \node[ink,align=center,fill=white,fill opacity=0.85,text opacity=1,inner sep=2pt] at (0,0.95)
+    {$\displaystyle\oint_{\gamma}F\cdot d\mathbf{r}=2\pi$};
+  \node[ink,font=\scriptsize,fill=white,fill opacity=0.85,text opacity=1,inner sep=1.5pt] at (0,0.42)
+    {whereas $\operatorname{curl}F=2$ at every point};
+\end{tikzpicture}
+\caption{The field $F(x,y)=(-y,x)$ with an arrow at every grid point. The arrows turn
+around the origin, and their length grows with the distance of the point from the center. The circulation
+around a circle of radius $1$ is $2\pi$, equal to the area $\pi$ times
+$\operatorname{curl}F=2$: this is Green for this field. The direction of the arrows on the curve is the positive
+direction, counterclockwise.}
+\label{fig:sirkulasi}
+\end{figure}
+
+If a force field comes from a height function, the work depends only
+on the starting point and the ending point. This is the curve version of the fundamental theorem of calculus,
+and its name follows from that.
+
+\begin{teorema}[The fundamental theorem for line integrals]
+\index{conservative field} Let $f\colon U\to\mathbb{R}$ have continuous partial
+derivatives on an open set $U\subseteq\mathbb{R}^{2}$, and let $\gamma$
+be a curve from $A$ to $B$ inside $U$. Then
+\[
+\int_{\gamma}\nabla f\cdot d\mathbf{r}=f(B)-f(A).
+\]
+\end{teorema}
+
+\begin{proof}
+Write $g(t)=f(\gamma(t))$. By the multivariable chain rule (Chapter 12),
+\[
+g'(t)=\nabla f(\gamma(t))\cdot\gamma'(t),
+\]
+provided $\gamma$ is differentiable at $t$. So the integrand in the line integral
+is the derivative of $g$, and the fundamental theorem of calculus (Chapter 13) gives
+$\int_{a}^{b}g'(t)\,dt=g(b)-g(a)=f(B)-f(A)$. For a curve that is only
+piecewise differentiable, add up over each piece; the terms at the joining
+points cancel each other.
+\end{proof}
+
+A field of the form $\nabla f$ is called \emph{conservative}, and $f$ is its potential.
+A direct consequence of the theorem: for a conservative field, the circulation around
+a closed path is always zero.
+
+The converse is also true.
+
+\begin{teorema}[Converse]
+Let $F$ be continuous on a connected open set
+$U\subseteq\mathbb{R}^{2}$, and let the line integral of $F$ be independent of the
+path inside $U$. Then $F=\nabla f$ for some $f$, namely
+\[
+f(\mathbf{x})=\int_{\mathbf{x}_{0}}^{\mathbf{x}}F\cdot d\mathbf{r},
+\]
+with $\mathbf{x}_{0}\in U$ fixed.
+\end{teorema}
+
+\begin{proof}
+Take $\mathbf{x}\in U$ and $h$ small enough that the segment from $\mathbf{x}$ to
+$\mathbf{x}+h\mathbf{e}_{1}$ stays inside $U$. Because the path does not
+matter, we may travel from $\mathbf{x}_{0}$ to $\mathbf{x}$ and then
+add that short segment, so that
+\[
+f(\mathbf{x}+h\mathbf{e}_{1})-f(\mathbf{x})
+=\int_{0}^{1}F_{1}(\mathbf{x}+th\mathbf{e}_{1})\,h\,dt .
+\]
+Divide by $h$ and use continuity: the average value of the integrand tends to
+$F_{1}(\mathbf{x})$ as $h\to0$, so $\partial f/\partial x_{1}=F_{1}$,
+and the same argument gives $\partial f/\partial x_{2}=F_{2}$. Both partial
+derivatives are continuous, hence $F=\nabla f$.
+\end{proof}
+
+Given $F$, how do we know it is conservative without looking for a potential? In
+the plane there is a quick test: $F=(P,Q)$ has a potential only if $\partial P/\partial
+y=\partial Q/\partial x$, because both sides are second derivatives of $f$ and Clairaut
+(Chapter 12) makes them equal. The other direction demands a domain without holes and is
+proved through Green later. The field from the opening of the chapter is the counterexample: its curl is zero,
+but it is not the gradient of anything.
+
+\begin{contoh}[Two ways to compute work]
+\index{potential} Take $F(x,y)=(2xy,\ x^{2}+3y^{2})$ and the path
+$\gamma(t)=(t,2t^{2})$ for $0\le t\le1$, from $(0,0)$ to $(1,2)$.
+
+First way, directly. Here $dx=dt$ and $dy=4t\,dt$, so
+\[
+\int_{\gamma}F\cdot d\mathbf{r}
+=\int_{0}^{1}\Bigl(2t\cdot 2t^{2}+(t^{2}+12t^{4})\cdot 4t\Bigr)dt
+=\int_{0}^{1}\bigl(8t^{3}+48t^{5}\bigr)dt=2+8=10 .
+\]
+Second way, through the potential. First check that $\partial P/\partial
+y=2x=\partial Q/\partial x$, then guess $f(x,y)=x^{2}y+y^{3}$. Its derivatives
+are indeed $\partial f/\partial x=2xy$ and $\partial f/\partial y=x^{2}+3y^{2}$.
+Therefore
+\[
+\int_{\gamma}F\cdot d\mathbf{r}=f(1,2)-f(0,0)=(2+8)-0=10 .
+\]
+Both ways give $10$; adaptive quadrature differs by $1.78\times10^{-15}$.
+\end{contoh}
+
+\section{Green's theorem}
+\tingkat{intermediate}
+
+The idea in the box about the room and the stoves now becomes a theorem: what happens
+inside a region can be read off from its edge.
+
+Before that, one agreement on direction.
+
+\begin{definisi}[Positive orientation]
+\index{positive orientation} A simple closed curve $\gamma$ is oriented
+\emph{positively} if the region it bounds always lies on the left
+as we traverse it. For a circle, the positive direction is counterclockwise.
+\end{definisi}
+
+\begin{teorema}[Green]\index{Green's theorem}
+Let $D$ be a closed bounded region in $\mathbb{R}^{2}$ whose boundary
+$\partial D$ consists of finitely many simple closed curves that are piecewise
+smooth and positively oriented. Let $P,Q$ have continuous partial
+derivatives on an open set containing $D$. Then
+\[
+\oint_{\partial D}P\,dx+Q\,dy=\iint_{D}\Bigl(\frac{\partial Q}{\partial x}
+-\frac{\partial P}{\partial y}\Bigr)dA .
+\]
+\end{teorema}
+
+\begin{proof}
+It is enough to prove it for regions that are both type I and type II, because a general
+region is split into finitely many pieces of that kind and the integrals are
+added up; the adjacent sides of the pieces are traversed in opposite directions and therefore
+cancel each other.
+
+Suppose $D$ is type I with $g_{1},g_{2}$ smooth. On the vertical sides $dx=0$,
+so their contribution is zero and
+\[
+\oint_{\partial D}P\,dx=\int_{a}^{b}P(x,g_{1}(x))\,dx+\int_{b}^{a}P(x,g_{2}(x))\,dx
+=\int_{a}^{b}\bigl[P(x,g_{1})-P(x,g_{2})\bigr]dx .
+\]
+By the fundamental theorem of calculus,
+$P(x,g_{1})-P(x,g_{2})=-\int_{g_{1}(x)}^{g_{2}(x)}\partial P/\partial y\,dy$,
+so that
+\[
+\oint_{\partial D}P\,dx=-\int_{a}^{b}\!\!\int_{g_{1}(x)}^{g_{2}(x)}
+\frac{\partial P}{\partial y}\,dy\,dx=-\iint_{D}\frac{\partial P}{\partial y}\,dA .
+\]
+In the same way, on a $D$ of type II, where $dy=0$ on the flat sides,
+$\oint_{\partial D}Q\,dy=\iint_{D}\partial Q/\partial x\,dA$.
+\end{proof}
+
+\begin{contoh}[Green on the unit square]
+Take $P=x^{2}-y$, $Q=x+2y$, and $D=[0,1]\times[0,1]$. Here $\partial
+Q/\partial x-\partial P/\partial y=1-(-1)=2$, so the right-hand side of Green is
+$2$ times the area of the square, namely $2$.
+
+We compute the left-hand side on the four sides, counterclockwise:
+\begin{align*}
+\text{bottom }(y=0,\,dy=0):&\quad \int_{0}^{1}x^{2}\,dx=\tfrac13 ,\\
+\text{right }(x=1,\,dx=0):&\quad \int_{0}^{1}(1+2y)\,dy=2 ,\\
+\text{top }(y=1,\,dy=0):&\quad \int_{1}^{0}(x^{2}-1)\,dx=\tfrac23 ,\\
+\text{left }(x=0,\,dx=0):&\quad \int_{1}^{0}2y\,dy=-1 .
+\end{align*}
+The sum is $\tfrac13+2+\tfrac23-1=2$, the same as the right-hand side. Adaptive quadrature
+for the four sides gives $2.000000000000000$, and the double integral also gives
+$2.000000000000000$.
+\end{contoh}
+
+Now the sign error we asked for. Repeat the same computation clockwise. Every side is traversed
+backwards, so every term changes sign and
+the sum becomes $-2$; the right-hand side of Green does not change because the region is the same.
+The answer that should be $2$ becomes $-2$: not slightly off, but wrong in
+sign entirely, with a difference of $4$ that cannot be blamed on
+rounding.
+
+So orientation is not a polite convention: Green's formula is correct only for one
+direction of rotation, and that direction must be checked before computing.
+
+With Green in hand, the converse direction of the curl test from the previous section
+can be proved.
+
+\begin{akibat}[The curl test on a domain without holes]\index{curl test}
+Let $U\subseteq\mathbb{R}^{2}$ be open and \emph{simply connected},
+meaning that every closed curve in $U$ can be contracted to a single point inside
+$U$. Let $P,Q$ have continuous partial derivatives on $U$ and $\partial
+P/\partial y=\partial Q/\partial x$ throughout $U$. Then $F=(P,Q)$ is conservative
+on $U$.
+\end{akibat}
+
+\begin{proof}
+Take a simple closed curve $\gamma$ in $U$ and the region $D$ that
+it bounds. Because $U$ is simply connected, $D$ stays inside $U$, so
+Green applies and
+\begin{align*}
+\oint_{\gamma}P\,dx+Q\,dy
+&=\iint_{D}\Bigl(\frac{\partial Q}{\partial x}-\frac{\partial P}{\partial y}\Bigr)dA\\
+&=0 .
+\end{align*}
+A closed curve that crosses itself is split into simple arcs,
+and each piece gives zero. All circulations are zero, so the line
+integral is independent of path, and the converse theorem above supplies a potential.
+\end{proof}
+
+That hypothesis cannot be dropped. On a region with a hole, Green demands that the inner boundary
+also be counted; that is where the field from the opening of the chapter escapes the curl test.
+
+\section{Gauss's and Stokes' theorems}
+\tingkat{advanced}
+
+Green talks about a region in the plane and its edge. In three-dimensional space
+there are two versions, and both use the divergence and the curl from Chapter 12.
+
+\begin{definisi}[Divergence and curl]
+\index{divergence}\index{curl} For a field $F=(F_{1},F_{2},F_{3})$ with
+continuous partial derivatives,
+\[
+\operatorname{div}F=\frac{\partial F_{1}}{\partial x}
++\frac{\partial F_{2}}{\partial y}+\frac{\partial F_{3}}{\partial z},
+\qquad
+\operatorname{curl}F=\Bigl(\frac{\partial F_{3}}{\partial y}
+-\frac{\partial F_{2}}{\partial z},\
+\frac{\partial F_{1}}{\partial z}-\frac{\partial F_{3}}{\partial x},\
+\frac{\partial F_{2}}{\partial x}-\frac{\partial F_{1}}{\partial y}\Bigr).
+\]
+\end{definisi}
+
+The divergence measures how much field is born at a point: positive means a
+source, negative a sink. The curl measures the rotation of the field around that point.
+
+\begin{teorema}[Gauss, or the divergence theorem]\index{Gauss's theorem}
+Let $E\subseteq\mathbb{R}^{3}$ be a closed bounded region whose boundary
+$\partial E$ is a piecewise smooth surface, and let $\mathbf{n}$ be the unit
+normal vector pointing outward. If $F$ has continuous partial derivatives
+on an open set containing $E$, then
+\[
+\iiint_{E}\operatorname{div}F\,dV=\iint_{\partial E}F\cdot\mathbf{n}\,dA .
+\]
+\end{teorema}
+
+\begin{proof}
+We prove it for a box first.
+
+Take $E=[a,b]\times[c,d]\times[e,f]$. For the third term,
+\[
+\iiint_{E}\frac{\partial F_{3}}{\partial z}\,dV
+=\iint_{[a,b]\times[c,d]}\bigl[F_{3}(x,y,f)-F_{3}(x,y,e)\bigr]dx\,dy ,
+\]
+by Fubini and the fundamental theorem of calculus in the $z$ direction. That right-hand side is exactly
+the flux through the top face (normal $+\mathbf{k}$) and the bottom face (normal
+$-\mathbf{k}$), because there $\mathbf{n}\,dA=\pm\mathbf{k}\,dx\,dy$. The other
+terms give the flux through the two other pairs of faces.
+
+For a general region, cut it into small boxes. An interior face appears twice
+with opposite normals and cancels, so all that remains are the faces
+that touch the outer boundary; the limit as the mesh goes to zero gives the statement for a curved
+boundary. The full proof is in Spivak, Theorem 5-8.
+\end{proof}
+
+\begin{contoh}[Gauss on the unit ball]
+Take $F(x,y,z)=(x^{3},y^{3},z^{3})$ and $E$ the unit ball. Here
+$\operatorname{div}F=3(x^{2}+y^{2}+z^{2})=3\rho^{2}$, so with the
+Jacobian determinant of the sphere
+\[
+\iiint_{E}3\rho^{2}\,dV=\int_{0}^{2\pi}\!\!\int_{0}^{\pi}\!\!\int_{0}^{1}
+3\rho^{4}\sin\varphi\,d\rho\,d\varphi\,d\theta
+=3\cdot2\pi\cdot2\cdot\frac15=\frac{12\pi}{5}.
+\]
+The surface side: on the unit ball $\mathbf{n}=(x,y,z)$, so
+$F\cdot\mathbf{n}=x^{4}+y^{4}+z^{4}$ and
+\[
+\iint_{\partial E}(x^{4}+y^{4}+z^{4})\,dA=3\iint_{\partial E}z^{4}\,dA
+=3\int_{0}^{2\pi}\!\!\int_{0}^{\pi}\cos^{4}\varphi\sin\varphi\,d\varphi\,d\theta
+=3\cdot2\pi\cdot\frac25=\frac{12\pi}{5},
+\]
+with the factor $3$ from symmetry. The value is $7.5398223686155$, and quadrature on
+the surface gives the same number to the last digit.
+\end{contoh}
+
+The second theorem talks about an open surface whose boundary is a curve.
+Its formula requires the right-hand rule.
+
+\begin{teorema}[Stokes]\index{Stokes' theorem}
+Let $S$ be an oriented piecewise smooth surface with normal
+$\mathbf{n}$, and let $\partial S$ be its boundary curve with the orientation given by the
+right-hand rule. If $F$ has continuous partial derivatives on an open set
+containing $S$, then
+\[
+\iint_{S}(\operatorname{curl}F)\cdot\mathbf{n}\,dA
+=\oint_{\partial S}F\cdot d\mathbf{r}.
+\]
+\end{teorema}
+
+\begin{proof}
+Parametrize $S$ by $\mathbf{r}(u,v)$ over a region $D$ in the $(u,v)$ plane,
+with the matching orientation. The chain rule turns the integrand into
+derivatives of the components of $F$ with respect to $u$ and $v$, and after rearrangement the surface
+integral becomes
+\[
+\iint_{D}\Bigl(\frac{\partial \tilde{Q}}{\partial u}
+-\frac{\partial \tilde{P}}{\partial v}\Bigr)du\,dv ,
+\]
+for two functions $\tilde{P},\tilde{Q}$ built from $F$ and
+$\mathbf{r}$. That is exactly the right-hand side of Green, so Green gives the line integral
+on $\partial D$, which is nothing other than the line integral of $F$ on $\partial S$.
+The full algebra is in Spivak, Theorem 5-9.
+\end{proof}
+
+If $S$ is flat in the $xy$ plane, Stokes becomes Green; if $S$ is only an
+interval, it becomes the fundamental theorem of calculus.
+
+\begin{contoh}[Stokes on a hemisphere]
+Take $F=(z,x,y)$, whose curl is $(1,1,1)$, and $S$ the upper half of the unit ball
+with outward normal, so that its boundary is the unit circle in the $xy$ plane
+counterclockwise.
+
+The surface side:
+\[
+\iint_{S}(1,1,1)\cdot\mathbf{n}\,dA=\iint_{S}(x+y+z)\,dA=\iint_{S}z\,dA
+=\int_{0}^{2\pi}\!\!\int_{0}^{\pi/2}\cos\varphi\sin\varphi\,d\varphi\,d\theta
+=2\pi\cdot\frac12=\pi ,
+\]
+because the $x$ and $y$ terms cancel each other by the symmetry of the hemisphere. The boundary side, with
+$\mathbf{r}(t)=(\cos t,\sin t,0)$:
+\[
+\oint_{\partial S}F\cdot d\mathbf{r}=\int_{0}^{2\pi}\cos^{2}t\,dt=\pi .
+\]
+Both are $3.1415926535898$; quadrature gives the same number on the two sides.
+\end{contoh}
+
+Now the sign error in Stokes. Turn the normal of the surface inward:
+the surface side becomes $-\pi$, the boundary side does not change as long as the direction of rotation
+stays the same, and the equality fails with a difference of $2\pi$. The right-hand rule is what
+binds the two sides; reversing both together restores the equality.
+
+\section{Differential forms: one sentence for all of them}
+\tingkat{advanced}
+
+We have now seen three theorems with three faces. There is a language that
+writes them as one statement, and that language is not mere tidiness: it
+explains why the sign of orientation appears everywhere.
+
+\begin{definisi}[Differential forms]
+\index{differential form} A \emph{$k$-form} on an open set
+$U\subseteq\mathbb{R}^{n}$ is a sum of terms of the form
+$a(x)\,dx_{i_{1}}\wedge\cdots\wedge dx_{i_{k}}$, with $a$ a smooth function.
+The wedge product $\wedge$ is antisymmetric:
+\[
+dx\wedge dy=-dy\wedge dx,\qquad dx\wedge dx=0 .
+\]
+The exterior derivative $d$ acts on the coefficients and adds one wedge:
+\[
+d(a\,dx_{I})=da\wedge dx_{I},\qquad da=\sum_{j}\frac{\partial a}{\partial x_{j}}dx_{j}.
+\]
+\end{definisi}
+
+In everyday words: a differential form is an object that is ready to be
+integrated over a surface of a given dimension, and $d$ raises the dimension by one
+level. Antisymmetry makes reversing the orientation reverse the sign automatically;
+the sign difficulties from before are built into that one rule.
+
+\begin{teorema}[General Stokes]
+Let $M$ be an oriented manifold of dimension $k$ with boundary, and let $\omega$
+be a $(k-1)$-form with smooth coefficients. Then
+\[
+\int_{\partial M}\omega=\int_{M}d\omega ,
+\]
+with the orientation of $\partial M$ induced by the orientation of $M$.
+\end{teorema}
+
+The complete proof is skipped: Spivak, \emph{Integration on Chains}, Theorem 4-13
+for chains, and Theorem 5-5 in \emph{Integration of Manifolds} for
+manifolds; also Rudin, the chapter \emph{Integration of Differential Forms}. There
+Green, Gauss, and classical Stokes are derived as special cases.
+
+Its translation in three-dimensional space:
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Language of forms & Vector field & Theorem \\
+\hline
+0-form $f$ & scalar function & $df$ gives the gradient \\
+1-form $P\,dx+Q\,dy+R\,dz$ & $F=(P,Q,R)$ & $d\omega$ gives $\operatorname{curl}F$ \\
+2-form $P\,dy\wedge dz+\cdots$ & $F=(P,Q,R)$ & $d\eta$ gives $\operatorname{div}F$ \\
+$\int_{\partial M}\omega=\int_{M}d\omega$ & & Green, Gauss, Stokes, FTC \\
+\hline
+\end{tabular}
+\end{center}
+
+One small consequence: because $d(d\omega)=0$, the exterior derivative taken twice is always zero.
+Translated, $\operatorname{curl}\nabla f=0$ and
+$\operatorname{div}\operatorname{curl}F=0$. A symbolic check for a general function
+and a general field gives zero in all six components, so those two identities that look
+like coincidences are one statement.
+
+\section{When these theorems fail}
+\tingkat{advanced}
+
+All the theorems in this chapter are conditional equalities. This section collects four
+ways those equalities break, with numbers.
+
+The first failure is a singularity. Take $F(x,y)=(-y,x)/(x^{2}+y^{2})$
+on the plane without the origin. Compute its curl:
+\[
+\frac{\partial Q}{\partial x}-\frac{\partial P}{\partial y}
+=\frac{(x^{2}+y^{2})-2x^{2}}{(x^{2}+y^{2})^{2}}
++\frac{(x^{2}+y^{2})-2y^{2}}{(x^{2}+y^{2})^{2}}=0 .
+\]
+A finite difference with $h=10^{-5}$ at $(1,0)$ gives $-2.01\times10^{-10}$, zero up to
+the truncation error. But the circulation
+around the unit circle is $2\pi=6.2831853072$, because there
+$F\cdot\gamma'=1$ at every point. So zero curl does not mean zero circulation.
+
+What is violated is the hypothesis of Green: $P$ and $Q$ must have continuous partial
+derivatives on an open set containing $D$, whereas both are not
+defined at the origin inside $D$, and $D$ is not simply connected. On the annulus $1\le r\le2$ Green still applies, with two boundaries
+of opposite direction, and the integral is $2\pi-2\pi=0$; that zero is correct because there
+the field has the potential $\theta$, the polar angle.
+
+The second failure is swapping the order without integrability. Take
+\[
+f(x,y)=\frac{x^{2}-y^{2}}{(x^{2}+y^{2})^{2}}
+\]
+on the square $(0,1)\times(0,1)$. For fixed $y>0$,
+\[
+\int_{0}^{1}f(x,y)\,dx=\Bigl[-\frac{x}{x^{2}+y^{2}}\Bigr]_{x=0}^{x=1}
+=-\frac{1}{1+y^{2}},
+\]
+so the outer integral gives $-\pi/4=-0.7853981634$; in the reverse order
+the result is $+\pi/4$. Both iterated integrals exist but they differ, so by
+Fubini the double integral does not exist. In polar coordinates
+$f=\cos2\theta/r^{2}$, and on the unit quarter disk
+\[
+\iint|f|\,dA\ge\int_{0}^{\pi/2}|\cos2\theta|\,d\theta
+\int_{0}^{1}\frac{dr}{r}=\infty ,
+\]
+because $\int_{0}^{1}dr/r$ diverges at $r=0$. Fubini is not wrong: its hypothesis
+is not satisfied.
+
+The third failure is an unmanageable boundary. Gauss demands that $E$ be closed
+and bounded with a piecewise smooth boundary. On an unbounded set,
+the boundary can run off to infinity and the surface integral stops meaning anything;
+Spivak places this as an exercise after Theorem 5-5, which fails without
+compactness. Finitely many corners are still safe, because the normal jumps only at
+finitely many points; a boundary with endlessly jagged teeth, a coastline for instance, is not.
+
+The fourth failure is a surface that cannot be oriented. On a Möbius
+strip, walking around the strip brings the normal back to the opposite
+side, so $\mathbf{n}$ in Stokes' formula is not defined.
+The theorem is not wrong; its statement is simply incomplete for objects of that kind.
+
+\begin{tantangan}
+Take $T(u,v)=(u^{2},v)$ on $D^{*}=(-2,2)\times(0,1)$. This map seems to
+widen things: the point $u=2$ lands at $x=4$, and its derivative $2u$ grows without
+bound as $u$ moves away from zero. Compute the area of $T(D^{*})$ from the picture, then
+compute it with the change-of-variables formula. The two numbers differ by exactly a factor
+$2$. Explain why, and name the line on which the Jacobian determinant is zero.
+
+Hint 1: check whether $T$ is one-to-one. There are two values of $u$ that land at
+$x=1$.
+
+Hint 2: the line $u=0$ is folded onto a single point, so every image point
+is counted twice by the integral; $|\det J|=|2u|$ does not know that the fold
+is only one sheet.
+
+If you are stuck, go back to the definition of a valid change of variables and check the
+one-to-one condition.
+\end{tantangan}
+
+One closing warning, which is not in the textbooks. Numerical quadrature never
+checks the hypotheses. It gives $6.2831853072$ with seven correct digits
+for a field that violates the hypothesis of Green, and no error message. A tidy number is not proof that the hypothesis holds; it is only proof that
+the arithmetic ran.
+
+\section{Worked examples}
+\tingkat{intermediate}
+
+Now three computations that form the backbone of this chapter. All three can be checked
+with Python, and all three have gone wrong in the author's own hands.
+
+\textbf{One integral, two coordinate systems.}
+\nopagebreak[4]
+
+Compute
+\[
+I=\iint_{D}e^{-(x^{2}+y^{2})}\,dA,\qquad D=\{(x,y):x^{2}+y^{2}\le1\}.
+\]
+In polar coordinates, $D$ becomes $0\le r\le1$, $0\le\theta\le2\pi$, and
+$dA=r\,dr\,d\theta$. The integral separates into two factors:
+\[
+I=\int_{0}^{2\pi}\!\!\int_{0}^{1}e^{-r^{2}}r\,dr\,d\theta
+=2\pi\cdot\Bigl[-\frac12e^{-r^{2}}\Bigr]_{0}^{1}
+=2\pi\cdot\frac{1-e^{-1}}{2}=\pi\bigl(1-e^{-1}\bigr).
+\]
+Its value is $1.9858653038$. The antiderivative with respect to $r$ exists precisely because of the factor
+$r$: without that factor, the antiderivative involves the error function.
+
+In Cartesian coordinates, the region demands two pieces:
+\[
+I=\int_{-1}^{1}\!\!\int_{-\sqrt{1-x^{2}}}^{\sqrt{1-x^{2}}}
+e^{-(x^{2}+y^{2})}\,dy\,dx .
+\]
+The inner integral has no elementary antiderivative, so we have to use
+quadrature. The results of the two forms, at the same tolerance:
+\begin{align*}
+\text{cartesian}&: 1.9858653037988705 \quad (11907\ \text{evaluations}),\\
+\text{polar}&: 1.9858653037988712 \quad (441).
+\end{align*}
+The errors are $8.9\times10^{-16}$ and $2.2\times10^{-16}$; the difference in accuracy
+does not matter, but the difference in cost is a factor of $27$.
+
+The midpoint rule on the same uniform Cartesian grid lowers the error more
+slowly: $1.141\times10^{-3}$ on $50$ cells per side, and
+$4.667\times10^{-5}$ on $400$. Each time the number of cells is doubled, the error
+drops by about a factor of $2.9$, not $4$, because the height of the columns near the edge
+behaves like $\sqrt{1-x^{2}}$, so the error is of order $h^{3/2}$.
+
+\textbf{Volume of a ball with the Jacobian determinant.}
+
+The volume of a ball of radius $R$ is
+\[
+V=\int_{0}^{2\pi}\!\!\int_{0}^{\pi}\!\!\int_{0}^{R}
+\rho^{2}\sin\varphi\,d\rho\,d\varphi\,d\theta
+=2\pi\cdot2\cdot\frac{R^{3}}{3}=\frac{4\pi R^{3}}{3}.
+\]
+For $R=1$ its value is $4.1887902048$. Three-dimensional quadrature on the ball gives
+\[
+4.188790204786397 \quad(\text{difference }6.2\times10^{-15}),
+\]
+and a Monte Carlo simulation with $10^{6}$ points in the cube $[-1,1]^{3}$ gives
+$4.192824\pm0.004$.
+
+Compare that with dropping the Jacobian determinant. Without the factor
+$\rho^{2}\sin\varphi$,
+\[
+\int_{0}^{2\pi}\!\!\int_{0}^{\pi}\!\!\int_{0}^{1}1\,d\rho\,d\varphi\,d\theta
+=2\pi^{2}=19.7392088022,
+\]
+which is $3\pi/2$ times too large, and the result is still a number that looks
+plausible for a volume.
+
+
+
+The following table collects every number in this chapter.
+
+\begin{center}
+{\small
+\begin{tabular}{llll}
+\hline
+Quantity & Exact & Numerical & Error \\
+\hline
+$\iint_{D}e^{-(x^{2}+y^{2})}dA$, polar & $1.985865$ & $1.985865$ & $2.2\times10^{-16}$ \\
+$\iint_{D}e^{-(x^{2}+y^{2})}dA$, Cartesian & $1.985865$ & $1.985865$ & $8.9\times10^{-16}$ \\
+
+$\int_{\gamma}F\cdot d\mathbf{r}$ & $10$ & $10.000000$ & $1.8\times10^{-15}$ \\
+$\oint_{\partial D}$ Green, square & $2$ & $2.000000$ & $<10^{-15}$ \\
+$\iint_{S}(\operatorname{curl}F)\cdot\mathbf{n}\,dA$ & $3.141593$ & $3.141593$ & $<10^{-13}$ \\
+\hline
+\end{tabular}}
+\end{center}
+
+\kertas{
+Test yourself in three steps. (1) Recompute $I$ by hand using the
+antiderivative $-\tfrac12e^{-r^{2}}$, then compare with $1.9858653038$;
+a difference in the last digit is a rounding error, not a formula error. (2)
+Run \texttt{scipy.integrate.dblquad} on both forms and count how many
+times the function is called; the numbers $11907$ and $441$ will reappear, provided
+the tolerance is the same for both. (3) Change $D$ to the disk of radius $2$
+and check that the exact answer becomes $\pi(1-e^{-4})$, namely $3.0841$.
+If the third step gives a different number, what is wrong is almost certainly the limit on $r$,
+not the formula. }
+
+\section{Computational lab}
+\tingkat{advanced}
+
+The following code checks five things at once: the cost of the two coordinate systems, Green,
+Gauss, Stokes, and a field with a singularity. The numbers in the previous table come
+from this program.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from scipy import integrate
+
+# 1. One double integral, two coordinate systems
+def fc(y, x):
+    return np.exp(-(x*x + y*y))
+
+cnt = [0]
+def fc_count(y, x):
+    cnt[0] += 1
+    return fc(y, x)
+
+cart = integrate.dblquad(fc_count, -1, 1,
+                         lambda x: -np.sqrt(1-x*x),
+                         lambda x: np.sqrt(1-x*x),
+                         epsabs=1e-12, epsrel=1e-12)
+ncart = cnt[0]
+cnt[0] = 0
+
+def fp(r, th):
+    cnt[0] += 1
+    return np.exp(-r*r)*r
+
+pol = integrate.dblquad(fp, 0, 2*np.pi, 0, 1,
+                        epsabs=1e-12, epsrel=1e-12)
+value = np.pi*(1 - np.exp(-1))
+print("cartesian %.16f error %.2e eval %d"
+      % (cart[0], abs(cart[0]-value), ncart))
+print("polar     %.16f error %.2e eval %d"
+      % (pol[0], abs(pol[0]-value), cnt[0]))
+print("exact     %.16f" % value)
+
+# 2. Green: (x^2-y)dx + (x+2y)dy on the unit square
+P = lambda x, y: x*x - y
+Q = lambda x, y: x + 2*y
+edges = [integrate.quad(lambda t: P(t, 0.0), 0, 1)[0],
+         integrate.quad(lambda t: Q(1.0, t), 0, 1)[0],
+         integrate.quad(lambda t: P(t, 1.0), 1, 0)[0],
+         integrate.quad(lambda t: Q(0.0, t), 1, 0)[0]]
+dbl = integrate.dblquad(lambda y, x: 2.0, 0, 1, 0, 1)[0]
+print("Green edges %.15f  double %.15f" % (sum(edges), dbl))
+
+# 3. Gauss: F=(x^3,y^3,z^3) on the unit ball
+def flux(phi, th):
+    sp, cp = np.sin(phi), np.cos(phi)
+    x, y, z = sp*np.cos(th), sp*np.sin(th), cp
+    return (x**4 + y**4 + z**4)*sp
+
+F = integrate.dblquad(flux, 0, 2*np.pi, 0, np.pi,
+                      epsabs=1e-11, epsrel=1e-11)[0]
+print("Gauss flux %.13f  12pi/5 %.13f" % (F, 12*np.pi/5))
+
+# 4. Stokes: F=(z,x,y) on the upper hemisphere of the unit ball
+def curl_n(phi, th):
+    sp, cp = np.sin(phi), np.cos(phi)
+    x, y, z = sp*np.cos(th), sp*np.sin(th), cp
+    return (x + y + z)*sp
+
+S = integrate.dblquad(curl_n, 0, 2*np.pi, 0, np.pi/2)[0]
+L = integrate.quad(lambda t: np.cos(t)**2, 0, 2*np.pi)[0]
+print("Stokes surface %.13f  boundary %.13f" % (S, L))
+
+# 5. A field with a singularity: F=(-y,x)/(x^2+y^2)
+def circle(t):
+    x, y = np.cos(t), np.sin(t)
+    return (-y*(-np.sin(t)) + x*np.cos(t))/(x*x + y*y)
+
+def Pg(x, y): return -y/(x*x + y*y)
+def Qg(x, y): return x/(x*x + y*y)
+
+h = 1e-5
+curl_01 = ((Qg(1+h, 0) - Qg(1-h, 0))/(2*h)
+           - (Pg(1, h) - Pg(1, -h))/(2*h))
+C = integrate.quad(circle, 0, 2*np.pi)[0]
+print("circle %.13f  2pi %.13f" % (C, 2*np.pi))
+print("curl(1,0) %.2e" % curl_01)
+\end{verbatim}
+\end{lab}
+
+The actual output, as it came out:
+
+\begin{verbatim}
+cartesian 1.9858653037988705 error 8.88e-16 eval 11907
+polar     1.9858653037988712 error 2.22e-16 eval 441
+exact     1.9858653037988714
+Green edges 2.000000000000000  double 2.000000000000000
+Gauss flux 7.5398223686155  12pi/5 7.5398223686155
+Stokes surface 3.1415926535898  boundary 3.1415926535898
+circle 6.2831853071796  2pi 6.2831853071796
+curl(1,0) -2.01e-10
+\end{verbatim}
+
+Four things deserve a reading. First, the two opening lines agree to the fifteenth digit at a cost that differs
+by a factor of $27$: the right coordinates do not change the answer, only
+its price. Second, Green matches to the last digit, but that is
+only proof that the implementation is consistent with its formula. Third, Gauss and Stokes are
+computed from different sides and still meet; that is where verification has teeth.
+Fourth, quadrature gives $6.2831853071796$ for a field that violates the hypothesis of
+Green, without a single error message.
+
+\begin{untukdosen}
+The teaching order I use: the density of the plate and the program that forgets the factor
+$r$, then Fubini, then the Jacobian determinant as the area of a stretching cell,
+then line integrals and their fundamental theorem, and only then Green. Green is best proved
+in full for type I regions at the board, because that proof uses only two tools
+the students already have. Gauss and Stokes are enough to prove for a box and for a
+parametrized surface.
+
+Two misconceptions come up most often. First, students think
+$\partial P/\partial y=\partial Q/\partial x$ is enough for conservative, because
+they have only tested fields on a domain without holes. The field
+$(-y,x)/(x^{2}+y^{2})$ has to appear at the board, not on the reading list. Second,
+they treat the Jacobian determinant as a notational formality and write
+$r$ or $\rho^{2}\sin\varphi$ as something to memorize without checking the limits.
+Compare $4\pi/3$ with $2\pi^{2}$; that ratio of $4.712$ times is more impressive
+than a hundred warnings.
+
+One classroom activity: four groups, each computing one side of
+Green, Gauss, and Stokes for the same field, then matching numbers. The group
+with the sign error is found out within five minutes, and that is better than being told.
+The sign of readiness for what comes next: students can explain why orientation
+changes the sign without looking at the formula.
+\end{untukdosen}
+
+\section{Summary}
+\begin{ringkasan}
+\begin{itemize}
+\item The double integral is defined through upper and lower sums over cells;
+Fubini allows the order of integration to be swapped when the function is integrable.
+\item Changing coordinates multiplies the area of a cell by $|\det J|$; polar gives
+$r$, spherical gives $\rho^{2}\sin\varphi$. Without that factor the result is tidy but
+wrong.
+\item For a conservative field, the line integral depends only on the endpoints.
+\item Green, Gauss, and Stokes state one thing: the integral of a derivative over a region
+equals the integral of the field over its boundary, and orientation decides the sign.
+\item All those theorems are conditional: singularities, unmanageable boundaries, surfaces that cannot
+be oriented, and non-integrable functions make them fail without a warning.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\begin{latihan}
+\begin{enumerate}
+\item Compute $\iint_{D}(x^{2}+y^{2})\,dA$ on the unit disk in Cartesian and polar coordinates, check it with \texttt{dblquad}, and state the number of evaluations for each method.
+
+\item Prove that if $T(u,v)=A(u,v)$ is linear and $\det A\ne0$, the
+change-of-variables formula becomes $|\det A|\iint_{D}f\circ T\,dA$.
+
+\item Repeat the Green example on the square in the clockwise direction: show that the result is
+$-2$ and state which side contributes which sign.
+
+\item Compute the volume of the ellipsoid $x^{2}/a^{2}+y^{2}/b^{2}+z^{2}/c^{2}\le1$ with
+the change of variables $x=au$, $y=bv$, $z=cw$, then check the formula on
+$a=b=c=1$.
+
+\item Assess this claim: true, false, or not enough evidence. ``Because
+$\operatorname{curl}F=0$ at every point where $F$ is defined, the field
+$F=(-y,x)/(x^{2}+y^{2})$ is conservative on
+$\mathbb{R}^{2}\setminus\{(0,0)\}$.'' Include a reason and one supporting
+number.
+
+\item Prove that the line integral is independent of path if and only if the
+circulation of every closed curve is zero, by using two paths from $A$ to
+$B$ that together form one closed curve.
+
+\item Compute both sides of Stokes for $F=(-y,x,z)$ on the paraboloid
+$z=1-x^{2}-y^{2}$, $z\ge0$, with the normal pointing upward, then check
+with quadrature.
+
+\item Compute both sides of Gauss for $F=(x,y,z)/(x^{2}+y^{2}+z^{2})^{3/2}$ on the unit
+ball. Explain why the result does not contradict the theorem, and
+which hypothesis is violated. (Hint: compute $\operatorname{div}F$ first.)
+
+\item Show that the Jacobian determinant of spherical coordinates is zero at $\varphi=0$ and
+$\varphi=\pi$, then explain why the map may still be used on
+$0<\varphi<\pi$. (Hint: check where the map stops being one-to-one.)
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+What is really proved in this chapter, with a written proof: the lemma on a region
+between two graphs, the fundamental theorem for line integrals, its converse through the integral
+potential, Green for type I and type II regions, the consequence for the curl test on a
+simply connected domain, and the sketch of the proof of Gauss through boxes and of Stokes
+through a parametrization. What I quote without proof: Fubini (Spivak, the chapter
+\emph{Integration}, Theorem 3-10), the full change of variables (Spivak's same
+chapter; Rudin, the chapter \emph{Integration of Differential Forms}), Gauss (Spivak,
+Theorem 5-8), and Stokes (Spivak, Theorem 5-9); general Stokes is Theorem
+4-13 and 5-5.
+
+What is overpopularized is the phrase ``zero curl means
+conservative''. What is correct: zero curl means closed form, and a closed form is
+exact only when the first cohomology group of the domain is zero. For $\mathbb{R}^{3}$
+that holds, for $\mathbb{R}^{2}\setminus\{0\}$ it does not, and the difference is
+measured by the integral on the circle, namely $2\pi$ here.
+
+The open question that is genuinely open for me: can quadrature give
+a certificate that the hypotheses of a theorem are satisfied, and not merely an estimate of the value?
+The output in the lab shows that a numerical answer correct to fifteen
+digits can come from a field that violates the hypotheses, with no warning sign. For
+a field that is known only through samples on a grid, there is no general way
+to be sure that there is no singularity between the sample points.
+
+Limits of validity: all functions here are real-valued and piecewise
+smooth; all numbers come from Python 3.14.4, NumPy 2.5.2, SciPy 1.18.0
+with a tolerance of $10^{-12}$ unless stated otherwise, and spherical surfaces
+are parametrized with $\mathbf{n}$ pointing outward.
+\end{untukpeneliti}
+
+\peta{Chapter 15 follows Stewart, \emph{Calculus: Early Transcendentals}, the chapter ``Multiple Integrals'' (15.1--15.3 and 15.6--15.9) and the chapter ``Vector Calculus'' (16.2
+line integrals, 16.3 the fundamental theorem, 16.4 Green, 16.5 curl
+and divergence, 16.8 Stokes, 16.9 Gauss); on Spivak, \emph{Calculus on
+Manifolds}, the chapter ``Integration'' (Fubini, Theorem 3-10, change of variables),
+the chapter ``Integration on Chains'' and the chapter ``Integration of Manifolds'' (Theorems
+5-5, 5-8, 5-9); on Rudin, \emph{Principles of Mathematical Analysis}, the chapters
+``Functions of Several Variables'' and ``Integration of Differential Forms''; on Active Calculus, chapters 11 and 12 for a more gradual order.
+The basis is the chapter \emph{Integral, Series of Functions, and Exchange of Limits} (the integral part)
+and the chapter \emph{Continuity and Derivatives} (partial derivatives, Jacobian) of the first edition
+of this book. This chapter uses the Riemann integral and the fundamental theorem of calculus
+from Chapter 13, uniform continuity and compact sets from Chapter 11, determinants
+from Chapter 7, and gradients and Jacobian matrices from Chapter 12, all of them referred to
+and not repeated.}

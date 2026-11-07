@@ -1,0 +1,578 @@
+% Kunci jawaban Bab 24--32. Berkas ini di-\input langsung di dalam document.
+% Setiap angka diuji oleh skrip assert di luar repo (lihat laporan).
+
+\section*{Bab 24: Pemrograman Linear dan Integer}
+\begin{enumerate}[label=\textbf{24.\arabic*}]
+  \item Maksimumkan $30x_{1}+20x_{2}$ dengan $2x_{1}+x_{2}\le10$, $x_{1}+2x_{2}\le8$,
+        $x\ge0$. Verteks $(0;0)$, $(5;0)$, $(0;4)$, $(4;2)$ memberi laba
+        $0;\,150;\,80;\,160$. Optimum bersambung $(4;2)$ berlaba $160$; enumerasi bulat
+        juga memberi $160$, jadi di sini pembulatan ke bawah kebetulan tepat dan
+        celahnya $0$.
+
+  \item Untuk $x,y\in P$ dan $\lambda\in[0,1]$:
+        $A(\lambda x+(1-\lambda)y)=\lambda Ax+(1-\lambda)Ay\le\lambda b+(1-\lambda)b=b$,
+        memakai $A$ linear dan $\lambda\ge0$. Pada himpunan bulat argumen itu runtuh:
+        gabungan konveks dua titik bulat tidak bulat, misalnya $0$ dan $1$ layak
+        sementara titik tengahnya bukan anggota $\mathbb{Z}^{n}$.
+
+  \item Laba $x_{1}+2x_{2}$ di verteks: $0$; $4$; $6$; $6$. Optimum $(0;3)$ dan
+        $(3;1{,}5)$ sama-sama $6$, dan seluruh ruas $x_{1}+2x_{2}=6$ optimal sebab
+        sasarannya konstan di sana; titik tengah $(1{,}5;\,2{,}25)$ bukan verteks.
+        Dualnya $y=(0;1)$: harga jam $1$, kayu lapis $0$.
+
+  \item Tabel awal basis $s_{1},s_{2},s_{3}=(4;3;3)$. Pivot pertama: $x_{1}$ masuk
+        (biaya tereduksi $3$), nisbah $4$ dan $3$, jadi $s_{2}$ keluar; nilai $9$.
+        Pivot kedua: $x_{2}$ masuk, $s_{1}$ keluar (nisbah $1$), optimum $(3;1)$
+        dengan $z=11$. Harga dual dari tabel akhir: $(2;1;0)$, dan
+        $4(2)+3(1)+3(0)=11$.
+
+  \item Dualnya meminimumkan $10y_{1}+8y_{2}$ dengan $2y_{1}+y_{2}\ge30$,
+        $y_{1}+2y_{2}\ge20$, $y\ge0$; penyelesaian $y=(40/3;\,10/3)$ bernilai
+        $160$, sama dengan primal. Artinya: satu kg tepung tambahan bernilai
+        $13{,}333$ dan satu jam oven tambahan $3{,}333$.
+
+  \item Salah. Pembulatan ke bawah tidak selalu layak begitu ada kendala
+        kesamaan atau bertanda $\ge$. Contoh: maksimumkan $x_{1}+x_{2}$ dengan
+        $2x_{1}+2x_{2}=5$; jawaban bersambung $(2{,}5;\,0)$ dibulatkan menjadi
+        $(2;0)$, yang memberi $4\ne5$ dan karena itu tidak layak.
+
+  \item Benar untuk arah majunya, dan hanya pada pasangan optimal. Kelengkapan
+        komplementer $y_{i}(b_{i}-\mathbf{a}_{i}^{\top}\mathbf{x})=0$ memberi:
+        $y_{i}>0$ memaksa kendala itu aktif. Sebaliknya tidak berlaku; pada titik
+        merosot ada kendala aktif dengan $y_{i}=0$, jadi harga nol tidak berarti
+        kendala itu longgar.
+
+  \item Kerapatan $2{,}0$; $1{,}75$; $1{,}667$; $1{,}5$. Barang pertama penuh
+        ($5$ kg, $10$), lalu $3/4$ barang kedua, total berat $8$: batas LP
+        $15{,}25$. Enumerasi memberi $15$ (barang $1$ dan $3$). Celah $0{,}25$,
+        yaitu $1{,}639$ persen dari batas.
+
+  \item 
+Kapasitas $7$: barang pertama penuh, lalu $1/2$ barang kedua, batas LP
+        $13{,}5$; jawaban bulat terbaik $13$ (barang $1$ dan $4$, berat $7$). Celah
+        $0{,}5$, yaitu $3{,}704$ persen. Celah berubah karena kapasitas $7$ membuang
+        kombinasi $(1,3)$ yang beratnya $5+3=8$ dan tadinya muat, sehingga jawaban
+        bulat terbaik pindah ke barang $1$ dan $4$; pecahan optimum dan bulat
+        optimum bergerak tidak sebanding.
+
+  \item $x_{v}=1/2$ untuk semua $v$ layak ($x_{u}+x_{v}=1$) dan memberi $n/2$;
+        setiap penutup harus memuat $n-1$ simpul, sebab meninggalkan dua simpul
+        berarti rusuk di antaranya tak tertutup. Nisbah LP terhadap bulat:
+        $0{,}6667$; $0{,}625$; $0{,}5556$ untuk $n=4,5,10$. Nisbahnya menuju
+        $1/2$, jadi batas relaksasi bisa meleset faktor dua dan pembulatan bukan
+        cara umum.
+\end{enumerate}
+
+\section*{Bab 25: Jaringan Saraf dan Turunan Balik}
+\begin{enumerate}[label=\textbf{25.\arabic*}]
+  \item Batasnya $\lfloor1/\gamma^{2}\rfloor$: untuk $\gamma=0{,}2$ dapat $25$,
+        untuk $\gamma=0{,}05$ dapat $400$. Batas itu hanya menghitung kesalahan,
+        dan tiap kesalahan memakan margin, karena itu $n$ tidak muncul. Untuk
+        $\gamma$ kecil batasnya meledak seperti $1/\gamma^{2}$ sehingga tak berguna.
+
+  \item Tulis $\mathbf{W}=\mathbf{W}_{2}\mathbf{W}_{1}$ dan
+        $\mathbf{b}=\mathbf{W}_{2}\mathbf{b}_{1}+\mathbf{b}_{2}$; maka keluarannya
+        $\mathbf{W}\mathbf{x}+\mathbf{b}$, yaitu satu ambang linear. Menambah lapisan
+        identitas berikutnya hanya mengalikan matriks, jadi kapasitasnya tidak
+        bertambah sedikit pun.
+
+  \item Dengan $\mathbf{x}=(0{,}5;-1;\,0{,}25;2)$ dan $y=0$: $\mathbf{z}_{1}=(2{,}9125;\,
+        0{,}375)$, $a=0{,}8961350845$, $\bar{z}_{2}=0{,}8961350845$, sehingga
+        $\bar{\mathbf{z}}_{1}=(0{,}7169081;\,-0{,}5376810)$ dan
+        \[
+          \nabla_{\mathbf{W}_{1}}L=
+          \begin{pmatrix}
+            0{,}3584540 & -0{,}7169081 & 0{,}1792270 & 1{,}4338161\\
+            -0{,}2688405 & 0{,}5376810 & -0{,}1344203 & -1{,}0753621
+          \end{pmatrix},
+        \]
+        yaitu baris kedua sama dengan $-0{,}75$ kali baris pertama. Butir ini
+        ambigu: kedua gerbang terbuka, jadi tidak ada baris bergradien nol.
+
+  \item Belum cukup bukti. Selisih hingga hanya memeriksa tiga belas skalar di satu
+        titik, dan pada $h=10^{-6}$ galat $10^{-10}$ memang yang diharapkan; bug
+        bersama pada kedua hitungan tidak akan terlihat. Perlu: beberapa titik,
+        kedua keadaan gerbang, kasus $y=0$ dan $y=1$, gradien terhadap masukan, dan
+        pembanding turunan otomatis.
+
+  \item Salah. Teorema itu tentang kepadatan fungsi kontinu pada domain
+        kompak: ada parameter yang menghampiri, bukan parameter itu terjangkau
+        optimasi. Dua hal yang tidak dinyatakan: banyaknya unit yang diperlukan, dan
+        galat pada data uji (generalisasi), bukan hanya pada fungsi sasaran.
+
+  \item Pada $t=1$, $\hat m=g$ dan $\hat v=g^{2}$, sehingga langkahnya
+        $\eta g/(|g|+\epsilon)=-0{,}01$ dan $b_{2}$ menjadi $0{,}06$. Dengan gradien
+        $100$ kali lebih besar langkahnya tetap $-0{,}01$, sebab Adam hanya
+        memakai nisbah terhadap skala gradien; $b_{2}$ tetap $0{,}06$.
+
+  \item 
+Keluaran $w_{2}\max(\mathbf{W}_{1}\mathbf{x}+\mathbf{b}_{1},0)$ adalah
+        jumlah dua fungsi linear yang masing-masing aktif di satu separuh bidang,
+        jadi linear sepotong-sepotong; dua garis $z_{1}[i]=0$ membagi bidang menjadi
+        paling banyak empat sel. Untuk $k$ unit dalam susunan umum, $k$ garis
+        membagi bidang menjadi $1+k+k(k-1)/2$ daerah, yaitu $2,4,7$ untuk $k=1,2,3$
+        (bukan $8$: garis ketiga hanya menambah tiga daerah, bukan empat).
+
+  \item $\nabla_{\mathbf{x}}L=(-0{,}0868370;\,0{,}1328096;\,-0{,}0970532;\,
+        -0{,}1430257)$, maka $\boldsymbol{\delta}=0{,}05\,\mathrm{sign}(\nabla)
+        =(-0{,}05;0{,}05;-0{,}05;-0{,}05)$. Kerugian di $\mathbf{x}+\boldsymbol{\delta}$
+        ialah $0{,}3186800$, sedangkan ramalan linear
+        $0{,}2949123+0{,}0229863=0{,}3178985$; selisih $7{,}81\times10^{-4}$ dari
+        kelengkungan.
+
+  \item 
+Ramalan: blok lab kedua memakai ReLU, dan ReLU hanya jenuh di sisi negatif.
+        Tabel saturasi ($8$ unit, $\mathbf{W}_{1}$ He acak, $\mathbf{b}_{2}=0$):
+        \begin{center}
+        \begin{tabular}{lrrrr}
+        & rentang $Z_{1}$ (awal) & unit mati & $L$ akhir & akurasi \\ \hline
+        $\mathbf{b}_{1}=0$   & $[-2{,}43;\,2{,}40]$   & $0/8$ & $0{,}0163$ & $1{,}0000$ \\
+        $\mathbf{b}_{1}=+10$ & $[7{,}57;\,12{,}41]$   & $0/8$ & $0{,}3225$ & $0{,}8375$ \\
+        $\mathbf{b}_{1}=-10$ & $[-12{,}43;\,-7{,}60]$ & $8/8$ & $0{,}6909$ & $0{,}5333$
+        \end{tabular}
+        \end{center}
+        Jadi $\mathbf{b}_{1}=+10$ memang tidak mematikan unit tersembunyi
+        ($Z_{1}$ jauh di atas nol diteruskan apa adanya), tetapi tidak gratis:
+        $H\cdot\mathbf{w}_{2}$ menjadi sangat besar, sigmoid keluaran menempel di
+        $0$ atau $1$, dan $L$ mulai dari $4{,}04$; sesudah $3000$ langkah ia
+        berhenti di $L=0{,}3225$ dengan akurasi $0{,}8375$, lebih buruk daripada
+        $\mathbf{b}_{1}=0$. Untuk $\mathbf{b}_{1}=-10$ seluruh unit mati sejak awal
+        ($Z_{1}$ di bawah nol, turunan tepat $0$, bukan sekadar kecil),
+        $\partial L/\partial b_{1}=\mathbf{0}$ tepat, dan latihan berhenti di
+        $L=0{,}6909$ -- entropi label -- dengan akurasi kelas mayoritas $0{,}5333$.
+  \end{enumerate}
+
+\section*{Bab 26: Generalisasi, Regularisasi, dan Pelatihan}
+\begin{enumerate}[label=\textbf{26.\arabic*}]
+  \item Belum cukup bukti, dan yang keliru ialah menyamakan galat latih dengan
+        galat generalisasi. Galat latih nol hanya berarti data latih terhafal. Angka
+        tambahan yang diperlukan: galat validasi (atau uji) pada data yang tidak
+        dipakai melatih, beserta lebar selangnya.
+
+  \item Dengan $\hat f=\hat f_{D}$ dan $\bar f=\mathbb{E}_{D}\hat f$:
+        $\mathbb{E}(y-\hat f)^{2}=\sigma^{2}+(\bar f-f)^{2}+\operatorname{Var}(\hat f)$.
+        Suku silang lenyap karena $\mathbb{E}[\varepsilon]=0$ dan $\varepsilon$
+        bebas dari $D$, sehingga $\mathbb{E}[\varepsilon(\hat f-f)]=0$; kebebasan
+        itu dipakai tepat di langkah ini, yaitu pada $\varepsilon$, bukan pada
+        $\hat f$. Suku silang kedua lenyap dengan alasan berbeda:
+        $\mathbb{E}[\hat f-\bar f]=0$ menurut definisi $\bar f$, jadi
+        $2(f-\bar f)\,\mathbb{E}[\hat f-\bar f]=0$ tanpa memerlukan kebebasan apa pun.
+
+  \item Dari $\frac{d}{dw}\bigl[\frac12\sum(y_{i}-wx_{i})^{2}\bigr]=0$ dapat
+        $w(\lambda)=\sum x_{i}y_{i}/(\sum x_{i}^{2}+\lambda)=64/(30+\lambda)$.
+        Turunannya $-64/(30+\lambda)^{2}<0$ tetapi tak pernah nol, jadi $w$ mengecil
+        tanpa menyentuh nol. Pada L1, subgradien di $w=0$ memuat nol bila
+        $\lambda\ge|\sum x_{i}y_{i}|=64$; jadi $w=0$ tepat pada $\lambda=64$.
+
+  \item $\operatorname{MSE}(c)=(c-1)^{2}\mu^{2}+c^{2}\sigma^{2}/n$: untuk
+        $c=0{,}95$ dapat $0{,}01+0{,}0361=0{,}0461$; untuk $c=1{,}05$ dapat
+        $0{,}01+0{,}0441=0{,}0541$; untuk $c=1$ dapat $0{,}04$. Simpangan sama besar
+        tidak sama rugi karena suku variansi tumbuh seperti $c^{2}$, sehingga
+        melebihi jatah lebih mahal daripada menyusut.
+
+  \item Perbaikan: angka validasi silang itu taksiran galat prosedur pemilihan,
+        bukan galat model terpilih di lapangan, dan ia bias optimistis karena
+        $\lambda$ dipilih pada lipatan yang sama. Perlu dua hal: validasi silang
+        bersarang (atau kumpulan uji yang tak pernah dilihat saat memilih), dan
+        pengulangan dengan beberapa partisi beserta selangnya.
+
+  \item Untuk $a<0$: dengan $u<0$ turunannya $u-a-t$, nol di $u=a+t$, yang sah
+        hanya bila $a<-t$. Untuk $u=0$ subgradiennya $[-a-t,\,-a+t]$, memuat nol
+        bila $|a|\le t$, jadi $u=0$ optimal. Simetris karena sasaran
+        $\frac12(u-a)^{2}+t|u|$ tidak berubah bila $u$ dan $a$ dua-duanya diganti
+        tanda.
+
+  \item Waktu paruhnya $\ln2/(\eta\lambda)=0{,}693147/0{,}002=346{,}57$ langkah;
+        seperempat nilai awal berarti dua paruh, $693{,}15$ langkah, dan
+        $(1-\eta\lambda)^{693}=0{,}24973$. Simulasi numpy dengan gradien nol
+        memberi angka yang sama, sebab $w_{k}=w_{0}(1-\eta\lambda)^{k}$.
+
+  \item Jurangnya $0{,}2406-0{,}1500=0{,}0906$; pada $\lambda=0$ jurangnya
+        $0{,}3262-0=0{,}3262$, pada $\lambda=10$ hanya $0{,}3395-0{,}3333=0{,}0062$.
+        Jurang kecil tidak cukup: pada $\lambda=10$ jurangnya terkecil justru karena
+        keduanya sama-sama buruk, dekat galat kelas mayoritas $0{,}3419$.
+
+  \item Dengan $m$ hipotesis, $P(\exists i:|\hat R_{i}-R_{i}|>\epsilon)\le
+        2m e^{-2n\epsilon^{2}}$, jadi $\epsilon=\sqrt{(\ln m+\ln(2/\delta))/(2n)}$.
+        Untuk $m=2^{10}$, $n=200$, $\delta=0{,}01$: $\epsilon=0{,}1749$. Separuhnya
+        menuntut $n$ empat kali, yaitu $800$.
+\end{enumerate}
+
+\section*{Bab 27: Evaluasi Model yang Jujur}
+\begin{enumerate}[label=\textbf{27.\arabic*}]
+  \item Belum cukup bukti. Selisih $0{,}4$ poin pada satu kumpulan uji belum tentu
+        di luar derau; yang keliru ialah memperlakukan dua proporsi berpasangan
+        sebagai bebas. Dua angka tambahan: ukuran kumpulan uji, dan cacah
+        ketidaksepakatan berpasangan (untuk uji McNemar) atau lebar selang.
+
+  \item Untuk label keras $s,y\in\{0,1\}$ berlaku $(s-y)^{2}=1$ tepat pada
+        kesalahan dan $0$ pada kebenaran, jadi rata-ratanya
+        $(\mathrm{FP}+\mathrm{FN})/n$. Untuk skor berupa peluang, $(s-y)^{2}$
+        mengambil nilai antara, sehingga rata-ratanya bukan lagi cacah kesalahan
+        melainkan penalti kalibrasi.
+
+  \item $\mathbb{E}[(s-y)^{2}]=s^{2}-2s\pi+\pi$ dengan $\pi=\mathbb{E}[y]$.
+        Turunannya $2s-2\pi$, nol di $s=\pi$; nilai minimumnya
+        $\pi^{2}-2\pi^{2}+\pi=\pi(1-\pi)$, dan turunan keduanya $2>0$ memastikan
+        itu minimum.
+
+  \item Presisi $180/225=0{,}8$; recall $180/200=0{,}9$; $F_{1}=0{,}847059$;
+        akurasi $1935/2000=0{,}9675$; spesifisitas $1755/1800=0{,}975$; akurasi
+        seimbang $(0{,}9+0{,}975)/2=0{,}9375$. \texttt{sklearn.metrics} memberi
+        angka yang sama sampai enam desimal.
+
+  \item Wilson $95/100$: $[0{,}8882;\,0{,}9785]$, lebar $0{,}0902$; untuk
+        $950/1000$: $[0{,}9347;\,0{,}9619]$, lebar $0{,}0272$, yaitu $3{,}318$
+        kali lebih sempit meski $n$ sepuluh kali lebih besar. Lebar bukan ukuran
+        mutu model: ia bergantung pada $n$ dan pada data, dan kedua percobaan pun
+        tak berpasangan.
+
+  \item 
+Dari $25$ pasangan, $19$ benar: positif $0{,}95$ mengalahkan lima negatif,
+        $0{,}88$ juga lima (ia di atas $0{,}75$), $0{,}70$ empat, $0{,}60$ tiga,
+        $0{,}40$ dua. Jadi $\mathrm{AUC}=19/25=0{,}76$; \texttt{roc\_auc\_score}
+        memberi $0{,}76$.
+
+  \item Presisi $=0{,}8\pi/(0{,}8\pi+0{,}01(1-\pi))$: pada $\pi=0{,}002$ dapat
+        $0{,}138169$, pada $\pi=0{,}2$ dapat $0{,}952381$. Syarat presisi
+        $\ge0{,}5$ memberi $0{,}4\pi\ge0{,}005-0{,}005\pi$, yaitu
+        $\pi\ge0{,}005/0{,}405=0{,}012346$.
+
+  \item Bagi menurut host, bukan rekaman: $60/20/20$ menjadi $180$ host latih,
+        $60$ validasi, $60$ uji, masing-masing sekitar $20$ rekaman. Prapemrosesan
+        dihitung di dalam lipatan latih saja. Pemilihan $40$ setelan lewat validasi
+        silang bersarang di bagian latih. Uji disentuh satu kali, di akhir.
+
+  \item Salah. AUC mengukur peringkat, bukan kegunaan pada ambang tertentu. Dengan
+        sensitivitas $0{,}8$ dan spesifisitas $0{,}99$, pada kelaziman $0{,}002$
+        presisinya hanya $0{,}138169$: dari sepuluh alarm, $8{,}62$ di antaranya
+        salah, jadi sekitar sembilan. Ambang
+        yang dipilih tetap harus diperiksa presisi dan recall-nya.
+\end{enumerate}
+
+\section*{Bab 28: Metode Formal dengan Lean 4}
+\begin{enumerate}[label=\textbf{28.\arabic*}]
+  \item Salah. Berkas yang diterima berarti setiap teorema punya bukti yang
+        diperiksa, tetapi \texttt{sorry} lolos dengan peringatan, dan
+        \texttt{axiom} maupun \texttt{native\_decide} memperluas dasar percaya.
+        Perintah pemeriksa: \texttt{\#print axioms} pada setiap teorema yang
+        diklaim.
+
+  \item 
+Lemma bantu: untuk setiap $k$ berlaku $k(2k)+2(2k+1)=(k+1)\cdot2(k+1)$.
+        Tujuan itu memuat $k\cdot k$, jadi bukan tujuan linear: \texttt{omega} tidak
+        menutupnya sendirian dan perlu penulisan ulang lebih dulu. Lalu
+        \texttt{induction n with}: basis \texttt{rfl}; langkah \texttt{succ k ih}
+        memakai \texttt{rw [oddSum, Nat.mul\_add, ih]}, yang menyisakan tepat lemma
+        bantu itu, lalu \texttt{exact bantu k}. Lemma bantu sendiri ditutup
+        \texttt{simp only [Nat.mul\_add, Nat.add\_mul, Nat.mul\_one, Nat.one\_mul]}
+        diikuti \texttt{omega}: \texttt{omega} tidak bisa menutup tujuan
+        $k\cdot(2k)+2(2k+1)=(k+1)\cdot2(k+1)$ sendirian, karena tujuan itu memuat
+        $k\cdot k$ dan bukan tujuan linear (dicoba: \texttt{omega could not prove
+        the goal}).
+
+  \item Informal: untuk $n=0$ kedua sisi $0$; bila $\sum_{i<n}2i=n(n-1)$, maka
+        menambah $2n$ memberi $n(n-1)+2n=(n+1)n$. Versi Lean mendefinisikan
+        \texttt{evenSum : Nat -> Nat} rekursif (\texttt{evenSum 0 = 0},
+        \texttt{evenSum (n+1) = evenSum n + 2*n}) dan menyatakan bentuk tanpa
+        pengurangan terpotong, $E(n)+n=n\cdot n$. Langkahnya: \texttt{induction},
+        basis \texttt{rfl}, lalu \texttt{rw [evenSum]}. Perhatikan
+        \texttt{rw [evenSum, ih]} langsung gagal (\texttt{did not find instance of
+        the pattern evenSum k + k}), sebab tujuan sesudahnya berbunyi
+        $E(k)+2k+(k+1)=(k+1)(k+1)$. Selipkan dahulu penataan ulang
+        \texttt{have h : evenSum k + 2 * k + (k + 1) = (evenSum k + k) + (2 * k + 1) := by omega},
+        lanjutkan \texttt{rw [h, ih]}, dan tutup dengan
+        \texttt{simp only [Nat.mul\_add, Nat.add\_mul, Nat.mul\_one, Nat.one\_mul]}
+        lalu \texttt{omega}.
+
+  \item Jumlah $37$ bilangan ganjil pertama $=37^{2}=1369$; jumlah $250$ pertama
+        $=250^{2}=62500$. Skrip: \texttt{sum(2*i+1 for i in range(n))} memberi
+        kedua angka itu, dan keduanya kuadrat sempurna.
+
+  \item        Pemeriksaan langsung untuk semua $n\le1000$ menuntut $1001$ kasus, yaitu
+        $n=0$ sampai $n=1000$; batas $n\ge1$ akan memberi $1000$, tetapi soal tidak
+        menyebutnya dan basis \texttt{zero} di atas memang memeriksa $n=0$. Bukti
+        induksi membangkitkan dua tujuan saja, \texttt{zero} dan \texttt{succ}, lalu
+        menyimpulkan seluruh $n$; jadi $1001$ lawan $2$.
+
+  \item \texttt{Nat.add} didefinisikan dengan rekursi pada argumen kedua, jadi
+        $n+0$ menyusut langsung ke $n$ dan \texttt{rfl} menutupnya. Pada $0+n$
+        rekursinya tersangkut pada $n$ yang belum diketahui, sehingga tidak ada
+        yang bisa disusutkan dan diperlukan \texttt{induction n}.
+
+  \item 
+Lemah: untuk $x$ tetap, $\exists\delta,\ |\delta|\le1\wedge
+        f(x+\delta)=f(x)$; saksi $\delta=0$ membuat kedua sisi sama, \texttt{rfl}
+        menutup. Kuat: $\forall x\,\forall\delta,\ |\delta|\le1\to
+        f(x+\delta)=f(x)$, dan itu salah untuk $f$ identitas dengan $\delta=1$.
+
+  \item 
+\texttt{decide}: tanpa aksioma, murni perhitungan inti. \texttt{omega}:
+        \texttt{propext} dan \texttt{Quot.sound}, karena ia membuktikan tujuan
+        dengan kontradiksi di dalam bilangan bulat; \texttt{Classical.choice} tidak
+        muncul, dan bab ini mencetak daftar yang sama. \texttt{sorry}:
+        \texttt{sorryAx}, aksioma yang ditambahkan khusus untuk menutup tujuan yang
+        dilewati.
+
+  \item Kesalahan pertama: \texttt{delta} sudah bebas di konteks lalu diikat lagi
+        oleh \texttt{exists}, sehingga yang menentukan nilainya pembaca pernyataan,
+        bukan penyerang; ketahanan tak tersirat. Kedua: tidak ada kuantor atas $x$,
+        jadi $x$ pun bebas. Versi benar:
+        $\forall x,\ \exists\delta,\ \lVert\delta\rVert\le1\wedge f(x+\delta)=f(x)$.
+
+  \item \texttt{intro h} memberi $h:P\wedge\neg P$. Komponennya \texttt{h.1} bertipe
+        $P$ dan \texttt{h.2} bertipe $\neg P$; lalu \texttt{exact h.2 h.1} menutup
+        tujuan, sebab $\neg P$ adalah $P\to$ salah.
+\end{enumerate}
+
+\section*{Bab 29: Adversarial Machine Learning: Serangan dan Pertahanan}
+\begin{enumerate}[label=\textbf{29.\arabic*}]
+  \item $\mathbf{s}_{A}=1$, $\mathbf{s}_{B}=3$, jadi marginnya sudah $-2$ (contoh
+        condong ke $B$); $\mathbf{d}=(1;-2;1)$ dengan $\lVert\mathbf{d}\rVert_{1}=4$
+        dan $\lVert\mathbf{d}\rVert_{2}=\sqrt6\approx2{,}449$. Maka
+        $\varepsilon^{*}_{\infty}=2/4=0{,}5$ dan
+        $\varepsilon^{*}_{2}=2/2{,}449=0{,}8165$; rasionya $\sqrt{8/3}=1{,}633$.
+
+  \item Turunan sasaran terhadap $\boldsymbol{\delta}$ ialah $\mathbf{w}$, jadi
+        maksimumnya $\varepsilon\lVert\mathbf{w}\rVert_{2}$, dicapai tunggal di
+        $\boldsymbol{\delta}=\varepsilon\mathbf{w}/\lVert\mathbf{w}\rVert_{2}$
+        (ketaksamaan Cauchy--Schwarz, dengan kesamaan bila sejajar). Pada
+        $\ell_\infty$ maksimumnya $\varepsilon\lVert\mathbf{w}\rVert_{1}$ di
+        $\varepsilon\,\mathrm{sign}(\mathbf{w})$, sebuah verteks; bentuknya beda
+        karena norma dualnya beda.
+
+  \item Galat $\mathbf{d}^{\top}\boldsymbol{\delta}$ linear pada himpunan cembung
+        kompak, jadi maksimumnya di titik ekstrem. Titik ekstrem bola
+        $\ell_\infty$ berbentuk $\pm\varepsilon$ di tiap koordinat, dan FGSM memilih
+        tepat titik itu; karena itu lintasan PGD, yang selalu berada di dalam bola,
+        tak dapat melampauinya.
+
+  \item Salah. Pada bab ini gangguan acak bersign di $\varepsilon=0{,}15$ hanya
+        menurunkan akurasi ke $95{,}48$ persen, sedangkan PGD 40 langkah
+        menjatuhkannya ke $10{,}72$ persen. Ketahanan terhadap derau acak tidak
+        mengatakan apa pun tentang serangan yang memilih arah.
+
+  \item 
+Keberhasilan tak bersasaran (PGD 40 langkah, akurasi bersih sebagai acuan)
+        untuk $A$: $14{,}02$, $53{,}16$, $89{,}06$ persen pada $\varepsilon=
+        0{,}05;0{,}10;0{,}15$. Untuk $D$: $5{,}38$, $15{,}28$, $35{,}06$ persen.
+        Selisihnya justru melebar pada rentang itu ($8{,}64$, $37{,}88$, $54{,}00$
+        poin persen), sebab $A$ sudah mendekati batas $100$ persen sedangkan $D$
+        masih jauh; pengecilan baru terjadi di luar rentang, pada
+        $\varepsilon\ge0{,}20$, ketika kedua model sama-sama kehabisan margin.
+
+  \item Cukup satu koordinat: proyeksi ke selang adalah pemotongan, dan
+        $[x_{j}-\varepsilon,x_{j}+\varepsilon]\cap[0,1]$ sama dengan
+        $[\max(0,x_{j}-\varepsilon),\ \min(1,x_{j}+\varepsilon)]$. Memotong ke kotak
+        $\varepsilon$ lalu ke $[0,1]$, atau sebaliknya, menghasilkan selang yang
+        sama sebab irisan selang bersifat komutatif; hasil kali Cartesiusnya memberi
+        titik yang sama.
+
+  \item $D$ kehilangan $97{,}99-96{,}48=1{,}51$ poin akurasi bersih untuk
+        memperoleh $62{,}65-10{,}72=51{,}93$ poin ketahanan, jadi harganya
+        $1{,}51/51{,}93=0{,}0291$ poin bersih per poin ketahanan. Rasio itu tidak
+        lengkap: ia bergantung pada satu $\varepsilon$, pada satu penyerang yang
+        bukan batas atas, dan mengabaikan akurasi bersih model pembanding.
+
+  \item Protokol: serang dengan PGD lebih banyak langkah dan beberapa mulai acak,
+        dengan EOT atas keacakan pertahanan, lalu ulangi dengan serangan tanpa
+        gradien (tiruan/transfer, penaksiran beda hingga). Laporkan kurva akurasi
+        terhadap $\varepsilon$, bukan satu titik. Gejala termudah: keberhasilan
+        melonjak begitu gradien diganti BPDA atau EOT, sementara serangan naif
+        melaporkan nol.
+
+  \item Kotak putih $89{,}06$ persen, transfer $1-0{,}2379/0{,}9849=75{,}85$
+        persen, selisih $13{,}21$ poin. Itu bukan bukti $B$ lebih aman: serangan
+        yang dibuat khusus untuk $B$ akan lebih kuat, dan di bab ini selisih kotak
+        putih terhadap transfer memang menyusut kalau penyerangnya disesuaikan.
+        Butir ini ambigu: keluaran lab tidak memuat baris PGD untuk model $B$.
+
+  \item Tak bersasaran cukup mengubah label; bersasaran harus mencapai kelas
+        tertentu, jadi himpunan sasaran yang harus dipenuhi jauh lebih kecil. Pada
+        $\varepsilon=0{,}15$ sasaran tercapai $33{,}00$ persen, sedangkan tak
+        bersasaran $89{,}06$ persen; dengan $\varepsilon=0{,}30$ sasaran tercapai
+        $99{,}50$ persen. Jadi kesulitannya soal anggaran, bukan jenis serangan.
+\end{enumerate}
+
+\section*{Bab 30: Batas Serangan: Gradien Dikaburkan dan Evasi NIDS}
+\begin{enumerate}[label=\textbf{30.\arabic*}]
+  \item Tiga pemeriksaan: (a) ulangi dengan serangan adaptif (BPDA, EOT), (b)
+        laporkan kurva akurasi terhadap $\varepsilon$, bukan satu titik, (c) periksa
+        mutu gradien (kosinus terhadap beda hingga atau terhadap arah bobot). Bila
+        yang terjadi penyamaran gradien: keberhasilan hanya runtuh untuk serangan
+        berbasis gradien, sementara pencarian acak dan transfer tetap berhasil, dan
+        kurvanya datar.
+
+  \item Untuk $f(x)=w\cdot x+b$ gradiennya konstan, Hessiannya nol, jadi konstanta
+        Lipschitz $L=0$ dan batas $L\delta$ memberi galat nol: BPDA tepat. Pada dua
+        lapis ReLU, $f$ linear sepotong-sepotong sehingga gradiennya melompat di
+        patahan dan hipotesis gradien Lipschitz gagal; batas itu lalu tak berarti.
+
+  \item 
+Dengan program: label berbalik sampai $q=0{,}6$ (skor $-1{,}2$) dan gagal
+        pada $q\ge0{,}70$, ketika semua koordinat membulat ke nol sehingga skornya
+        $0$, yaitu seri, bukan pembalikan. Jadi
+        $q^{*}=2\max_{j}|x_{j}-\varepsilon|=2(\varepsilon+|\min_{j}x_{j}|)=0{,}70$.
+        Batas aman analitis: galat pembulatan paling besar $4q$, jadi serangan hanya
+        dijamin berhasil bila $q<(8\varepsilon-m)/4=0{,}345$; pada $q=0{,}345$ label
+        masih berbalik, sehingga arah ketaksamaannya penting.
+
+  \item Peluang menolak $=P(\text{lebih dari }10\text{ dari }20\text{ hilang})
+        =0{,}411901$, jadi yang dijawab $588$ dari $1000$ kueri: $588/20=29$
+        langkah PGD dengan $m=20$. Dengan $m=1$ peluang menolak $0{,}5$, jadi $500$
+        langkah. Yang dibayar: gradien makin berderau, arahnya makin jauh dari benar.
+
+  \item Yang dapat diramalkan tanpa menjalankan: akurasi bersih hampir sama,
+        keberhasilan naif tetap mendekati nol, dan keberhasilan BPDA mendekati garis
+        dasar untuk $q=0$ dan $q=0{,}05$ tetapi turun untuk $q$ besar. Kosinusnya
+        tidak lagi mendekati satu karena gerbang ReLU menambah patahan di atas
+        pembulatan, sehingga aproksimasi BPDA hanya menghampiri arah. Angka ketiga
+        nilai $q$ harus diambil dari eksekusi, bukan dikarang.
+
+  \item Bendera biner dan nomor protokol dianggap tak dapat diubah penyerang:
+        $7+3=10$ fitur terkunci, sisa $40$ fitur yang benar-benar bisa digeser (dari
+        $50$). Gambar $32\times32$ dengan tiga kanal punya $3072$ nilai, jadi
+        $3072/40=76{,}8$ kali lebih banyak.
+
+  \item Pelatihan ulang harian mengubah parameter yang dipakai serangan bergradien,
+        jadi arah lama cepat basi; serangan buta tidak memakai parameter itu, jadi
+        ia tetap bekerja. Menurut lemma EOT yang harus diperiksa adalah harapan atas
+        transformasi, dan serangan adaptif harus didefinisikan terhadap pertahanan
+        itu sendiri, termasuk jadwal pelatihan ulangnya.
+
+  \item Metrik: keberhasilan serangan adaptif terhadap $\varepsilon$, dengan
+        sekurangnya $5$ seed dan selang. Bentuk kurva yang menerima (a): kurva
+        tergeser ke kanan atau ke bawah secara sistematis pada semua $\varepsilon$,
+        bukan hanya di satu titik. Bila setelah BPDA dan EOT keberhasilannya kembali
+        ke garis dasar, yang rusak hanya pengukuran, jadi (b).
+\end{enumerate}
+
+\section*{Bab 31: Kriptografi: Bilangan Bulat Modular sampai Ancaman Kuantum}
+\begin{enumerate}[label=\textbf{31.\arabic*}]
+  \item Salah. $2^{100}\equiv1\pmod{101}$ hanya mengatakan orde $2$ membagi $100$,
+        yaitu $101$ lolos uji Fermat basis $2$; bilangan semu (dan bilangan
+        Carmichael) juga lolos. Yang dibuktikan kongruensi itu hanyalah $101\nmid2$
+        dan $2^{100}\equiv1$, bukan ketiadaan pembagi.
+
+  \item Bila $\gcd(a,n)=\gcd(b,n)=1$, teorema Bezout memberi $ax+ny=1$ dan
+        $bz+nw=1$; hasilkali keduanya memberi $(ab)(xz)+n(\cdot)=1$, jadi $ab$ unit
+        dan $U(n)$ tertutup. Bila $a$ bukan unit, $d=\gcd(a,n)>1$ dan
+        $b=n/d\ne0$ memenuhi $ab=n(a/d)\equiv0$.
+
+  \item $a^{2}-1=(a-1)(a+1)\equiv0\pmod p$; karena $p$ prima, lemma Euklid memberi
+        $p\mid a-1$ atau $p\mid a+1$, jadi $a\equiv\pm1$. Untuk modulus $8$ lemma itu
+        gugur sebab $8$ bukan prima: akar kuadrat dari satu ialah $1,3,5,7$, karena
+        $3^{2}=5^{2}=7^{2}=49\equiv1$.
+
+  \item Kelas $0\le a<pq$ yang berbagi faktor dengan $pq$ ada $q$ kelipatan $p$
+        ditambah $p$ kelipatan $q$, dan $0$ terhitung dua kali; jadi
+        $\varphi(pq)=pq-p-q+1=(p-1)(q-1)$. Untuk $p=1019$, $q=1031$:
+        $\varphi=1018\cdot1030=1\,048\,540$.
+
+  \item Euklid mundur memberi $17^{-1}\equiv2753\pmod{3120}$ (sebab
+        $17\cdot2753=46\,801=15\cdot3120+1$), dan
+        $65\,537^{-1}\equiv60\,493\pmod{1\,048\,540}$. Pembagiannya $4$ lawan $5$
+        langkah, jadi menambah satu digit pada modulus hanya menambah sedikit
+        langkah.
+
+  \item Fermat kecil: $a^{100}\equiv1\pmod{101}$ untuk $101\nmid a$. Maka
+        $5^{100}\equiv1$, $3^{200}=(3^{100})^{2}\equiv1$, dan
+        $2^{1000}=(2^{100})^{10}\equiv1$. Ketiganya diperiksa
+        \texttt{pow(a,k,101)} dan cocok.
+
+  \item $A=5^{7}\equiv17$, $B=5^{15}\equiv19$, kunci bersama $19^{7}\equiv15$
+        (sama dengan $17^{15}$). Bila penyadap mengganti $A$ dengan $11$, Bob
+        menghitung $11^{15}\equiv10$ sedangkan Alice tetap memegang $15$; dua kunci
+        berbeda muncul karena pangkat yang dipasangkan bukan lagi pasangan
+        Diffie--Hellman yang sah.
+
+  \item Dengan $e=3$ dan $m<n^{1/3}$ berlaku $m^{3}<n$, jadi $c=m^{3}$ tanpa
+        pemotongan modulus dan akar pangkat tiga bilangan bulat mengembalikan $m$.
+        Untuk $n=1\,050\,589$ batasnya $n^{1/3}\approx101{,}66$, jadi pesan
+        terpanjang $m=101$. Bantalan acak membuat $m^{3}>n$ sehingga akar bulat itu
+        tak ada.
+
+  \item Dua hal yang harus benar: (i) parameter dan implementasi benar-benar
+        memenuhi jaminan keamanan yang diklaim, yaitu reduksi terhadap masalah
+        kisi yang masih sulit; (ii) asumsi kekerasan yang mendasarinya masih
+        berlaku dan model pembuktiannya mencakup serangan yang benar-benar dipakai.
+        Adopsi luas bukan syarat kebenaran klaim: skema yang dipakai di mana pun
+        tetap tidak terbukti aman bila asumsinya gugur.
+        Kalimat kedua tetap keliru: RSA masih tertanam di sistem lama, dan migrasi
+        dilakukan hibrida, jadi butuh bertahun-tahun. (Tanda tangan pascakuantum
+        sudah ada: ML-DSA, FIPS 204.)
+
+  \item Sekitar $1{,}1774\sqrt{2^{48}}=1{,}1774\cdot2^{24}$, yaitu $19\,753\,662$
+        sampel untuk peluang tabrakan seperdua; untuk $32$ bit
+        $1{,}1774\cdot2^{16}=77\,163$. Angka $2^{24}$ dan $2^{16}$ adalah tebakan
+        kasar akar kuadrat, bukan nilai tepatnya.
+\end{enumerate}
+
+\section*{Bab 32: Privasi Diferensial dan Fondasi Matematis QML}
+\begin{enumerate}[label=\textbf{32.\arabic*}]
+  \item Salah sebagai kalimat. $\varepsilon=0{,}5$ membatasi nisbah peluang per
+        catatan, bukan menghapus kebocoran; ia juga jaminan kasus terburuk. Dua hal
+        yang harus benar: mekanismenya memang memenuhi $(\varepsilon,\delta)$ untuk
+        relasi ketetanggaan dan sensitivitas yang dipakai, dan seluruh keluaran
+        (kueri, sisa anggaran, pascaproses) dihitung dalam anggaran itu.
+
+  \item Kepadatan Laplace berdimensi $d$ adalah hasil kali, jadi rasionya
+        $\prod_{j}\exp\bigl((|y_{j}-a'_{j}|-|y_{j}-a_{j}|)/b\bigr)$, dan dengan
+        ketaksamaan segitiga tiap faktor paling besar
+        $\exp(|a_{j}-a'_{j}|/b)$. Hasilkalinya
+        $\exp(\sum_{j}|a_{j}-a'_{j}|/b)\le\exp(\Delta f/b)=e^{\varepsilon}$.
+        Argumen satu dimensi diganti hasil kali rasio per koordinat, dan
+        $\ell_1$ menggantikan nilai mutlak tunggal.
+
+  \item Ambil $D\sim D'$ yang berbeda pada satu catatan. Catatan itu hanya ada di
+        satu dari $D_{1},D_{2}$, jadi hanya satu mekanisme yang masukannya berubah;
+        rasionya dibatasi $e^{\varepsilon_{i}}$, sedangkan yang lain berasio $1$.
+        Karena itu $\varepsilon=\max_{i}\varepsilon_{i}$ dan
+        $\delta=\max_{i}\delta_{i}$, bukan jumlah.
+
+  \item Peluang menjawab ``ya'' ialah $p+(1-p)/2$ bila benar ``ya'' dan $(1-p)/2$
+        bila benar ``tidak''; rasionya $(1+p)/(1-p)$. Maka
+        $p=(e^{\varepsilon}-1)/(e^{\varepsilon}+1)$, dan untuk $\varepsilon=2$
+        didapat $p=0{,}761594$, yaitu $\tanh1$.
+
+  \item Kueri hitung: $b=2$, jadi $P(|Y|>10)=e^{-5}=0{,}006738$. Kueri rata-rata
+        dengan $R=1$: $b=10^{-4}/0{,}5=2\times10^{-4}$; galat $10$ orang berarti
+        $10^{-3}$ pada skala rata-rata, yang kembali memberi $e^{-5}$, sedangkan
+        galat mutlak $10$ pada skala itu memberi $e^{-50000}\approx0$. Butir ini
+        ambigu soal satuan galatnya.
+
+  \item $H|0\rangle=(|0\rangle+|1\rangle)/\sqrt2$; $S$ memberi
+        $(|0\rangle+i|1\rangle)/\sqrt2$; lalu $H$ memberi
+        $\frac{1+i}{2}|0\rangle+\frac{1-i}{2}|1\rangle$. Peluangnya $1/2$ dan $1/2$,
+        sama dengan $H|0\rangle$, sebab ukuran basis komputasi hanya melihat modulus
+        amplitudo. Yang membedakannya fase relatif, dan gerbangnya $S^{\dagger}$
+        (memutar $|1\rangle$ dengan $-i$). $Z$ sesudah $H$ bukan pengganti: $HZH=X$,
+        yang menukar $|0\rangle$ dengan $|1\rangle$, bukan memutar fasenya.
+
+  \item $|\Phi^{+}\rangle=(|00\rangle+|11\rangle)/\sqrt2$. Bila qubit kedua diukur
+        lebih dulu dan hasilnya $0$, qubit pertama runtuh ke $|0\rangle$, jadi
+        peluang hasil $01$ ialah $0$; bila hasilnya $1$, qubit pertama runtuh ke
+        $|1\rangle$, jadi hasil $11$ pasti dan peluang $01$ juga $0$. Keduanya
+        menunjukkan korelasi sempurna: hasil kedua qubit selalu sama.
+
+  \item $U^{\dagger}U=\operatorname{diag}(1,e^{-i\varphi})
+        \operatorname{diag}(1,e^{i\varphi})=I$, jadi uniter untuk setiap
+        $\varphi$. Pada basis komputasi $|1\rangle$ hanya mendapat fase, modulus
+        amplitudonya tetap, sehingga peluang tak berubah; tetapi fase relatif itu
+        mengubah interferensi pada gerbang $H$ berikutnya, sehingga hasilnya bisa
+        berbeda.
+
+  \item 
+$n=40$: $2^{40}=1{,}0995\times10^{12}$ amplitudo, kali $16$ byte menjadi
+        $16$ TiB (bukan GiB: $2^{40}$ byte sudah satu TiB). $n=60$:
+        $2^{60}=1{,}1529\times10^{18}$ amplitudo, yaitu $16$ EiB atau
+        $1{,}8447\times10^{19}$ byte, jauh melampaui penyimpanan mana pun yang
+        tersedia.
+
+  \item Tiga pertanyaan: apakah seluruh amplitudo benar-benar dipakai, apakah
+        keluarannya dapat diekstrak dengan jumlah pengukuran yang tidak eksponensial,
+        dan apakah ada pembanding klasik pada tugas dan data yang sama. Yang membuat
+        saya menerima: ada pemisahan yang terbukti atau penskalaan terukur pada tugas
+        itu, jumlah pengukuran polinomial, dan keunggulan atas garis dasar klasik
+        yang disetel serius.
+\end{enumerate}

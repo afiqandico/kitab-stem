@@ -1,0 +1,442 @@
+% Answer key for Chapters 16--23. This file is \input directly inside the document.
+% Every number comes from the Python test scripts (see the report).
+
+\section*{Chapter 16: Differential Equations and Dynamical Systems}
+\begin{enumerate}[label=\textbf{16.\arabic*}]
+  \item $y=Ce^{t^{2}}$ with $y(0)=1$ gives $y=e^{t^{2}}$, so $y(1)=e=2.718282$.
+        Euler with $h=0.1$ uses $y_{n+1}=(1+0.02n)y_{n}$; the result is $2.334633$,
+        error $3.8365\times10^{-1}$. That method lags behind because it uses
+        the slope at the left end of each step.
+
+  \item The difference $w=y_{1}-y_{2}$ satisfies $w'=-p(t)w$ and $w(t_{0})=0$. Multiply
+        by $e^{\int p}$: $\bigl(we^{\int p}\bigr)'=0$, so $we^{\int p}$ is constant, and
+        its value is zero at $t_{0}$. Hence $w\equiv0$. No solution formula is used,
+        only the product rule and uniqueness of initial values.
+
+  \item Not enough evidence. Linearization sees only the degree-one terms; the
+        eigenvalues $\pm i$ say only that the linear part is a rotation. With $r'=r^{3}$
+        the origin is a center for the linearization but an outward spiral, whereas
+        $r'=-r^{3}$ gives it an inward spiral. So $\pm i$ does not determine stability.
+
+  \item $E'=vv'+\omega_{0}^{2}\theta\theta'=v(-\omega_{0}^{2}\theta)+\omega_{0}^{2}\theta
+        v=0$, so $E$ is constant. The equation $v^{2}/(2E)+\theta^{2}/(2E/\omega_{0}^{2})=1$
+        is an ellipse, and $\theta=A\cos(\omega_{0}t+\varphi)$ closes one turn
+        in $2\pi/\omega_{0}$.
+
+  \item $\tau=RC=2.2\times10^{3}\cdot10^{-5}=0.022$ seconds. At $t=\tau$:
+        $V=12(1-e^{-1})=7.585447$ volts. For $6$ volts, $t=-\tau\ln(1-\tfrac{6}{12})
+        =0.022\cdot0.693147=15.249$ milliseconds.
+
+  \item With $v=2\cos(\theta/2)$: $v^{2}/2=2\cos^{2}(\theta/2)$ and
+        $1-\cos\theta=2\sin^{2}(\theta/2)$, and their sum is $E=2$. At $\theta=\pm\pi$
+        the value is $v=0$, so the curve joins those two points; it separates
+        oscillation from full rotation, and the time needed to travel it is infinite.
+
+  \item $T_{0}=2\pi\sqrt{0.25/9.80665}=1.003205$ seconds.
+        $T=T_{0}\cdot\tfrac{2}{\pi}K(\sin15^{\circ})=1.020669$ seconds; the difference is
+        $1.74$ percent. An amplitude of $30^{\circ}$ lengthens the period, it does not
+        shorten it.
+
+  \item The factor per step is $1+h\lambda=1-100h$; the condition $|1-100h|<1$ gives
+        $0<h<0.02$. Exactly at $h=0.02$ the factor is $-1$: the value changes sign
+        with fixed magnitude $1$, neither decaying nor blowing up. That is the
+        marginal stability boundary, not stability.
+
+  \item Suppose $y$ is periodic and not constant. At its maximum point $y'=0$, so
+        $f(y_{\max})=0$. The constant solution $y\equiv y_{\max}$ passes through that
+        point, and uniqueness (Lipschitz) forces the solutions to be the same,
+        contradicting non-constancy. So there is no non-constant periodic orbit.
+\end{enumerate}
+
+\section*{Chapter 17: Probability and Conditional Probability}
+\begin{enumerate}[label=\textbf{17.\arabic*}]
+  \item 
+$P(A\cup B\cup C)=P(A\cup B)+P(C)-P\bigl((A\cup B)\cap C\bigr)$, then
+        $P\bigl((A\cup B)\cap C\bigr)=P(A\cap C)+P(B\cap C)-P(A\cap B\cap C)$. The
+        triple-overlap term is subtracted three times, once for each pair, and then
+        added back once with a $+$ sign.
+
+  \item False on general spaces. $P(A\mid B)=0$ only means $P(A\cap B)=0$. On a
+        finite space with positive probabilities, that forces $A\cap B=\varnothing$.
+        On a continuous space it does not: $A=\{1/2\}$ and $B=(0,1)$ uniform give
+        $P(A\cap B)=0$ even though $1/2\in A\cap B$.
+
+  \item From $10\,000$ people: $200$ are sick, $190$ correctly positive; with specificity
+        $0.90$ there are $980$ false positives, so $190/1170=19/117\approx0.1624$.
+        With $0.99$: only $98$ false positives remain, so $190/288=95/144
+        \approx0.6597$: the precision rises fourfold.
+
+  \item $P(A)=P(A\cap B)+P(A\cap B^{c})$, so
+        $P(A\cap B^{c})=P(A)-P(A)P(B)=P(A)(1-P(B))=P(A)P(B^{c})$. For
+        $A^{c},B^{c}$ use $P(A^{c}\cap B^{c})=1-P(A\cup B)$ and inclusion--exclusion,
+        or apply the result above twice.
+
+  \item $1-\prod_{k=0}^{29}(1-k/365)=0.706316$, whereas
+        $1-e^{-435/365}=0.696320$; the difference is $0.009996$. The approximation uses
+        $1-x\approx e^{-x}$ for $x$ up to $29/365$, and treats pair events
+        as mutually independent when they are not.
+
+  \item $A=(A\cap B)\cup(A\cap B^{c})$ and the two pieces are disjoint, because
+        $B\cap B^{c}=\varnothing$. Additivity gives
+        $P(A)=P(A\cap B)+P(A\cap B^{c})=P(A\mid B)P(B)+P(A\mid B^{c})P(B^{c})$,
+        using the definition of conditional probability twice.
+
+  \item The probability of winning by switching is $3/4=0.75$: the initial choice wins
+        only when the car really is there ($1/4$). A simulation of $10^{4}$ games gives
+        about $0.75$ with standard deviation $\sqrt{0.75\cdot0.25/10^{4}}\approx0.0043$.
+
+  \item 
+The correct figure is $0{,}9075$, not $0{,}9999$: with $0{,}1$ percent
+        prevalence only $1$ person in $1000$ is ill, while the false positives among
+        two positive tests are $999\cdot0{,}01^{2}\approx0{,}1$. Hence
+        $0{,}99^{2}\cdot0{,}001/(0{,}99^{2}\cdot0{,}001+0{,}01^{2}\cdot0{,}999)=0{,}9075$.
+        The assumptions: the two tests are conditionally independent and both
+        sensitivity and specificity are exactly $0{,}99$.
+
+  \item Not enough. Take $A$ the first coin shows heads, $B$ the second coin shows
+        heads, $C$ both coins match. Every pair gives $1/4=P\cdot P$, but
+        $P(A\cap B\cap C)=1/4$ whereas $P(A)P(B)P(C)=1/8$; the difference is $1/8$.
+\end{enumerate}
+
+\section*{Chapter 18: Random Variables and Distributions}
+\begin{enumerate}[label=\textbf{18.\arabic*}]
+  \item $c=1-(0.1+0.4)=0.5$; $\mathbb{E}[X]=-0.2+0+1.5=1.3$;
+        $\mathbb{E}[X^{2}]=0.4+0+4.5=4.9$; $\operatorname{Var}(X)=4.9-1.69=3.21$.
+
+  \item $(-\infty,b]=(-\infty,a]\cup(a,b]$ and the two pieces are disjoint, so
+        $F(b)=F(a)+P(a<X\le b)$. For discrete variables $P(X=a)>0$ makes
+        $P(a\le X\le b)$ larger; for continuous ones $P(X=a)=0$ so the two agree.
+
+  \item It is true that $P(X=x)=0$ for every $x$ in a continuous distribution. The
+        mistake is concluding ``impossible'': probability zero does not mean the empty
+        set. Countable additivity gives probability zero to a countable union of points,
+        but an interval contains uncountably many points and has probability one.
+
+  \item Differentiate $\sum q^{k}=1/(1-q)$ twice: $\sum k(k-1)q^{k-2}=2/(1-q)^{3}$.
+        Since $\sum k^{2}q^{k-1}=(1+q)/(1-q)^{3}$, with $q=1-p$ we get
+        $\mathbb{E}[X^{2}]=p(1+q)/p^{3}=(1+q)/p^{2}=(2-p)/p^{2}$.
+        Hence $\operatorname{Var}=(2-p)/p^{2}-1/p^{2}=(1-p)/p^{2}$; for $p=0.2$:
+        $\mathbb{E}[X^{2}]=45$ and $\operatorname{Var}=20$.
+
+  \item $\sigma=2$: $P(X>1)=1-\Phi(-1)=0.841345$;
+        $P(1<X<5)=2\Phi(1)-1=0.682689$; the $0.2$ quantile is
+        $3+2(-0.841621)=1.316758$. All three agree with
+        \texttt{scipy.stats.norm} to six digits.
+
+  \item $\sum_{k=0}^{40}e^{-2.5}2.5^{k}/k!=1-5.39\times10^{-35}$, that is $1$
+        to every printed digit. $P(X\ge8)=0.004247$, whereas the binomial with
+        $n=1000$, $p=0.0025$ gives $0.004191$; the binomial is smaller because
+        its variance is $2.4938<2.5$ and it is bounded above by $n$.
+
+  \item $P(X>s+t\mid X>s)=e^{-\lambda(s+t)}/e^{-\lambda s}=e^{-\lambda t}$.
+        Geometric: $P(X>k)=q^{k}$, so the ratio is $q^{s+t}/q^{s}=q^{t}$. Uniform on
+        the integers fails because the tail probability runs out, and the ratio depends
+        on $s$.
+
+  \item $f_{Y}(y)=\frac{1}{4\sqrt{y}}$ for $0<y<1$ (two preimages) and
+        $\frac{1}{8\sqrt{y}}$ for $1\le y<9$ (one preimage). The integral is
+        $\tfrac12+\tfrac12=1$. $\mathbb{E}[Y]=\frac14\int_{-1}^{3}x^{2}\,dx=7/3
+        =2.3333$, the same as $\mathbb{E}[X^{2}]$, and via $f_{Y}$:
+        $\int_{0}^{1}\frac{y}{4\sqrt{y}}\,dy+\int_{1}^{9}\frac{y}{8\sqrt{y}}\,dy
+        =\tfrac16+\tfrac{13}6=\tfrac73$.
+
+  \item Take $X$ uniform on $\{-1,0,1\}$ and $Y=|X|$. Then
+        $\mathbb{E}[XY]=\mathbb{E}[X]=0$, so $\operatorname{Cov}=0$ and $\rho=0$.
+        But $P(X=0,Y=0)=1/3$ whereas $P(X=0)P(Y=0)=1/9$: they are not independent.
+
+  \item 
+$\operatorname{se}(\bar X)=\sqrt{p(1-p)/(nR)}\le0{,}005$ gives
+        $R\ge0{,}2275/(20\cdot0{,}000025)=455$. For the variance,
+        $\operatorname{se}(\bar s^{2})=\sigma^{2}\sqrt{2/((n-1)R)}$ (normal
+        approximation) with $\sigma^{2}=4{,}55$ and $n=20$, so
+        $R\ge2\cdot4{,}55^{2}/(19\cdot0{,}02^{2})=5\,448{,}03$, that is $R=5\,449$.
+        Using $2\cdot4{,}55^{2}/0{,}02^{2}$ alone drops the factor $n-1$ and gives a
+        figure nineteen times too large.
+  \end{enumerate}
+
+\section*{Chapter 19: The Law of Large Numbers and the Central Limit Theorem}
+\begin{enumerate}[label=\textbf{19.\arabic*}]
+  \item $\{|(X_{n}+Y_{n})-(X+Y)|>\varepsilon\}$ is contained in
+        $\{|X_{n}-X|>\varepsilon/2\}\cup\{|Y_{n}-Y|>\varepsilon/2\}$. The union bound
+        gives a probability of at most the sum of two terms, each going to $0$.
+        The $\varepsilon/2$ is needed so that two errors both below it add up to
+        less than $\varepsilon$.
+
+  \item $\mathbb{E}[X]=0$ and $\mathbb{E}[X^{2}]=2a^{2}\cdot\sigma^{2}/(2a^{2})=\sigma^{2}$,
+        so $\operatorname{Var}(X)=\sigma^{2}$. Then
+        $P(|X|\ge a)=\sigma^{2}/a^{2}$, exactly equal to the Chebyshev bound: the bound
+        is attained, so it is sharp.
+
+  \item False. The central limit theorem demands finite variance and iid observations; it
+        also speaks only about the limit, not about $n=30$. In the lab section, the
+        exponential with $n=30$ still gives $D=0.0219$ with $p=0.000$, and Cauchy
+        gives a median $|\bar X_{n}|$ that settles near $1$.
+
+  \item Chebyshev: $n\ge\sigma^{2}/(\varepsilon^{2}\delta)=0.25/(0.0025\cdot0.05)
+        =2000$. The exact binomial computation gives $n=371$ (tail $0.0484$). The
+        Chebyshev bound is five times looser.
+
+  \item $\mathbb{E}[X_{n}]=n^{2}\cdot(1/n)=n\to\infty$, whereas for fixed
+        $\varepsilon$ we have $P(|X_{n}|>\varepsilon)=1/n\to0$. So $X_{n}\to0$ in
+        probability but its expectation explodes: no domination is available.
+
+  \item Exact: $0.069545$. Without the correction, $z=(50-60)/\sqrt{42}=-1.5430$ gives
+        $0.061411$, error $0.008134$. With the correction at $50.5$:
+        $0.071340$, error $0.001795$. The continuity correction improves it fourfold.
+
+  \item Median $|\bar X_{n}|$: $1.004$; $1.008$; $1.040$; $0.973$ for
+        $n=10$ up to $10^{4}$. $P(|\bar X_{n}|>10)$: $0.0630$; $0.0680$;
+        $0.0653$; $0.0580$, theory $0.0635$. The standard deviation $33.0$; $863.6$;
+        $23.9$; $379.5$ does not shrink because the Cauchy variance is infinite.
+
+  \item $\varphi_{\bar X_{n}}(t)=\bigl[\varphi(t/n)\bigr]^{n}
+        =\bigl[e^{-|t|/n}\bigr]^{n}=e^{-|t|}$, so the average is again Cauchy for
+        every $n$. Hence the se stays as large as the scale of the data itself, and
+        ``mean $\pm$ two se'' does not narrow even as $n$ grows.
+
+  \item $n=(1.96\cdot0.491971/0.0005)^{2}=3\,719\,214$; for half-width
+        $0.001$ it is enough to take $929\,803$. The ratio is $4$, because $n\propto h^{-2}$:
+        halve the width and the sample size rises fourfold.
+
+  \item For $t<c$ and $\varepsilon=c-t$:
+        $P(X_{n}\le t)\le P(X_{n}\le c-\varepsilon)+P(|X_{n}-c|>\varepsilon)\to0$;
+        for $t>c$ use the complement. The constant condition cannot be dropped:
+        take $X$ Rademacher and $X_{n}=(-1)^{n}X$. Every $X_{n}$ is still
+        Rademacher (because $X$ is symmetric), so $X_{n}\rightsquigarrow X$; but for
+        odd $n$ we have $|X_{n}-X|=2$ with probability $1$, so $X_{n}$ does not
+        converge to $X$ in probability.
+\end{enumerate}
+
+\section*{Chapter 20: Estimation, Confidence Intervals, and Hypothesis Testing}
+\begin{enumerate}[label=\textbf{20.\arabic*}]
+  \item False. A p-value of $0.42$ means the data are not enough to contradict $p=0.5$;
+        it does not prove $p=0.5$. The supplementary computations: a $95$ percent
+        interval, for instance $(0.28;\,0.57)$, and the power of the test at the
+        difference considered to matter.
+
+  \item $\mathbb{E}[\hat p(1-\hat p)]=p-\bigl(p^{2}+p(1-p)/n\bigr)
+        =p(1-p)(n-1)/n$. The unbiased estimator is
+        $\frac{n}{n-1}\hat p(1-\hat p)$. For $p=0.3$, $n=20$: the expectation is
+        $0.21\cdot19/20=0.1995$, and that estimator brings it back to $0.21$.
+
+  \item Write $\hat\theta_{n}-\theta=\operatorname{bias}_{n}
+        +(\hat\theta_{n}-\mathbb{E}\hat\theta_{n})$. The first term goes to $0$; the
+        second goes to $0$ in probability by Chebyshev, because its variance goes to
+        $0$. The MSE $=\operatorname{bias}^{2}+\operatorname{Var}$ going to $0$ is stronger,
+        but only the two conditions above are used.
+
+  \item 
+$7/40$: Wilson $(0{,}0875;\,0{,}3195)$, width $0{,}2320$; Wald
+        $(0{,}0572;\,0{,}2928)$, width $0{,}2355$. $13/20$: Wilson width $0{,}3860$,
+        Wald $0.4181$. The $7/40$ interval is narrower, but that is not a sign of
+        higher precision. Partly it is $n=40$; partly it is $\hat p=0.175$ being far
+        from $0.5$, which shrinks $\hat p(1-\hat p)$: at $n=40$ with $\hat p=0.5$ the
+        Wilson width is $0.2960$, still wider than $0.2320$. (At equal $n$, $7/20$ and
+        $13/20$ both give $0.3860$, since $\hat p(1-\hat p)$ is symmetric about
+        $1/2$.) What settles precision is not width but coverage: the Wald coverage
+        at $p=0.175$, $n=40$ is only $0.921$, whereas Wilson gives $0.943$. A narrow
+        interval near the edge is paid for with coverage below $95$ percent.
+
+  \item $|k-15|>1.96\sqrt{7.5}=5.3676$, so reject when $k\le9$ or $k\ge21$.
+        Its exact size is $0.042774$; its power at $p=0.7$ is only $0.588816$.
+        With $n=100$ (reject when $k\le40$ or $k\ge60$) the power rises to $0.987502$.
+
+  \item Wald: $|\hat p-p_{0}|\le z\sqrt{\hat p(1-\hat p)/n}$, which is equivalent to
+        $p_{0}$ lying in $\hat p\pm z\sqrt{\hat p(1-\hat p)/n}$. A test that uses
+        $\sqrt{p_{0}(1-p_{0})/n}$ uses a different denominator, so the set of $p_{0}$
+        that are not rejected is not that Wald interval.
+
+  \item 
+Suppose the observed difference is $0.87$ hours with standard error $0.86$ hours.
+``At the $5$ percent level the data do not reject equality of the two methods
+        ($p=0.31$). The $95$ percent interval for the difference is
+        $(-0.82;\,2.56)$ hours, so a $2$-hour difference is still a plausible value
+        and even a $0.5$-hour difference cannot be ruled out. The power of this test
+        against a difference of $0.5$ hours is only $0.09$: absence of evidence is
+        not evidence of absence, and the honest conclusion is that these data do not
+        decide the question.''
+
+  \item Rule of three: $3/100=0.03$. The exact one-sided bound is
+        $1-0.05^{1/100}=0.029513$; the Wilson upper bound is $0.036993$. The three
+        differ because the rule of three is only an approximation and Wilson is two-sided.
+        For the statement ``at most $5$ percent'' to be valid at the $95$ percent level:
+        the exact bound is $0.0295$.
+
+  \item $\bar x=19.125$, $s=1.082191$, $\operatorname{se}=0.312401$;
+        $t_{11;0.95}=1.795885$ gives $(18.5640;\,19.6860)$ with width
+        $1.1221$, whereas $95$ percent gives width $1.3752$. The width scales as
+        $1/\sqrt{n}$, so halving it needs $n=48$.
+\end{enumerate}
+
+\section*{Chapter 21: Regression and Applied Statistics}
+\begin{enumerate}[label=\textbf{21.\arabic*}]
+  \item Not enough evidence. $R^{2}=0.99$ says only that the variance is explained;
+        $s$ determines the error. On the cafe data $R^{2}=0.992821$ but
+        $s=0.365148$ hours $=21.9$ minutes, and the half-width of the $95$ percent
+        prediction interval at $x_{0}=5$ is $0.9101$ hours, that is $55$ minutes. What
+        should be quoted: $s$ and a prediction interval.
+
+  \item The normal equations are $X^{\top}e=0$. The first column of $X$ holds ones, so
+        $\sum e_{i}=0$; the second column holds $x_{i}$, so $\sum x_{i}e_{i}=0$.
+        Without the ones column (a line through the origin), $\sum e_{i}=0$ is no longer
+        imposed and generally fails.
+
+  \item $\hat b-\beta=\sum_{i}(x_{i}-\bar x)\varepsilon_{i}/S_{xx}$. The terms are
+        independent and $\operatorname{Var}(\varepsilon_{i})=\sigma^{2}$, so
+        $\operatorname{Var}(\hat b)=\sigma^{2}\sum(x_{i}-\bar x)^{2}/S_{xx}^{2}
+        =\sigma^{2}/S_{xx}$. No matrix formula is used.
+
+  \item $\hat b=0.7$, $\hat a=1.3$, $S_{xx}=10$, $s=0.516398$,
+        $\operatorname{se}(\hat b)=0.163299$; with $t_{3}=3.182446$ the interval is
+        $(0.1803;\,1.2197)$. It is wider than for the cafe data because $n=5$,
+        $S_{xx}$ is small, and $s$ is large.
+
+  \item 
+In the cafe data $\bar x=5$, $n=9$, $S_{xx}=60$, so the leverage is
+        $c(x_{0})=1/9+(x_{0}-5)^{2}/60$: $c(2)=0.261111$ and $c(9)=0.377778$.
+        With $2.364624\sqrt{0.133333\,(1+c)}$ the half-widths are $0.9696$ for
+        $x_{0}=2$ and $1.0135$ for $x_{0}=9$; they differ because
+        $(x_{0}-\bar x)^{2}/S_{xx}$ is larger farther from the centre. That term
+        shrinks like $1/n$, so the difference between the two intervals does vanish
+        for large $n$: both tend to $1.96\sigma=0.716$ half-width. What never
+        vanishes is the width itself, because the $+1$ term (the error of one new
+        observation) remains: a prediction interval does not shrink to zero, it
+        shrinks to the spread of the error.
+
+  \item The column space of the big model contains the column space of the small model, so
+        its projection is closest: the SSE cannot rise. $R^{2}$ may stay the same, but the
+        divisor $n-p$ shrinks, so $R^{2}_{\text{adj}}$ falls: from $0.991795$ ($p=2$) to
+        $0.990428$ ($p=3$).
+
+  \item $\mathrm{VIF}=1/(1-0.81)=5.263158$, so
+        $\operatorname{se}(\hat b_{1})$ grows by a factor $\sqrt{5.263158}$. With
+        $x_{2}$: $\sqrt{2/(50\cdot0.19)}=0.458831$. Without $x_{2}$:
+        $\sqrt{2/50}=0.2$. The ratio is $2.294157$.
+
+  \item 
+Group A: $(1;2)$, $(2;1{,}8)$, $(3;1{,}6)$; group B: $(5;4{,}0)$,
+        $(6;3{,}8)$, $(7;3{,}6)$. Each group has slope $-0{,}2$, the pooled slope is
+        $+0{,}4$. The valid decomposition adds contributions, not slopes:
+        $b_{\text{gab}}=(S_{xy}^{\text{dalam}}+S_{xy}^{\text{antar}})/S_{xx}=-0{,}8/28+12/28=-0{,}028571+0{,}428571=0{,}4$,
+        whereas the between-group slope on its own is $12/24=0{,}5$.
+
+  \item ``Of the twelve models tried, the best gives $p=0.03$. After
+        correcting for twelve comparisons (Bonferroni: $0.36$) the effect is no longer
+        significant; therefore these data have not decided.''
+\end{enumerate}
+
+\section*{Chapter 22: Floating-Point Arithmetic and Error Analysis}
+\begin{enumerate}[label=\textbf{22.\arabic*}]
+  \item $\operatorname{ulp}(1)=2^{-52}=2.220\times10^{-16}$;
+        $\operatorname{ulp}(1024)=2^{-42}=2.274\times10^{-13}$;
+        $\operatorname{ulp}(0.1)=2^{-56}=1.388\times10^{-17}$;
+        $\operatorname{ulp}(3\times10^{8})=2^{-24}=5.960\times10^{-8}$.
+        $|x|u$ differs from the ulp by at most a factor of two, because the ulp is constant
+        inside one binade. In $[1,2)$ there are $2^{52}$ numbers.
+
+  \item $2^{-53}$ is exactly half an ulp of $1$, and rounding to even sends it back
+        to $1$: $1+2^{-53}=1$. Since $2^{-52}$ is one full ulp,
+        $1+2^{-52}>1$. In binary32, $u=2^{-24}$ and ulp$(1)=2^{-23}$, so the smallest
+        positive number is $2^{-23}=1.192\times10^{-7}$.
+
+  \item $\operatorname{fl}(x)$ is the nearest number, so
+        $|\operatorname{fl}(x)-x|\le\tfrac12\operatorname{ulp}(x)$ by the definition of
+        rounding. Equality cannot hold for all $x$: when $x$ is itself representable the
+        error is $0$, and $\tfrac12$ ulp is attained only halfway between two numbers.
+
+  \item False. Every operation is rounded correctly, but the errors accumulate along the
+        algorithm. Example from this chapter: the sequential sum $1+10^{6}\cdot10^{-16}$
+        stays $1$, whereas Kahan gives $1.0000000001$; the difference $10^{-10}$
+        is far above $u$.
+
+  \item With denominator $2^{54}$: $(0.1+0.2)+0.3=10808639105689192/2^{54}$ and
+        $0.1+(0.2+0.3)=10808639105689190/2^{54}$. The difference is $2/2^{54}=2^{-53}$,
+        exactly one ulp. \texttt{fsum} gives $0.6$; \texttt{float.hex} differs in the
+        last digit.
+
+  \item The naive formula gives $0.4996003611$; the double-angle
+        identity gives $0.4999999999999996$ and $0.5-x^{2}/24+x^{4}/720$
+        agrees. Its relative error is $-7.99\times10^{-4}$ and comes from
+        cancellation in $1-\cos x$: $\cos x$ discards the digits the difference needs.
+
+  \item Naive: the small root is $-1.0000000111\times10^{-4}$. The stable form
+        $-2c/\bigl(b+\sqrt{b^{2}-4ac}\bigr)$ gives
+        $-1.0000000100\times10^{-4}$, relative error $1.12\times10^{-9}$.
+        The condition number of the subtraction is $\bigl(2\cdot10^{4}\bigr)/\bigl(2\cdot
+        10^{-4}\bigr)=10^{8}$, so about eight digits are lost.
+
+  \item At level $j$ there are $2^{k-j}$ additions, each with error at most
+        $u$ times the sum of the absolute values of its inputs; summed over the whole tree,
+        the error is $\le ku\sum|x_{i}|$ with $k=\log_{2}n$. That tree depth is what
+        replaces $n$ in the bound for the sequential sum.
+
+  \item Sequential: every $10^{-16}$ is below $\tfrac12\operatorname{ulp}(1)
+        =1.11\times10^{-16}$, so the result stays $1$. Kahan:
+        $1.0000000001$, the same as the exact value. Each Kahan step is also rounded,
+        but the lost remainder is kept in $c$ and returned on the next step.
+
+  \item $\kappa\approx1+\bar x^{2}/s^{2}$. For $1000$ values
+        $999+\bigl((k\bmod7)-3\bigr)/4$ with $k=1,\dots,1000$:
+        $\bar x=999.00075$, $s=0.4997$ (population standard deviation, matching
+        the $1/n$ divisor in the problem),
+        $\kappa\approx4.0\times10^{6}$. With $u_{32}=5.96\times10^{-8}$,
+        $\kappa u\approx0.238$: almost all digits are lost. Measured: one pass
+        errors by $25$ percent, two passes by $4.4\times10^{-8}$.
+\end{enumerate}
+
+\section*{Chapter 23: Convex Optimization and Duality}
+\begin{enumerate}[label=\textbf{23.\arabic*}]
+  \item $f$: Hessian $\begin{pmatrix}2&1\\1&2\end{pmatrix}$, eigenvalues $1$ and $3$,
+        positive definite, strictly convex. $g$: $\begin{pmatrix}0&1\\1&0\end{pmatrix}$,
+        eigenvalues $\pm1$, indefinite, neither of the two. $h$:
+        $\begin{pmatrix}4&-4\\-4&6\end{pmatrix}$, eigenvalues $0.8769$ and $9.1231$,
+        positive definite. None is singular semidefinite; for $x_{1}^{2}+2x_{1}x_{2}
+        +x_{2}^{2}$ (eigenvalues $0$ and $4$) the minimum is not unique.
+
+  \item For $x,y\in C_{1}\cap C_{2}$ and $t\in[0,1]$, the mixed point lies in
+        $C_{1}$ and in $C_{2}$, hence in their intersection. Union: $[0,1]\cup[2,3]$ contains
+        $1$ and $2$ but not $(1+2)/2=1.5$.
+
+  \item $f_{i}(tx+(1-t)y)\le tf_{i}(x)+(1-t)f_{i}(y)\le tM(x)+(1-t)M(y)$ for each
+        $i$, then take the maximum. For $\max\{x_{1}^{2},x_{2}\}$ at $(0,0)$ the gradient
+        does not exist (a crease along $x_{2}=x_{1}^{2}$), but its subdifferential
+        $\operatorname{conv}\{(0,0),(0,1)\}$ contains $\mathbf{0}$: a minimum. At $(1,1)$
+        the subdifferential is $\operatorname{conv}\{(2,0),(0,1)\}$ with no zero, not a
+        minimum.
+
+  \item Without $x_{1}\ge1$: $x_{1}=0.8$, $x_{2}=1.6$, which violates it. So $x_{1}=1$,
+        $x_{2}=1.5$, $p^{*}=3.25$. The multipliers are $\nu=-1.5$ for the equality and
+        $\lambda=0.5\ge0$ for the inequality. \texttt{scipy.optimize.mini\-mize}
+        gives the same value.
+
+  \item $g(\lambda)=\min_{x}\bigl[x_{1}^{2}+x_{2}^{2}+\lambda(2-x_{1}-x_{2})\bigr]
+        =2\lambda-\lambda^{2}/2$. Its derivative is $2-\lambda$, so the maximum is at
+        $\lambda=2$ with $d^{*}=2=p^{*}$. The gap is zero because the constraint is affine
+        and $x=(1.5;\,1.5)$ is strictly feasible: Slater holds.
+
+  \item False. Strong duality only equates the values, it does not guarantee attainment.
+        Example: minimize $e^{x}$ over $\mathbb{R}$. $p^{*}=0$ but it is not attained;
+        the dual side is also $0$, so the gap is zero while the primal optimum does not
+        exist.
+
+  \item False. Complementary slackness states $\lambda_{i}g_{i}(\mathbf{x}^{*})=0$:
+        an active constraint may have a zero multiplier, and an inactive constraint must
+        have a zero multiplier. The implication runs one way, so ``active $\Rightarrow$
+        positive'' is not valid.
+
+  \item Without the bound, $(x_{1}-2)^{2}+(x_{2}-2)^{2}$ on $x_{1}+x_{2}=2$ is minimized
+        at $x_{1}=x_{2}=1$. That satisfies $x_{1}\le c$ if and only if $c\ge1$, so
+        at $c=1$ the multiplier is $\lambda=0$ and $p^{*}=2$; the constraint starts to
+        bind only for $c<1$ (at $c=0.5$: $p^{*}=2.5$, $\lambda=2$).
+
+  \item For $\lambda>0$ and $x_{k}\to-\infty$, the term $\lambda x_{k}^{3}$ dominates
+        and is negative, so $g(\lambda)=-\infty$. Only $\lambda=0$ is finite:
+        $g(0)=\min(x-2)^{2}=0$, hence $d^{*}=0$. Meanwhile $p^{*}=1$ at $x=1$ (the piece
+        $[0,1]$), because at $x=-1$ the value is $9$. The gap is $1$, one hundred percent.
+
+  \item The first-order inequality for a convex function gives
+        $f(y)\ge f(x^{*})+\nabla f(x^{*})^{\top}(y-x^{*})=f(x^{*})$ for every $y$,
+        without using strict convexity. That proof fails for $f(x)=x^{3}$ because
+        $f$ is not convex; the condition violated is precisely convexity of $f$, at $x=0$
+        where $\nabla f=0$ but it is not a minimum.
+\end{enumerate}

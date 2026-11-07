@@ -1,0 +1,1023 @@
+\chapter{Aksioma Bilangan Real dan Supremum}
+
+Sebuah program mencari panjang diagonal persegi bersisi satu. Ia memelihara dua
+bilangan, $a=1$ dan $b=2$, dengan $a^2-2<0<b^2-2$. Setiap langkah ia menghitung titik
+tengah $m=(a+b)/2$, menilai $m^2-2$, lalu mengganti $a$ atau $b$ dengan $m$ supaya
+tanda kedua ujung tetap berbeda. Setelah 40 langkah lebar selangnya di bawah $10^{-12}$,
+setelah 100 langkah di bawah $10^{-30}$. Tetapi program itu tidak pernah mengeluarkan
+jawaban: tidak ada langkah yang menghasilkan $x^2-2=0$ persis, dan kedua ujung selang
+terus mengapit sesuatu yang bukan bilangan rasional.
+
+Kegagalan itu bukan kesalahan algoritme. Ia menunjukkan bahwa bilangan rasional punya
+lubang, dan bahwa himpunan $\{q\in\mathbb{Q}: q^2<2\}$ tidak mempunyai batas atas
+terkecil di dalam $\mathbb{Q}$.
+
+Bab 1 mengajari kita menulis bukti. Bab 2 memberi bahasa himpunan dan fungsi, sekaligus
+memakai $|x|$ dan $\sup$ sebagai alat hitung tanpa mempertanyakan asalnya. Yang belum
+ada adalah objek yang menjamin alat itu sah. Bab ini membangunnya, bukan dari desimal,
+melainkan dari tiga kelompok pernyataan yang diterima tanpa bukti: hukum lapangan,
+hukum urutan, dan kelengkapan. Sisanya, termasuk keberadaan $\sqrt{2}$, diturunkan
+dari situ.
+
+\begin{untukanak}
+Bayangkan sebuah penggaris yang hanya punya tanda pecahan: setengah, seperempat,
+seperdelapan, dan terus makin rapat. Tidak ada angka lain di penggaris itu. Sekarang
+ukur diagonal sebuah persegi yang sisinya satu jengkal. Ujung diagonal jatuh di antara
+dua tanda, dan selalu begitu, tidak peduli seberapa rapat tandanya. Kita bisa mendekat
+sejauh yang kita mau, tetapi tidak pernah tepat.
+
+Pertanyaannya: apakah panjang itu benar-benar ada? Penggarisnya jelas tidak punya
+jawaban. Namun diagonal itu, kalau dijinjing atau dipasang di lantai, punya panjang
+tertentu. Panjang itu tidak hilang hanya karena alat ukur kita tidak memuatnya.
+
+Cerita yang sama terjadi pada bilangan. Kalau kita hanya punya bilangan pecahan, ada
+titik di garis yang tidak punya nama. Matematikawan menutup lubang itu dengan satu
+janji: setiap kumpulan bilangan yang terbatas ke atas punya atap paling rendah. Di bab
+ini kita akan tahu mengapa janji itu perlu, apa akibatnya, dan bagaimana ia memberi
+nama pada panjang diagonal tadi, yaitu akar dua.
+\end{untukanak}
+
+\section{Aksioma lapangan}
+\tingkat{dasar}
+
+Kita tidak mendefinisikan bilangan real sebagai desimal tak berujung: cara itu membuat
+penjumlahan rumit, dan membuat definisi batas atas terkecil berputar-putar, sebab
+``supremum semua pemotongan desimal'' sudah memakai bilangan yang sedang dibangun.
+Lebih bersih menyebut sifatnya lebih dulu, lalu menurunkan sisanya.
+
+Lapisan pertama bersifat aljabar. Kita mengandaikan dua operasi yang menaati aturan
+yang kita pakai sejak sekolah; definisi berikut hanya memberi nama aturan itu.
+
+\begin{definisi}[Lapangan]\index{lapangan}
+Himpunan $F$ disebut \emph{lapangan} jika pada anggotanya terdefinisi penjumlahan dan
+perkalian sehingga: hasil kedua operasi selalu berada di $F$; kedua operasi komutatif
+dan asosiatif; ada unsur $0$ dengan $0+x=x$ dan unsur $1\neq 0$ dengan $1\cdot x=x$;
+setiap $x$ punya lawan $-x$ dengan $x+(-x)=0$; setiap $x\neq 0$ punya kebalikan $1/x$
+dengan $x\cdot(1/x)=1$; dan berlaku $x(y+z)=xy+xz$.
+\end{definisi}
+
+Aksioma itu tidak menyebut urutan, tidak menyebut jarak, dan tidak menyebut
+kelengkapan. Karena itu himpunan lain juga memenuhinya. Bilangan rasional dengan
+penjumlahan dan perkalian biasa adalah lapangan. Pertanyaan yang wajar: apa saja yang
+sudah terkandung di dalam aturan itu?
+
+Tiga pernyataan aljabar yang biasa kita hafal ternyata akibat, bukan aksioma; yang
+paling sering dipakai adalah hasil kali dengan nol yang memusnahkan.
+
+\begin{teorema}
+Dalam sebarang lapangan, untuk semua $x,y$ berlaku: (a) $0\cdot x=0$;
+(b) $(-x)y=-(xy)$; (c) $(-x)(-y)=xy$; (d) jika $xy=0$ maka $x=0$ atau $y=0$.
+\end{teorema}
+
+\begin{proof}
+(a) Dari $0+0=0$ dan hukum distributif, $0\cdot x=(0+0)x=0\cdot x+0\cdot x$.
+Tambahkan $-(0\cdot x)$ pada kedua ruas. Ruas kiri menjadi $0$, ruas kanan menjadi
+$0\cdot x$. Jadi $0=0\cdot x$.
+
+(b) Hitung $(-x)y+xy=(-x+x)y=0\cdot y=0$, memakai (a). Jadi $(-x)y$ lawan dari $xy$,
+dan lawan itu tunggal.
+
+(c) Terapkan (b) dua kali: $(-x)(-y)=-\bigl(x(-y)\bigr)=-\bigl(-(xy)\bigr)=xy$.
+Langkah terakhir memakai $--a=a$, yang juga akibat ketunggalan lawan.
+
+(d) Andaikan $x\neq 0$ dan $xy=0$. Kalikan dengan $1/x$: $(1/x)(xy)=0$, sehingga
+$y=0$. Jadi salah satu faktornya nol.
+\end{proof}
+
+Tidak satu pun dari keempat pernyataan itu diandaikan; semuanya turun dari hukum
+distributif dan keberadaan lawan. Pola ini dipakai sepanjang buku: sebut aturan
+sesedikit mungkin, lalu panen akibatnya.
+
+\kamus{lapangan}{field}{Himpunan dengan dua operasi hitung yang aturannya tetap, seperti
+kotak alat yang penutupnya selalu rapat: hasil hitungan tidak pernah keluar dari kotak.}
+
+Bab 2 memakai $\mathbb{Q}$ sebagai himpunan terhitung. Di sini ia muncul dalam peran
+lain: lapangan yang terurut. Dua sifat itu belum cukup, dan itu isi bagian berikutnya.
+
+\section{Aksioma urutan}
+\tingkat{dasar}
+
+Lapangan saja tidak bisa membandingkan dua bilangan. Kita memerlukan relasi ``lebih
+kecil dari'' yang menghormati penjumlahan dan perkalian, sebab tanpa itu pertidaksamaan
+tidak bisa diolah. Aksioma urutan mengatakan tiga hal: setiap dua bilangan bisa
+dibandingkan, perbandingan menular, dan menambah atau mengalikan dengan bilangan positif
+tidak merusaknya.
+
+\begin{definisi}[Lapangan terurut]\index{lapangan terurut}
+Lapangan $F$ disebut \emph{terurut} jika ada relasi $<$ pada $F$ sehingga untuk setiap
+$a,b,c$ berlaku: tepat satu di antara $a<b$, $a=b$, $b<a$ benar; jika $a<b$ dan $b<c$
+maka $a<c$; jika $a<b$ maka $a+c<b+c$; dan jika $a<b$ serta $c>0$ maka $ac<bc$.
+\end{definisi}
+
+Hampir semua aturan tanda yang kita hafal adalah akibat definisi itu, bukan tambahan.
+Bukti berikut menurunkan lima di antaranya sekaligus; polanya sama: tambahkan sesuatu
+pada kedua ruas, atau kalikan dengan bilangan yang tandanya diketahui.
+
+\begin{proposisi}
+Dalam setiap lapangan terurut berlaku: (a) jika $x>0$ maka $-x<0$, dan sebaliknya;
+(b) jika $x>0$ dan $y<z$ maka $xy<xz$; (c) jika $x<0$ dan $y<z$ maka $xy>xz$;
+(d) jika $x\neq 0$ maka $x^2>0$, khususnya $1>0$; (e) jika $0<x<y$ maka
+$0<1/y<1/x$.
+\end{proposisi}
+
+\begin{proof}
+(a) Jika $x>0$, tambahkan $-x$ pada kedua ruas: $0>-x$. Sebaliknya, jika $x<0$ maka
+$0-x>0$, yaitu $-x>0$.
+
+(b) Karena $z>y$, kita punya $z-y>0$. Kalikan dengan $x>0$: $x(z-y)>0$. Jadi
+$xz=x(z-y)+xy>xy$.
+
+(c) Dari (a), $-x>0$. Terapkan (b) pada $-x$ dan $y<z$: $(-x)y<(-x)z$. Menurut
+Teorema sebelumnya, ruas kiri adalah $-(xy)$ dan ruas kanan $-(xz)$. Jadi
+$-(xy)<-(xz)$, dan dengan (a) lagi $xy>xz$.
+
+(d) Jika $x>0$, aksioma urutan pada $y=x>0$ memberi $x^2>0$. Jika $x<0$ maka $-x>0$,
+sehingga $(-x)^2>0$; padahal $(-x)^2=x^2$. Untuk $x=0$ jelas $x^2=0$. Karena
+$1=1^2$, kita peroleh $1>0$.
+
+(e) Karena $y>0$ dan $1/y\neq 0$, dari (d) $1/y>0$; sama untuk $1/x$. Kalikan
+$x<y$ dengan bilangan positif $(1/x)(1/y)$: hasilnya $1/y<1/x$.
+\end{proof}
+
+Dua akibat yang sering dipakai: $a<b$ setara dengan $b-a>0$, dan $a<b$ setara dengan
+$-b<-a$; yang kedua menjelaskan mengapa mengalikan dengan bilangan negatif membalik
+arah, sebab mengalikan dengan $-1$ mencerminkan garis bilangan terhadap nol. Akibat lain:
+jika $0<a<b$ maka $a^2<b^2$, cukup dengan mengalikan $a<b$ dengan $a>0$ lalu dengan
+$b>0$ dan menjumlahkannya. Jadi membandingkan kuadrat setara dengan membandingkan
+bilangan positif aslinya; setiap kali kita menulis $q^2<2$ untuk $q$ rasional, kita
+membandingkan $q$ dengan sesuatu yang belum tentu rasional.
+
+\kamus{lapangan terurut}{ordered field}{Lapangan yang anggotanya bisa diurutkan seperti
+anak tangga, dan aturan hitungnya tidak merusak urutan itu.}
+
+Perhatikan apa yang belum kita punya. Kita belum tahu apakah ada bilangan positif yang
+lebih kecil dari semua $1/n$, dan belum tahu apakah $\{q\in\mathbb{Q}: q^2<2\}$ punya
+atap. Itu bukan soal urutan, melainkan soal kelengkapan.
+
+\section{Nilai mutlak dan ketaksamaan segitiga}
+\tingkat{menengah}
+
+Di Bab 2 kita menulis $|x-y|$ sebagai jarak, dan memakainya untuk membandingkan galat,
+tanpa membuktikan bahwa lambang itu berperilaku seperti jarak. Sekarang sifatnya
+diturunkan dari urutan. Nilai mutlak membuang tanda dan menyisakan jarak ke titik nol;
+definisi berikut menulis dua cabang, dan cabang keduanya yang biasa dipakai.
+
+\begin{definisi}[Nilai mutlak]\index{nilai mutlak}
+Untuk $x\in\mathbb{R}$, $|x|=x$ jika $x\ge 0$ dan $|x|=-x$ jika $x<0$. Secara setara,
+$|x|=\max\{x,-x\}$, dan untuk bilangan real $|x|=\sqrt{x^2}$ dengan akar yang
+dibahas di bagian berikutnya.
+\end{definisi}
+
+Dari definisi itu langsung: $|x|\ge 0$, $|{-x}|=|x|$, $|x|^2=x^2$, dan $|xy|=|x|\,|y|$.
+Yang terakhir terbukti dengan memeriksa empat kombinasi tanda, atau dengan mencatat
+bahwa kedua ruas tidak negatif dan kuadratnya sama.
+
+Pertidaksamaan yang memuat nilai mutlak paling mudah diolah setelah diubah menjadi dua
+pertidaksamaan biasa. Lemma berikut adalah alasan mengapa perubahan itu sah.
+
+\begin{lemma}
+Untuk $c\ge 0$, $|x|\le c$ jika dan hanya jika $-c\le x\le c$.
+\end{lemma}
+
+\begin{proof}
+Jika $|x|\le c$: untuk $x\ge 0$ kita punya $x=|x|\le c$ dan $-c\le 0\le x$; untuk
+$x<0$ kita punya $-x=|x|\le c$, sehingga $x\ge -c$, dan $x<0\le c$. Jadi
+$-c\le x\le c$.
+
+Sebaliknya, jika $-c\le x\le c$: untuk $x\ge 0$, $|x|=x\le c$; untuk $x<0$,
+$|x|=-x\le c$ karena $x\ge -c$. Dalam kedua kasus $|x|\le c$.
+\end{proof}
+
+Ketaksamaan segitiga adalah satu-satunya alat yang kita butuhkan untuk mengendalikan
+selisih dua bilangan. Namanya berasal dari gambar: panjang satu sisi segitiga tidak
+melebihi jumlah panjang dua sisi lainnya.
+
+\begin{teorema}[Ketaksamaan segitiga]\index{ketaksamaan segitiga}
+Untuk semua $x,y\in\mathbb{R}$, $|x+y|\le |x|+|y|$. Selain itu
+$\bigl||x|-|y|\bigr|\le |x-y|$.
+\end{teorema}
+
+\begin{proof}
+Dari definisi, $-|x|\le x\le |x|$ dan $-|y|\le y\le |y|$. Jumlahkan kedua pasangan:
+$-(|x|+|y|)\le x+y\le |x|+|y|$. Menurut lemma sebelumnya dengan $c=|x|+|y|$, diperoleh
+$|x+y|\le |x|+|y|$.
+
+Untuk bagian kedua, tulis $x=(x-y)+y$ dan terapkan bagian pertama:
+$|x|\le |x-y|+|y|$, sehingga $|x|-|y|\le |x-y|$. Dengan menukar peran $x$ dan $y$
+diperoleh $|y|-|x|\le |x-y|$. Karena $c\le d$ dan $-c\le d$ setara dengan $|c|\le d$,
+maka $\bigl||x|-|y|\bigr|\le |x-y|$.
+\end{proof}
+
+Sebagai pemeriksaan, ambil $x=3$ dan $y=-5$: $|x+y|=2$ sedangkan $|x|+|y|=8$, jadi
+ketaksamaannya longgar. Untuk $x=3$ dan $y=5$ kedua ruas bernilai $8$ dan ketaksamaan
+menjadi persamaan; itu terjadi tepat ketika tandanya sama atau salah satunya nol.
+
+Kegunaan praktisnya: batas pada jarak menjadi batas pada fungsi. Jika $|x-\sqrt2|<\delta$,
+maka
+\[
+|x^2-2|=|x-\sqrt2|\,|x+\sqrt2|<\delta\,(2\sqrt2+\delta),
+\]
+karena $|x+\sqrt2|\le|x-\sqrt2|+2\sqrt2$. Untuk $\delta=10^{-3}$ batas itu bernilai
+$0.002829427$, dan nilai sebenarnya di $x=\sqrt2+10^{-3}$ juga $0.002829427$ sebab
+$x^2-2=2\sqrt2\,\delta+\delta^2$ tepat: batas itu ketat. Untuk $\delta=10^{-6}$ batas
+yang sama mengecil menjadi $2.828428\times10^{-6}$.
+
+\kamus{nilai mutlak}{absolute value}{Jarak sebuah titik ke nol pada garis bilangan,
+tanpa memedulikan sebelah mana titik itu berada.}
+
+Ketaksamaan segitiga hanya memakai aksioma urutan, bukan kelengkapan, jadi ia berlaku
+juga di $\mathbb{Q}$ dan tidak bisa membedakan keduanya. Alat pembeda muncul di bagian
+berikutnya.
+
+\section{Kelengkapan: batas atas terkecil}
+\tingkat{menengah}
+
+Urutan memberi perbandingan, tetapi tidak memberi atap. Himpunan
+$A=\{1-1/n: n\in\mathbb{N}\}$ memuat bilangan yang makin dekat ke satu tanpa pernah
+sama dengan satu: satu bukan anggotanya, tetapi batasnya paling rapat. Himpunan
+$B=\{q\in\mathbb{Q}: q^2<2\}$ terbatas, tetapi tidak punya batas rapat di
+$\mathbb{Q}$. Keduanya memperlihatkan bahwa batas longgar dan batas paling rapat perlu
+nama berbeda.
+
+\begin{untukanak}
+Bayangkan kita harus memasang atap tenda untuk sekelompok anak. Atap terlalu rendah:
+ada kepala yang menonjol. Atap terlalu tinggi: tenda boros dan goyah. Yang kita cari
+adalah atap paling rendah yang masih membuat semua anak muat. Sebut saja atap pas.
+
+Sekarang ada yang aneh. Di kelompok itu tidak ada anak tertinggi; selalu ada yang
+sedikit lebih tinggi. Namun atap pas tetap ada, karena tinggi mereka terbatas: tidak
+ada yang setinggi pohon. Atap pas ditentukan oleh seluruh kelompok, bukan oleh satu
+anak.
+
+Di bab ini atap pas punya nama: batas atas terkecil. Sifat yang menjamin atap pas
+selalu ada disebut kelengkapan. Bilangan pecahan tidak lengkap: ada kelompok yang
+tingginya terbatas, tetapi atap pasnya tidak ada di antara bilangan pecahan. Pertanyaan
+yang bisa dibawa pulang: kalau tidak ada anak tertinggi, bagaimana caranya membuktikan
+bahwa atap pas itu memang yang paling rendah?
+\end{untukanak}
+
+Batas atas adalah langit-langit yang memuat semua anggota; batas atas terkecil adalah
+langit-langit terendah di antaranya. Definisi berikut menamai keduanya beserta cerminnya
+di bawah.
+
+\begin{definisi}[Batas atas dan supremum]\index{batas atas}\index{supremum}
+Misalkan $A\subseteq\mathbb{R}$ dan $A\neq\varnothing$. Bilangan $u$ disebut
+\emph{batas atas} $A$ jika $a\le u$ untuk setiap $a\in A$. Jika $A$ punya
+sekurang-kurangnya satu batas atas, $A$ disebut terbatas di atas. Bilangan $s$ disebut
+\emph{supremum} $A$, ditulis $s=\sup A$, jika $s$ batas atas $A$ dan $s\le u$ untuk
+setiap batas atas $u$. Secara kembar, $t$ disebut \emph{infimum} $A$, ditulis
+$t=\inf A$, jika $t$ batas bawah dan $t\ge v$ untuk setiap batas bawah $v$.
+\end{definisi}
+
+Dua syarat pada definisi supremum sering tertukar: yang pertama mengatakan $s$ masih
+batas atas, yang kedua bahwa tidak ada batas atas yang lebih kecil. Pada $A=\{1-1/n\}$,
+bilangan $1$ memenuhi keduanya sedangkan $2$ hanya yang pertama; himpunan itu juga tidak
+punya anggota terbesar, jadi ``maksimum'' dan ``supremum'' bukan sinonim.
+
+\begin{bacakeras}
+Dua suara. Suara pertama bertanya, suara kedua menjawab. Bacakan bergantian dengan teman.
+
+``Pagar itu apa?'' ``Pagar adalah batas atas: semua anggota kumpulan ada di bawahnya.''
+``Berapa banyak pagarnya?'' ``Banyak. Setiap pagar yang lebih tinggi juga pagar.''
+``Lalu yang mana yang kita pakai?'' ``Yang paling rendah. Namanya batas atas terkecil.''
+``Kalau pagar terendah itu kebetulan ditempati anggota kumpulan?'' ``Maka ia juga maksimum.
+Kalau tidak ditempati, ia tetap batas atas terkecil. Dua nama, dua pekerjaan.''
+
+Ulangi tiga kali, makin cepat: pagar tinggi bukan jawaban, pagar terendah baru jawaban.
+
+Baris yang harus diulang pembaca, sekali, dengan suara jelas: batas atas itu pagar; batas
+atas terkecil itu pagar terendah yang masih menahan semua anggota.
+\end{bacakeras}
+
+Gambar~\ref{fig:sup-garis} menaruh kedua gagasan itu pada satu garis. Anggota
+$A=\{1-1/n\}$ mengerumun ke satu arah tanpa pernah mencapai ujungnya; semua bilangan di
+kanan satu adalah batas atas, dan yang paling kiri di antara mereka adalah supremum.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=1.5cm,y=1cm,font=\small]
+  \draw[-{Latex[length=2mm]},ink,thick] (-0.35,0) -- (5.5,0);
+  \foreach \t in {0,1,2,3,4,5}{
+    \draw[ink] (\t,0.07) -- (\t,-0.07);
+    \node[below=2pt,ink] at (\t,0) {$\t$};
+  }
+  \foreach \n in {1,...,6}{
+    \fill[accent] ({1-1/\n},1.0) circle (1.7pt);
+  }
+  \draw[accent,thick,fill=white] (1,1.0) circle (1.7pt);
+  \node[anchor=west,accent,font=\footnotesize] at (1.18,1.0) {anggota $A=\{1-1/n\}$};
+  \draw[layergrey,dashed] (1,0.95) -- (1,0);
+  \node[accent,anchor=west,font=\footnotesize] at (1.12,0.45)
+    {$\sup A=1$, dan $1$ bukan anggota $A$};
+  \fill[layerteal!14] (1,-0.95) rectangle (5.35,-0.6);
+  \draw[layerteal,thick] (1,-0.95) rectangle (5.35,-0.6);
+  \node[layerteal!80!black,font=\footnotesize] at (3.2,-0.775) {semua batas atas $A$};
+  \draw[accent,line width=1.4pt] (1,-1.02) -- (1,-0.52);
+\end{tikzpicture}
+\caption{Himpunan $A=\{1-1/n:n\in\mathbb{N}\}$ pada garis bilangan. Setiap $u\ge 1$
+adalah batas atas; yang terkecil, $u=1$, adalah $\sup A$. Bilangan $1$ bukan anggota
+$A$, jadi $A$ tidak mempunyai maksimum.}
+\label{fig:sup-garis}
+\end{figure}
+
+\kamus{supremum}{supremum (least upper bound)}{Atap paling rendah yang masih menutupi
+seluruh anggota himpunan; atap itu tidak harus bagian dari himpunan.}
+
+Supremum, kalau ada, hanya ada satu; syarat keduanya bisa ditulis dengan epsilon, dan
+bentuk itu yang paling sering dipakai dalam bukti.
+
+\begin{lemma}
+(i) Jika $A$ mempunyai supremum, maka supremumnya tunggal. (ii) Bilangan $s$ adalah
+supremum $A$ jika dan hanya jika $s$ batas atas $A$ dan untuk setiap
+$\varepsilon>0$ terdapat $a\in A$ dengan $a>s-\varepsilon$.
+\end{lemma}
+
+\begin{proof}
+(i) Misalkan $s$ dan $s'$ keduanya supremum. Karena $s$ batas atas dan $s'$ supremum,
+$s'\le s$. Karena $s'$ batas atas dan $s$ supremum, $s\le s'$. Jadi $s=s'$.
+
+(ii) Andaikan $s$ batas atas dan syarat epsilon berlaku, tetapi ada batas atas $u<s$.
+Ambil $\varepsilon=s-u>0$. Menurut syarat epsilon ada $a\in A$ dengan
+$a>s-\varepsilon=u$, bertentangan dengan $u$ batas atas. Sebaliknya, jika $s$ supremum
+dan ada $\varepsilon>0$ sehingga $a\le s-\varepsilon$ untuk semua $a\in A$, maka
+$s-\varepsilon$ batas atas yang lebih kecil dari $s$, bertentangan dengan $s$ batas
+atas terkecil.
+\end{proof}
+
+\begin{resep}
+Untuk membuktikan bahwa bilangan $s$ adalah supremum himpunan $A$:
+\begin{enumerate}
+\item Tunjukkan $A\neq\varnothing$ dengan menyebut satu anggotanya.
+\item Buktikan $s$ batas atas: ambil $a\in A$ sebarang, tunjukkan $a\le s$.
+\item Buktikan tidak ada batas atas yang lebih kecil: ambil $\varepsilon>0$, hasilkan
+      $a\in A$ dengan $a>s-\varepsilon$, misalnya $a=1-1/n$ dengan $n>1/\varepsilon$.
+\item Simpulkan: $s$ batas atas dan setiap bilangan di bawah $s$ bukan batas atas, jadi
+      $s=\sup A$.
+\end{enumerate}
+Peringatan urutan: langkah 2 harus selesai sebelum langkah 3. Memilih $a>s-\varepsilon$
+lebih dulu tidak membuktikan apa pun, sebab $s$ belum diketahui batas atas. Pada
+$A=\{1-1/n\}$, bilangan $1/2$ lulus langkah 3 tetapi gagal langkah 2.
+\end{resep}
+
+Aksioma berikut membedakan $\mathbb{R}$ dari $\mathbb{Q}$. Ia tidak bisa dibuktikan dari
+hukum lapangan dan urutan, sebab ia pernyataan tentang kelengkapan garis.
+
+\begin{teorema}[Sifat batas atas terkecil]\index{aksioma kelengkapan}
+Setiap himpunan tak kosong $A\subseteq\mathbb{R}$ yang terbatas di atas mempunyai
+supremum di $\mathbb{R}$.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Pernyataan ini diterima sebagai aksioma kelengkapan. Rumusan lain yang setara: irisan
+selang bersarang, dan kekonvergenan barisan Cauchy. Kita memilih supremum karena paling
+langsung dipakai; pembangunan $\mathbb{R}$ dari $\mathbb{Q}$ yang membuktikannya ada
+pada Apendiks Bab 1 Rudin.
+\end{proof}
+
+Infimum tidak perlu diaksiomakan: ia supremum yang dilihat di cermin.
+
+\begin{proposisi}
+Jika $A$ tak kosong dan terbatas di bawah, maka $\inf A=-\sup(-A)$, dengan
+$-A=\{-a: a\in A\}$.
+\end{proposisi}
+
+\begin{proof}
+Himpunan $-A$ tak kosong dan terbatas di atas, jadi $s=\sup(-A)$ ada. Untuk setiap
+$a\in A$ berlaku $-a\le s$, sehingga $a\ge -s$: jadi $-s$ batas bawah $A$. Sekarang
+ambil $t>-s$. Maka $-t<s$, sehingga $-t$ bukan batas atas $-A$; ada $a\in A$ dengan
+$-a>-t$, yaitu $a<t$. Jadi $t$ bukan batas bawah $A$. Karena itu $-s$ batas bawah
+terbesar.
+\end{proof}
+
+Akibat pertama kelengkapan: bilangan asli tidak punya langit-langit. Kedengarannya
+sepele, tetapi tanpa kelengkapan ia tidak bisa dibuktikan.
+
+\begin{teorema}[Sifat Archimedes]\index{sifat archimedes}
+Untuk setiap $x>0$ dan setiap $y\in\mathbb{R}$ terdapat $n\in\mathbb{N}$ dengan
+$nx>y$.
+\end{teorema}
+
+\begin{proof}
+Andaikan sebaliknya: ada $x>0$ dan $y$ sehingga $nx\le y$ untuk semua $n$. Maka himpunan
+$S=\{nx: n\in\mathbb{N}\}$ tak kosong dan terbatas di atas oleh $y$, sehingga
+$\alpha=\sup S$ ada. Karena $x>0$, bilangan $\alpha-x$ lebih kecil dari $\alpha$ dan
+karena itu bukan batas atas $S$. Jadi ada $m$ dengan $mx>\alpha-x$, yang memberi
+$(m+1)x>\alpha$. Padahal $(m+1)x\in S$, dan $\alpha$ batas atas $S$. Kontradiksi.
+\end{proof}
+
+Versi resiprokalnya yang paling sering dipakai: untuk setiap $\varepsilon>0$ ada
+$n$ dengan $1/n<\varepsilon$, cukup dengan menerapkan teorema pada $x=\varepsilon$ dan
+$y=1$. Kalimat ``untuk $n$ cukup besar'' adalah singkatan dari akibat itu, dan sekarang
+kita tahu ia sah.
+
+Sifat itu juga memusnahkan bilangan positif yang sangat kecil: tidak ada $\delta>0$
+yang lebih kecil dari $1/n$ untuk semua $n$, sebab $1/\delta$ akan menjadi batas atas
+$\mathbb{N}$. Karena itu analisis real tidak memerlukan ``infinitesimal''.
+
+Akibat kedua: setiap selang terbuka, sekecil apa pun, memuat bilangan rasional.
+
+\begin{teorema}[Kerapatan $\mathbb{Q}$]\index{kerapatan}
+Jika $x<y$ bilangan real, maka ada $p\in\mathbb{Q}$ dengan $x<p<y$.
+\end{teorema}
+
+\begin{proof}
+Karena $y-x>0$, Sifat Archimedes memberi $n\in\mathbb{N}$ dengan $n(y-x)>1$. Terapkan
+Archimedes lagi untuk memperoleh bilangan bulat $m_1>nx$ dan $m_2>-nx$; jadi
+$-m_2<nx<m_1$. Karena $nx$ terkurung di antara dua bilangan bulat, ada bilangan bulat
+$m$ dengan $m-1\le nx<m$. Maka $nx<m$, dan dari $m-1\le nx$ diperoleh
+$m\le nx+1<ny$. Karena $n>0$, pembagian memberi $x<m/n<y$.
+\end{proof}
+
+Bukti itu konstruktif: ia memberi resep untuk menemukan $p$, yaitu memilih $n$ cukup
+besar lalu membulatkan $nx$ ke atas. Ia tidak memberi penyebut yang kecil, jadi
+aproksimasi efisien masih menuntut gagasan lain.
+
+\section{Mengapa bilangan rasional belum cukup}
+\tingkat{lanjut}
+
+Program di pembuka gagal karena himpunan yang ia apit tidak punya atap di
+$\mathbb{Q}$. Mari kita buktikan, bukan hanya menunjukkan angkanya. Ambil
+$A=\{q\in\mathbb{Q}: q^2<2\}$. Himpunan ini tidak kosong, sebab $1\in A$, dan terbatas
+di atas di dalam $\mathbb{Q}$: jika $q\ge 3/2$ maka $q^2\ge 9/4>2$, jadi $3/2$ batas
+atas.
+
+Selang-selang yang dipertahankan program itu digambar sebagai tumpukan batang yang makin
+pendek (Gambar~\ref{fig:selang-bersarang}). Setiap batang masih memuat akar dua dan
+panjangnya menjadi separuh, sementara semua ujungnya tetap rasional; batang-batang itu
+menyempit ke satu titik tanpa pernah menyentuhnya.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=9cm,y=1cm,font=\small]
+  \foreach \y/\a/\b/\lab/\pan in {%
+    0/1/2/{$[1,\;2]$}/{$1$},
+    0.55/1/1.5/{$[1,\;\tfrac32]$}/{$1/2$},
+    1.1/1.25/1.5/{$[\tfrac54,\;\tfrac32]$}/{$1/4$},
+    1.65/1.375/1.5/{$[\tfrac{11}{8},\;\tfrac32]$}/{$1/8$},
+    2.2/1.375/1.4375/{$[\tfrac{11}{8},\;\tfrac{23}{16}]$}/{$1/16$},
+    2.75/1.40625/1.4375/{$[\tfrac{45}{32},\;\tfrac{23}{16}]$}/{$1/32$}}{
+    \fill[layerindigo!12] (\a,\y) rectangle (\b,\y+0.3);
+    \draw[layerindigo,thick] (\a,\y) rectangle (\b,\y+0.3);
+    \node[layerindigo,anchor=east,font=\footnotesize] at (\a-0.018,\y+0.15) {\lab};
+    \node[layergrey,anchor=west,font=\footnotesize] at (\b+0.015,\y+0.15) {\pan};
+  }
+  \draw[accent,dashed,thick] (1.41421,-0.25) -- (1.41421,3.15);
+  \node[accent,font=\footnotesize,above] at (1.41421,3.15) {$\sqrt2$};
+  \draw[-{Latex[length=1.6mm]},layergrey] (1.0,-0.12) -- (2.0,-0.12);
+  \node[layergrey,font=\footnotesize,below] at (1.5,-0.14) {panjang $=1$};
+\end{tikzpicture}
+\caption{Selang yang dipertahankan program pembuka: $[1,2]$, $[1,\tfrac32]$,
+$[\tfrac54,\tfrac32]$, $[\tfrac{11}{8},\tfrac32]$, $[\tfrac{11}{8},\tfrac{23}{16}]$,
+$[\tfrac{45}{32},\tfrac{23}{16}]$. Panjangnya turun dari $1$ ke $1/32$; diteruskan tanpa
+henti, irisannya menyusut ke satu titik, yaitu $\sqrt2$, yang bukan bilangan rasional.}
+\label{fig:selang-bersarang}
+\end{figure}
+
+Langkah pertama: tidak ada anggota terbesar. Setiap rasional dengan $q^2<2$ masih bisa
+digeser sedikit ke atas tanpa melewati dua, dan besar geserannya punya rumus.
+
+\begin{lemma}
+Jika $q\in\mathbb{Q}$, $q>0$, dan $q^2<2$, maka terdapat $h\in\mathbb{Q}$, $h>0$,
+dengan $(q+h)^2<2$. Khususnya $q+h\in A$ dan $q+h>q$.
+\end{lemma}
+
+\begin{proof}
+Ambil $h=\dfrac{2-q^2}{2q+2}$. Karena $q^2<2$ dan $2q+2>0$, maka $h>0$ dan $h$
+rasional. Juga $h<1$, sebab $2-q^2<2q+2$ setara dengan $q^2+2q>0$, yang benar untuk
+$q>0$. Maka $h^2\le h$, sehingga
+\[
+(q+h)^2=q^2+2qh+h^2\le q^2+h(2q+1)
+=q^2+(2-q^2)\frac{2q+1}{2q+2}<q^2+(2-q^2)=2,
+\]
+karena $\frac{2q+1}{2q+2}<1$.
+\end{proof}
+
+Rumus itu bisa diperiksa dengan angka. Untuk $q=1393/985$ berlaku $2-q^2=1/970225$,
+sehingga $h=1/4684660$ dan
+\[
+q+h=\frac{6625109}{4684660}=1.414213411432206\ldots,
+\]
+yang kuadratnya $1.999999573074719\ldots<2$. Jadi $1393/985$ bukan anggota terbesar,
+meskipun galat kuadratnya sudah sekitar satu per sejuta. Prosedur ini bisa diulang tanpa
+henti: tidak ada langkah terakhir.
+
+\begin{tangan}
+Bahan: tali 1,5 m, enam lakban, meteran.
+
+Tempel lakban di lantai tegak lurus dinding, pada jarak $60/n$ cm untuk $n=1,\ldots,6$:
+60, 30, 20, 15, 12, dan 10 cm. Kamu baru menempel enam, tetapi aturannya tidak berhenti.
+Bentangkan tali melintang sebagai pagar, lalu geser ke arah dinding. Setiap kali
+berhenti, periksa satu hal: apakah semua lakban ada di sisi tali yang sama dengan
+dinding? Selama ya, tali masih pagar.
+
+Tali bisa didekatkan ke dinding tanpa batas dan tetap pagar: 5 cm, 1 cm, 1 mm. Yang
+menghentikannya bukan lakban, melainkan dinding. Kumpulan lakbannya tidak punya anggota
+terkecil, dan tidak satu pun menempel di dinding. Pagar terendah tetap ada---dinding---
+dan ia bukan anggota kumpulan. Itulah supremum.
+\end{tangan}
+
+Bukan hanya maksimumnya yang tidak ada. Batas atas terkecilnya pun tidak ada di dalam
+bilangan rasional, dan buktinya memerlukan satu fakta tentang akar dua.
+
+\begin{proposisi}
+Himpunan $A=\{q\in\mathbb{Q}: q^2<2\}$ tidak mempunyai supremum di $\mathbb{Q}$.
+\end{proposisi}
+
+\begin{proof}
+Andaikan $p\in\mathbb{Q}$ supremum $A$. Karena $1\in A$, maka $p\ge 1>0$. Kita
+tunjukkan $p^2=2$, yang mustahil karena tidak ada bilangan rasional yang kuadratnya dua.
+
+Jika $p^2<2$, lemma sebelumnya memberi $q=p+h\in A$ dengan $q>p$, bertentangan dengan
+$p$ batas atas. Jika $p^2>2$, ambil $k=(p^2-2)/(2p)>0$, yang rasional dan lebih kecil
+dari $p$ sebab $p^2-2<2p^2$. Untuk setiap $q\in A$,
+\[
+(p-k)^2=p^2-2pk+k^2>p^2-2pk=2>q^2,
+\]
+jadi $q<p-k$ untuk $q>0$, dan untuk $q\le 0$ hal itu jelas karena $p-k>0$: bilangan
+$p-k$ masih batas atas $A$, tetapi lebih kecil dari $p$.
+Bertentangan dengan $p$ batas atas terkecil. Jadi $p^2=2$.
+
+Sekarang $p=m/n$ dengan $m,n$ bulat tanpa faktor bersama. Dari $m^2=2n^2$, $m^2$ genap,
+sehingga $m$ genap; tulis $m=2r$. Maka $4r^2=2n^2$, yaitu $n^2=2r^2$, sehingga $n$
+juga genap. Keduanya genap, bertentangan dengan pilihan $m,n$.
+\end{proof}
+
+Di dalam $\mathbb{R}$ hal itu tidak terjadi. Himpunan yang sama, kali ini dipandang
+sebagai himpunan bilangan real, terbatas di atas oleh $2$, jadi menurut aksioma
+kelengkapan ia punya supremum. Supremum itu adalah bilangan yang kita namai $\sqrt{2}$.
+Bukti berikut menutup dua kemungkinan yang tersisa, dan bentuknya meniru bukti lemma
+tadi dengan $q$ diganti bilangan real.
+
+\begin{teorema}[Keberadaan akar dua]\index{akar dua}
+Terdapat tepat satu $s>0$ dengan $s^2=2$.
+\end{teorema}
+
+\begin{proof}
+Misalkan $E=\{t\in\mathbb{R}: t>0,\ t^2<2\}$. Himpunan ini tak kosong karena $1\in E$,
+dan terbatas di atas oleh $2$: jika $t>2$ maka $t^2>4>2$, jadi $t\notin E$. Menurut
+sifat batas atas terkecil, $s=\sup E$ ada, dan $s\ge 1>0$ karena $1\in E$.
+
+Andaikan $s^2<2$. Ambil $h=\frac12\min\{1,(2-s^2)/(2s+1)\}$. Maka $0<h<1$ dan
+$h(2s+1)<2-s^2$: jika nilai minimum yang pertama, $h=\frac12$ dan
+$\frac12(2s+1)\le\frac12(2-s^2)<2-s^2$; jika yang kedua, $h(2s+1)=\frac12(2-s^2)$.
+Karena $h<1$, kita punya $h^2<h$, sehingga
+\[
+(s+h)^2=s^2+2sh+h^2<s^2+h(2s+1)<s^2+(2-s^2)=2 .
+\]
+Jadi $s+h\in E$ padahal $s+h>s$, bertentangan dengan $s$ batas atas $E$. Karena itu
+$s^2\ge 2$.
+
+Andaikan $s^2>2$. Ambil $k=(s^2-2)/(2s)>0$; maka $k<s$ karena $s^2-2<2s^2$. Untuk
+setiap $t\in E$ dengan $t\ge s-k$ berlaku
+\[
+t^2\ge(s-k)^2=s^2-2sk+k^2>s^2-2sk=2,
+\]
+sehingga $t\notin E$. Jadi $s-k$ batas atas $E$ yang lebih kecil dari $s$, bertentangan
+dengan $s$ batas atas terkecil. Karena $s^2<2$ dan $s^2>2$ keduanya mustahil, $s^2=2$.
+
+Ketunggalan: jika $s,t>0$ dan $s^2=t^2=2$, maka $(s-t)(s+t)=0$. Karena $s+t>0$,
+$s=t$.
+\end{proof}
+
+Bilangan $s$ irasional, menurut argumen paritas tadi: lubang di $\mathbb{Q}$ nyata, dan
+$\mathbb{R}$ menutupnya dengan tepat satu bilangan. Yang menutupnya bukan urutan dan
+bukan hukum lapangan, melainkan kelengkapan. Program pembuka tidak gagal karena kurang
+teliti, melainkan karena sistem bilangannya tidak memuat objek yang dicarinya.
+
+Satu hal perlu dinyatakan jujur: kita belum membangun $\mathbb{R}$ dari $\mathbb{Q}$,
+hanya mengandaikan $\mathbb{R}$ memenuhi tiga kelompok aksioma. Pembangunannya dikenal.
+Dedekind memotong $\mathbb{Q}$ menjadi dua: sebuah \emph{potongan} adalah himpunan
+bagian $\alpha\subset\mathbb{Q}$ yang tidak kosong, tidak seluruh $\mathbb{Q}$, turun
+tertutup, dan tanpa anggota terbesar. Sifat terakhir persis lemma kita tadi. Cantor
+memakai kelas ekuivalen barisan Cauchy rasional; keduanya terbit pada 1872. Rinciannya
+ada pada Apendiks Bab 1 Rudin.
+
+Pembangunan itu menjelaskan kedudukan desimal. Untuk $x>0$, ambil $n_0$ bilangan bulat
+terbesar dengan $n_0\le x$, lalu $n_1$ angka terbesar dengan $n_0+n_1/10\le x$, lalu
+$n_2$ dengan $n_0+n_1/10+n_2/100\le x$, dan seterusnya. Pemotongan itu terbatas di atas
+oleh $x$, jadi supremumnya ada dan sama dengan $x$. Desimal bukan bahan dasar bilangan
+real, melainkan cara menamai supremum; kelengkapan menjamin namanya ada, bukan bahwa
+namanya bisa ditulis dengan pecahan.
+
+\kamus{aksioma kelengkapan}{completeness axiom}{Janji bahwa garis bilangan tidak
+berlubang: setiap kumpulan yang terbatas ke atas selalu punya atap paling rendah.}
+
+Keberadaan $\sqrt2$ membuat soal komputasi masuk akal: $s$ bisa dihitung tanpa tahu
+digitnya lebih dulu. Iterasi Newton, $x_{k+1}=\frac12(x_k+2/x_k)$, tetap rasional bila
+$x_k$ rasional, sehingga seluruh proses berjalan di dalam $\mathbb{Q}$. Dari $s^2=2$
+diperoleh
+\[
+x_{k+1}-s=\frac{(x_k-s)^2}{2x_k},\qquad e_{k+1}=e_k^2\cdot\frac{s}{2x_k},
+\]
+dengan $e_k=|x_k-s|/s$. Ruas kanan bentuk pertama tidak negatif, jadi setiap langkah
+tetap di atas $s$; di sana faktor $\frac{s}{2x_k}$ tidak melebihi $1/2$, sehingga
+$e_{k+1}\le e_k^2/2$ dan jumlah digit benar kira-kira berlipat dua setiap langkah.
+
+Satu peringatan: kita belum membuktikan $x_k\to s$. Untuk itu diperlukan alat Bab 4.
+Yang bisa dikatakan sekarang: karena $e_1<0.061$, dari $e_{k+1}\le e_k^2/2$ dapat
+diturunkan $e_k\le 2^{-(2^k-1)}$ untuk $k\ge 1$, dan itu cukup untuk merancang uji
+numerik yang jujur.
+
+\section{Interval, titik akumulasi, dan himpunan terbuka}
+\tingkat{lanjut}
+
+Dengan supremum di tangan, kita bisa memberi nama pada potongan garis bilangan, seperti
+aturan finis lomba lari: garisnya sama, yang berbeda hanya apakah garis itu ikut
+dihitung. Nama-nama itu dipakai lagi di Bab 11 dan Bab 13, jadi kita ambil yang perlu
+saja tanpa membangun topologi secara penuh.
+
+Interval adalah potongan garis yang tidak berlubang. Definisi berikut menuliskan
+sembilan bentuk yang mungkin; semuanya ditentukan oleh dua ujung dan oleh keputusan
+apakah ujung itu ikut dihitung.
+
+\begin{definisi}[Interval]
+Misalkan $a<b$ bilangan real. Himpunan $(a,b)=\{x: a<x<b\}$ disebut interval terbuka,
+$[a,b]=\{x: a\le x\le b\}$ interval tertutup, dan $[a,b)$, $(a,b]$ adalah bentuk
+campuran. Himpunan $(a,\infty)=\{x: x>a\}$, $[a,\infty)$, $(-\infty,b)$,
+$(-\infty,b]$, dan $\mathbb{R}$ sendiri disebut interval tak terbatas. Kesembilan
+bentuk itu disebut interval.
+\end{definisi}
+
+Ciri yang menandai semuanya: jika dua titik ada di dalam interval, seluruh ruas di
+antaranya juga di dalam, sehingga interval disebut tidak berlubang. Daftar tadi tidak
+dibuktikan lengkap; klasifikasinya hanya memeriksa batas atas, batas bawah, dan apakah
+batas itu termasuk. Titik ``dekat'' dinyatakan dengan persekitaran, yaitu interval
+terbuka kecil di sekitar satu titik.
+
+\begin{definisi}[Persekitaran, titik dalam, terbuka, tertutup]\index{himpunan terbuka}\index{himpunan tertutup}\index{titik akumulasi}
+Untuk $\varepsilon>0$, persekitaran titik $x$ adalah
+$V_\varepsilon(x)=(x-\varepsilon,x+\varepsilon)$. Titik $x$ disebut titik dalam
+$S\subseteq\mathbb{R}$ jika $V_\varepsilon(x)\subseteq S$ untuk suatu $\varepsilon>0$;
+$S$ disebut terbuka jika setiap anggotanya titik dalam. Titik $x$ disebut titik
+akumulasi $S$ jika setiap $V_\varepsilon(x)$ memuat anggota $S$ yang berbeda dari $x$.
+Himpunan $S$ disebut tertutup jika komplemennya terbuka.
+\end{definisi}
+
+Beberapa contoh menata intuisi. Interval $(0,1)$ terbuka dan tidak tertutup, sebab
+setiap persekitaran $0$ memotongnya. Interval $[0,1]$ tertutup dan tidak terbuka,
+sedangkan $[0,1)$ bukan keduanya. Himpunan $\mathbb{Q}$ juga bukan keduanya, sebab
+setiap persekitaran memuat rasional dan irasional. Himpunan $\{1/n:n\in\mathbb{N}\}$
+tidak tertutup: $0$ ada di komplemennya, tetapi setiap persekitaran $0$ memuat $1/n$.
+Himpunan $\mathbb{Z}$ tertutup, sebab komplemennya gabungan interval terbuka $(k,k+1)$.
+
+Jadi ``tertutup'' bukan negasi dari ``terbuka'': $\mathbb{R}$ dan $\varnothing$
+keduanya terbuka sekaligus tertutup, dan komplemen himpunan terbuka selalu tertutup.
+Kerapatan $\mathbb{Q}$ membuat contoh itu lebih tajam. Setiap persekitaran memuat
+rasional dan irasional, jadi tidak ada titik yang menjadi titik dalam $\mathbb{Q}$
+maupun komplemennya: himpunan itu padat sekaligus berlubang di mana-mana. Karena itu
+kelengkapan tidak bisa diganti dengan kerapatan.
+
+Persekitaran sendiri terbuka, dan itu membuat definisi titik dalam bisa dipakai
+berulang.
+
+\begin{proposisi}
+(i) Setiap persekitaran $V_\varepsilon(x)$ terbuka. (ii) Gabungan sebarang keluarga
+himpunan terbuka adalah terbuka. (iii) Irisan berhingga himpunan terbuka adalah
+terbuka.
+\end{proposisi}
+
+\begin{proof}
+(i) Ambil $y\in V_\varepsilon(x)$, jadi $|y-x|<\varepsilon$. Tetapkan
+$\delta=\varepsilon-|y-x|>0$. Untuk setiap $z\in V_\delta(y)$,
+$|z-x|\le|z-y|+|y-x|<\delta+|y-x|=\varepsilon$ menurut ketaksamaan segitiga. Jadi
+$V_\delta(y)\subseteq V_\varepsilon(x)$.
+
+(ii) Jika $x$ berada di gabungan, ia berada di salah satu anggotanya, dan karena
+anggota itu terbuka ada persekitaran $x$ yang termuat di dalamnya, sehingga juga
+termuat di dalam gabungan.
+
+(iii) Jika $x$ berada di irisan berhingga $S_1\cap\cdots\cap S_n$, untuk setiap $i$ ada
+$\varepsilon_i>0$ dengan $V_{\varepsilon_i}(x)\subseteq S_i$. Ambil
+$\varepsilon=\min\{\varepsilon_1,\ldots,\varepsilon_n\}>0$. Maka
+$V_\varepsilon(x)$ termuat di setiap $S_i$, jadi termuat di irisannya.
+\end{proof}
+
+Butir (iii) hanya untuk irisan berhingga: $\bigcap_n(-1/n,1/n)=\{0\}$ tidak terbuka,
+sebab untuk $x\neq0$ Sifat Archimedes memberi $n$ dengan $1/n<|x|$.
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Tiga perhitungan yang dijanjikan dijalankan di sini: iterasi Newton, aproksimasi
+rasional sampai galat di bawah $10^{-6}$, dan pemeriksaan bahwa $\{q:q^2<2\}$ tidak
+punya maksimum. Semua angkanya dihitung dengan pecahan eksak.
+
+Mulai dari $x_0=1$, iterasi $x_{k+1}=(x_k+2/x_k)/2$ memberi pecahan berikut; penyebutnya
+tumbuh, dan itu harga yang dibayar untuk ketepatan.
+
+\begin{center}\small
+\begin{tabular}{rlll}
+\hline
+$k$ & $x_k$ & desimal & galat relatif \\
+\hline
+0 & $1$ & $1$ & $2.92893\times10^{-1}$ \\
+1 & $3/2$ & $1.5$ & $6.06602\times10^{-2}$ \\
+2 & $17/12$ & $1.41666666667$ & $1.73461\times10^{-3}$ \\
+3 & $577/408$ & $1.41421568627$ & $1.50183\times10^{-6}$ \\
+4 & $665857/470832$ & $1.41421356237$ & $1.12774\times10^{-12}$ \\
+5 & $886731088897/627013566048$ & $1.41421356237$ & $6.35896\times10^{-25}$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Galat relatif dihitung terhadap $\sqrt{2}=1.414213562373095\ldots$. Faktor
+penurunannya naik sendiri: dari langkah 0 ke 1 sekitar $4.8$, lalu $35$, $1155$, dan
+$1.3\times10^{6}$ --- itulah tanda pengkuadratan. Nisbah $e_{k+1}/e_k^2$ bernilai
+$0.7071$, $0.4714$, $0.4991$, $0.49999925$, dan $0.5$, sesuai rumus
+$e_{k+1}=e_k^2\cdot\frac{s}{2x_k}$ karena $x_k$ mendekat ke $s$ dari atas. Pada langkah
+4 dan 5 desimalnya sama sampai sebelas angka; angka berikutnya tidak muncul karena kita
+mencetak dua belas angka penting, bukan karena galatnya berhenti turun. Pecahan langkah
+5 punya dua belas digit dengan galat $6.36\times10^{-25}$, dan satu angka tambahan hanya
+menuntut kira-kira satu langkah lagi.
+
+Cara kedua memakai aproksimasi rasional yang lebih hemat penyebut, yaitu pecahan lanjar
+$\sqrt2$:
+\[
+1,\quad \frac32,\quad \frac75,\quad \frac{17}{12},\quad \frac{41}{29},\quad \ldots
+\]
+dengan $p_{k+1}=p_k+2q_k$ dan $q_{k+1}=p_k+q_k$ mulai dari $(p_0,q_0)=(1,1)$. Tabel
+berikut memuat galat mutlaknya.
+
+\begin{center}\small
+\begin{tabular}{rlll}
+\hline
+$p/q$ & desimal & galat mutlak & $p^2-2q^2$ \\
+\hline
+$1/1$ & $1$ & $4.14214\times10^{-1}$ & $-1$ \\
+$3/2$ & $1.5$ & $8.57864\times10^{-2}$ & $1$ \\
+$7/5$ & $1.4$ & $1.42136\times10^{-2}$ & $-1$ \\
+$17/12$ & $1.41666666667$ & $2.45310\times10^{-3}$ & $1$ \\
+$41/29$ & $1.41379310345$ & $4.20459\times10^{-4}$ & $-1$ \\
+$99/70$ & $1.41428571429$ & $7.21519\times10^{-5}$ & $1$ \\
+$239/169$ & $1.41420118343$ & $1.23789\times10^{-5}$ & $-1$ \\
+$577/408$ & $1.41421568627$ & $2.12390\times10^{-6}$ & $1$ \\
+$1393/985$ & $1.41421319797$ & $3.64404\times10^{-7}$ & $-1$ \\
+$3363/2378$ & $1.41421362489$ & $6.25218\times10^{-8}$ & $1$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Aproksimasi pertama yang galatnya di bawah $10^{-6}$ adalah $1393/985$ dengan galat
+$3.64\times10^{-7}$; angka sebelumnya, $577/408$, masih $2.12\times10^{-6}$. Kolom
+terakhir menjelaskan sebabnya: karena $p^2-2q^2=\pm1$,
+\[
+\left|\frac pq-\sqrt2\right|
+=\frac{|p^2-2q^2|}{q^2\left(\frac pq+\sqrt2\right)}
+<\frac{1}{2\sqrt2\,q^2},
+\]
+sehingga galat turun seperti kebalikan kuadrat penyebut. Untuk $q=985$ batas itu
+$3.644\times10^{-7}$ dan galat sebenarnya $3.64404\times10^{-7}$: hampir tepat, karena
+$\frac pq$ sudah sangat dekat ke $\sqrt2$. Penyebut 985 jauh lebih kecil daripada
+$627013566048$ pada langkah 5 Newton, meskipun galatnya hanya sekitar sejuta kali lebih
+besar --- itu beda metode yang mengejar galat kuadrat dan yang mengejar galat rasional
+terkecil.
+
+Gambar~\ref{fig:tangga-akar} menampilkan kolom galat itu sebagai tangga menurun. Tanda
+$p^2-2q^2$ bergantian, sehingga pecahannya melompat dari bawah ke atas akar dua, dan
+nisbah dua galat berurutan menuju $5{,}8284=(1+\sqrt2)^2$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=1.02cm,y=1cm,font=\small]
+  \foreach \lv in {1,...,7}{
+    \draw[layergrey!20] (0.55,\lv) -- (10.75,\lv);
+    \node[layergrey,anchor=east,font=\scriptsize] at (0.45,\lv) {$10^{-\lv}$};
+  }
+  \node[layergrey,anchor=east,font=\scriptsize] at (0.45,0) {$10^{0}$};
+  \draw[-{Latex[length=2mm]},ink,thick] (0.55,0) -- (10.95,0);
+  \draw[-{Latex[length=2mm]},ink,thick] (0.55,0) -- (0.55,7.85);
+  \foreach \k/\lab in {%
+    1/{$1/1$},2/{$3/2$},3/{$7/5$},4/{$17/12$},5/{$41/29$},
+    6/{$99/70$},7/{$239/169$},8/{$577/408$},9/{$1393/985$},10/{$3363/2378$}}{
+    \draw[ink] (\k,0.07) -- (\k,-0.07);
+    \node[rotate=32,anchor=north east,font=\scriptsize,layergrey] at (\k,-0.12) {\lab};
+  }
+  \foreach \k/\v in {1/0.3828,3/1.8473,5/3.3763,7/4.9073,9/6.4384}{
+    \fill[accent] (\k,\v) circle (1.8pt);
+  }
+  \foreach \k/\v in {2/1.0666,4/2.6103,6/4.1418,8/5.6729,10/7.2040}{
+    \fill[layerteal] (\k,\v) circle (1.8pt);
+  }
+  \draw[layergrey,dashed,thick] (0.55,6) -- (10.75,6);
+  \node[layergrey,font=\scriptsize,anchor=south east] at (10.7,6.02) {ambang $10^{-6}$};
+  \fill[accent] (0.95,7.55) circle (1.8pt);
+  \node[right,font=\scriptsize] at (1.05,7.55) {di bawah $\sqrt2$};
+  \fill[layerteal] (4.35,7.55) circle (1.8pt);
+  \node[right,font=\scriptsize] at (4.45,7.55) {di atas $\sqrt2$};
+  \node[font=\scriptsize,anchor=north] at (5.7,-1.18) {pecahan berurutan};
+  \node[font=\scriptsize,rotate=90,anchor=south] at (-0.35,3.9) {$|p/q-\sqrt2|$};
+\end{tikzpicture}
+\caption{Tangga aproksimasi rasional: galat $|p/q-\sqrt2|$ bagi sepuluh pecahan
+berurutan, skala logaritmik. Ambang $10^{-6}$ pertama dilewati $1393/985$, dengan galat
+$3{,}644\times10^{-7}$; sesudahnya tiap anak tangga turun dengan faktor $5{,}8284$.}
+\label{fig:tangga-akar}
+\end{figure}
+
+Pemeriksaan ketiga menyangkut ketiadaan maksimum. Satu langkah lagi dari $q$ sebelumnya
+memberi
+\[
+q'=\frac{149856914148961}{105964844887080}=1.41421349985133266\ldots,
+\]
+dan kuadratnya masih di bawah dua. Kedua bilangan itu rasional, keduanya di dalam $A$,
+dan masing-masing lebih besar dari yang sebelumnya: tidak ada alasan proses ini berhenti.
+
+\begin{tantangan}
+Tinjau $S=\{q\in\mathbb{Q}: q\ge 0,\ q^2\le 2\}$. Sekilas himpunan ini punya anggota
+terbesar: bilangan yang kuadratnya tepat dua, sebab tanda $\le$ seolah memasukkan batas
+itu ke dalam himpunan. Buktikan bahwa $S$ tidak punya maksimum, lalu tentukan $\sup S$
+di $\mathbb{R}$ dan jelaskan mengapa jawabannya bukan anggota $S$.
+
+Petunjuk 1: anggota $S$ harus rasional. Periksa dulu apakah calon terbesarmu boleh
+menjadi anggota himpunan.
+
+Petunjuk 2: untuk setiap $q\in S$ dengan $q>0$ berlaku $q^2<2$ secara tegas, sebab
+$q^2=2$ mustahil bagi rasional. Jadi lemma geseran $h=(2-q^2)/(2q+2)$ bekerja dan
+menghasilkan anggota $S$ yang lebih besar; batas yang tak pernah tercapai itu $\sqrt2$.
+
+Kalau mentok, kembali ke bagian ``Mengapa bilangan rasional belum cukup'' dan ke lemma
+tentang geseran.
+\end{tantangan}
+
+Terakhir, Sifat Archimedes pada angka. Untuk $\varepsilon=10^{-6}$ kita perlu
+$n>10^{6}$. Pada $n=10^{6}$ resiprokalnya tepat $10^{-6}$, yang tidak lebih kecil dari
+$\varepsilon$; pada $n=10^{6}+1$ resiprokalnya $9.99999\times10^{-7}$, baru memenuhi.
+Perbedaan satu pada $n$ menentukan sah tidaknya pilihan, dan itulah sebabnya
+pertidaksamaan tegas harus dihormati.
+
+\kertas{Untuk $x=1393/985$, hitung $h=(2-x^2)/(2x+2)$ dan periksa dengan tangan bahwa
+$(x+h)^2<2$. Lalu hitung galat relatif $|x-\sqrt2|/\sqrt2$ dan bandingkan dengan
+$1/(2\sqrt2\,x^2)$. Jelaskan mengapa keduanya hampir sama, dan mengapa fakta itu tidak
+bertentangan dengan ketiadaan maksimum pada $A$.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Kode berikut dijalankan dengan Python 3 dan \texttt{mpmath} untuk aritmetika presisi
+tinggi; iterasi Newton memakai \texttt{Fraction}, jadi tidak ada pembulatan sebelum
+pencetakan.
+
+\begin{lab}
+\begin{verbatim}
+from fractions import Fraction as F
+import mpmath as mp
+mp.mp.dps = 40
+akar2 = mp.sqrt(2)
+
+print("Newton untuk akar dua, x0 = 1")
+x = F(1)
+for k in range(6):
+    v = mp.mpf(x.numerator) / x.denominator
+    print(k, f"{x.numerator}/{x.denominator}", mp.nstr(v, 12),
+          mp.nstr(abs(v - akar2) / akar2, 6))
+    x = (x + F(2) / x) / 2
+
+print()
+print("Aproksimasi rasional berurutan, galat < 1e-6 ?")
+p, q = 1, 1
+for k in range(10):
+    v = mp.mpf(p) / q
+    print(f"{p}/{q}", mp.nstr(v, 12), mp.nstr(abs(v - akar2), 6),
+          abs(v - akar2) < mp.mpf(10) ** -6)
+    p, q = p + 2 * q, p + q
+
+print()
+print("Uji: {q rasional : q^2 < 2} tidak punya maksimum")
+q = F(1393, 985)
+for k in range(2):
+    h = (2 - q * q) / (2 * q + 2)
+    q = q + h
+    print(q, mp.nstr(mp.mpf(q.numerator) / q.denominator, 18), q * q < 2)
+\end{verbatim}
+\end{lab}
+
+Keluaran yang diperoleh, apa adanya:
+
+\begin{verbatim}
+Newton untuk akar dua, x0 = 1
+0 1/1 1.0 0.292893
+1 3/2 1.5 0.0606602
+2 17/12 1.41666666667 0.00173461
+3 577/408 1.41421568627 1.50183e-6
+4 665857/470832 1.41421356237 1.12774e-12
+5 886731088897/627013566048 1.41421356237 6.35896e-25
+
+Aproksimasi rasional berurutan, galat < 1e-6 ?
+1/1 1.0 0.414214 False
+3/2 1.5 0.0857864 False
+7/5 1.4 0.0142136 False
+17/12 1.41666666667 0.0024531 False
+41/29 1.41379310345 0.000420459 False
+99/70 1.41428571429 7.21519e-5 False
+239/169 1.41420118343 1.23789e-5 False
+577/408 1.41421568627 2.1239e-6 False
+1393/985 1.41421319797 3.64404e-7 True
+3363/2378 1.41421362489 6.25218e-8 True
+
+Uji: {q rasional : q^2 < 2} tidak punya maksimum
+6625109/4684660 1.41421341143220639 True
+149856914148961/105964844887080 1.41421349985133266 True
+\end{verbatim}
+
+Tiga hal terbaca dari keluaran itu. Galat Newton berhenti tercetak pada dua belas angka
+di langkah 4, walaupun nilai sebenarnya masih turun sampai $6.4\times10^{-25}$: yang
+membatasi lebar cetakan, bukan matematikanya. Ambang $10^{-6}$ dilewati tepat pada
+$1393/985$, tempat kolom \texttt{True} mulai muncul. Kedua bilangan pada uji maksimum
+juga \texttt{True}: keduanya rasional dan kuadratnya masih di bawah dua.
+
+Kode itu tidak membuktikan apa pun. Ia memeriksa bahwa rumus di bab ini memberi angka
+yang disebutkan dan bahwa arah pertidaksamaannya benar; buktinya tetap di lemma dan
+teorema. Keluaran program adalah data, bukan argumen.
+
+\begin{untukdosen}
+Urutan mengajar yang saya sarankan: program pencarian akar di pembuka, lalu aksioma
+lapangan dengan $0\cdot x=0$ dibuktikan di papan, lalu urutan, nilai mutlak, dan
+kelengkapan. Jangan menunda kelengkapan; seluruh isi bab bergantung padanya.
+
+Dua miskonsepsi yang sering muncul. Pertama, mahasiswa mengira supremum harus anggota
+himpunan, sehingga mereka menolak $\sup\{1-1/n\}=1$. Kedua, mahasiswa mengira
+kelengkapan bisa dibuktikan dari hukum lapangan dan urutan, padahal $\mathbb{Q}$
+memenuhi keduanya dan gagal pada kelengkapan. Keduanya hilang setelah mahasiswa melihat
+dua contoh itu berdampingan.
+
+Aktivitas papan tulis yang berhasil: setiap mahasiswa mengambil $q=1.4$, menghitung
+$h=(2-q^2)/(2q+2)$ dan memeriksa $(q+h)^2<2$; hasil yang berbeda-beda justru menunjukkan
+rumusnya bekerja untuk setiap $q$. Tanda siap lanjut: mahasiswa dapat menjelaskan mengapa
+$A$ tidak punya maksimum tanpa menghitung.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+\item Bilangan real dilandasi tiga kelompok aksioma: lapangan, urutan, kelengkapan.
+      Yang pertama memberi aljabar, yang kedua perbandingan, yang ketiga menutup lubang.
+\item Dari lapangan diturunkan $0\cdot x=0$, $(-x)y=-(xy)$, dan ketiadaan pembagi nol.
+\item Dari urutan diturunkan aturan tanda, termasuk kuadrat tak negatif dan $1>0$.
+\item Nilai mutlak mengubah jarak menjadi pertidaksamaan: $|x|\le c$ setara dengan
+      $-c\le x\le c$, dan $|x+y|\le|x|+|y|$.
+\item Kelengkapan menjamin supremum setiap himpunan tak kosong yang terbatas di atas,
+      lalu menurunkan Sifat Archimedes dan kerapatan $\mathbb{Q}$.
+\item $\mathbb{Q}$ memenuhi lapangan dan urutan tetapi tidak lengkap: $\{q: q^2<2\}$
+      tidak punya maksimum; di $\mathbb{R}$ supremumnya $\sqrt{2}$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Buktikan bahwa dalam lapangan terurut, $a<b$ setara dengan $-b<-a$, dan
+        simpulkan bahwa mengalikan pertidaksamaan dengan $-1$ membalik arahnya.
+  \item Buktikan $a<\frac{a+b}{2}<b$ untuk $a<b$, lalu jelaskan mengapa hasil itu tidak
+        memerlukan kelengkapan sedangkan $\sup\{q:q^2<2\}$ memerlukannya.
+  \item Hitung $\sup$ dan $\inf$ himpunan $S=\{2-1/n : n\in\mathbb{N}\}$, lalu periksa
+        kedua syarat definisi. Tentukan juga apakah $S$ punya maksimum.
+  \item Nilai klaim ini: ``Karena setiap bilangan positif lebih besar dari $1/n$ untuk
+        suatu $n$, bilangan real positif terkecil tidak ada.'' Benar, salah, atau belum
+        cukup bukti? Sebutkan bagian yang didukung bukti.
+  \item Dengan $h=(2-q^2)/(2q+2)$, hitung $q+h$ untuk $q=1$ dan $q=7/5$, lalu periksa
+        bahwa keduanya masih di dalam $A=\{q\in\mathbb{Q}:q^2<2\}$. Bandingkan besar
+        kenaikannya.
+  \item Tunjukkan bahwa jika $|x|\le 2$ dan $|y|\le 2$ maka
+        $|x^3-y^3|\le 12\,|x-y|$, dan sebutkan di mana ketaksamaan segitiga dipakai.
+  \item Buktikan bahwa jika $S$ terbuka maka komplemennya tertutup, dan sebaliknya,
+        dengan memakai definisi persekitaran.
+  \item Hitung lima langkah iterasi Newton untuk $\sqrt{3}$ mulai dari $x_0=2$, dan
+        laporkan galat relatif tiap langkah. Periksa apakah nisbah $e_{k+1}/e_k^2$
+        mendekat ke $1/2$.
+  \item Tunjukkan $\bigcap_{n=1}^{\infty}(-1/n,1/n)=\{0\}$ dan jelaskan mengapa itu tidak
+        bertentangan dengan ketertutupan irisan berhingga.
+  \item Buktikan bahwa di antara dua bilangan real selalu ada bilangan irasional.
+\end{enumerate}
+
+\noindent\textbf{Petunjuk.} Butir 4: klaim itu memuat dua pernyataan berbeda, satu
+tentang setiap $\varepsilon$ dan satu tentang keberadaan minimum. Butir 8: gunakan
+$e_{k+1}=e_k^2\cdot\frac{\sqrt3}{2x_k}$ dan $x_k\ge\sqrt3$. Butir 10: pakai kerapatan
+$\mathbb{Q}$ pada $x/\sqrt2$ dan $y/\sqrt2$, lalu kalikan kembali.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti: aksioma kelengkapan tidak bergantung pada lapangan dan urutan,
+sebab $\mathbb{Q}$ memenuhi keduanya dan gagal pada yang ketiga. Keberadaan lapangan
+terurut lengkap dibuktikan Rudin lewat potongan Dedekind, dan di sana juga dinyatakan
+tanpa bukti bahwa setiap dua lapangan terurut lengkap isomorfik; klaim itu tidak dipakai
+di sini.
+
+Sumber primer: Rudin, \emph{Principles of Mathematical Analysis}, Bab 1 (Definisi 1.12,
+Proposisi 1.18, Teorema 1.19--1.21, Apendiks tentang potongan); Abbott,
+\emph{Understanding Analysis}, Bab 1 (Aksioma Kelengkapan dan akibatnya).
+
+Yang masih terbuka: isi efektif iterasi Newton. Tanpa batas awal eksplisit,
+$e_{k+1}\le e_k^2/2$ belum memberi jumlah langkah; itu memerlukan Bab 4 dan, untuk
+fungsi umum, teori Kantorovich. Batas keberlakuan bab: topologi sebatas interval dan
+persekitaran, dan $\mathbb{R}$ diandaikan, bukan dibangun.
+\end{untukpeneliti}
+
+\peta{Bab 3 pada Rudin, \emph{Principles of Mathematical Analysis}: Bab 1 (Ordered Sets,
+Fields, The Real Field, The Least-Upper-Bound Property, Sifat Archimedes, kerapatan
+$\mathbb{Q}$, keberadaan akar ke-$n$, Apendiks potongan Dedekind). Pada Abbott,
+\emph{Understanding Analysis}: Bab 1 (The Axiom of Completeness dan Consequences of
+Completeness); himpunan terbuka dan titik akumulasi dari Bab 3, tidak dikembangkan di
+sini.}

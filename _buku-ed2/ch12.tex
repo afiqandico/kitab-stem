@@ -1,0 +1,1165 @@
+\chapter{Turunan: Satu dan Banyak Variabel}
+
+Sebuah pencatat posisi pada sepeda menulis satu titik setiap detik. Untuk memperoleh
+kecepatan, kita membagi selisih jarak dengan selisih waktu. Dua bacaan berjarak satu detik
+dan terpisah empat meter memberi empat meter per detik, meskipun itu hanya kecepatan
+rata-rata. Bila jaraknya seperseratus detik, selisih jaraknya beberapa sentimeter sedangkan
+derau alat beberapa meter; hasil baginya melompat ke ratusan meter per detik, bahkan bertanda
+negatif. Pembagian yang sama, dua jawaban yang berbeda.
+
+Turunan menyelesaikan ketegangan itu dengan memindahkan pertanyaan ke limit, tempat derau
+tidak masuk hitungan. Tetapi limit tidak dapat diukur: yang terukur hanya hasil bagi pada
+jarak berhingga, dan ia membawa dua galat sekaligus, pemotongan karena jaraknya tidak nol
+dan pembulatan karena mesin hanya menyimpan sekian digit. Turunan adalah objek matematis
+yang tepat; hasil bagi adalah aproksimasinya, dengan galat yang dapat dihitung dan diatur.
+
+Kesulitan kedua muncul ketika masukan lebih dari satu. Sebuah model penilaian kredit
+menerima dua belas masukan, dan menggeser satu masukan memberi satu angka laju perubahan.
+Menggeser dua masukan sekaligus tidak sama dengan menjumlahkan kedua angka itu, kecuali
+fungsinya berperilaku baik; nanti kita lihat contoh yang gagal, dan fungsi itu tetap
+kontinu. Jawaban yang benar bukan daftar dua belas angka, melainkan satu peta linear pada vektor
+pergeseran: itulah turunan sesungguhnya, dan matriksnya Jacobian. Kekontinuan Bab 11 tidak
+mengatakan seberapa cepat sesuatu berubah.
+
+\begin{untukanak}
+Pernahkah kamu berdiri di atas atap yang melengkung? Kalau kamu melangkah ke depan, kamu
+mendaki. Kalau ke samping, kamu bisa tetap pada ketinggian yang sama. Padahal kamu berdiri di
+titik yang sama, di atap yang sama. Jadi pertanyaan ``seberapa curam tempat ini'' belum
+lengkap sebelum kita menyebut arah langkah.
+
+Ada masalah lain. Kalau kamu hanya melihat dua titik di atap, lalu membagi selisih ketinggian
+dengan selisih jarak, kamu mendapat kemiringan rata-rata, bukan kemiringan di satu titik.
+Untuk mendapat kemiringan tepat di bawah kakimu, kedua titik harus didekatkan terus-menerus.
+Semakin dekat semakin tepat, tetapi kalau terlalu dekat angka pengukuranmu kacau karena alat
+ukur tidak sempurna.
+
+Di bab ini kita akan tahu mengapa kemiringan di satu titik butuh arah, mengapa arah paling
+curam selalu ada, dan mengapa alat hitung yang terlalu rapat jaraknya justru salah.
+\end{untukanak}
+
+\section{Turunan sebagai limit dan dua artinya}
+\tingkat{dasar}
+
+Laju perubahan sesaat adalah bilangan yang didekati hasil bagi dua selisih ketika selisih
+masukannya mengecil. Definisi berikut hanya menuliskan kalimat itu dengan hati-hati, karena
+hasil baginya sendiri tidak terdefinisi ketika penyebutnya nol.
+
+\kamus{turunan}{derivative}{Kemiringan garis yang paling rapat menempel pada grafik di satu
+titik, yang sekaligus menjadi laju perubahan sesaat di titik itu.}
+
+\begin{definisi}[Turunan di satu titik]
+Misalkan $f$ terdefinisi pada interval terbuka yang memuat $c$. Turunan $f$ di $c$ adalah
+\[
+  f'(c)=\lim_{h\to0}\frac{f(c+h)-f(c)}{h},
+\]
+asalkan limit itu ada dan berhingga. Dalam hal ini $f$ disebut
+\emph{terdiferensialkan} di $c$. Notasi lain yang dipakai di buku ini: $Df(c)$ dan
+$\dfrac{df}{dx}(c)$.\index{turunan}
+\end{definisi}
+
+Hasil bagi itu terdefinisi untuk setiap $h\neq0$, jadi tidak ada pembagian dengan nol; yang
+mungkin gagal adalah limitnya. Kegagalan itu nyata: untuk $f(x)=|x|$ di $c=0$ hasil baginya
+$1$ untuk $h>0$ dan $-1$ untuk $h<0$, sehingga limit duanya tidak ada.
+
+Secara fisis, turunan adalah laju perubahan sesaat: $s'(t)$ kecepatan bila $s(t)$ posisi,
+$Q'(t)$ arus bila $Q(t)$ muatan yang mengalir, dan $C'(q)$ biaya marginal bila $C(q)$ biaya
+produksi $q$ satuan.
+
+Secara geometris, hasil bagi adalah kemiringan talibusur dari $(c,f(c))$ ke
+$(c+h,f(c+h))$. Ketika $h\to0$, talibusur itu berputar mengelilingi titik pertama menuju satu
+posisi; garis pada posisi limit disebut garis singgung, dan kemiringannya $f'(c)$. Persamaan
+garis singgung di $c$ adalah
+\[
+  y=f(c)+f'(c)(x-c).
+\]
+Garis singgung bukan ``garis yang menyentuh grafik tepat satu kali'', sebab untuk
+$f(x)=x^{3}$ di $c=0$ garis singgung $y=0$ memotong grafik di titik asal. Yang benar:
+selisihnya terhadap grafik mengecil lebih cepat daripada jaraknya.
+
+Putaran itu dapat diikuti angkanya. Untuk $f(x)=x^{2}$ di $c=2$, talibusur dengan $h=1$
+berkemiringan $5$, dengan $h=0{,}5$ kemiringan $4{,}5$, dan garis singgungnya $4$.
+Gambar~\ref{fig:sekan-singgung} menggambar ketiganya: dari $5$ ke $4{,}5$, menetap di $4$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=\linewidth, height=6.4cm,
+  axis lines=left,
+  xlabel={$x$}, ylabel={$y$},
+  xmin=1.55, xmax=3.25, ymin=2.2, ymax=10.2,
+  xtick={2,3}, ytick={4,9},
+  tick label style={font=\footnotesize},
+  label style={font=\footnotesize},
+  legend style={font=\scriptsize, draw=none, fill=none,
+                at={(0.03,0.97)}, anchor=north west},
+  clip=false,
+]
+\addplot[ink, thick, domain=1.6:3.15, samples=90] {x^2};
+\addlegendentry{$f(x)=x^{2}$}
+\addplot[accent, thick, domain=1.95:3.18] {5*(x-2)+4};
+\addlegendentry{talibusur $h=1$, kemiringan $5$}
+\addplot[layerteal, thick, dashed, domain=1.95:3.0] {4.5*(x-2)+4};
+\addlegendentry{talibusur $h=0{,}5$, kemiringan $4{,}5$}
+\addplot[layerindigo, thick, domain=1.68:3.05] {4*(x-2)+4};
+\addlegendentry{garis singgung, kemiringan $4$}
+\addplot[only marks, mark=*, mark size=1.5pt, ink]
+  coordinates {(2,4) (2.5,6.25) (3,9)};
+\node[font=\scriptsize, anchor=north west, text=ink] at (axis cs:2.04,3.75) {$(2,4)$};
+\end{axis}
+\end{tikzpicture}
+\caption{Talibusur yang berputar menjadi garis singgung pada $f(x)=x^{2}$ di $(2,4)$.
+Kemiringannya turun dari $5$ (untuk $h=1$) ke $4{,}5$ (untuk $h=0{,}5$) dan menetap di $4$
+ketika $h\to0$.}
+\label{fig:sekan-singgung}
+\end{figure}
+
+\begin{bacakeras}
+Dua suara bergantian; jawabannya makin pendek setiap kali.
+
+--- Berapa cepat dia bergerak? --- Dari titik mana ke titik mana?
+
+--- Dari detik pertama ke detik kedua. --- Tiga meter.
+
+--- Dari detik pertama ke detik satu setengah. --- Dua setengah meter.
+
+--- Dari detik pertama ke detik satu sepersepuluh. --- Dua satu per lima.
+
+--- Dari detik pertama ke detik satu seperseratus. --- Hampir dua.
+
+--- Dari detik pertama ke detik pertama. --- Tidak bisa. Penyebutnya nol.
+
+Berhenti di situ. Yang berubah bukan jawabannya, melainkan jarak antara dua titik yang
+dibandingkan. Jarak mengecil, garis potong berputar, angka menetap: nilai yang tidak pernah
+dicapai tetapi selalu didekati, itulah turunan.
+
+Ulangi bersama: jarak mengecil, garis berputar, angka menetap.
+\end{bacakeras}
+
+Mari hitung satu turunan dari definisi. Untuk $f(x)=x^{2}$ di $c=2$,
+\[
+  \frac{f(2+h)-f(2)}{h}=\frac{(4+4h+h^{2})-4}{h}=\frac{h(4+h)}{h}=4+h .
+\]
+Karena $h\neq0$, pembagian itu sah, dan limitnya $4$. Untuk $h=0{,}01$ hasil baginya
+$4{,}01$; selisih $0{,}01$ itu bukan kesalahan hitung, melainkan suku orde $h$ yang hilang
+hanya di limit. Untuk $f(x)=1/x$ di $c=2$,
+\[
+  \frac{1/(2+h)-1/2}{h}
+  =\frac{2-(2+h)}{2h(2+h)}=\frac{-1}{2(2+h)}\longrightarrow-\frac14 .
+\]
+Pada kedua hitungan aljabar menghapus faktor $h$ dari penyebut, sehingga bentuk $0/0$
+berubah menjadi fungsi yang kontinu di $h=0$.
+
+Bentuk hasil bagi itu penting, tetapi tidak bertahan ketika variabelnya menjadi banyak.
+Bentuk yang bertahan adalah aproksimasi linear.
+
+\begin{definisi}[Turunan sebagai koefisien aproksimasi linear]
+Fungsi $f$ terdiferensialkan di $c$ dengan turunan $L$ bila
+\[
+  f(c+h)=f(c)+Lh+r(h),
+  \qquad\text{dengan}\qquad
+  \lim_{h\to0}\frac{r(h)}{h}=0 .
+\]
+\end{definisi}
+
+Sisa $r(h)$ lebih kecil daripada $h$; itulah isi definisinya. Untuk satu variabel bentuk ini
+terasa berlebihan, tetapi hanya bentuk inilah yang bertahan sampai bagian Jacobian.
+
+\begin{proposisi}
+Kedua definisi turunan di atas setara, dan bilangan $L$ pada definisi kedua tunggal.
+\end{proposisi}
+
+\begin{proof}
+Bila limit hasil bagi sama dengan $L$, tetapkan $r(h)=f(c+h)-f(c)-Lh$. Maka $r(h)/h$ tepat
+sama dengan hasil bagi dikurangi $L$, sehingga menuju $0$. Sebaliknya, bila $r$ dengan sifat
+itu ada, hasil baginya sama dengan $L+r(h)/h$, yang menuju $L$.
+
+Untuk ketunggalan, misalkan $L_{1}$ dan $L_{2}$ sama-sama memenuhi. Maka
+$(L_{1}-L_{2})h=r_{2}(h)-r_{1}(h)$, dan setelah dibagi $h$ kita peroleh
+$L_{1}-L_{2}=r_{2}(h)/h-r_{1}(h)/h$. Ruas kanan menuju $0$, sedangkan ruas kiri tidak
+bergantung pada $h$. Jadi $L_{1}=L_{2}$.
+\end{proof}
+
+Sifat pertama yang perlu dipegang: diferensiabilitas lebih kuat daripada kekontinuan.
+
+\begin{proposisi}
+Bila $f$ terdiferensialkan di $c$, maka $f$ kontinu di $c$.
+\end{proposisi}
+
+\begin{proof}
+Untuk $h\neq0$ berlaku
+\[
+  f(c+h)-f(c)=h\cdot\frac{f(c+h)-f(c)}{h}.
+\]
+Faktor kedua menuju $f'(c)$ dan faktor pertama menuju $0$, jadi hasil kalinya menuju $0$.
+Dengan kata lain $\lim_{h\to0}f(c+h)=f(c)$.
+\end{proof}
+
+Kebalikannya tidak berlaku. Fungsi $|x|$ kontinu di $0$ tetapi tidak terdiferensialkan di
+sana, karena hasil bagi duanya berbeda tanda. Fungsi $x\sin(1/x)$, bernilai $0$ di $x=0$,
+juga kontinu tetapi tidak terdiferensialkan di sana: hasil baginya $\sin(1/x)$, yang berayun
+tanpa menuju satu nilai.
+
+\begin{tantangan}
+Misalkan $f(0)=0$ dan, untuk $x\neq0$,
+\[
+  f(x)=|x|\bigl(2+\sin(1/x)\bigr).
+\]
+Tunjukkan bahwa $f$ kontinu di $0$ tetapi tidak punya turunan di sana. Kedua sifat tidak
+bertentangan: kekontinuan menuntut nilai fungsi mendekati $f(0)$, turunan menuntut hasil
+bagi selisih mendekati satu bilangan.
+
+Petunjuk 1: untuk kekontinuan, cukup satu ketaksamaan yang mengapit $|f(x)|$ di antara $0$
+dan sesuatu yang menuju $0$.
+
+Petunjuk 2: untuk yang kedua, hitung $f(h)/h$ terpisah bagi $h>0$ dan $h<0$. Pada $h>0$
+hasil baginya $2+\sin(1/h)$, yang berayun antara $1$ dan $3$; pada $h<0$ ia berayun antara
+$-3$ dan $-1$. Kedua kumpulan nilai itu tidak beririsan.
+
+Kalau mentok, kembali ke definisi turunan di awal bagian ini dan hitung hasil baginya untuk
+$h>0$ lalu $h<0$ pada fungsi $|x|$.
+\end{tantangan}
+
+Aturan hitung berikut membebaskan kita dari definisi setiap kali.
+
+\begin{teorema}[Aturan dasar]
+Misalkan $f$ dan $g$ terdiferensialkan di $c$. Maka
+\begin{enumerate}
+  \item $(f+g)'(c)=f'(c)+g'(c)$ dan $(af)'(c)=a f'(c)$ untuk $a\in\mathbb{R}$;
+  \item $(fg)'(c)=f'(c)g(c)+f(c)g'(c)$;
+  \item $\left(\dfrac{f}{g}\right)'(c)=\dfrac{g(c)f'(c)-f(c)g'(c)}{g(c)^{2}}$ bila
+        $g(c)\neq0$;
+  \item bila $n$ bilangan bulat, turunan $x^{n}$ di $x\neq0$ adalah $nx^{n-1}$.
+\end{enumerate}
+\end{teorema}
+
+\begin{proof}
+Bagian (1) langsung dari limit jumlah. Untuk (2), tulis
+\[
+  f(x)g(x)-f(c)g(c)=f(x)\bigl[g(x)-g(c)\bigr]+g(c)\bigl[f(x)-f(c)\bigr].
+\]
+Setelah dibagi $x-c$ dan $x\to c$, faktor $f(x)$ menuju $f(c)$ karena $f$ kontinu di $c$
+(proposisi sebelumnya), dan kedua hasil bagi menuju turunannya.
+
+Untuk (3), cukup ditunjukkan bahwa $1/g$ terdiferensialkan dengan turunan $-g'(c)/g(c)^{2}$,
+lalu pakai (2) pada $f\cdot(1/g)$. Hasil bagi untuk $1/g$ adalah
+\[
+  \frac{1/g(x)-1/g(c)}{x-c}
+  =-\frac{1}{g(x)g(c)}\cdot\frac{g(x)-g(c)}{x-c},
+\]
+yang menuju $-g'(c)/g(c)^{2}$ karena $g$ kontinu dan $g(c)\neq0$. Bagian (4) diperoleh dari
+(2) dengan induksi pada $n\ge0$, lalu dari (3) untuk $n<0$.
+\end{proof}
+
+\section{Aturan rantai}
+\tingkat{menengah}
+
+Bila satu besaran bergantung pada besaran kedua, dan besaran kedua bergantung pada waktu,
+maka laju perubahan besaran pertama adalah hasil kali dua laju itu. Kalimat itu terdengar
+seperti aritmetika sehari-hari, dan memang itulah isi aturan rantai.
+
+Gambar~\ref{fig:roda-gigi} memakai dua roda gigi: roda dalam berputar tiga kali per putaran
+roda tengah, dan roda tengah dua kali per putaran roda luar. Satu putaran roda luar memutar
+roda dalam $3\times2=6$ kali; menjumlahkan kedua rasio memberi $5$, angka yang tidak muncul
+pada putaran mana pun.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.95]
+% roda dalam, rasio 3
+\draw[ink, thick] (0,0) circle (1.05);
+\foreach \a in {0,20,...,340} { \draw[ink, thick] (\a:1.05) -- (\a:1.17); }
+\fill[ink] (0,0) circle (1.5pt);
+\draw[->, layerindigo, thick] (0,0) ++(150:0.55) arc (150:70:0.55);
+% roda luar, rasio 2
+\begin{scope}[xshift=2.9cm]
+  \draw[ink, thick] (0,0) circle (1.8);
+  \foreach \a in {10,30,...,350} { \draw[ink, thick] (\a:1.8) -- (\a:1.95); }
+  \fill[ink] (0,0) circle (1.5pt);
+  \draw[->, layerbrown, thick] (0,0) ++(-20:0.75) arc (-20:-100:0.75);
+\end{scope}
+\node[font=\footnotesize, text=ink, align=center] at (0,-2.35) {roda dalam:\\3 putaran};
+\node[font=\footnotesize, text=ink, align=center] at (2.9,-2.35) {roda luar:\\2 putaran};
+\node[font=\footnotesize, text=layerplum] at (1.45,2.15) {$3\times2=6$};
+\end{tikzpicture}
+\caption{Aturan rantai sebagai dua roda gigi. Roda dalam berputar $3$ kali untuk satu putaran
+roda luar, dan roda luar $2$ kali untuk satu putaran keluarannya; rasio totalnya
+$3\times2=6$, bukan $3+2=5$.}
+\label{fig:roda-gigi}
+\end{figure}
+
+\kamus{aturan rantai}{chain rule}{Laju di ujung rantai sama dengan hasil kali laju pada
+setiap mata rantai.}
+
+\begin{teorema}[Aturan rantai]
+Misalkan $g$ terdiferensialkan di $c$ dan $f$ terdiferensialkan di $g(c)$. Maka $f\circ g$
+terdiferensialkan di $c$ dan
+\[
+  (f\circ g)'(c)=f'\bigl(g(c)\bigr)\,g'(c).
+\]
+\end{teorema}
+
+\begin{proof}
+Tulis $y=g(c)$. Karena $f$ terdiferensialkan di $y$, menurut definisi aproksimasi linear
+ada fungsi $v$ dengan $v(s)\to0$ untuk $s\to y$ dan
+\[
+  f(s)-f(y)=(s-y)\bigl[f'(y)+v(s)\bigr].
+\]
+Dengan cara yang sama, karena $g$ terdiferensialkan di $c$, ada $u$ dengan $u(t)\to0$ untuk
+$t\to c$ dan
+\[
+  g(t)-g(c)=(t-c)\bigl[g'(c)+u(t)\bigr].
+\]
+Substitusikan $s=g(t)$ pada persamaan pertama, lalu pakai persamaan kedua:
+\[
+  f\bigl(g(t)\bigr)-f\bigl(g(c)\bigr)
+  =(t-c)\bigl[g'(c)+u(t)\bigr]\bigl[f'(y)+v(g(t))\bigr].
+\]
+Untuk $t\neq c$, bagi dengan $t-c$. Karena $g$ kontinu di $c$, $g(t)\to y$, sehingga
+$v(g(t))\to0$, dan hasil baginya menuju $g'(c)f'(y)$.
+\end{proof}
+
+Pembuktian naif yang membagi dengan $g(t)-g(c)$ gagal ketika $g(t)=g(c)$ untuk $t$ dekat
+$c$ tetapi $t\neq c$; fungsi konstan lokal, misalnya, membuat penyebut itu nol di semua
+titik. Penyangga $v$ di atas menghindari pembagian tersebut sama sekali.
+
+Contoh pendek: untuk $h(x)=(x^{2}+1)^{5}$, ambil $g(x)=x^{2}+1$ dan $f(u)=u^{5}$. Maka
+$h'(x)=5(x^{2}+1)^{4}\cdot2x$ dan $h'(1)=5\cdot16\cdot2=160$; ekspansi langsung mungkin,
+tetapi tidak menyenangkan.
+
+\begin{resep}
+\begin{enumerate}
+  \item \textbf{Pisahkan dua lapis.} Tunjuk mana yang di dalam dan mana yang di luar. Untuk
+        $k(x)=\sin(x^{3}+2x)$: lapis dalam $g(x)=x^{3}+2x$, lapis luar $f(u)=\sin u$.
+  \item \textbf{Turunkan lapis luar, biarkan isinya utuh.} $f'(u)=\cos u$ menjadi
+        $\cos(x^{3}+2x)$; jangan dulu menyederhanakan isinya.
+  \item \textbf{Kalikan turunan lapis dalam.} $g'(x)=3x^{2}+2$, sehingga
+        $k'(x)=(3x^{2}+2)\cos(x^{3}+2x)$.
+  \item \textbf{Uji satu titik.} Di $x=0$ rumus memberi $2$, dan beda pusat dengan
+        $h=10^{-3}$ memberi $1{,}9999997$.
+\end{enumerate}
+Peringatan urutan: lapis luar dinilai di $g(x)$, bukan di $x$. Menukar tempat penilaian
+memberi $\cos(x)\,(3x^{2}+2)$, yang di $x=1$ bernilai $2{,}7015$, sedangkan nilai benarnya
+$-4{,}9499$.
+\end{resep}
+
+Contoh laju: luas lingkaran $A=\pi r^{2}$ dengan $\dot r=0{,}5$ cm per detik. Di $r=10$ cm,
+\[
+  \frac{dA}{dt}=2\pi r\frac{dr}{dt}=2\pi\cdot10\cdot0{,}5=10\pi\approx31{,}4159
+  \ \text{cm}^{2}\ \text{per detik}.
+\]
+Angka $10\pi$ eksak; di $r=20$ cm laju yang sama memberi $20\pi$: jawabannya bergantung
+pada $r$.
+
+\section{Teorema nilai rata-rata dan akibatnya}
+\tingkat{menengah}
+
+Di antara dua titik pada grafik yang mulus selalu ada satu titik yang kemiringannya sama
+dengan kemiringan talibusur yang menghubungkan kedua titik itu. Pernyataan itu terlihat
+seperti khayalan geometris, tetapi dialah jembatan antara turunan dan fungsi.
+
+Kunci pembuktiannya adalah kasus khusus ketika kedua ujung bernilai sama.
+
+\begin{teorema}[Rolle]
+Bila $f$ kontinu pada $[a,b]$, terdiferensialkan pada $(a,b)$, dan $f(a)=f(b)$, maka ada
+$c\in(a,b)$ dengan $f'(c)=0$.\index{teorema nilai rata-rata}
+\end{teorema}
+
+\begin{proof}
+Bila $f$ konstan, setiap $c\in(a,b)$ memenuhi. Bila tidak, $f$ mencapai nilai maksimum atau
+minimum yang berbeda dari nilai ujungnya; karena $f$ kontinu pada interval tertutup terbatas,
+nilai itu dicapai di suatu titik, dan titik itu tidak boleh ujung, jadi $c\in(a,b)$ (teorema
+nilai ekstrem, Bab 11). Di titik ekstrem interior, hasil bagi
+$(f(c+h)-f(c))/h$ bernilai $\le0$ untuk $h>0$ kecil dan $\ge0$ untuk $h<0$ kecil. Kedua
+ketaksamaan itu bersama memaksa limit duanya, yaitu $f'(c)$, bernilai $0$.
+\end{proof}
+
+\begin{teorema}[Nilai rata-rata]
+Bila $f$ kontinu pada $[a,b]$ dan terdiferensialkan pada $(a,b)$, maka ada $c\in(a,b)$
+dengan
+\[
+  f'(c)=\frac{f(b)-f(a)}{b-a}.
+\]
+\end{teorema}
+
+\begin{proof}
+Tetapkan $s=(f(b)-f(a))/(b-a)$ dan $g(x)=f(x)-f(a)-s(x-a)$. Maka $g$ kontinu pada $[a,b]$,
+terdiferensialkan pada $(a,b)$, dan $g(a)=g(b)=0$. Menurut teorema Rolle ada $c\in(a,b)$
+dengan $g'(c)=0$, yaitu $f'(c)=s$.
+\end{proof}
+
+Contoh angka: $f(x)=x^{3}$ pada $[0,3]$ berkemiringan talibusur $27/3=9$, dan $3c^{2}=9$
+memberi $c=\sqrt{3}\approx1{,}7321$; tidak ada jaminan $c$ di tengah.
+
+\begin{tangan}
+Siapkan papan tipis 30 cm, dua buku, penggaris, dan pensil. Ganjal ujung kiri papan setinggi
+4 cm, lalu tekan sedikit bagian tengahnya supaya melengkung ke atas.
+
+Tegakkan penggaris pada 5 cm dan 25 cm dari ujung yang diangkat; selisih tinggi dibagi 20 cm
+memberi satu angka kemiringan. Ulangi dengan 5 cm dan 10 cm: angkanya berubah, sebab yang
+diukur adalah kemiringan rata-rata pada selang berbeda.
+
+Sekarang letakkan penggaris rata di titik 15 cm dan putar sampai hanya satu titik yang
+menempel. Angkat ujung yang lain perlahan: penggaris berputar pada titik itu, persis seperti
+talibusur pada Gambar~\ref{fig:sekan-singgung}. Kemiringan penggaris yang menyentuh satu
+titik itulah kemiringan di titik itu, dan di situlah teorema nilai rata-rata menjanjikan
+adanya satu titik semacam itu.
+\end{tangan}
+
+\begin{akibat}[Uji monotonisitas]
+Misalkan $f$ kontinu pada $[a,b]$ dan terdiferensialkan pada $(a,b)$. Bila $f'(x)\ge0$ untuk
+semua $x\in(a,b)$, maka $f$ tidak turun pada $[a,b]$. Bila $f'(x)>0$ untuk semua $x$, maka
+$f$ naik tegas. Bila $f'(x)=0$ untuk semua $x$, maka $f$ konstan.
+\end{akibat}
+
+\begin{proof}
+Ambil $a\le x<y\le b$. Teorema nilai rata-rata pada $[x,y]$ memberi $c\in(x,y)$ dengan
+$f(y)-f(x)=f'(c)(y-x)$. Karena $y-x>0$, tanda selisih nilai mengikuti tanda $f'(c)$. Bila
+$f'$ nol di mana-mana, selisihnya nol untuk setiap pasangan, jadi $f$ konstan.
+\end{proof}
+
+Arah logikanya perlu diperhatikan: akibat ini mengubah informasi tentang turunan menjadi
+informasi tentang fungsi. Kebalikannya tidak berlaku: fungsi yang naik tegas boleh punya
+turunan nol di beberapa titik, seperti $x^{3}$ di $0$. Juga tidak berlaku kesimpulan balik
+dari satu titik: $f'(c)=0$ tidak berarti $c$ titik ekstrem.
+
+\begin{akibat}[Keterkendalian]
+Bila $f$ terdiferensialkan pada interval $I$ dan $|f'(x)|\le M$ untuk semua $x\in I$, maka
+$|f(x)-f(y)|\le M|x-y|$ untuk semua $x,y\in I$.
+\end{akibat}
+
+\begin{proof}
+Untuk $x\neq y$, teorema nilai rata-rata pada interval di antara keduanya memberi $c$
+dengan $f(x)-f(y)=f'(c)(x-y)$. Ambil nilai mutlak kedua ruas dan pakai $|f'(c)|\le M$.
+\end{proof}
+
+Karena itu fungsi dengan turunan terbatas otomatis seragam kontinu (ambil
+$\delta=\varepsilon/M$), tetapi kebalikannya tidak berlaku: $\sqrt{x}$ seragam kontinu pada
+$[0,1]$ dengan turunan tak terbatas di dekat nol.
+
+\section{Polinomial Taylor dan sisanya}
+\tingkat{lanjut}
+
+Garis singgung adalah polinomial berderajat satu yang menempel pada grafik di satu titik.
+Bila kita mau lebih lama menempel, kita tambah suku berderajat dua, tiga, dan seterusnya.
+Pertanyaannya bukan apakah penambahan itu memperbaiki hampiran, tetapi seberapa besar
+sisanya.
+
+\begin{definisi}[Polinomial Taylor]
+Misalkan $f$ mempunyai turunan sampai orde $n$ di $a$. Polinomial Taylor orde $n$ dari $f$
+di $a$ adalah
+\[
+  P_{n}(x)=\sum_{k=0}^{n}\frac{f^{(k)}(a)}{k!}(x-a)^{k}.
+\]
+\end{definisi}
+
+Syaratnya: $P_{n}$ dan $f$ sama nilai dan $n$ turunan pertamanya di $a$; karena $n+1$
+koefisien menentukan satu polinomial berderajat $n$, $P_{n}$ tunggal.
+
+\begin{teorema}[Taylor dengan sisa Lagrange]
+Misalkan $f$ mempunyai turunan sampai orde $n-1$ yang kontinu pada $[a,b]$ dan turunan
+ke-$n$ pada $(a,b)$. Untuk setiap $\beta\in(a,b]$ ada $\xi\in(a,\beta)$ dengan
+\[
+  f(\beta)=P_{n-1}(\beta)+\frac{f^{(n)}(\xi)}{n!}(\beta-a)^{n}.
+\]
+\end{teorema}
+
+\begin{proof}
+Tetapkan $M$ oleh $f(\beta)=P_{n-1}(\beta)+M(\beta-a)^{n}$, lalu
+\[
+  g(t)=f(t)-P_{n-1}(t)-M(t-a)^{n},\qquad a\le t\le b .
+\]
+$P_{n-1}$ dibangun dari turunan $f$ di $a$, jadi $g(a)=\cdots=g^{(n-1)}(a)=0$, dan pilihan
+$M$ memberi $g(\beta)=0$. Rolle memberi $x_{1}\in(a,\beta)$ dengan $g'(x_{1})=0$; karena
+$g'(a)=0$, Rolle pada $g'$ di $[a,x_{1}]$ memberi $x_{2}$ dengan $g''(x_{2})=0$. Ulangi sampai
+$n$ langkah: ada $x_{n}\in(a,\beta)$ dengan $g^{(n)}(x_{n})=0$. Turunan ke-$n$ dari $P_{n-1}$
+nol dan dari $(t-a)^{n}$ adalah $n!$, sehingga $0=f^{(n)}(x_{n})-n!M$, yaitu
+$n!M=f^{(n)}(\xi)$ dengan $\xi=x_{n}$.
+\end{proof}
+
+Untuk $n=1$ teorema ini tepat teorema nilai rata-rata; yang baru adalah kemampuan menghitung
+galat orde tinggi.
+
+\begin{contoh}
+Hampiri $e$ dengan $P_{3}(1)$ dari $f(x)=e^{x}$ di $a=0$, lalu bandingkan dengan batas
+sisanya.
+\end{contoh}
+
+Di sini $f^{(k)}(0)=1$ untuk semua $k$, sehingga
+\[
+  P_{3}(1)=1+1+\frac{1}{2}+\frac{1}{6}=\frac{8}{3}=2{,}6666\ldots
+\]
+Nilai sebenarnya $e=2{,}71828\ldots$, jadi galatnya $0{,}0516152$. Sisa Lagrange memberi
+$|e-P_{3}(1)|=e^{\xi}/24$ untuk suatu $\xi\in(0,1)$, dan karena $e^{\xi}\le e<3$, batasnya
+$3/24=0{,}125$. Batas itu benar, tetapi longgar sekitar dua setengah kali. Memakai orde
+lima, $P_{5}(1)=2{,}71666\ldots$ dengan galat $0{,}0016152$, sedangkan batasnya
+$3/720=0{,}0041667$.
+
+\begin{untukanak}
+Bayangkan kamu menebak jalan kawanmu hanya dari beberapa petunjuk. Petunjuk pertama: di mana
+dia sekarang. Tebakanmu satu titik, dan titik itu tidak bergerak. Petunjuk kedua: ke arah mana
+dia melangkah. Tebakanmu garis lurus, sudah lebih mirip, tetapi jalan sungguhan biasanya
+melengkung. Petunjuk ketiga: seberapa cepat arahnya berubah. Tebakanmu potongan parabola, yang
+menempel lebih lama.
+
+Semakin banyak petunjuk, semakin lama tebakanmu menempel, tetapi tidak pernah sama persis.
+Selalu ada sisa. Sisa itu dapat dibatasi tanpa mengetahui jalan sebenarnya, hanya dari
+seberapa besar perubahan pada tingkat berikutnya. Di bab ini kita akan tahu mengapa garis
+lurus tebakan orde satu, mengapa parabola orde dua, dan mengapa batas sisa lebih berguna
+daripada jawaban yang katanya tepat.
+\end{untukanak}
+
+\section{Turunan parsial, gradien, dan turunan berarah}
+\tingkat{menengah}
+
+Bila masukan lebih dari satu, ``laju perubahan'' belum tentu satu bilangan. Ia bergantung
+pada arah kita melangkah. Cara paling sederhana mendapat satu bilangan adalah membekukan
+semua koordinat kecuali satu, lalu memakai definisi yang sudah kita punya.
+
+\begin{definisi}[Turunan parsial]
+Misalkan $f\colon U\to\mathbb{R}$ terdefinisi pada himpunan terbuka
+$U\subseteq\mathbb{R}^{n}$ dan $a\in U$. Turunan parsial $f$ terhadap $x_{j}$ di $a$ adalah
+\[
+  \frac{\partial f}{\partial x_{j}}(a)
+  =\lim_{h\to0}\frac{f(a+h\,e_{j})-f(a)}{h},
+\]
+dengan $e_{j}$ vektor satuan arah $x_{j}$, asalkan limitnya ada.\index{turunan parsial}
+\end{definisi}
+
+Secara geometris, turunan parsial terhadap $x$ adalah kemiringan irisan grafik oleh bidang
+$y$ tetap, jadi turunan biasa fungsi satu variabel.
+
+\kamus{gradien}{gradient}{Panah yang menunjuk arah paling curam pada sebuah bukit, dengan
+panjang sebesar kecuraman di arah itu.}
+
+\begin{definisi}[Gradien]
+Bila semua turunan parsial $f$ di $a$ ada, vektor
+\[
+  \nabla f(a)=\left(\frac{\partial f}{\partial x_{1}}(a),\dots,
+  \frac{\partial f}{\partial x_{n}}(a)\right)
+\]
+disebut gradien $f$ di $a$.\index{gradien}
+\end{definisi}
+
+Untuk $f(x,y)=x^{2}y^{3}$ berlaku $\partial f/\partial x=2xy^{3}$ dan
+$\partial f/\partial y=3x^{2}y^{2}$, sehingga $\nabla f(2,-1)=(-4,12)$.
+
+\begin{definisi}[Turunan berarah]
+Untuk vektor satuan $u\in\mathbb{R}^{n}$, turunan berarah $f$ di $a$ sepanjang $u$ adalah
+\[
+  D_{u}f(a)=\lim_{t\to0}\frac{f(a+tu)-f(a)}{t},
+\]
+asalkan limitnya ada.\index{turunan berarah}
+\end{definisi}
+
+Turunan parsial adalah kasus khusus $u=e_{j}$. Untuk arah lain $D_{u}f$ tidak dapat diduga
+dari daftar parsial, kecuali dalam satu keadaan baik.
+
+\begin{proposisi}
+Bila $f$ terdiferensialkan di $a$ (dalam pengertian aproksimasi linear di bagian berikut),
+maka untuk setiap vektor satuan $u$ berlaku $D_{u}f(a)=\nabla f(a)\cdot u$.
+\end{proposisi}
+
+\begin{proof}
+Dengan $v=tu$ pada definisi aproksimasi linear,
+$f(a+tu)=f(a)+t\,\nabla f(a)\cdot u+r(tu)$, sehingga
+\[
+  \frac{f(a+tu)-f(a)}{t}=\nabla f(a)\cdot u+\frac{r(tu)}{t}.
+\]
+Karena $\|r(tu)\|/\|tu\|\to0$ dan $\|tu\|=|t|$, suku terakhir menuju $0$.
+\end{proof}
+
+\begin{proposisi}[Arah naik tercepat]
+Bila $\nabla f(a)\neq0$, maka di antara semua vektor satuan $u$, nilai $D_{u}f(a)$ terbesar
+dicapai pada $u=\nabla f(a)/\|\nabla f(a)\|$, dan nilai terbesarnya $\|\nabla f(a)\|$.
+\end{proposisi}
+
+\begin{proof}
+Menurut ketaksamaan Cauchy--Schwarz (Bab 10),
+\[
+  |D_{u}f(a)|=|\nabla f(a)\cdot u|\le\|\nabla f(a)\|\,\|u\|=\|\nabla f(a)\|.
+\]
+Kesamaan berlaku tepat ketika $u$ sejajar dengan $\nabla f(a)$. Karena $u$ vektor satuan,
+hanya dua tanda yang mungkin pada arah itu, dan tanda positif memberi nilai terbesar.
+\end{proof}
+
+Untuk $f(x,y)=x^{2}y^{3}$ di $(2,-1)$, panjang gradiennya $\sqrt{160}\approx12{,}6491$, jadi
+arah naik tercepat $(-4,12)/\sqrt{160}\approx(-0{,}3162,\,0{,}9487)$ dengan laju $12{,}6491$
+per satuan jarak. Arah $x$ memberi $-4$, arah $y$ memberi $12$; keduanya lebih kecil.
+
+Bila kurva $t\mapsto\gamma(t)$ tinggal pada himpunan nivel $f=\text{tetap}$, maka
+$f(\gamma(t))$ konstan dan turunannya nol; aturan rantai memberi
+$\nabla f(\gamma(t))\cdot\gamma'(t)=0$. Jadi gradien tegak lurus garis nivel, dan arah naik
+tercepat tegak lurus garis kontur pada peta.
+
+Contohnya $f(x,y)=x^{2}+2y^{2}$ di $(2,-1)$, titik dengan $f=6$, sehingga ia duduk pada
+elips nivel $x^{2}+2y^{2}=6$. Gradiennya $(2x,4y)=(4,-4)$, panjangnya
+$4\sqrt{2}\approx5{,}6569$, sedangkan arah singgung elips di sana $(1,1)$ dan
+$(4,-4)\cdot(1,1)=0$. Gambar~\ref{fig:kontur-gradien} menggambar ketiganya: elips nivel,
+panah gradien, dan garis singgung yang tegak lurus padanya. Panah gradien tidak menyusuri
+kontur; ia menembusnya ke arah nilai $f$ bertambah.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.92]
+\draw[->, layergrey] (-3.0,0) -- (3.4,0) node[right, font=\scriptsize] {$x$};
+\draw[->, layergrey] (0,-2.45) -- (0,2.5) node[above, font=\scriptsize] {$y$};
+\draw[ink] (0,0) ellipse [x radius=1.414, y radius=1.000];
+\draw[ink] (0,0) ellipse [x radius=2.000, y radius=1.414];
+\draw[ink, thick] (0,0) ellipse [x radius=2.449, y radius=1.732];
+\node[font=\scriptsize, anchor=west, text=ink] at (0.28,-0.98) {$c=2$};
+\node[font=\scriptsize, anchor=west, text=ink] at (0.28,-1.40) {$c=4$};
+\node[font=\scriptsize, anchor=west, text=ink] at (0.28,-1.98) {$c=6$};
+\draw[accent, thick, dashed] (1.30,-1.70) -- (2.72,-0.28);
+\draw[->, very thick, layerindigo] (2,-1) -- (2.707,-1.707);
+\fill[ink] (2,-1) circle (1.7pt);
+\node[font=\scriptsize, anchor=north west, text=ink] at (2.02,-1.05) {$(2,-1)$};
+\node[font=\scriptsize, anchor=west, text=layerindigo] at (2.72,-1.86) {$\nabla f=(4,-4)$};
+\node[font=\scriptsize, anchor=east, text=accent] at (1.32,-1.76) {arah $(1,1)$};
+\end{tikzpicture}
+\caption{Kurva nivel $x^{2}+2y^{2}=c$ untuk $c=2,4,6$ dan gradien di $(2,-1)$. Panah
+gradien $(4,-4)$ tegak lurus arah singgung $(1,1)$ pada kurva nivel $c=6$, sebab
+$(4,-4)\cdot(1,1)=0$.}
+\label{fig:kontur-gradien}
+\end{figure}
+
+\section{Diferensiabilitas, Jacobian, dan aturan rantai multivariabel}
+\tingkat{lanjut}
+
+Turunan yang sesungguhnya bukan daftar parsial, melainkan satu peta linear yang meniru fungsi
+di sekitar titik; daftar parsial dapat menyesatkan.
+
+\begin{definisi}[Diferensiabilitas]
+Misalkan $U\subseteq\mathbb{R}^{n}$ terbuka dan $F\colon U\to\mathbb{R}^{m}$. $F$
+terdiferensialkan di $a\in U$ bila ada peta linear $L\colon\mathbb{R}^{n}\to\mathbb{R}^{m}$
+dengan
+\[
+  F(a+v)=F(a)+Lv+r(v),
+  \qquad
+  \lim_{v\to0}\frac{\|r(v)\|}{\|v\|}=0 .
+\]
+Peta $L$ disebut turunan $F$ di $a$ dan ditulis $F'(a)$.\index{diferensiabilitas}
+\end{definisi}
+
+\begin{proposisi}
+Peta $L$ pada definisi itu tunggal bila ada.
+\end{proposisi}
+
+\begin{proof}
+Bila $L_{1}$ dan $L_{2}$ memenuhi, maka $(L_{1}-L_{2})v=r_{2}(v)-r_{1}(v)$. Ambil
+$v=tw$ dengan $w$ tetap dan $t>0$, bagi dengan $t$, lalu $t\to0$: diperoleh
+$(L_{1}-L_{2})w=0$. Karena berlaku untuk setiap $w$, kedua peta sama.
+\end{proof}
+
+\begin{teorema}
+Bila $F$ terdiferensialkan di $a$, maka semua turunan parsialnya di $a$ ada, dan matriks
+$L$ terhadap basis standar adalah
+\[
+  J_{F}(a)=\begin{pmatrix}
+    \dfrac{\partial F_{1}}{\partial x_{1}}(a) & \cdots &
+    \dfrac{\partial F_{1}}{\partial x_{n}}(a)\\
+    \vdots & \ddots & \vdots\\
+    \dfrac{\partial F_{m}}{\partial x_{1}}(a) & \cdots &
+    \dfrac{\partial F_{m}}{\partial x_{n}}(a)
+  \end{pmatrix}.
+\]
+\end{teorema}
+
+\begin{proof}
+Ambil $v=te_{j}$ dengan $t\neq0$. Definisi memberi
+$F(a+te_{j})-F(a)=tLe_{j}+r(te_{j})$, dan setelah dibagi $t$ lalu $t\to0$, kolom ke-$j$
+dari $L$ muncul sebagai limit hasil bagi, yaitu vektor turunan parsial terhadap $x_{j}$.
+\end{proof}
+
+\kamus{Jacobian}{Jacobian matrix}{Tabel semua kemiringan sebuah fungsi banyak variabel:
+setiap baris satu keluaran, setiap kolom satu masukan.}
+
+Matriks $m\times n$ itu disebut matriks Jacobian $F$ di $a$.\index{jacobian} Untuk $m=1$ ia
+menjadi baris tunggal, yaitu transpos gradien. Contoh: $F(x,y)=(x^{2}y,\;x+y^{2})$ di $(1,2)$
+memberi
+\[
+  J_{F}(1,2)=\begin{pmatrix}2xy & x^{2}\\ 1 & 2y\end{pmatrix}_{(1,2)}
+  =\begin{pmatrix}4&1\\ 1&4\end{pmatrix},
+\]
+sehingga $F(1{,}01,\,1{,}98)\approx(2,5)+J_{F}(1,2)(0{,}01,-0{,}02)=(2{,}02,\,4{,}93)$,
+sedangkan nilai eksaknya $(2{,}019798,\,4{,}9304)$; hampiran itu meleset $2\times10^{-4}$
+pada komponen pertama.
+
+Parsial yang ada tidak menjamin diferensiabilitas; dua contoh berikut menunjukkan dua tingkat
+kegagalan.
+
+\begin{contoh}[Parsial ada, tidak kontinu]
+Misalkan $f(x,y)=\dfrac{xy}{x^{2}+y^{2}}$ untuk $(x,y)\neq(0,0)$ dan $f(0,0)=0$. Di titik
+asal $f(h,0)=0$, sehingga kedua turunan parsialnya nol. Tetapi sepanjang garis $y=kx$ nilai
+fungsinya $k/(1+k^{2})$: untuk $k=1$ nilainya $1/2$, untuk $k=0$ nilainya $0$. Limitnya tidak
+ada, dan $f$ tidak kontinu di titik asal.
+\end{contoh}
+
+\begin{contoh}[Kontinu, parsial ada, tak terdiferensialkan]
+Misalkan $g(x,y)=\dfrac{xy}{\sqrt{x^{2}+y^{2}}}$ untuk $(x,y)\neq(0,0)$ dan $g(0,0)=0$.
+Karena $2|xy|\le x^{2}+y^{2}$, berlaku $|g(x,y)|\le\frac12\sqrt{x^{2}+y^{2}}$, jadi $g$
+kontinu di titik asal, dan kedua parsialnya di sana nol. Bila $g$ terdiferensialkan, peta
+linearnya harus nol, sehingga sisa $r(v)=g(v)$ mesti memenuhi $\|r(v)\|/\|v\|\to0$. Ambil
+$v=t(1,1)/\sqrt{2}$ dengan $t>0$: maka $g(v)=(t^{2}/2)/t=t/2$, sehingga
+$g(v)/\|v\|=1/2$ untuk setiap $t$. Nisbah itu menuju $1/2$, bukan $0$; jadi $g$ tidak
+terdiferensialkan di titik asal.
+\end{contoh}
+
+Akibatnya penting: pada contoh kedua $\nabla g(0,0)=0$ tetapi turunan berarah diagonal tidak
+ada, karena hasil baginya $\pm1/2$ bergantung tanda $t$. Jadi $D_{u}f=\nabla f\cdot u$
+mensyaratkan diferensiabilitas.
+
+Syarat yang mudah diperiksa dan cukup untuk diferensiabilitas adalah kekontinuan parsial.
+
+\begin{teorema}
+Bila turunan-turunan parsial $F$ ada dan kontinu di sekitar $a$, maka $F$ terdiferensialkan
+di $a$.
+\end{teorema}
+
+\begin{proof}
+Cukup dibuktikan untuk $m=1$ dan $n=2$; kasus lain mengikuti komponen demi komponen dengan
+indeks yang bertambah. Tulis $a=(p,q)$ dan $v=(h,k)$. Maka
+\[
+  f(p+h,q+k)-f(p,q)
+  =\bigl[f(p+h,q+k)-f(p,q+k)\bigr]+\bigl[f(p,q+k)-f(p,q)\bigr].
+\]
+Menurut teorema nilai rata-rata satu variabel, suku pertama sama dengan
+$h\,\partial_{x}f(\xi,q+k)$ untuk suatu $\xi$ di antara $p$ dan $p+h$, dan suku kedua sama
+dengan $k\,\partial_{y}f(p,\eta)$ untuk suatu $\eta$ di antara $q$ dan $q+k$. Karena itu
+\[
+  f(a+v)-f(a)-\nabla f(a)\cdot v
+  =h\bigl[\partial_{x}f(\xi,q+k)-\partial_{x}f(a)\bigr]
+  +k\bigl[\partial_{y}f(p,\eta)-\partial_{y}f(a)\bigr].
+\]
+Bagi dengan $\|v\|=\sqrt{h^{2}+k^{2}}$: karena $|h|/\|v\|\le1$ dan $|k|/\|v\|\le1$, dan
+kedua selisih dalam kurung menuju $0$ (di sinilah kekontinuan parsial dipakai), ruas kanan
+dibagi $\|v\|$ menuju $0$.
+\end{proof}
+
+Sekarang komposisi.
+
+\begin{teorema}[Aturan rantai multivariabel]
+Misalkan $H\colon\mathbb{R}^{n}\to\mathbb{R}^{k}$ terdiferensialkan di $a$ dan
+$G\colon\mathbb{R}^{k}\to\mathbb{R}^{m}$ terdiferensialkan di $H(a)$. Maka $G\circ H$
+terdiferensialkan di $a$ dan
+\[
+  (G\circ H)'(a)=G'(H(a))\,H'(a),
+\]
+yaitu komposisi dua peta linear; dalam matriks,
+$J_{G\circ H}(a)=J_{G}(H(a))\,J_{H}(a)$.
+\end{teorema}
+
+\begin{proof}
+Tulis $A=H'(a)$, $B=G'(y_{0})$ dengan $y_{0}=H(a)$, dan
+\[
+  H(a+v)=H(a)+Av+r(v),\qquad G(y_{0}+w)=G(y_{0})+Bw+q(w),
+\]
+dengan $\|r(v)\|\le\varepsilon(v)\|v\|$ dan $\|q(w)\|\le\eta(w)\|w\|$, di mana
+$\varepsilon(v)\to0$ dan $\eta(w)\to0$. Untuk $w=H(a+v)-H(a)=Av+r(v)$ berlaku
+$\|w\|\le(\|A\|+\varepsilon(v))\|v\|$, jadi $w\to0$ ketika $v\to0$. Maka
+\[
+  G\bigl(H(a+v)\bigr)-G(H(a))-BAv
+  =B\bigl(H(a+v)-H(a)-Av\bigr)+q(w)
+  =B\,r(v)+q(w).
+\]
+Bagi dengan $\|v\|$:
+\[
+  \frac{\|B\,r(v)+q(w)\|}{\|v\|}
+  \le\|B\|\,\varepsilon(v)+\bigl(\|A\|+\varepsilon(v)\bigr)\eta(w),
+\]
+dan ruas kanan menuju $0$. Jadi $BA$ memenuhi definisi turunan $G\circ H$ di $a$.
+\end{proof}
+
+Bentuk matriksnya menjelaskan mengapa urutan perkalian tidak boleh dibalik: $J_{H}$
+berukuran $k\times n$ dan $J_{G}$ berukuran $m\times k$, jadi hanya satu urutan yang dapat
+dikalikan. Untuk fungsi skalar hasilnya $\frac{d}{dt}f(\gamma(t))=\nabla f(\gamma(t))\cdot
+\gamma'(t)$.
+
+Terakhir, turunan kedua untuk fungsi banyak variabel disimpan dalam satu matriks.
+
+\kamus{Hessian}{Hessian matrix}{Tabel kelengkungan: apakah permukaan melengkung ke atas,
+ke bawah, atau ke dua arah sekaligus.}
+
+\begin{definisi}[Matriks Hessian]
+Bila semua turunan parsial kedua $f\colon U\to\mathbb{R}$ ada di $a$, matriks
+\[
+  H_{f}(a)=\left(\frac{\partial^{2}f}{\partial x_{i}\,\partial x_{j}}(a)\right)_{i,j=1}^{n}
+\]
+disebut matriks Hessian $f$ di $a$.\index{hessian}
+\end{definisi}
+
+Untuk fungsi yang parsial keduanya kontinu, $H_{f}(a)$ simetris (teorema Clairaut, dibuktikan
+di Stewart pada bagian turunan parsial). Tanpa kekontinuan, kesimpulan itu bisa gagal.
+
+Hessian adalah turunan dari gradien. Bila parsial keduanya kontinu di sekitar titik kritis
+$a$ ($\nabla f(a)=0$), maka
+\[
+  f(a+v)=f(a)+\tfrac12\,v^{\top}H_{f}(a)\,v+o\bigl(\|v\|^{2}\bigr),
+\]
+sehingga tanda bentuk kuadrat $v\mapsto v^{\top}Hv$ menentukan jenis titik kritis.
+
+\begin{proposisi}[Uji turunan kedua]
+Misalkan $f$ mempunyai turunan parsial kedua kontinu di sekitar titik kritis $a$
+($\nabla f(a)=0$).
+\begin{enumerate}
+  \item Bila $H_{f}(a)$ definit positif, $a$ titik minimum lokal tegas.
+  \item Bila $H_{f}(a)$ definit negatif, $a$ titik maksimum lokal tegas.
+  \item Bila $H_{f}(a)$ mempunyai nilai eigen bertanda berbeda, $a$ titik sadel.
+  \item Bila $H_{f}(a)$ semidefinit tetapi singular, uji ini tidak memberi kesimpulan.
+\end{enumerate}
+\end{proposisi}
+
+Bagian pertama sampai ketiga mengikuti ekspansi kuadratik di atas: pada arah $v^{\top}Hv>0$
+fungsi naik, pada arah $v^{\top}Hv<0$ fungsi turun. Bukti lengkapnya ada di Stewart pada
+bagian nilai maksimum dan minimum. Bagian keempat benar-benar kosong: $x^{4}+y^{4}$ dan
+$x^{4}-y^{4}$ sama-sama punya $H=0$ di titik asal, tetapi yang pertama minimum dan yang kedua
+sadel. Untuk dua variabel, $AC-B^{2}>0$ dengan $A>0$ berarti definit positif, $AC-B^{2}<0$
+berarti indefinit.
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Tiga hitungan berikut memakai angka yang sama dengan kode di bagian lab.
+
+Pertama, beda hingga untuk $f(x)=\sin x$ di $x_{0}=1$; nilai eksaknya $\cos 1$, yang
+angkanya muncul pada keluaran kode di bagian lab. Dua rumusnya:
+\[
+  \text{maju: }\frac{f(x_{0}+h)-f(x_{0})}{h},\qquad
+  \text{pusat: }\frac{f(x_{0}+h)-f(x_{0}-h)}{2h}.
+\]
+
+\begin{center}
+\begin{tabular}{rrrrr}
+\hline
+$h$ & beda maju & galat relatif & beda pusat & galat relatif\\
+\hline
+$10^{-1}$ & $0{,}497363752535$ & $7{,}947\times10^{-2}$ & $0{,}539402252170$ & $1{,}666\times10^{-3}$\\
+$10^{-2}$ & $0{,}536085981012$ & $7{,}804\times10^{-3}$ & $0{,}540293300875$ & $1{,}667\times10^{-5}$\\
+$10^{-4}$ & $0{,}540260231419$ & $7{,}787\times10^{-5}$ & $0{,}540302304968$ & $1{,}667\times10^{-9}$\\
+$10^{-6}$ & $0{,}540301885121$ & $7{,}787\times10^{-7}$ & $0{,}540302305896$ & $5{,}130\times10^{-11}$\\
+$10^{-8}$ & $0{,}540302302898$ & $5{,}497\times10^{-9}$ & $0{,}540302308449$ & $4{,}777\times10^{-9}$\\
+$10^{-10}$ & $0{,}540302247387$ & $1{,}082\times10^{-7}$ & $0{,}540302247387$ & $1{,}082\times10^{-7}$\\
+\hline
+\end{tabular}
+\end{center}
+
+Pola galatnya bukan kebetulan. Untuk beda maju, ekspansi Taylor memberi
+\[
+  \frac{f(x_{0}+h)-f(x_{0})}{h}=f'(x_{0})+\frac{h}{2}f''(x_{0})+\mathcal{O}(h^{2}),
+\]
+jadi galat relatifnya berorde $h$ dan turun sepuluh kali setiap $h$ dibagi sepuluh:
+$7{,}947\times10^{-2}$, $7{,}804\times10^{-3}$, $7{,}787\times10^{-5}$. Angkanya dapat
+dicocokkan: $\frac{h}{2}f''(1)=-\frac{1}{2}\cdot10^{-2}\sin 1=-4{,}207\times10^{-3}$, dan
+$4{,}207\times10^{-3}/0{,}5403=7{,}787\times10^{-3}$. Beda pusat memberi
+\[
+  \frac{f(x_{0}+h)-f(x_{0}-h)}{2h}=f'(x_{0})+\frac{h^{2}}{6}f'''(x_{0})+\mathcal{O}(h^{4}),
+\]
+sehingga galatnya berorde $h^{2}$ dan turun seratus kali: $1{,}666\times10^{-3}$,
+$1{,}667\times10^{-5}$, $1{,}667\times10^{-9}$. Di sini $\frac{10^{-4}}{6}\cos 1
+=9{,}005\times10^{-6}$, dan $9{,}005\times10^{-6}/0{,}5403$ kembali memberi $1{,}667\times10^{-5}$.
+
+Pada $h=10^{-8}$ dan $10^{-10}$ beda pusat memburuk lagi: galat pemotongan sudah lebih kecil
+daripada galat pembulatan yang tumbuh seperti $\varepsilon/h$, dengan
+$\varepsilon\approx2{,}2\times10^{-16}$. Yang terbaik di tabel, $h=10^{-6}$ dengan galat
+$5\times10^{-11}$, ordenya sesuai $\varepsilon^{1/3}\approx6\times10^{-6}$.
+
+Kedua, gradien $f(x,y)=x^{2}y^{3}$ di $(2,-1)$ dengan nilai analitik $(-4,12)$. Beda pusat
+memberi galat $3{,}333\times10^{-5}$ pada komponen $y$ untuk $h=10^{-2}$, turun ke
+$3{,}333\times10^{-9}$ untuk $h=10^{-4}$: orde $h^{2}$. Komponen $x$ tepat sampai galat mesin,
+sebab $f$ kuadratik dalam $x$.
+
+Ketiga, aturan rantai pada komposisi berdimensi berbeda. Misalkan
+\[
+  H(x,y)=\bigl(x^{2}+y,\;xy,\;y^{3}\bigr),\qquad
+  G(u,v,w)=\bigl(uv+w,\;u^{2}-vw\bigr),
+\]
+dan tinjau $F=G\circ H$ di $a=(1,2)$. Di sini $H(a)=(3,2,8)$, dan
+\[
+  J_{H}(1,2)=\begin{pmatrix}2&1\\ 2&1\\ 0&12\end{pmatrix}_{3\times2},
+  \qquad
+  J_{G}(3,2,8)=\begin{pmatrix}2&3&1\\ 6&-8&-2\end{pmatrix}_{2\times3}.
+\]
+Hasil kalinya berukuran $2\times2$:
+\[
+  J_{G}(3,2,8)\,J_{H}(1,2)=
+  \begin{pmatrix}2&3&1\\ 6&-8&-2\end{pmatrix}
+  \begin{pmatrix}2&1\\ 2&1\\ 0&12\end{pmatrix}
+  =\begin{pmatrix}10&17\\ -4&-26\end{pmatrix}.
+\]
+\kertas{Untuk komposisi di atas, hitung $J_{F}$ di $(2,1)$ dengan dua jalan: hasil kali
+$J_{G}(H(2,1))J_{H}(2,1)$ dan turunan langsung bentuk eksplisit. Lalu periksa arah $v=(1,3)$
+dengan membandingkan $J_{F}(2,1)v$ terhadap $\bigl(F(a+sv)-F(a)\bigr)/s$ untuk $s=10^{-2}$
+dan $s=10^{-4}$. Mengapa galatnya turun hanya sebesar faktor $10$, bukan $100$?}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Kode berikut dijalankan apa adanya dengan numpy 2.5.2 pada Python 3: bagian pertama mengulang
+tiga hitungan di atas, lalu satu percobaan yang tidak dapat dikerjakan dengan tangan, beda
+hingga di bawah derau pengukuran.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+# 1. beda hingga untuk f(x) = sin x di x0 = 1
+x0 = 1.0
+eksak = float(np.cos(x0))
+print("cos(1) =", eksak)
+for h in [1e-1, 1e-2, 1e-4, 1e-6, 1e-8, 1e-10]:
+    maju = (np.sin(x0 + h) - np.sin(x0)) / h
+    pusat = (np.sin(x0 + h) - np.sin(x0 - h)) / (2*h)
+    em = abs(maju - eksak) / abs(eksak)
+    ep = abs(pusat - eksak) / abs(eksak)
+    print(f"{h:8.0e} fwd={maju:.12f} {em:.3e} "
+          f"cen={pusat:.12f} {ep:.3e}")
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+cos(1) = 0.5403023058681398
+   1e-01 fwd=0.497363752535 7.947e-02 cen=0.539402252170 1.666e-03
+   1e-02 fwd=0.536085981012 7.804e-03 cen=0.540293300875 1.667e-05
+   1e-04 fwd=0.540260231419 7.787e-05 cen=0.540302304968 1.667e-09
+   1e-06 fwd=0.540301885121 7.787e-07 cen=0.540302305896 5.130e-11
+   1e-08 fwd=0.540302302898 5.497e-09 cen=0.540302308449 4.777e-09
+   1e-10 fwd=0.540302247387 1.082e-07 cen=0.540302247387 1.082e-07
+\end{verbatim}
+\end{lab}
+
+Baris terakhir layak dibaca dua kali: pada $h=10^{-10}$ kedua rumus memberi angka identik,
+karena keduanya menghitung galat pembulatan yang sama, bukan turunan.
+
+\begin{lab}
+\begin{verbatim}
+def f(p):
+    return p[0]**2 * p[1]**3
+
+def grad_fd(fun, a, h):
+    g = np.zeros_like(a)
+    for j in range(a.size):
+        e = np.zeros_like(a)
+        e[j] = h
+        g[j] = (fun(a + e) - fun(a - e)) / (2*h)
+    return g
+
+a = np.array([2.0, -1.0])
+g_eks = np.array([2*a[0]*a[1]**3, 3*a[0]**2*a[1]**2])
+print("gradien =", g_eks)
+for h in [1e-2, 1e-4, 1e-6]:
+    g = grad_fd(f, a, h)
+    print(f"{h:8.0e} {g[0]:.12f} {g[1]:.12f} "
+          f"{abs(g[0]+4)/4:.3e} {abs(g[1]-12)/12:.3e}")
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+gradien = [-4. 12.]
+   1e-02 -4.000000000000 12.000400000000 1.577e-14 3.333e-05
+   1e-04 -4.000000000004 12.000000039998 1.000e-12 3.333e-09
+   1e-06 -4.000000000115 11.999999999679 2.876e-11 2.676e-11
+\end{verbatim}
+\end{lab}
+
+\begin{lab}
+\begin{verbatim}
+def hh(p):
+    x, y = p
+    return np.array([x*x + y, x*y, y**3])
+
+def gg(q):
+    u, v, w = q
+    return np.array([u*v + w, u*u - v*w])
+
+def F(p):
+    return gg(hh(p))
+
+def jac(fun, p, step):
+    n = p.size
+    J = np.zeros((fun(p).size, n))
+    for j in range(n):
+        e = np.zeros(n)
+        e[j] = step
+        J[:, j] = (fun(p + e) - fun(p - e)) / (2*step)
+    return J
+
+a = np.array([1.0, 2.0])
+q = hh(a)
+Jh = np.array([[2*a[0], 1.0], [a[1], a[0]], [0.0, 3*a[1]**2]])
+Jg = np.array([[q[1], q[0], 1.0], [2*q[0], -q[2], -q[1]]])
+J_rantai = Jg @ Jh
+J_num = jac(F, a, 1e-6)
+print("h(1,2) =", q)
+print("Jg @ Jh =\n", J_rantai)
+print("selisih maks =", f"{np.max(np.abs(J_num - J_rantai)):.3e}")
+
+v = np.array([0.7, -1.3])
+d_rantai = J_rantai @ v
+d_num = (F(a + 1e-6*v) - F(a - 1e-6*v)) / 2e-6
+print("J v =", d_rantai)
+print("beda hingga =", d_num)
+print("galat relatif =",
+      f"{np.max(np.abs(d_num - d_rantai)/np.abs(d_rantai)):.3e}")
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+h(1,2) = [3. 2. 8.]
+Jg @ Jh =
+ [[ 10.  17.]
+ [ -4. -26.]]
+selisih maks = 1.858e-09
+J v = [-15.1  31. ]
+beda hingga = [-15.1  31. ]
+galat relatif = 9.860e-11
+\end{verbatim}
+\end{lab}
+
+Selisih $1{,}858\times10^{-9}$ antara Jacobian aturan rantai dan Jacobian beda hingga adalah
+galat pemotongan beda pusat, bukan kesalahan aljabar; pemeriksaan arah memberi
+$9{,}86\times10^{-11}$, sebab keduanya memakai titik yang sama.
+
+\begin{lab}
+\begin{verbatim}
+rng = np.random.default_rng(7)
+sigma = 1e-3
+for h in [1e-1, 1e-2, 1e-3, 1e-4, 1e-5]:
+    galat = []
+    for _ in range(2000):
+        s1 = np.sin(x0 + h) + sigma*rng.standard_normal()
+        s0 = np.sin(x0) + sigma*rng.standard_normal()
+        galat.append(abs((s1 - s0)/h - eksak))
+    print(f"{h:8.0e} galat rerata = {np.mean(galat):.3e}")
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+   1e-01 galat rerata = 4.203e-02
+   1e-02 galat rerata = 1.112e-01
+   1e-03 galat rerata = 1.160e+00
+   1e-04 galat rerata = 1.117e+01
+   1e-05 galat rerata = 1.088e+02
+\end{verbatim}
+\end{lab}
+
+Percobaan terakhir adalah inti bab ini dalam angka. Dengan derau
+$\sigma=10^{-3}$, hasil bagi membawa dua galat: bias pemotongan $\approx0{,}42h$ dan derau
+yang menguat seperti $\sqrt{2}\sigma/h$. Pada $h=10^{-1}$ bias mendominasi ($0{,}042$), pada
+$h=10^{-4}$ derau mendominasi ($11{,}2$), dan keduanya seimbang ketika
+$0{,}42h=\sqrt{2}\cdot10^{-3}/h$, yaitu $h\approx0{,}058$: dengan alat seburuk itu, langkah
+terbaik sekitar enam perseratus, bukan seperseratus juta.
+
+Inilah jawaban jujur untuk pertanyaan pembuka. Turunan adalah limit, tetapi aproksimasi
+terbaiknya bukan limit yang sedekat mungkin. Yang terbaik adalah kompromi antara dua galat
+yang bergerak berlawanan arah, dan kompromi itu dapat dihitung sebelum satu angka pun
+diukur.
+
+\begin{untukdosen}
+Urutan yang berhasil dipakai: definisi hasil bagi, lalu bentuk aproksimasi linear, baru
+aturan hitung. Bentuk itu terasa berlebihan untuk satu variabel, tetapi hanya ia yang bertahan
+sampai Jacobian; bila diperkenalkan belakangan, mahasiswa menghafal aturan rantai sebagai
+perkalian matriks tanpa tahu mengapa urutannya begitu.
+
+Dua miskonsepsi khas. Pertama, ``turunan parsial ada berarti fungsi mulus''; contoh
+$xy/\sqrt{x^{2}+y^{2}}$ di papan mematahkannya asalkan dihitung bersama: parsial nol,
+kontinu, tetapi arah diagonal memberi $1/2$. Kedua, arah perkalian pada aturan rantai:
+mahasiswa menulis $J_{H}J_{G}$ karena urutan penulisan fungsi terbalik dari urutan
+pengerjaan; cara memeriksanya adalah ukuran matriksnya.
+
+Aktivitas papan tulis: minta kelas menghitung kedua parsial di titik asal untuk kedua contoh
+penyangkal, lalu memutuskan apakah fungsi itu punya bidang singgung. Tanda kesiapan lanjut:
+mahasiswa menjelaskan mengapa $D_{u}f=\nabla f\cdot u$ gagal pada contoh kedua, dan menyebut
+kata ``sisa'', bukan ``rumus''.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Turunan $f'(c)$ adalah limit hasil bagi selisih, sekaligus koefisien tunggal
+        aproksimasi linear $f(c+h)=f(c)+Lh+r(h)$ dengan $r(h)/h\to0$. Diferensiabilitas
+        menjamin kekontinuan, bukan sebaliknya.
+  \item Aturan rantai $(f\circ g)'=f'(g(c))g'(c)$ dibuktikan lewat aproksimasi linear, dan
+        buktinya bertahan ke dimensi banyak: $J_{G\circ H}(a)=J_{G}(H(a))J_{H}(a)$.
+  \item Teorema nilai rata-rata menghubungkan tanda turunan dengan perilaku fungsi: $f'\ge0$
+        berarti tidak turun, $|f'|\le M$ berarti Lipschitz; ia gagal untuk fungsi vektor.
+  \item Taylor dengan sisa Lagrange memakai $\xi$ yang tidak diketahui, sehingga yang dipakai
+        hanya batas atas $|f^{(n)}|$.
+  \item Untuk banyak variabel, turunan adalah peta linear dengan matriks Jacobian. Parsial
+        boleh ada tanpa kekontinuan, dan boleh ada bersama kekontinuan tanpa
+        diferensiabilitas.
+  \item Gradien menunjuk arah naik tercepat dengan laju $\|\nabla f\|$, tegak lurus kontur;
+        Hessian yang definit menentukan jenis titik kritis.
+  \item Beda hingga berorde $h$ (maju) atau $h^{2}$ (pusat), dan galat pembulatan tumbuh
+        seperti $\varepsilon/h$. Langkah terkecil bukan langkah terbaik.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Hitung $f'(2)$ dari definisi untuk $f(x)=x^{3}$ dan $f(x)=\sqrt{x}$, sampai faktor
+        $h$ hilang dari penyebut.
+
+  \item Buktikan bahwa bila $f'(c)>0$, ada $\delta>0$ sehingga $f(c+h)>f(c)$ untuk setiap
+        $h\in(0,\delta)$, dan jelaskan mengapa ini tidak berarti $f$ naik pada suatu interval.
+
+  \item Buktikan aturan hasil bagi dengan menurunkan $1/g$ lebih dulu, lalu memakai aturan
+        hasil kali. Sebutkan di langkah mana kekontinuan $g$ dipakai.
+
+  \item Nilai klaim ini: \emph{bila $f$ mempunyai semua turunan parsial di suatu titik, maka
+        $f$ kontinu di titik itu.} Nyatakan benar, salah, atau belum cukup bukti, dan
+        sertakan contoh penyangkal bila perlu.
+
+  \item Untuk $f(x,y)=x^{3}y-xy^{3}$, hitung gradien di $(2,1)$, tentukan arah naik tercepat,
+        dan hitung laju maksimumnya. Periksa dengan beda pusat $h=10^{-4}$ dan bandingkan
+        galat relatifnya dengan orde $h^{2}$.
+
+  \item Buktikan bahwa bila $f'=0$ di mana-mana pada suatu interval, maka $f$ konstan.
+        Jelaskan mengapa bukti itu gagal pada himpunan yang tidak terhubung, dan beri
+        contohnya.
+
+  \item Misalkan $H(x,y)=(e^{x}y,\;x+y^{2})$ dan $G(u,v)=(u^{2}v,\;u-v)$. Hitung
+        $J_{G\circ H}$ di $(0,1)$ dengan dua jalan: hasil kali matriks dan turunan langsung.
+        (Petunjuk: $H(0,1)=(1,1)$.)
+
+  \item Tentukan semua titik kritis $f(x,y)=x^{3}+y^{3}-3xy$, lalu klasifikasikan dengan
+        Hessian; jelaskan mengapa tanda determinan tidak cukup bila determinannya nol.
+
+  \item Taksir $\sqrt{1{,}04}$ dengan polinomial Taylor orde dua di $a=1$, lalu batas
+        galatnya dengan sisa Lagrange. Bandingkan batas itu dengan galat sebenarnya: apakah batasnya ketat? (Petunjuk:
+        $f''(x)=-\frac14x^{-3/2}$ dan $f'''$ positif pada selang itu.)
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang terbukti di bab ini adalah pernyataan klasik satu dan banyak variabel: aproksimasi
+linear dan ketunggalan petanya, aturan rantai, teorema nilai rata-rata dan akibatnya, Taylor
+dengan sisa Lagrange, kesetaraan diferensiabilitas dengan Jacobian, dan syarat cukup
+kekontinuan parsial. Semua itu teorema, bukan konvensi, berlaku di ruang berdimensi hingga
+atas $\mathbb{R}$.
+
+Yang sering dipopulerkan adalah klaim ``gradien adalah turunan''. Tanpa diferensiabilitas
+klaim itu salah, dan $xy/\sqrt{x^{2}+y^{2}}$ adalah penyangkal yang tetap kontinu. Klaim
+``Hessian menentukan jenis titik kritis'' hanya berlaku bila Hessian nonsingular; kasus
+singular memerlukan turunan orde lebih tinggi atau analisis langsung.
+
+Sumber primer. Rudin, \emph{Principles of Mathematical Analysis}, bab
+\emph{Differentiation} dan \emph{Functions of Several Variables}, memuat seluruh pernyataan
+di atas. Spivak, \emph{Calculus on Manifolds}, bab \emph{Differentiation}, mengambil jalan
+yang sama dan lebih singkat. Stewart, \emph{Calculus: Early Transcendentals} edisi ke-9,
+bagian 14.3 sampai 14.7, memberi padanan komputasional, termasuk teorema Clairaut.
+
+Batas keberlakuan: semua argumen menganggap himpunan definisi terbuka dan turunan yang
+dipakai ada. Pada fungsi yang hanya terdiferensialkan hampir di mana-mana, kesimpulan
+monotonisitas dan Taylor runtuh, dan itu wilayah teori ukur yang tidak dibahas buku ini.
+Untuk fungsi vektor, teorema nilai rata-rata tidak berlaku; penggantinya ketaksamaan nilai
+rata-rata yang menuntut norma operator. Orde beda hingga terbaik bergantung pada skala
+fungsi, derau, dan aritmetika; bab ini hanya menunjukkan ordenya secara empiris.
+\end{untukpeneliti}
+
+\peta{Bab ini mengikuti Rudin, \emph{Principles of Mathematical Analysis}, bab
+\emph{Differentiation} dan \emph{Functions of Several Variables}; versi komputasionalnya
+Stewart, \emph{Calculus: Early Transcendentals} edisi ke-9, bagian 14.3 sampai 14.7; padanan
+abstraknya Spivak, \emph{Calculus on Manifolds}, bab \emph{Differentiation}. Kekontinuan dan
+teorema nilai ekstrem dipakai dari Bab 11, ketaksamaan Cauchy--Schwarz dari Bab 10, norma
+Jacobian kembali di Bab 23 dan Bab 28.}

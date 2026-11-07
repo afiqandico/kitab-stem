@@ -1,0 +1,1146 @@
+\chapter{Estimasi, Interval Kepercayaan, dan Uji Hipotesis}
+
+Sebuah tim menguji pendeteksi serangan pada $50$ contoh berlabel, dan pendeteksi itu
+menangkap $33$ di antaranya. Laporan yang ditulis malam itu berbunyi: recall $66$
+persen. Pendeteksi kedua, diuji pada $100$ contoh, menangkap $53$: recall $53$ persen.
+Rapat pagi memutuskan memakai yang pertama, karena $66$ lebih besar daripada $53$, dan
+keputusan itu selesai dalam satu menit.
+
+Aritmetikanya benar: $33/50=0{,}66$. Yang keliru adalah anggapan bahwa angka itu
+menunjuk satu bilangan. Bila lima puluh contoh itu diganti lima puluh contoh lain dari
+kumpulan yang sama, hasilnya bukan $33$ lagi; ia bergoyang, dan goyangannya tidak
+kecil. Sesudah dua jam menulis program, tim itu sebenarnya memegang dua kalimat yang
+berbeda jauh kekuatannya. Kalimat pertama, ``pada data ini terlihat $66$ persen'',
+hampir tidak berisi apa pun. Kalimat kedua, ``laju tangkapan sebenarnya ada di suatu
+tempat dalam selang ini'', berisi sesuatu yang bisa dipakai, dengan syarat kita tahu
+seberapa lebar selang itu dan apa arti lebar tersebut.
+
+Bab 19 sudah memberi dua alat: hukum bilangan besar, yang mengatakan rata-rata sampel
+memusat ke nilai sebenarnya, dan teorema limit pusat, yang mengatakan galatnya menyebar
+normal dengan simpangan baku $\sigma/\sqrt n$. Keduanya pernyataan tentang banyak
+percobaan sekaligus, dan tidak satu pun menjawab pertanyaan rapat pagi tadi: dari satu
+percobaan yang sudah selesai, kalimat apa yang boleh diucapkan tentang parameter yang
+tidak pernah dilihat, dan seberapa sering kalimat itu salah bila prosedurnya diulang.
+Bab ini menyusun jawabannya, dari penaksir sampai nilai-p.
+
+\begin{untukanak}
+Seorang petani ingin tahu berapa banyak rumput liar di sawahnya. Seluruh sawah terlalu
+luas untuk diperiksa, jadi ia mengambil dua puluh petak kecil yang tersebar, lalu
+menghitung rumput di setiap petak. Dari dua puluh angka itu ia menebak keadaan seluruh
+sawah. Masalahnya, tebakan selalu berupa satu angka, sedangkan keadaan sawah tidak pernah
+sesederhana itu.
+
+Sekarang bagian yang membuat penasaran. Di dua puluh petak itu ia tidak menemukan
+rumput sama sekali. Apakah ia boleh pulang dan berkata bahwa sawahnya bersih? Tentu
+tidak. Bisa jadi rumputnya memang tidak ada, bisa jadi ia hanya kebetulan memilih
+petak-petak yang terdiri dari tanah kosong. Yang dapat ia katakan hanyalah: kalau
+rumputnya cukup banyak, dua puluh petak kosong itu hampir mustahil. Dari situ ia bisa
+menghitung batas atas yang jujur, misalnya ``paling banyak tiga dari seratus petak''.
+
+Hal yang sama berlaku ketika guru menilai ulangan beberapa murid dan ketika program
+komputer diuji pada beberapa contoh.
+Di bab ini kita akan tahu mengapa satu angka tidak pernah cukup, mengapa jawaban jujur
+selalu berupa selang, dan mengapa selang itu melebar ketika buktinya sedikit.
+\end{untukanak}
+
+\section{Penaksir, bias, dan galat baku}
+\tingkat{dasar}
+
+Setiap kesimpulan statistika dimulai dari satu keputusan kecil: besaran apa yang kita
+hitung dari data. Rata-rata, proporsi, simpangan baku sampel, semuanya adalah fungsi
+dari data dan tidak memerlukan pengetahuan tentang parameter yang dicari. Kalimat
+sehari-harinya: penaksir adalah juru ukur yang menebak tinggi pohon dari panjang
+bayangannya, dan kita perlu tahu apakah juru ukur itu sistematis meleset atau hanya
+goyah.
+
+\kamus{penaksir}{estimator}{juru ukur yang menebak tinggi pohon dari panjang
+bayangannya, bukan dari pohon itu sendiri}
+
+\begin{definisi}[Statistik dan penaksir]
+\index{penaksir}
+Misalkan $X_1,\dots,X_n$ sampel acak dari distribusi yang bergantung pada parameter
+$\theta$. \emph{Statistik} adalah fungsi dari $X_1,\dots,X_n$ yang tidak memuat
+$\theta$. Statistik yang dipakai menebak $\theta$ disebut \emph{penaksir}
+(\emph{estimator}) dan ditulis $\hat\theta$; nilai yang diperoleh pada satu sampel
+disebut \emph{taksiran} (\emph{estimate}).
+\end{definisi}
+
+Penaksir adalah variabel acak, sebab ia fungsi dari variabel acak. Karena itu ia punya
+harapan dan variansi, dan kedua besaran itulah yang menentukan mutunya. Harapannya
+menjawab pertanyaan ``apakah tebakannya meleset ke satu arah terus'', sedangkan
+variansinya menjawab ``seberapa jauh tebakan itu bergoyang dari sampel ke sampel''.
+
+\begin{definisi}[Bias dan penaksir tak bias]
+\index{tak bias}
+Bias penaksir $\hat\theta$ untuk $\theta$ adalah $\operatorname{bias}(\hat\theta)
+=\mathbb{E}[\hat\theta]-\theta$. Penaksir disebut \emph{tak bias} bila biasnya nol,
+yakni $\mathbb{E}[\hat\theta]=\theta$ untuk setiap nilai $\theta$ yang mungkin.
+\end{definisi}
+
+Rata-rata sampel tak bias untuk $\mu$, dan itu sudah dipakai pada pembuktian hukum
+bilangan besar di Bab 19, jadi tidak diulang di sini. Yang lebih menarik adalah
+penaksir yang dipakai untuk variansi. Dengan pembagi $n$, penaksir
+$S_n^2=\frac1n\sum(X_i-\bar X_n)^2$ bias ke bawah; dengan pembagi $n-1$, penaksir
+$S^2=\frac1{n-1}\sum(X_i-\bar X_n)^2$ tak bias. Sebabnya, $\sum(X_i-\bar X_n)^2$
+kehilangan satu derajat kebebasan karena $\bar X_n$ sendiri dihitung dari data yang
+sama, sehingga harapannya $(n-1)\sigma^2$ dan bukan $n\sigma^2$. Pembagi $n-1$
+adalah koreksi untuk kehilangan itu, bukan kerapian belaka.
+
+Kualitas penaksir biasanya diringkas oleh satu angka, yaitu galat kuadrat rata-rata.
+Kalimat sehari-harinya: seberapa besar kesalahan yang kita harapkan, dihitung dengan
+cara yang menghukum kesalahan besar lebih berat.
+
+\begin{definisi}[Galat kuadrat rata-rata]
+\index{galat kuadrat rata-rata}
+$\operatorname{MSE}(\hat\theta)=\mathbb{E}[(\hat\theta-\theta)^2]$.
+\end{definisi}
+
+\begin{teorema}[Dekomposisi MSE]
+Untuk penaksir $\hat\theta$ dengan variansi berhingga,
+\[
+\operatorname{MSE}(\hat\theta)=\operatorname{bias}(\hat\theta)^2
++\operatorname{Var}(\hat\theta).
+\]
+\end{teorema}
+
+\begin{proof}[Bukti]
+Tulis $\hat\theta-\theta=(\hat\theta-\mathbb{E}\hat\theta)
++(\mathbb{E}\hat\theta-\theta)$. Kuadratkan dan ambil harapannya:
+\[
+\mathbb{E}[(\hat\theta-\theta)^2]
+=\mathbb{E}[(\hat\theta-\mathbb{E}\hat\theta)^2]
++2(\mathbb{E}\hat\theta-\theta)\,\mathbb{E}[\hat\theta-\mathbb{E}\hat\theta]
++(\mathbb{E}\hat\theta-\theta)^2 .
+\]
+Suku tengah lenyap karena $\mathbb{E}[\hat\theta-\mathbb{E}\hat\theta]=0$, sedangkan
+suku pertama adalah variansi dan suku ketiga adalah bias dikuadratkan.
+\end{proof}
+
+Identitas itu menjelaskan mengapa ``tak bias'' bukan gelar juara. Penaksir tak bias
+boleh bervariansi besar, dan penaksir berbias sedikit boleh bervariansi jauh lebih
+kecil sehingga MSE-nya lebih rendah. Untuk menaksir $\mu$ dari $n$ pengamatan,
+statistik $X_1$ tak bias dengan variansi $\sigma^2$, sedangkan $\bar X_n$ tak bias
+dengan variansi $\sigma^2/n$; pada $n=20$ selisihnya dua puluh kali lipat.
+
+Contoh kedua menunjukkan bias yang harus dihitung, karena ia dipakai setiap hari
+untuk proporsi. Bila $K\sim\mathrm{Bin}(n,p)$ dan $\hat p=K/n$, maka
+$\hat p(1-\hat p)$ adalah penaksir alami bagi $p(1-p)$, yaitu variansi satu percobaan.
+Harapannya
+\[
+\mathbb{E}[\hat p(1-\hat p)]
+=\mathbb{E}[\hat p]-\mathbb{E}[\hat p^2]
+=p-\Bigl(p^2+\frac{p(1-p)}{n}\Bigr)
+=p(1-p)\Bigl(1-\frac1n\Bigr),
+\]
+sehingga biasnya $-p(1-p)/n$. Untuk $p=0{,}3$ dan $n=20$ nilainya $p(1-p)=0{,}21$
+dan biasnya $-0{,}0105$, yakni lima persen ke bawah. Pada $n=200$ biasnya tinggal
+$-0{,}00105$. Bias yang mengecil sebanding $1/n$ ini khas: ia hilang di tak hingga,
+tetapi hadir pada setiap sampel berhingga.
+
+Sifat kedua yang dituntut dari penaksir adalah bahwa ia benar-benar menuju sasaran
+ketika data bertambah. Kalimat sehari-harinya: dengan cukup banyak bukti, tebakan yang
+salah menjadi semakin mustahil, bukan hanya semakin jarang.
+
+\begin{definisi}[Konsisten]
+\index{konsisten}
+Barisan penaksir $\hat\theta_n$ \emph{konsisten} untuk $\theta$ bila untuk setiap
+$\varepsilon>0$ berlaku $P(|\hat\theta_n-\theta|\ge\varepsilon)\to0$ ketika
+$n\to\infty$.
+\end{definisi}
+
+\begin{proposisi}[MSE menuju nol cukup untuk konsistensi]
+\index{konsisten}
+Bila $\operatorname{MSE}(\hat\theta_n)\to0$, maka $\hat\theta_n$ konsisten untuk
+$\theta$.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Menurut ketaksamaan Chebyshev, yang sudah dibuktikan di Bab 19,
+\[
+P(|\hat\theta_n-\theta|\ge\varepsilon)
+\le\frac{\mathbb{E}[(\hat\theta_n-\theta)^2]}{\varepsilon^2}
+=\frac{\operatorname{MSE}(\hat\theta_n)}{\varepsilon^2}.
+\]
+Untuk $\varepsilon$ tetap, ruas kanan menuju nol, dan ketaksamaan itu menutup
+pembuktian.
+\end{proof}
+
+Perhatikan bahwa Chebyshev memakai MSE, bukan variansi. Suku bias dikuadratkan, jadi
+penaksir berbias tetap konsisten asalkan biasnya menuju nol. Sebaliknya penaksir $X_1$
+tak bias untuk setiap $n$ tetapi tidak pernah memakai sisa data, sehingga tidak
+konsisten.
+
+Besaran berikutnya dipakai terus sampai akhir bab. Variansi penaksir mengatakan
+seberapa jauh tebakan bergoyang, dan akarnya punya nama sendiri.
+
+\kamus{galat baku}{standard error}{kisaran goyangan satu tebakan, bukan lebar seluruh
+data}
+
+\begin{definisi}[Galat baku]
+\index{galat baku}
+\emph{Galat baku} penaksir $\hat\theta$ adalah $\operatorname{se}(\hat\theta)
+=\sqrt{\operatorname{Var}(\hat\theta)}$. Bila rumusnya memuat parameter yang tidak
+diketahui, galat baku \emph{tertaksir} diperoleh dengan mengganti parameter itu oleh
+taksirannya.
+\end{definisi}
+
+Untuk proporsi, $\operatorname{se}(\hat p)=\sqrt{p(1-p)/n}$, dan versi tertaksirnya
+$\sqrt{\hat p(1-\hat p)/n}$. Untuk data $33$ dari $50$, $\hat p=0{,}66$ dan
+\[
+\sqrt{\frac{0{,}66\cdot0{,}34}{50}}=\sqrt{0{,}004488}=0{,}066993 .
+\]
+Untuk dua belas pengukuran waktu tunda (dalam milidetik),
+\begin{align*}
+&18{,}2,\ 19{,}1,\ 17{,}8,\ 20{,}3,\ 18{,}9,\ 19{,}7,\\
+&18{,}4,\ 21{,}0,\ 17{,}5,\ 19{,}9,\ 18{,}6,\ 20{,}1,
+\end{align*}
+rata-ratanya $19{,}125$ dan simpangan baku sampelnya $1{,}082191$. Galat bakunya
+$1{,}082191/\sqrt{12}=0{,}312401$.
+Angka itu tidak mengatakan bahwa rata-rata sebenarnya berjarak $0{,}312$ dari
+$19{,}125$; ia mengatakan bahwa tebakan seperti ini, bila diulang, bergoyang dengan
+skala sekitar $0{,}31$. Selang kepercayaan adalah cara mengubah kalimat terakhir
+menjadi kalimat yang bisa dipakai.
+
+\section{Interval kepercayaan untuk rata-rata}
+\tingkat{menengah}
+
+Satu angka tanpa ukuran goyangan mudah disalahgunakan. Yang dibutuhkan sepasang angka
+yang, dengan peluang besar, mengurung parameter. Kalimat sehari-harinya: kita tidak
+menembak satu titik, kita memasang jaring dan berjanji jaring itu menangkap ikan yang
+kita cari pada sebagian besar lemparan.
+
+\kamus{interval kepercayaan}{confidence interval}{jaring yang dipasang dengan lebar
+tertentu, dan janji bahwa jaring itu menangkap sasaran pada sebagian besar lemparan}
+
+\begin{definisi}[Interval kepercayaan dan cakupan]
+\index{interval kepercayaan}
+Misalkan $C(X_1,\dots,X_n)$ adalah selang yang dihitung dari data. $C$ disebut
+\emph{interval kepercayaan} bertaraf $1-\alpha$ untuk $\theta$ bila
+$P_\theta(\theta\in C)\ge1-\alpha$ untuk setiap $\theta$. Peluang itu disebut
+\emph{cakupan} (\emph{coverage}) prosedurnya.
+\end{definisi}
+
+Perhatikan letak peluangnya: $P_\theta$ dihitung sebelum data diambil, dan yang acak
+adalah $C$, bukan $\theta$. Ini tempat kesalahan tafsir paling sering terjadi, dan kita
+kembali ke sana sesudah rumusnya ada.
+
+\begin{teorema}[Interval-z]
+\index{interval kepercayaan}
+Misalkan $X_1,\dots,X_n$ bebas dan berdistribusi $N(\mu,\sigma^2)$ dengan $\sigma$
+diketahui. Untuk $z=z_{1-\alpha/2}$, selang
+\[
+C=\Bigl[\bar X_n-z\frac{\sigma}{\sqrt n},\ \bar X_n+z\frac{\sigma}{\sqrt n}\Bigr]
+\]
+mempunyai cakupan tepat $1-\alpha$. Untuk distribusi lain dengan variansi berhingga,
+cakupannya menuju $1-\alpha$ ketika $n\to\infty$.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Misalkan $Z=\sqrt n(\bar X_n-\mu)/\sigma$. Untuk sampel normal, $Z\sim N(0,1)$ tepat;
+untuk distribusi lain, $Z$ menuju $N(0,1)$ menurut teorema limit pusat di Bab 19.
+Ketaksamaan $\mu\in C$ setara dengan $|Z|\le z$, karena
+\[
+|\bar X_n-\mu|\le z\frac{\sigma}{\sqrt n}
+\iff \frac{\sqrt n\,|\bar X_n-\mu|}{\sigma}\le z .
+\]
+Jadi $P(\mu\in C)=P(|Z|\le z)=1-\alpha$ pada kasus normal, dan menuju $1-\alpha$
+pada kasus umum.
+\end{proof}
+
+Bila $\sigma$ tidak diketahui, seperti pada hampir semua data nyata, penggantian
+$\sigma$ oleh $s$ menambah ketidakpastian dan menebalkan ekor. Hasilnya memakai
+distribusi $t$ dengan $n-1$ derajat kebebasan, diterbitkan Gosset pada 1908 dengan nama
+samaran Student:
+\[
+C=\Bigl[\bar X_n-t_{n-1,1-\alpha/2}\frac{s}{\sqrt n},\
+\bar X_n+t_{n-1,1-\alpha/2}\frac{s}{\sqrt n}\Bigr],
+\]
+dengan cakupan tepat $1-\alpha$ bila sampelnya normal. Buktinya menuntut distribusi
+bersama $\bar X_n$ dan $s$ yang bebas, dan ada di Wasserman, \emph{All of Statistics},
+Bab 6. Untuk $n=12$ data waktu tunda tadi, $t_{11,0{,}975}=2{,}200985$, sehingga
+setengah lebarnya $2{,}200985\cdot0{,}312401=0{,}687591$ dan selangnya
+$(18{,}4374;\ 19{,}8126)$. Dengan $z=1{,}96$ setengah lebarnya $0{,}612296$: mengakui
+$\sigma$ tidak diketahui melebarkan selang dua belas persen pada $n=12$, dan satu
+persen pada $n=100$.
+
+Sekarang tafsirannya, dan di sini kita harus lambat. Sesudah data diambil,
+$C$ bukan lagi variabel acak: ia selang tetap $(18{,}4374;\ 19{,}8126)$. Rata-rata
+sebenarnya $\mu$ juga bilangan tetap, hanya saja tidak diketahui. Kalimat
+``peluang $\mu$ berada di dalam $(18{,}4374;\ 19{,}8126)$ sama dengan $0{,}95$''
+karena itu tidak bermakna dalam kerangka ini: tidak ada peluang yang tersisa, sebab
+tidak ada yang acak. Yang berpeluang $0{,}95$ adalah \emph{prosedurnya}, dan itu
+pernyataan tentang percobaan yang belum dijalankan.
+
+Gambar~\ref{fig:dua-puluh-selang} menjalankan percobaan itu dua puluh kali, dengan
+$\mu=19{,}125$ dan $\sigma=1$ yang diketahui: sembilan belas selang memuat $\mu$, satu
+tidak.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=4.15cm,y=0.235cm,font=\scriptsize]
+  \draw[->,layergrey] (17.80,0)--(20.22,0);
+  \draw[layergrey,densely dashed,thick] (19.125,0)--(19.125,21.4);
+  \node[above,font=\scriptsize] at (19.125,21.4) {$\mu=19{,}125$};
+  \foreach \y/\a/\b in {
+    1/18.5955/19.7271,
+    2/18.5211/19.6527,
+    3/18.7441/19.8757,
+    4/18.5895/19.7211,
+    5/18.4046/19.5362,
+    6/18.6636/19.7952,
+    7/18.9356/20.0672,
+    8/18.8326/19.9642,
+    9/18.3561/19.4876,
+    10/18.1939/19.3255,
+    11/18.3793/19.5109,
+    12/18.5711/19.7027,
+    14/18.4960/19.6276,
+    15/18.1995/19.3311,
+    16/18.3478/19.4794,
+    17/18.4021/19.5337,
+    18/18.4679/19.5995,
+    19/18.6780/19.8096,
+    20/18.8602/19.9917
+  } {
+    \draw[very thick,layerindigo] (\a,\y)--(\b,\y);
+    \draw[layerindigo] (\a,\y-0.22)--(\a,\y+0.22);
+    \draw[layerindigo] (\b,\y-0.22)--(\b,\y+0.22);
+  }
+  \draw[very thick,accent] (17.8880,13)--(19.0196,13);
+  \draw[accent] (17.8880,12.7)--(17.8880,13.3);
+  \draw[accent] (19.0196,12.7)--(19.0196,13.3);
+  \node[accent,anchor=west,font=\scriptsize] at (17.82,0.62) {satu selang meleset};
+  \foreach \t in {18,19,20} {\draw[layergrey] (\t,-0.2)--(\t,0.2);}
+  \foreach \t in {18,19,20} {\node[below,font=\scriptsize] at (\t,-0.45) {\t};}
+\end{tikzpicture}
+\caption{Dua puluh selang kepercayaan $95$ persen untuk $\mu$, masing-masing dari satu
+sampel berukuran $n=12$ dengan $\sigma=1$ diketahui, sehingga setengah lebarnya
+$1{,}96/\sqrt{12}=0{,}5658$ dan lebarnya $1{,}1316$. Garis putus-putus tegak adalah
+$\mu=19{,}125$ yang sebenarnya. Sembilan belas selang memuatnya; selang pada baris
+ke-13, yaitu $(17{,}8880;\,19{,}0196)$, tidak. Satu kegagalan dalam dua puluh adalah
+angka yang wajar untuk janji $95$ persen, bukan tanda prosedur yang rusak.}
+\label{fig:dua-puluh-selang}
+\end{figure}
+
+\begin{catatan}
+Tiga kalimat yang benar, dan satu yang salah. Benar: ``prosedur ini menangkap $\mu$
+pada $95$ persen percobaan yang diulang''. Benar: ``kita $95$ persen yakin $\mu$
+berada di antara $18{,}44$ dan $19{,}81$'', asalkan ``yakin'' dibaca sebagai ringkasan
+percobaan berulang. Benar: ``prosedur ini salah pada sekitar lima dari seratus
+kasus''. Salah: ``peluang $\mu$ ada di selang ini $0{,}95$''. Kalimat terakhir
+berpura-pura mengetahui sesuatu tentang $\mu$ yang tidak diberikan data.
+\end{catatan}
+
+Lebar selang menyusut sebanding $1/\sqrt n$, bukan $1/n$: memangkasnya menjadi separuh
+menuntut empat kali data, menjadi sepersepuluh menuntut seratus kali. Aturan ini dapat
+dihitung sebelum percobaan dimulai, sebab setengah lebar $z\sigma/\sqrt n\le d$ setara
+dengan $n\ge(z\sigma/d)^2$; dengan $\sigma=1$, $z=1{,}96$, dan $d=0{,}1$, dibutuhkan
+$n\ge385$.
+
+\begin{tangan}
+Siapkan dua puluh kartu, tulis angka $1$ sampai $20$ pada kartu, satu angka per kartu.
+Kocok, ambil lima kartu tanpa melihat, jumlahkan, lalu bagi lima. Tulis hasilnya pada
+satu baris kertas. Kembalikan kelima kartu, kocok lagi, ulangi. Lakukan tiga puluh kali,
+selalu lima kartu, dan susun angka-angka itu sebagai titik pada satu garis bilangan.
+
+Yang harus terlihat: titik-titik itu tidak menumpuk di satu angka. Rata-rata seluruh
+kartu sebenarnya $10{,}5$, dan titikmu menyebar di sekitarnya, ada yang $8$, ada yang
+$13$. Sekarang ulangi seluruh pekerjaan dengan sepuluh kartu per pengambilan, tiga puluh
+kali lagi. Sebaran kedua lebih sempit, tetapi tidak setengahnya: ia menyempit kira-kira
+sebanding akar dua, sebab banyak kartu berlipat dua. Tempel kedua baris titik itu
+berdampingan, dan lihat sendiri bahwa menggandakan pekerjaan hanya memangkas goyangan
+sekitar tiga puluh persen.
+\end{tangan}
+
+\section{Proporsi: Wald, Wilson, dan aturan tiga}
+\tingkat{menengah}
+
+Untuk proporsi, rumus yang paling banyak dipakai adalah versi paling sederhana dari
+teorema sebelumnya: ganti $\bar X_n$ oleh $\hat p$ dan $\sigma/\sqrt n$ oleh galat
+baku proporsi. Kalimat sehari-harinya: kita pasang selang simetris di sekitar proporsi
+yang teramati, selebar dua kali galat bakunya.
+
+\begin{definisi}[Interval Wald]
+\index{interval wald}
+Interval Wald bertaraf $1-\alpha$ untuk proporsi adalah
+\[
+\hat p\pm z\sqrt{\frac{\hat p(1-\hat p)}{n}},\qquad z=z_{1-\alpha/2}.
+\]
+\end{definisi}
+
+Rumus itu wajar selama $\hat p$ jauh dari nol dan satu. Kesulitannya muncul tepat di
+tempat data paling sedikit, dan bentuknya tidak halus. Bila $\hat p=0$, rumus itu
+memberi selang $[0;\,0]$ selebar nol: sebuah klaim percaya diri penuh bahwa laju
+kejadiannya nol, padahal yang kita punya hanya ketiadaan kejadian pada $n$ percobaan.
+Bila $\hat p=1/20$, batas bawahnya $-0{,}0455$, sebuah bilangan yang bukan peluang.
+
+Penyebabnya bukan pembulatan. Wald memakai $\hat p$ untuk dua tugas sekaligus:
+sebagai titik tengah dan sebagai penaksir variansi. Ketika $\hat p$ mendekati nol,
+variansi taksirannya ikut mengecil, padahal ketidakpastian sebenarnya justru besar pada
+skala itu.
+
+Jalan keluarnya adalah membalik pertanyaannya: alih-alih menganggap $\hat p$ menyebar
+normal di sekitar $p$ yang benar, kita tanyakan nilai $p$ mana saja yang masih masuk
+akal dengan data teramati. Kriterianya, jarak ternormalisasi antara $\hat p$ dan $p$
+tidak melampaui $z$, dengan variansi di penyebut memakai $p$, bukan $\hat p$.
+
+\kamus{interval wilson}{Wilson interval}{selang yang dicari dengan bertanya nilai mana
+yang masih masuk akal, bukan dengan memasang selang simetris di sekitar tebakan}
+
+\begin{teorema}[Interval Wilson]
+\index{interval wilson}
+Untuk $0\le k\le n$, $\hat p=k/n$, dan $z>0$, himpunan $p\in[0,1]$ yang memenuhi
+\[
+n(\hat p-p)^2\le z^2p(1-p)
+\]
+adalah selang tertutup dengan ujung
+\[
+\frac{\hat p+\dfrac{z^2}{2n}\ \pm\
+z\sqrt{\dfrac{\hat p(1-\hat p)}{n}+\dfrac{z^2}{4n^2}}}{1+\dfrac{z^2}{n}} .
+\]
+Kedua ujungnya selalu terletak di $[0,1]$, dan selangnya tidak pernah kosong.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Susun ulang ketaksamaan menjadi $(n+z^2)p^2-(2n\hat p+z^2)p+n\hat p^2\le0$.
+Diskriminannya
+\[
+(2n\hat p+z^2)^2-4(n+z^2)n\hat p^2
+=4z^2\Bigl(n\hat p(1-\hat p)+\frac{z^2}{4}\Bigr)\ge0,
+\]
+jadi akarnya real dan rumus akar persamaan kuadrat memberi bentuk pada pernyataan
+teorema setelah pembilang dan penyebut dibagi $2n$.
+
+Untuk letaknya, misalkan $f(p)=n(\hat p-p)^2-z^2p(1-p)$. Koefisien $p^2$ adalah
+$n+z^2>0$, jadi $\{f\le0\}$ adalah selang $[r_-,r_+]$. Karena
+$f(0)=n\hat p^2\ge0$, titik $0$ tidak berada di bagian dalam selang itu, sehingga
+$r_-\ge0$; karena $f(1)=n(1-\hat p)^2\ge0$, titik $1$ juga tidak, sehingga
+$r_+\le1$. Terakhir $f(\hat p)=-z^2\hat p(1-\hat p)\le0$ menempatkan $\hat p$ di dalam
+selang, jadi selang itu tidak kosong.
+\end{proof}
+
+Sekarang bandingkan keduanya pada data yang sama. Tabel berikut memakai $z=1{,}96$ dan
+selang kepercayaan $95$ persen; semua angka dihitung dengan rumus di atas dan diperiksa
+ulang dengan Python.
+
+\begin{center}
+\small
+\begin{tabular}{lrrrr}
+\hline
+data & $\hat p$ & Wald $95\%$ & Wilson $95\%$ & lebar Wilson \\
+\hline
+$33/50$  & 0,660 & $(0{,}5287;\ 0{,}7913)$ & $(0{,}5215;\ 0{,}7756)$ & 0,254 \\
+$53/100$ & 0,530 & $(0{,}4322;\ 0{,}6278)$ & $(0{,}4329;\ 0{,}6249)$ & 0,192 \\
+$13/20$  & 0,650 & $(0{,}4410;\ 0{,}8590)$ & $(0{,}4329;\ 0{,}8188)$ & 0,386 \\
+$1/20$   & 0,050 & $(-0{,}0455;\ 0{,}1455)$ & $(0{,}0089;\ 0{,}2361)$ & 0,227 \\
+$0/20$   & 0,000 & $(0;\ 0)$ & $(0;\ 0{,}1611)$ & 0,161 \\
+\hline
+\end{tabular}
+\end{center}
+
+Dua baris pertama hampir tidak berbeda: ketika $\hat p$ dekat setengah, keduanya sah
+dan sepakat sampai dua angka desimal. Baris keempat dan kelima memperlihatkan
+pemisahan. Pada $1/20$ selang Wald \emph{lebih sempit} daripada Wilson, $0{,}191$
+melawan $0{,}227$, dan kesempitan itulah tandanya salah: batas bawahnya keluar dari
+$[0,1]$. Pada $0/20$ Wald memberi lebar nol, sedangkan Wilson menyisakan ruang sampai
+$0{,}1611$. Kesimpulannya bukan bahwa Wilson selalu lebih baik, melainkan bahwa lebar
+selang tidak dapat dinilai tanpa cakupannya.
+
+Untuk kasus nol kejadian ada hasil khusus yang lebih tua daripada Wilson dan lebih
+mudah diingat. Kalimat sehari-harinya: tidak ada kejadian sama sekali bukan bukti
+bahwa laju kejadiannya nol, dan batas atasnya kira-kira tiga dibagi banyak percobaan.
+
+\kamus{aturan tiga}{rule of three}{jika tidak ada kejadian dalam sekian percobaan,
+laju kejadiannya masih boleh setinggi tiga dibagi banyak percobaan}
+
+\begin{teorema}[Aturan tiga]
+\index{aturan tiga}
+Misalkan $K\sim\mathrm{Bin}(n,p)$ dan teramati $K=0$. Batas atas satu sisi pada taraf
+$95\%$ adalah $p_{\mathrm{hi}}=1-0{,}05^{1/n}$, dan berlaku
+\[
+p_{\mathrm{hi}}\le\frac{\ln 20}{n}<\frac{3}{n}.
+\]
+\end{teorema}
+
+\begin{proof}[Bukti]
+Peluang mengamati nol kejadian adalah $(1-p)^n$. Menetapkan peluang itu sama dengan
+$0{,}05$ memberi $(1-p_{\mathrm{hi}})^n=0{,}05$, yakni
+$p_{\mathrm{hi}}=1-0{,}05^{1/n}=1-e^{-c/n}$ dengan $c=\ln 20=2{,}9957\ldots$ Karena
+$1-e^{-x}\le x$ untuk $x\ge0$, diperoleh $p_{\mathrm{hi}}\le c/n<3/n$.
+\end{proof}
+
+Untuk $n=100$, aturan tiga memberi $3/100=0{,}03$, batas eksaknya $0{,}0295130$, dan
+batas atas Wilson dua sisi pada $k=0$ adalah $z^2/(n+z^2)=0{,}0369935$. Ketiga angka
+menjawab pertanyaan yang sama dengan tiga janji berbeda; aturan tiga adalah batas satu
+sisi yang eksak, Wilson aproksimasi dua sisi. Yang tidak boleh adalah menyebut angka
+tanpa menyebut prosedurnya.
+
+\section{Uji hipotesis dan nilai-p}
+\tingkat{menengah}
+
+Sampai di sini pertanyaannya berbentuk ``berapa nilainya''. Pertanyaan berikutnya
+berbentuk ``apakah nilainya sama dengan angka tertentu''. Dalam bahasa sehari-hari,
+kita memasang tuduhan bahwa tidak ada efek, lalu memeriksa apakah data cukup
+mengejutkan untuk membatalkan tuduhan itu.
+
+\begin{definisi}[Hipotesis nol, alternatif, dan taraf]
+\index{hipotesis nol}
+\emph{Hipotesis nol} $H_0$ adalah pernyataan tentang parameter yang ingin diuji;
+\emph{hipotesis alternatif} $H_1$ adalah himpunan nilai yang dianggap benar bila $H_0$
+ditolak. \emph{Taraf} $\alpha$ adalah peluang menolak $H_0$ ketika $H_0$ sebenarnya
+benar. Aturan penolakan ditentukan oleh satu statistik uji $T$ dan satu daerah tolak
+$R$: kita menolak $H_0$ bila $T\in R$.
+\end{definisi}
+
+Taraf $\alpha$ dipilih sebelum data dilihat, dan di situlah letak seluruh
+kredibilitas prosedur: kita bersedia salah menuduh pada sebagian kecil percobaan, dan
+kita menyebutkan berapa besar bagian itu. Nilai-p memindahkan gagasan yang sama ke
+satu dataset.
+
+\begin{definisi}[Nilai-p]
+\index{nilai-p}
+Untuk data $x$ dan statistik uji $T$, nilai-p adalah peluang memperoleh hasil yang
+sekurang-kurangnya sejauh hasil teramati bila $H_0$ benar,
+\[
+\text{nilai-}p=\sup_{\theta\in H_0}P_\theta\bigl(T\text{ sejauh }T(x)\bigr).
+\]
+Kita menolak $H_0$ pada taraf $\alpha$ bila nilai-p $\le\alpha$.
+\end{definisi}
+
+Kalimat ``sekurang-kurangnya sejauh'' perlu ditentukan untuk uji dua sisi, dan
+ketentuan yang lazim adalah menjumlahkan kedua ekor: untuk statistik $z$ yang
+simetris, nilai-p $=2(1-\Phi(|z|))$. Definisi itu membuat nilai-p menjadi variabel
+acak, dan sifatnya di bawah $H_0$ dapat dinyatakan tepat.
+
+\begin{teorema}[Nilai-p seragam di bawah $H_0$]
+\index{nilai-p}
+Bila $H_0$ benar dan $T$ berdistribusi kontinu dengan fungsi sebaran $F_0$, maka
+$P_{H_0}(\text{nilai-}p\le\alpha)=\alpha$ untuk setiap $\alpha\in(0,1)$. Akibatnya
+$P_{H_0}(\text{nilai-}p\le0{,}05)=0{,}05$: uji dengan aturan ``tolak bila nilai-p
+$\le\alpha$'' mempunyai taraf tepat $\alpha$.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Untuk uji satu sisi kanan, nilai-p $=1-F_0(T)$, sehingga
+\[
+P_{H_0}(1-F_0(T)\le\alpha)
+=P_{H_0}\bigl(F_0(T)\ge1-\alpha\bigr)
+=P_{H_0}\bigl(T\ge F_0^{-1}(1-\alpha)\bigr)=\alpha,
+\]
+karena $F_0(T)$ berdistribusi seragam pada $(0,1)$ bila $F_0$ kontinu. Untuk uji dua
+sisi, nilai-p bergantung pada $|T|$ dan pembuktiannya memakai langkah yang sama pada
+sebaran $|T|$.
+\end{proof}
+
+Keseragaman itu punya akibat yang sering terlewat: di bawah $H_0$ nilai-p tersebar
+rata, jadi nilai-p $=0{,}04$ muncul pada empat persen percobaan yang hipotesis nolnya
+benar. Yang membedakan dua percobaan bukan nilai-p tunggal, melainkan daya
+masing-masing.
+
+\begin{bacakeras}
+Dua suara, bergantian.
+
+``Nilai p nol koma nol empat. Berarti peluang tidak ada efek tinggal empat persen.''
+
+``Bukan. Nilai p menghitung data, bukan tuduhan. Seandainya tidak ada efek, dan
+percobaan ini diulang seratus kali, sekitar empat kali data akan tampak sejauh ini.''
+
+``Jadi yang dihitung data.''
+
+``Ya, data. Tuduhan hanya tempat berpijak.''
+
+``Dan kalau nilai p besar?''
+
+``Berarti data tidak mengejutkan. Diamnya timbangan bukan bukti bahwa barangnya ringan.''
+
+Ucapkan sekali lagi, pelan: nilai p adalah peluang data, bukan peluang tuduhan. Ulangi
+baris itu sampai terasa wajar di mulut: peluang data, bukan peluang tuduhan.
+\end{bacakeras}
+
+
+\begin{resep}
+\begin{enumerate}
+  \item Tulis $H_0$ dan $H_1$ sebagai pernyataan tentang satu parameter, sebelum
+        menghitung apa pun.
+  \item Tetapkan $\alpha$ dan daerah tolaknya, lalu berhenti sejenak. Jangan melihat
+        data dulu.
+  \item Hitung statistik uji dengan galat baku di bawah $H_0$, lalu nilai-p.
+  \item Bandingkan nilai-p dengan $\alpha$ yang sudah ditetapkan, dan laporkan
+        selangnya bersama keputusan itu.
+\end{enumerate}
+Peringatan urutan: langkah 2 harus selesai sebelum langkah 3. Bila $\alpha$ dipilih
+sesudah data terlihat, $\alpha$ bukan lagi janji melainkan catatan hasil, dan langkah 4
+kehilangan artinya. Yang tidak boleh ditukar: langkah 2 dan langkah 3.
+\end{resep}
+
+Sekarang contoh dengan angka. Untuk data $33$ dari $50$ dan $H_0\colon p=0{,}5$,
+statistik $z$ memakai galat baku di bawah $H_0$, yaitu $\sqrt{0{,}25/50}=0{,}070711$:
+\[
+z=\frac{0{,}66-0{,}5}{0{,}070711}=2{,}2627,\qquad
+\text{nilai-}p=2(1-\Phi(2{,}2627))=0{,}0237 .
+\]
+Uji binomial eksak atas aturan yang sama, $P(X\ge33)+P(X\le17)$ untuk
+$X\sim\mathrm{Bin}(50;0{,}5)$, memberi $0{,}0328$. Kedua angka menolak $H_0$ pada
+taraf lima persen, tetapi aproksimasi normal melaporkan nilai-p hampir tiga puluh
+persen lebih kecil. Pada $n=50$ selisih sebesar itu cukup membalik keputusan bila
+tarafnya $0{,}03$; laporan yang baik menyebutkan uji mana yang dipakai, bukan hanya
+nilai-p-nya.
+
+Gambar~\ref{fig:dua-ekor} menaruh kedua batas itu pada sebaran $z$ di bawah $H_0$: dua
+ekor seluas $0{,}0250$ masing-masing, dan statistik teramati $2{,}2627$ di dalam ekor
+kanan.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=11.2cm, height=5.4cm,
+  xmin=-4, xmax=4, ymin=0, ymax=0.46,
+  axis lines=left,
+  xtick={-1.96,0,1.96},
+  xticklabels={$-1{,}96$,$0$,$1{,}96$},
+  ytick=\empty,
+  tick label style={font=\small},
+  xlabel={nilai $z$ bila $H_0$ benar},
+  xlabel style={font=\small},
+]
+\addplot[fill=accent!25,draw=none,domain=-3.95:-1.96,samples=100]
+  {0.39894228*exp(-0.5*x^2)} \closedcycle;
+\addplot[fill=accent!25,draw=none,domain=1.96:3.95,samples=100]
+  {0.39894228*exp(-0.5*x^2)} \closedcycle;
+\addplot[very thick,layerindigo,domain=-3.95:3.95,samples=200]
+  {0.39894228*exp(-0.5*x^2)};
+\draw[densely dashed,layergrey] (axis cs:-1.96,0)--(axis cs:-1.96,0.0584);
+\draw[densely dashed,layergrey] (axis cs:1.96,0)--(axis cs:1.96,0.0584);
+\draw[very thick,accent] (axis cs:2.2627,0)--(axis cs:2.2627,0.0308);
+\node[font=\scriptsize] (tl) at (axis cs:-2.55,0.135) {$0{,}025$};
+\draw[-{Stealth[length=4pt]},layergrey] (tl)--(axis cs:-2.55,0.012);
+\node[accent,font=\scriptsize] (tz) at (axis cs:2.05,0.215) {$z=2{,}2627$};
+\draw[-{Stealth[length=4pt]},accent] (tz)--(axis cs:2.2627,0.055);
+\node[font=\scriptsize] (tr) at (axis cs:3.05,0.135) {$0{,}025$};
+\draw[-{Stealth[length=4pt]},layergrey] (tr)--(axis cs:3.05,0.004);
+\end{axis}
+\end{tikzpicture}
+\caption{Sebaran statistik $z=\sqrt n(\hat p-p_0)/\sqrt{p_0(1-p_0)}$ bila $H_0$ benar,
+untuk data $33$ dari $50$ dengan $H_0\colon p=0{,}5$. Dua garis putus-putus di
+$\pm1{,}96$ memotong dua ekor yang diwarnai, masing-masing seluas
+$1-\Phi(1{,}96)=0{,}0250$, sehingga taraf dua sisi $0{,}05$. Garis tebal di
+$2{,}2627$ adalah statistik yang teramati pada data itu; ekor kanan dari titik itu
+seluas $0{,}0118$, dan dua kali luas itu adalah nilai-p $0{,}0237$ yang dilaporkan uji
+normal.}
+\label{fig:dua-ekor}
+\end{figure}
+
+Interval kepercayaan dan uji hipotesis bukan dua prosedur berbeda; keduanya dua cara
+membaca himpunan yang sama.
+
+\begin{proposisi}[Kesetaraan selang dan uji]
+\index{interval kepercayaan}
+Untuk selang Wald dan uji-$z$ dua sisi yang memakai galat baku $\hat p$, berlaku
+$p_0$ termuat dalam selang Wald bertaraf $1-\alpha$ jika dan hanya jika $H_0\colon
+p=p_0$ tidak ditolak pada taraf $\alpha$. Secara umum, selang Wilson adalah himpunan
+$p_0$ yang tidak ditolak oleh uji skor pada taraf $\alpha$.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Untuk pasangan Wald, kedua pernyataan memakai ketaksamaan yang sama, yaitu
+$|\hat p-p_0|\le z\sqrt{\hat p(1-\hat p)/n}$: yang pertama membacanya sebagai
+``$p_0$ berada di dalam selang'', yang kedua sebagai ``statistik uji tidak melewati
+$z$''. Untuk Wilson, himpunan $\{p_0:n(\hat p-p_0)^2\le z^2p_0(1-p_0)\}$ adalah
+definisi uji skor yang dibalik, dan teorema Wilson sudah menghitung ujungnya.
+\end{proof}
+
+\section{Galat tipe I, galat tipe II, dan daya}
+\tingkat{lanjut}
+
+Setiap keputusan biner dapat salah dengan dua cara, dan keduanya tidak simetris.
+Kalimat sehari-harinya: alarm kebakaran dapat berbunyi padahal tidak ada api, dan
+dapat diam padahal ada api. Kesalahan pertama membuat kita keluar rumah tanpa sebab;
+kesalahan kedua jauh lebih mahal.
+
+\begin{definisi}[Galat tipe I, galat tipe II, dan daya]
+\index{galat tipe i}
+\emph{Galat tipe I} adalah menolak $H_0$ ketika $H_0$ benar; peluangnya adalah taraf
+$\alpha$. \emph{Galat tipe II} adalah tidak menolak $H_0$ ketika $H_1$ benar;
+peluangnya ditulis $\beta$. \emph{Daya} uji adalah $1-\beta$, yaitu peluang menolak
+$H_0$ ketika efek yang dicari benar-benar ada.
+\end{definisi}
+
+Gambar~\ref{fig:dua-galat} menyusun keempat kemungkinan itu sebagai kotak keputusan,
+dengan peluang dari hitungan eksak pada $n=20$, $p_0=0{,}5$, dan $p_1=0{,}75$ yang
+muncul di Lab komputasi: $\alpha=0{,}0414$, daya $0{,}6172$, jadi $\beta=0{,}3828$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small,
+  keputusan/.style={draw=layergrey,thick,rounded corners=2pt,
+    minimum width=4.3cm,minimum height=1.6cm,align=center,inner sep=4pt}]
+\node[keputusan,fill=layerjade!10] (a) at (0,0)
+  {tidak menolak $H_0$\\[3pt] benar, peluang $1-\alpha=0{,}9586$};
+\node[keputusan,fill=accent!12] (b) at (5.1,0)
+  {menolak $H_0$\\[3pt] galat tipe I, peluang $\alpha=0{,}0414$};
+\node[keputusan,fill=accent!12] (c) at (0,-2.4)
+  {tidak menolak $H_0$\\[3pt] galat tipe II, peluang $\beta=0{,}3828$};
+\node[keputusan,fill=layerjade!10] (d) at (5.1,-2.4)
+  {menolak $H_0$\\[3pt] benar, daya $1-\beta=0{,}6172$};
+\node[font=\scriptsize,above=2pt] at (0,1.0) {$H_0$ benar: $p=0{,}5$};
+\node[font=\scriptsize,above=2pt] at (5.1,1.0) {$H_1$ benar: $p=0{,}75$};
+\end{tikzpicture}
+\caption{Dua jenis kesalahan sebagai empat kotak keputusan. Baris atas: keadaan
+sebenarnya $H_0$ benar; baris bawah: $H_1$ benar dengan $p=0{,}75$. Kolom kiri: uji
+tidak menolak; kolom kanan: uji menolak. Kotak berwarna merah adalah dua kesalahan yang
+tidak dapat ditekan bersamaan: mengecilkan $\alpha=0{,}0414$ akan memperbesar
+$\beta=0{,}3828$, dan sebaliknya. Angka dihitung dari sebaran binomial eksak pada
+$n=20$ dengan aturan tolak $k\le5$ atau $k\ge15$.}
+\label{fig:dua-galat}
+\end{figure}
+
+Daya bukan sifat uji saja, melainkan sifat uji bersama ukuran sampel dan besar efek.
+Karena itu ia harus dihitung untuk satu nilai $p_1$ yang dianggap penting, bukan
+secara umum. Untuk uji dua sisi dengan $H_0\colon p=0{,}5$, $n=100$, dan aturan tolak
+bila $|z|>1{,}96$, daerah tolaknya adalah $k\le40$ atau $k\ge60$. Hitungan eksak atas
+binomial memberi ukuran $0{,}0569$, bukan $0{,}05$, dan daya $0{,}8750$ pada
+$p_1=0{,}65$ sedangkan aproksimasi normal memberi $0{,}8508$. Aproksimasi normal,
+yakni
+\[
+1-\beta\approx\Phi\Bigl(\frac{(p_1-p_0)\sqrt n}{\sqrt{p_0(1-p_0)}}-z\Bigr),
+\]
+cukup dekat untuk perencanaan, tetapi selisih dua setengah poin itu nyata dan berasal
+dari kediskretan data.
+
+Pelajaran pertama: taraf nominal jarang tercapai tepat. Pada $n=20$ aturan yang sama
+menolak bila $k\le5$ atau $k\ge15$, dengan ukuran eksak $0{,}0414$; pada $n=100$
+ukurannya $0{,}0569$. Uji diskret tidak dapat memilih ambang di antara dua bilangan
+bulat, jadi taraf sebenarnya menggantung pada $n$ dan $p_0$. Pelajaran kedua: pada
+$n=20$ daya terhadap $p_1=0{,}75$ hanya $0{,}6172$, sehingga hampir empat dari sepuluh
+percobaan berukuran dua puluh gagal menemukannya.
+
+Angka terakhir itu membuka salah tafsir yang paling mahal: membaca ``nilai-p
+$>0{,}05$'' sebagai ``tidak ada efek''. Pertama, nilai-p adalah
+$P(\text{data}\mid H_0)$, bukan $P(H_0\mid\text{data})$; keduanya peluang bersyarat
+dengan syarat tertukar, dan pertukaran itu sudah kita temui pada uji diagnostik di
+Bab 17. Kedua, nilai-p besar adalah pernyataan tentang data, bukan tentang dunia: data
+yang sedikit tidak dapat mengejutkan siapa pun. Ketiga, kegagalan menolak dapat terjadi
+justru karena ujinya lemah, seperti pada $n=20$ tadi.
+
+Contoh kecil membuat ketiganya konkret. Sepuluh keberhasilan dari dua puluh percobaan
+terhadap $H_0\colon p=0{,}5$ memberi nilai-p dua sisi tepat $1$: data itu berada
+persis di tengah. Apakah itu bukti bahwa $p=0{,}5$? Tidak. Selang Wilson $95$ persen
+untuk data yang sama adalah $(0{,}2993;\ 0{,}7007)$. Jadi laju sebenarnya boleh
+$0{,}30$, boleh $0{,}70$, dan data ini tidak dapat membedakannya dari $0{,}50$.
+Nilai-p $=1$ hanya berarti ``tidak ada arah penyimpangan'', dan itu jauh lebih sedikit
+daripada yang biasa dibaca orang.
+
+\begin{tantangan}
+Dua versi pendeteksi diuji pada \mbox{$100\,000$} contoh masing-masing. Versi A menangkap
+\mbox{$66\,000$}, versi B menangkap \mbox{$65\,000$}. Uji dua proporsi memberi nilai-p sekitar
+$0{,}0000026$, dan tim menulis di laporan: ``A lebih baik, $p<0{,}001$''. Apakah
+kalimat itu didukung data? Jawab dengan satu selang, bukan dengan nilai-p.
+
+Petunjuk 1: nilai-p mengukur kejutan, bukan besar efek. Hitung selang $95$ persen untuk
+selisih kedua proporsi, dan perhatikan satuannya.
+
+Petunjuk 2: galat baku selisihnya $0{,}002126$, jadi selangnya terbentang dari
+$0{,}0058$ sampai $0{,}0142$, yaitu nol koma enam sampai satu koma empat poin persen.
+Bandingkan dengan ambang praktis yang tim itu sendiri pakai: tiga poin persen.
+
+Kalau mentok, kembali ke bagian Galat tipe I, galat tipe II, dan daya.
+\end{tantangan}
+
+\begin{untukanak}
+Seorang wasit garis bertugas mengangkat bendera bila bola keluar lapangan. Ia hanya
+mengangkat bendera kalau melihat sendiri bola itu keluar, dengan cukup jelas. Bila ia
+tidak mengangkat bendera, apakah itu berarti bola selalu di dalam? Tentu tidak. Bisa
+jadi bola keluar, tetapi pandangannya terhalang pemain lain atau bolanya sangat cepat.
+
+Cara ia bekerja mirip dengan cara sebuah uji hipotesis bekerja. Ia diberi satu aturan
+yang harus diputuskan sebelum pertandingan: seberapa yakin ia harus sebelum
+mengangkat bendera. Kalau aturannya terlalu longgar, ia sering mengangkat bendera
+padahal bola di dalam, dan penonton marah. Kalau aturannya terlalu ketat, ia hampir
+tidak pernah mengangkat bendera, dan pelanggaran besar lolos begitu saja. Kedua
+kesalahan itu berbeda, dan ia tidak bisa menekan keduanya sekaligus hanya dengan
+kehati-hatian.
+
+Di bab ini kita akan tahu mengapa ``tidak ada bukti'' bukan sama dengan ``tidak ada
+pelanggaran'', mengapa jumlah pengamatan berperan sebesar aturan yang dipilih, dan
+mengapa wasit yang tidak pernah mengangkat bendera bukan wasit yang lebih teliti.
+\end{untukanak}
+
+\section{Contoh hitung: 33 dari 50 dan 53 dari 100}
+\tingkat{menengah}
+
+Kita kembali ke dua pendeteksi pada pembuka bab dan menghitung kedua selangnya sampai
+ujung. Semua angka di bawah memakai $z=1{,}96$, sehingga $z^2=3{,}8416$.
+
+Untuk A, $\hat p=0{,}66$ dan $n=50$. Suku pertama di dalam akar Wilson adalah
+$0{,}66\cdot0{,}34/50=0{,}2244/50=0{,}004488$; suku kedua
+$z^2/(4n^2)=3{,}8416/10000=0{,}00038416$; jumlahnya $0{,}00487216$ dan akarnya
+$0{,}069801$. Titik tengahnya
+\[
+\frac{0{,}66+3{,}8416/100}{1+3{,}8416/50}
+=\frac{0{,}698416}{1{,}076832}=0{,}648584,
+\]
+dan setengah lebarnya $1{,}96\cdot0{,}069801/1{,}076832=0{,}127048$. Jadi selang
+Wilson untuk A adalah $(0{,}5215;\ 0{,}7756)$, selebar $0{,}2541$. Selang Wald untuk
+data yang sama memakai galat baku $0{,}066993$ dan setengah lebar
+$1{,}96\cdot0{,}066993=0{,}131303$, sehingga $(0{,}5287;\ 0{,}7913)$ selebar
+$0{,}2626$.
+
+Untuk B, $\hat p=0{,}53$ dan $n=100$. Suku pertama
+$0{,}53\cdot0{,}47/100=0{,}002491$, suku kedua $3{,}8416/40000=0{,}00009604$,
+jumlahnya $0{,}00258704$ dan akarnya $0{,}050863$. Titik tengahnya
+$(0{,}53+0{,}019208)/1{,}038416=0{,}528890$, setengah lebarnya
+$1{,}96\cdot0{,}050863/1{,}038416=0{,}096003$, jadi $(0{,}4329;\ 0{,}6249)$ selebar
+$0{,}1920$. Wald memberi $(0{,}4322;\ 0{,}6278)$ selebar $0{,}1956$.
+
+Sekarang bandingkan. Selang A dan B bertumpuk pada $(0{,}5215;\ 0{,}6249)$, seluas
+$0{,}1034$: sekitar $41$ persen panjang A dan $54$ persen panjang B. Uji dua proporsi
+berbasis normal memberi $z=1{,}5175$ dan nilai-p dua sisi $0{,}1291$. Meskipun angka
+mentahnya berbeda tiga belas poin, data ini tidak cukup menyimpulkan bahwa A lebih
+baik; selang A juga lebih lebar, sebab dibangun dari lima puluh contoh.
+
+\kertas{Hitung ulang bagian A tanpa melihat teks: $0{,}66\cdot0{,}34$, bagi $50$,
+tambahkan $3{,}8416/10000$, tarik akarnya, lalu bagi dengan $1{,}076832$ sesudah
+dikali $1{,}96$. Cocokkan bahwa hasilnya $0{,}127048$. Lalu jawab: berapa banyak
+contoh yang diperlukan agar lebar selang A turun menjadi $0{,}15$, bila $\hat p$
+tetap $0{,}66$? Petunjuk: lebar sebanding $1/\sqrt n$, dan Anda sudah tahu lebarnya
+pada $n=50$.}
+
+\section{Lab komputasi: cakupan, galat tipe I, dan daya}
+\tingkat{lanjut}
+
+Seluruh klaim di atas dapat diperiksa dengan komputer, dan ada satu klaim yang hanya
+dapat diperiksa dengan cara itu: cakupan sebenarnya dari sebuah prosedur. Kuncinya
+adalah mengetahui $p$ yang benar, sesuatu yang tidak pernah terjadi pada data nyata.
+Karena itu kita bekerja dengan simulasi dan dengan hitungan eksak atas binomial.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from math import sqrt
+from scipy.stats import norm, binom
+
+z = norm.ppf(0.975)
+
+
+def wald(k, n):
+    p = k / n
+    se = sqrt(p * (1 - p) / n)
+    return p - z * se, p + z * se
+
+
+def wilson(k, n):
+    p = k / n
+    z2 = z * z
+    mid = (p + z2 / (2 * n)) / (1 + z2 / n)
+    half = z * sqrt(p * (1 - p) / n + z2 / (4 * n * n)) / (1 + z2 / n)
+    return mid - half, mid + half
+
+
+# 1. lebar interval 95% untuk beberapa proporsi
+print("== 1. lebar interval 95% ==")
+print("   n    k   phat   lebar Wald   lebar Wilson")
+for n in (20, 100):
+    for p in (0.00, 0.05, 0.25, 0.50, 0.66):
+        k = round(p * n)
+        a = wald(k, n)
+        b = wilson(k, n)
+        print("%4d %4d  %5.2f   %9.4f    %9.4f"
+              % (n, k, k / n, a[1] - a[0], b[1] - b[0]))
+
+# 2. cakupan eksak pada p = 0,05
+print("== 2. cakupan eksak, p=0.05 ==")
+for n in (20, 50, 100):
+    for nama, f in (("Wald", wald), ("Wilson", wilson)):
+        c = 0.0
+        for k in range(n + 1):
+            lo, hi = f(k, n)
+            if lo <= 0.05 <= hi:
+                c += binom.pmf(k, n, 0.05)
+        print("n=%3d %-6s cakupan=%.4f" % (n, nama, c))
+
+# 3. cakupan simulasi dengan seed tetap
+rng = np.random.default_rng(20261024)
+R = 20000
+print("== 3. cakupan simulasi, R=%d ==" % R)
+for n in (20, 100):
+    X = rng.binomial(n, 0.05, R)
+    for nama, f in (("Wald", wald), ("Wilson", wilson)):
+        ok = 0
+        w = 0.0
+        for k in X:
+            lo, hi = f(int(k), n)
+            ok += (lo <= 0.05 <= hi)
+            w += hi - lo
+        print("n=%3d %-6s cakupan=%.4f  lebar=%.4f" % (n, nama, ok / R, w / R))
+
+# 4. galat tipe I dan daya untuk H0: p=0.5
+print("== 4. galat tipe I dan daya, H0 p=0.5 ==")
+
+
+def tolak(k, n, p0=0.5):
+    return abs((k / n - p0) / sqrt(p0 * (1 - p0) / n)) > z
+
+
+for n in (20, 100):
+    rej = [k for k in range(n + 1) if tolak(k, n)]
+    lo = max(k for k in rej if k < n / 2)
+    hi = min(k for k in rej if k > n / 2)
+    print("n=%3d tolak bila k<=%d atau k>=%d" % (n, lo, hi))
+    print("      ukuran eksak di p=0.5 : %.4f"
+          % sum(binom.pmf(k, n, 0.5) for k in rej))
+    for p1 in (0.65, 0.75):
+        ex = sum(binom.pmf(k, n, p1) for k in rej)
+        zc = (p1 - 0.5) / sqrt(0.25 / n)
+        ap = norm.cdf(zc - z) + norm.cdf(-zc - z)
+        print("      daya di p=%.2f: eksak %.4f  aproksimasi %.4f"
+              % (p1, ex, ap))
+
+# 4b. simulasi tingkat galat tipe I ketika H0 benar
+print("== 4b. simulasi galat tipe I, R=%d ==" % R)
+for n in (20, 100):
+    X0 = rng.binomial(n, 0.5, R)
+    tolak0 = np.abs((X0 / n - 0.5) / sqrt(0.25 / n)) > z
+    print("n=%3d p=0.5: tolak=%.4f" % (n, tolak0.mean()))
+
+# 5. interval-t untuk 12 pengukuran
+x = np.array([18.2, 19.1, 17.8, 20.3, 18.9, 19.7,
+              18.4, 21.0, 17.5, 19.9, 18.6, 20.1])
+n = len(x)
+m = x.mean()
+s = x.std(ddof=1)
+from scipy.stats import t
+tq = t.ppf(0.975, n - 1)
+h = tq * s / sqrt(n)
+print("== 5. interval-t, n=12 ==")
+print("rata-rata=%.6f  s=%.6f  galat baku=%.6f" % (m, s, s / sqrt(n)))
+print("t=%.6f  setengah lebar=%.6f  IK=(%.6f, %.6f)" % (tq, h, m - h, m + h))
+print("setengah lebar dengan z=1.96: %.6f" % (z * s / sqrt(n)))
+\end{verbatim}
+\end{lab}
+
+Keluaran yang sebenarnya, apa adanya:
+
+\begin{verbatim}
+== 1. lebar interval 95% ==
+   n    k   phat   lebar Wald   lebar Wilson
+  20    0   0.00      0.0000       0.1611
+  20    1   0.05      0.1910       0.2272
+  20    5   0.25      0.3795       0.3568
+  20   10   0.50      0.4383       0.4014
+  20   13   0.65      0.4181       0.3860
+ 100    0   0.00      0.0000       0.0370
+ 100    5   0.05      0.0854       0.0902
+ 100   25   0.25      0.1697       0.1676
+ 100   50   0.50      0.1960       0.1923
+ 100   66   0.66      0.1857       0.1826
+== 2. cakupan eksak, p=0.05 ==
+n= 20 Wald   cakupan=0.6389
+n= 20 Wilson cakupan=0.9245
+n= 50 Wald   cakupan=0.9199
+n= 50 Wilson cakupan=0.9622
+n=100 Wald   cakupan=0.8775
+n=100 Wilson cakupan=0.9659
+== 3. cakupan simulasi, R=20000 ==
+n= 20 Wald   cakupan=0.6430  lebar=0.1472
+n= 20 Wilson cakupan=0.9224  lebar=0.2193
+n=100 Wald   cakupan=0.8783  lebar=0.0829
+n=100 Wilson cakupan=0.9667  lebar=0.0884
+== 4. galat tipe I dan daya, H0 p=0.5 ==
+n= 20 tolak bila k<=5 atau k>=15
+      ukuran eksak di p=0.5 : 0.0414
+      daya di p=0.65: eksak 0.2457  aproksimasi 0.2687
+      daya di p=0.75: eksak 0.6172  aproksimasi 0.6088
+n=100 tolak bila k<=40 atau k>=60
+      ukuran eksak di p=0.5 : 0.0569
+      daya di p=0.65: eksak 0.8750  aproksimasi 0.8508
+      daya di p=0.75: eksak 0.9997  aproksimasi 0.9988
+== 4b. simulasi galat tipe I, R=20000 ==
+n= 20 p=0.5: tolak=0.0430
+n=100 p=0.5: tolak=0.0554
+== 5. interval-t, n=12 ==
+rata-rata=19.125000  s=1.082191  galat baku=0.312401
+t=2.200985  setengah lebar=0.687591  IK=(18.437409, 19.812591)
+setengah lebar dengan z=1.96: 0.612296
+\end{verbatim}
+
+Empat hal perlu dibaca dari keluaran itu. Pertama, bagian 2 dan 3 hampir sama sampai
+tiga angka, dan kesamaan itu sendiri adalah pemeriksaan, sebab simulasi dengan
+$R=20000$ ulangan hanya dapat mendekati hitungan eksak sampai sekitar
+$\sqrt{0{,}25/20000}=0{,}0035$. Pada $p=0{,}05$ dan $n=20$ selisihnya $0{,}0041$ untuk
+Wald dan $0{,}0021$ untuk Wilson. Simulasi yang jujur harus melaporkan $R$.
+
+Kedua, cakupan Wald pada $n=20$ dan $p=0{,}05$ adalah $0{,}6389$, bukan $0{,}95$.
+Penyebabnya dapat dihitung dengan tangan: peluang mengamati nol kejadian $0{,}3585$,
+dan pada $k=0$ selang Wald adalah $[0;0]$, yang tidak memuat $0{,}05$; satu titik itu
+saja menghabiskan hampir tiga puluh enam poin cakupan. Wilson hanya gagal bila
+$k\ge3$, peluangnya $0{,}0755$, dan kegagalannya tidak total karena selangnya tetap
+lebar. Itulah sebabnya ia mencapai $0{,}9245$. Perhatikan juga kolom lebar: rata-rata
+Wald $0{,}1472$ lebih kecil daripada Wilson $0{,}2193$, dan justru di situ intinya.
+Selang yang lebih sempit bukan selang yang lebih baik bila ia sempit karena salah
+tempat.
+
+Ketiga, bagian 4 memisahkan ukuran uji dari taraf nominal: $0{,}0414$ pada $n=20$ dan
+$0{,}0569$ pada $n=100$, keduanya untuk aturan $|z|>1{,}96$; bagian 4b mengulangnya
+dengan simulasi dan mendarat dekat, $0{,}0430$ dan $0{,}0554$. Daya bergerak jauh lebih
+drastis: $0{,}2457$ pada $n=20$ dan $0{,}8750$ pada $n=100$ untuk $p_1=0{,}65$.
+Aproksimasi normal tidak selalu di sisi yang aman: pada $n=20$ ia melaporkan $0{,}2687$
+sedangkan kebenarannya $0{,}2457$.
+
+Keempat, bagian 5 hanya mengulang interval-$t$ yang sudah dihitung di teks, dengan
+selisih setengah lebar $t$ dan $z$ sebesar $0{,}075295$.
+
+Program tidak membuktikan satu pun dari semua itu. Ia memeriksa klaim yang sudah
+dibuktikan, dan pada dua tempat ia menunjukkan batas dirinya sendiri: cakupan eksak
+memakai distribusi yang kita andaikan benar, sehingga bila modelnya salah, angka
+$0{,}9245$ itu tidak berarti apa-apa; dan simulasi hanya mengukur seberapa sering
+prosedurnya berhasil pada model itu, bukan seberapa benar modelnya.
+
+\begin{untukdosen}
+Urutan mengajar yang saya sarankan: mulai dari rapat pagi pada pembuka bab, bukan dari
+definisi penaksir. Tulis $33/50$ dan $53/100$ di papan, minta kelas memilih, lalu
+tanyakan apa yang terjadi bila lima puluh contoh itu diganti. Dari kegelisahan itu
+definisi penaksir, bias, dan galat baku muncul sebagai jawaban. Dekomposisi MSE
+dibuktikan di papan dengan satu baris aljabar. Tafsiran selang kepercayaan masuk
+sesudahnya, sebagai bahan kuliah tersendiri, bukan catatan kaki.
+
+Dua miskonsepsi yang paling sering muncul. Pertama, mahasiswa membaca ``$95$ persen''
+sebagai peluang bersyarat pada data yang sudah ada, lalu menulis ``peluang $\mu$ ada di
+selang ini $0{,}95$''; gejalanya tampak ketika mereka tidak dapat menjelaskan apa yang
+acak pada selang yang sudah dihitung. Kedua, mereka menganggap nilai-p besar sebagai
+bukti $H_0$ benar, dan akan menghitung nilai-p untuk $10/20$ lalu menyimpulkan bahwa
+$p=0{,}5$ terbukti.
+
+Aktivitas papan tulis yang berhasil: bagi kelas menjadi dua kelompok, satu menghitung
+selang Wald dan satu Wilson untuk $1/20$, lalu suruh keduanya mempertahankan hasilnya
+di depan kelas. Kelompok Wald akan menemukan batas bawah negatif dan harus
+menjelaskannya. Tanda bahwa kelas siap lanjut: mereka dapat menyebut satu contoh
+ukuran sampel yang membuat nilai-p besar padahal efeknya besar, dan dapat menjelaskan
+mengapa hal itu terjadi.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Penaksir adalah statistik yang menebak parameter, jadi ia variabel acak dengan
+        harapan dan variansi. Mutunya diukur oleh
+        $\operatorname{MSE}=\operatorname{bias}^2+\operatorname{Var}$; tak bias saja
+        tidak menjamin apa pun, dan MSE menuju nol menjamin konsistensi lewat
+        Chebyshev.
+  \item Galat baku adalah akar variansi penaksir, bukan lebar data. Untuk proporsi
+        nilainya $\sqrt{\hat p(1-\hat p)/n}$, mengecil sebanding $1/\sqrt n$,
+        sehingga empat kali data hanya memangkasnya menjadi separuh.
+  \item Interval kepercayaan $95$ persen adalah pernyataan tentang prosedur, bukan
+        tentang parameter: prosedur itu menangkap nilai sebenarnya pada $95$ persen
+        percobaan yang diulang. Sesudah data diambil, selang itu tetap dan tidak lagi
+        berpeluang.
+  \item Interval Wald runtuh di dekat $0$ dan $1$: pada $0/20$ lebarnya nol, dan pada
+        $p=0{,}05$ dengan $n=20$ cakupannya hanya $0{,}6389$. Interval Wilson, hasil
+        membalik uji skor, mencapai $0{,}9245$ pada setelan yang sama.
+  \item Bila tidak ada kejadian dalam $n$ percobaan, batas atas $95$ persen kira-kira
+        $3/n$; untuk $n=100$ batas eksaknya $0{,}0295130$ dan Wilson dua sisi
+        $0{,}0369935$.
+  \item Nilai-p adalah peluang data sejauh itu bila $H_0$ benar, dan di bawah $H_0$
+        ia tersebar seragam. Nilai-p besar bukan bukti $H_0$ benar: pada $n=20$ daya
+        terhadap $p=0{,}75$ hanya $0{,}6172$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Nilai klaim ini: ``Karena nilai-p sama dengan $0{,}42$, hipotesis nol
+        $p=0{,}5$ terbukti benar.'' Benar, salah, atau belum cukup bukti? Sebutkan
+        bagian yang benar, bagian yang keliru, dan satu perhitungan tambahan yang
+        akan memperkuat jawaban Anda.
+  \item Buktikan bahwa $\mathbb{E}[\hat p(1-\hat p)]=p(1-p)(n-1)/n$ untuk
+        $\hat p=K/n$ dengan $K\sim\mathrm{Bin}(n,p)$, lalu tentukan penaksir tak bias
+        bagi $p(1-p)$ yang diperoleh dari situ. Periksa hasilnya pada $p=0{,}3$ dan
+        $n=20$.
+  \item Buktikan bahwa bila $\operatorname{bias}(\hat\theta_n)\to0$ dan
+        $\operatorname{Var}(\hat\theta_n)\to0$, maka $\hat\theta_n$ konsisten untuk
+        $\theta$. Jelaskan mengapa syarat itu lebih lemah daripada
+        $\operatorname{MSE}\to0$ tetapi cukup untuk kesimpulan yang sama.
+  \item Hitung selang Wilson dan Wald $95$ persen untuk $7/40$, lalu bandingkan
+        lebarnya dengan $13/20$. Jelaskan mengapa lebar yang lebih kecil pada $7/40$
+        bukan tanda ketelitian yang lebih tinggi, dan periksa kedua selang dengan
+        Python.
+  \item Untuk $n=30$ dan $H_0\colon p=0{,}5$ dengan uji dua sisi berbasis normal,
+        tentukan daerah tolaknya, hitung ukuran eksaknya, lalu hitung dayanya pada
+        $p_1=0{,}7$. Bandingkan daya itu dengan $n=100$ pada nilai $p_1$ yang sama.
+  \item Buktikan bahwa selang Wald dan uji-$z$ dua sisi yang memakai galat baku
+        $\hat p$ memang setara, dengan menuliskan kedua ketaksamaannya berdampingan.
+        Jelaskan mengapa kesetaraan itu tidak berlaku bila uji memakai galat baku di
+        bawah $H_0$.
+  \item Sebuah laporan menulis: ``tidak ada perbedaan yang signifikan, $p=0{,}31$,
+        jadi kedua metode sama baik''. Tulis ulang kalimat itu sehingga jujur, dengan
+        menyebut selang, taraf, dan daya. Anda boleh mengarang angkanya asalkan
+        konsisten.
+  \item Untuk $n=100$ tanpa satu pun kejadian, hitung aturan tiga, batas eksak satu
+        sisi, dan batas atas Wilson. Jelaskan mengapa ketiga angka berbeda, lalu
+        sebutkan mana yang boleh dipakai untuk kalimat ``paling tinggi $5$ persen''.
+  \item Hitung selang-$t$ $90$ persen untuk dua belas data waktu tunda pada bab ini,
+        lalu bandingkan dengan selang $95$ persen. Berapa banyak data yang diperlukan
+        agar lebar selang $95$ persen turun menjadi separuh, bila $s$ tidak berubah?
+\end{enumerate}
+
+Petunjuk untuk tiga butir tersulit. Butir 3: tulis
+$\hat\theta_n-\theta=\operatorname{bias}_n+(\hat\theta_n-\mathbb{E}\hat\theta_n)$,
+lalu pakai ketaksamaan segitiga dan Chebyshev pada suku kedua. Butir 6: ketaksamaan
+pertama adalah $|\hat p-p_0|\le z\sqrt{\hat p(1-\hat p)/n}$, dan uji yang memakai
+$\sqrt{p_0(1-p_0)/n}$ memakai penyebut berbeda, sehingga himpunan $p_0$ yang tidak
+ditolak bukan lagi selang Wald melainkan himpunan yang lebih rumit. Butir 5: daerah
+tolaknya adalah $|k-15|>1{,}96\sqrt{30\cdot0{,}25}$, jadi $k\le9$ atau $k\ge21$, dan
+dayanya dihitung dengan menjumlahkan pmf binomial pada $p=0{,}7$ di kedua ekor itu.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini: dekomposisi MSE; kekonsistenan dari MSE menuju
+nol; cakupan tepat interval-$z$ pada model normal; bentuk tertutup interval Wilson dan
+letaknya di $[0,1]$; aturan tiga sebagai batas eksak satu sisi beserta
+ketaksamaan $p_{\mathrm{hi}}<\ln 20/n$; keseragaman nilai-p di bawah $H_0$ untuk
+statistik kontinu; dan kesetaraan selang dengan uji pada pasangan yang disebutkan.
+Yang hanya populer, bukan teorema: bahwa $95$ persen berarti peluang bersyarat pada
+data yang sudah teramati; bahwa nilai-p besar mendukung $H_0$; dan bahwa lebar selang
+yang lebih kecil selalu lebih baik, padahal perbandingan lebar tanpa cakupan tidak
+berarti. Cakupan Wilson di bawah nominal pada beberapa $(n,p)$ juga fakta hitung, bukan
+teorema.
+
+Sumber primer: Wasserman, \emph{All of Statistics}, Bab 6 (Models, Statistical
+Inference, and Learning) untuk bias, MSE, dan tafsiran selang; Bab 9 (Parametric
+Inference) untuk interval dan metode plug-in; Bab 10 (Hypothesis Testing and p-values)
+untuk nilai-p, galat tipe I dan II, daya, serta hubungan uji dengan selang. Interval
+Wilson berasal dari E.~B. Wilson, ``Probable Inference, the Law of Succession, and
+Statistical Inference'' (1927); aturan tiga dari B.~D. Jovanovic dan P.~S. Levy,
+``A Look at the Rule of Three'' (1997). Keduanya tidak dibahas Wasserman, jadi
+rujukannya disebut langsung, bukan lewat buku teks perantara.
+
+Batas keberlakuan: seluruh bab bekerja dengan sampel bebas dan berdistribusi sama,
+satu parameter, dan aproksimasi normal atau binomial yang diketahui. Interval-$z$
+hanya tepat pada model normal dengan $\sigma$ diketahui; di luar itu ia pernyataan
+asimtotik, dan pada $n$ kecil dengan distribusi berekor berat cakupannya dapat jauh di
+bawah nominal. Interval Wilson adalah aproksimasi skor, bukan selang eksak; selang
+eksak untuk proporsi dihitung dari sebaran binomial dan lebih lebar. Semua cakupan yang
+dilaporkan bersyarat pada model binomial yang benar.
+
+Pertanyaan terbuka yang layak dikerjakan pembaca: seberapa baik interval proporsi
+berperilaku ketika $n$ bukan bilangan tetap melainkan berhenti secara adaptif, seperti
+pada pengambilan sampel berurutan; dan bagaimana menyusun selang untuk metrik
+klasifikasi yang dihitung dari data dependen, misalnya ketika satu contoh muncul di
+beberapa lipatan validasi silang. Keduanya masih menjadi bahan penelitian.
+\end{untukpeneliti}
+
+\peta{Bab 20 pada Wasserman, \emph{All of Statistics}: Bab 6 (Models, Statistical
+Inference, and Learning: penaksir, bias, MSE, galat baku, tafsiran selang), Bab 9
+(Parametric Inference: interval kepercayaan dan metode plug-in), Bab 10 (Hypothesis
+Testing and p-values: nilai-p, galat tipe I dan II, daya, kesetaraan uji dan selang).
+Interval Wilson dan aturan tiga diambil dari makalah aslinya, Wilson (1927) dan
+Jovanovic--Levy (1997), karena Wasserman tidak membahas keduanya. Hukum bilangan besar,
+teorema limit pusat, dan ketaksamaan Chebyshev yang dipakai di sini dibuktikan di
+Bab 18; peluang bersyarat dan kekeliruan pembalik syarat dibahas di Bab 16. Bab 25
+melanjutkan bab ini untuk metrik klasifikasi, termasuk aturan tiga pada pelaporan
+evaluasi model.}

@@ -1,0 +1,1316 @@
+\chapter{Orthogonality, SVD, and Least Squares}
+
+Five readings from one temperature probe: $100$, $101$, $102$, $103$, and $104$ degrees.
+The recorded readings are $302.0$, $305.1$, $307.9$, $311.2$, and
+$313.8$ in that order. The calibration model is a single straight line $y=a+bT$, so there
+are five equations for two unknowns:
+\[
+  a+100b=302.0,\qquad a+101b=305.1,\qquad \dots,\qquad a+104b=313.8 .
+\]
+No pair $(a,b)$ satisfies all five; the five points are never
+collinear, and the residual of each equation has a different sign. There is still one pair that
+makes the most sense. In what sense is that pair best, and how far does it
+move if one reading changes by a tenth?
+
+The same question arrives from the opposite side. A detector computes a score
+$s=\mathbf{w}^{\top}\mathbf{x}$ from three counters, and an attacker wants to shift $s$
+by exactly $\Delta$ with as small a change in $\mathbf{x}$ as possible, because a large change
+is easy to see. There are three unknowns and one condition, so the solution set is too large
+rather than empty: among all the changes that give the same shift, which one is smallest?
+
+Those two problems are one problem. In the first case the set of candidate answers is empty and
+we look for the nearest one; in the second it is too large and we look for the
+shortest. Both are settled by orthogonal projection. Chapter 9 supplied eigenvalues, but
+only for square matrices with enough eigenvectors.
+The calibration matrix above is $5\times2$, and the detector matrix is $2\times3$.
+Forcing both to become square through $\mathbf{A}^{\top}\mathbf{A}$ does work,
+but that road squares the sensitivity to error. The sixth section shows the
+price in numbers.
+
+\begin{untukanak}
+Have you ever stood under a lamp and seen your shadow on the floor? That shadow is
+not you: it is shorter, flattened, and it cannot show your face. But it is the best
+the floor can do: of all the points on the floor, your shadow is the one
+closest to the top of your head. If the lamp is moved, the shadow moves with it, even though you
+have not moved.
+
+Now picture two rulers that differ by one hundredth of a centimeter. If you
+measure a table with both and then subtract the results, the leftover number comes almost
+entirely from reading mistakes. A small difference drowns easily.
+
+In this chapter we will learn why that ``closest'' shadow can be computed
+cleanly, why among the many roads to the same destination there is one that is shortest, and
+why two nearly twin measuring rules make our answer wobble.
+\end{untukanak}
+
+\section{Inner product, norm, and the Cauchy-Schwarz inequality}
+\tingkat{basic}
+
+Length and angle are two words we have used since school without ever
+defining them. For vectors in $\mathbb{R}^{n}$ both come from a single operation
+that eats two vectors and returns one number; that operation is what gives a
+vector space a size, because the axioms of a vector space in Chapter 6 say nothing about distance.
+
+The rule: multiply component by component, then add. The result is zero exactly when the
+two vectors are at right angles, so this operation is used in place of angle even
+in a space of a hundred dimensions.
+
+\kamus{inner product}{hasilkali dalam}{Two lists of numbers folded into a single number that
+measures how much they point the same way.}
+
+\begin{definisi}[Inner product and norm]
+The \emph{inner product} on a real vector space $V$ is a function
+$\langle\cdot,\cdot\rangle\colon V\times V\to\mathbb{R}$ that satisfies three conditions:
+\begin{enumerate}
+  \item symmetric, $\langle\mathbf{u},\mathbf{v}\rangle=\langle\mathbf{v},\mathbf{u}\rangle$;
+  \item linear in the first argument,
+        $\langle c\mathbf{u}+\mathbf{w},\mathbf{v}\rangle
+         =c\langle\mathbf{u},\mathbf{v}\rangle+\langle\mathbf{w},\mathbf{v}\rangle$;
+  \item positive definite, $\langle\mathbf{v},\mathbf{v}\rangle\ge0$ with equality
+        only when $\mathbf{v}=\mathbf{0}$.
+\end{enumerate}
+On $\mathbb{R}^{n}$ the standard inner product is
+$\langle\mathbf{u},\mathbf{v}\rangle=\sum_{i}u_{i}v_{i}
+=\mathbf{u}^{\top}\mathbf{v}$. The \emph{norm} it induces is
+$\|\mathbf{v}\|=\sqrt{\langle\mathbf{v},\mathbf{v}\rangle}$.\index{inner product}
+\index{norm}
+\end{definisi}
+
+The third condition is what makes $\|\mathbf{v}\|=0$ only for the zero vector, so the norm
+deserves the name length. The norm also satisfies $\|c\mathbf{v}\|=|c|\,\|\mathbf{v}\|$ and
+$\|\mathbf{u}+\mathbf{v}\|\le\|\mathbf{u}\|+\|\mathbf{v}\|$; the second is not automatic,
+but follows from the next inequality.
+
+In everyday language: the inner product of two vectors is never larger than the
+product of their lengths. Two vectors can be very long, but if their directions are at right
+angles the product stays small.
+
+\begin{teorema}[Cauchy-Schwarz]
+For all $\mathbf{u},\mathbf{v}\in V$,
+$|\langle\mathbf{u},\mathbf{v}\rangle|\le\|\mathbf{u}\|\,\|\mathbf{v}\|$, with
+equality exactly when one vector is a scalar multiple of the other.
+\index{Cauchy-Schwarz}
+\end{teorema}
+
+\begin{proof}
+If $\mathbf{v}=\mathbf{0}$, both sides are zero and there is nothing to prove.
+Suppose $\mathbf{v}\ne\mathbf{0}$ and $t\in\mathbb{R}$ is arbitrary. Positive definiteness
+gives
+\[
+  0\le\|\mathbf{u}-t\mathbf{v}\|^{2}
+   =\|\mathbf{u}\|^{2}-2t\langle\mathbf{u},\mathbf{v}\rangle+t^{2}\|\mathbf{v}\|^{2}.
+\]
+The right-hand side is a quadratic polynomial in $t$ that is never negative. The coefficient of
+$t^{2}$ is positive, so its discriminant cannot be positive:
+\[
+  4\langle\mathbf{u},\mathbf{v}\rangle^{2}-4\|\mathbf{u}\|^{2}\|\mathbf{v}\|^{2}\le0 .
+\]
+After dividing by four and taking square roots, the required inequality follows. Equality
+holds exactly when that polynomial has a double root, that is, when
+$\mathbf{u}-t\mathbf{v}=\mathbf{0}$ for some $t$.
+\end{proof}
+
+That proof used no coordinates, so the inequality holds in every inner-product
+space, including function spaces.
+
+\begin{akibat}[Triangle inequality]
+$\|\mathbf{u}+\mathbf{v}\|\le\|\mathbf{u}\|+\|\mathbf{v}\|$.
+\end{akibat}
+
+\begin{proof}
+Expand $\|\mathbf{u}+\mathbf{v}\|^{2}
+=\|\mathbf{u}\|^{2}+2\langle\mathbf{u},\mathbf{v}\rangle+\|\mathbf{v}\|^{2}$.
+Cauchy-Schwarz bounds the middle term by $2\|\mathbf{u}\|\|\mathbf{v}\|$, so
+\[
+  \|\mathbf{u}+\mathbf{v}\|^{2}\le\|\mathbf{u}\|^{2}+2\|\mathbf{u}\|\|\mathbf{v}\|
+  +\|\mathbf{v}\|^{2}=(\|\mathbf{u}\|+\|\mathbf{v}\|)^{2}.
+\]
+Both sides are nonnegative, so the square root may be taken.
+\end{proof}
+
+Now we have length. Angle follows by definition: two vectors are perpendicular when their
+inner product is zero. That makes sense because Cauchy-Schwarz guarantees that
+$\langle\mathbf{u},\mathbf{v}\rangle/(\|\mathbf{u}\|\|\mathbf{v}\|)$ lies between $-1$
+and $1$, so it may be read as a cosine.
+
+\kamus{orthogonal}{ortogonal}{Two directions that contribute nothing to each other; the shadow
+of one direction on the other has length zero.}
+
+\begin{definisi}[Orthogonal and orthonormal]
+$\mathbf{u}$ and $\mathbf{v}$ are \emph{orthogonal} when
+$\langle\mathbf{u},\mathbf{v}\rangle=0$, written $\mathbf{u}\perp\mathbf{v}$. A set of
+vectors is called \emph{orthogonal} when every two distinct members are orthogonal, and
+\emph{orthonormal} when all its members also have norm one.\index{orthogonality}
+\end{definisi}
+
+One small consequence follows directly from expanding the norm: if $\mathbf{u}\perp\mathbf{v}$
+then $\|\mathbf{u}+\mathbf{v}\|^{2}=\|\mathbf{u}\|^{2}+\|\mathbf{v}\|^{2}$. The
+Pythagorean theorem is a special case of this definition, not the other way round.
+
+\section{Orthogonal sets, projection, and Gram-Schmidt}
+\tingkat{intermediate}
+
+For an arbitrary basis we must solve a linear system; for an orthonormal basis we need not,
+because each coefficient is read off with one inner product. One fact makes that
+legitimate: an orthogonal set with no zero vector is always linearly independent.
+
+\begin{lemma}
+If $\mathbf{v}_{1},\dots,\mathbf{v}_{k}$ are orthogonal and none of them is the zero vector,
+then that set is linearly independent.
+\end{lemma}
+
+\begin{proof}
+Suppose $\sum_{i}c_{i}\mathbf{v}_{i}=\mathbf{0}$. Take the inner product with
+$\mathbf{v}_{j}$. All terms with $i\ne j$ vanish because of orthogonality, so only
+$c_{j}\langle\mathbf{v}_{j},\mathbf{v}_{j}\rangle=0$ is left. Since $\mathbf{v}_{j}\ne\mathbf{0}$,
+its norm is nonzero, hence $c_{j}=0$. This holds for every $j$.
+\end{proof}
+
+Now the statement about coefficients, in the form most often used.
+
+\begin{proposisi}
+Suppose $(\mathbf{q}_{1},\dots,\mathbf{q}_{n})$ is an orthonormal basis of $V$. Then for
+every $\mathbf{v}\in V$,
+\[
+  \mathbf{v}=\sum_{i=1}^{n}\langle\mathbf{v},\mathbf{q}_{i}\rangle\,\mathbf{q}_{i},
+  \qquad
+  \|\mathbf{v}\|^{2}=\sum_{i=1}^{n}\langle\mathbf{v},\mathbf{q}_{i}\rangle^{2}.
+\]
+\end{proposisi}
+
+\begin{proof}
+Write $\mathbf{v}=\sum_{i}a_{i}\mathbf{q}_{i}$; those coefficients exist and are unique because
+this is a basis. The inner product with $\mathbf{q}_{j}$ gives
+$\langle\mathbf{v},\mathbf{q}_{j}\rangle=\sum_{i}a_{i}\langle\mathbf{q}_{i},\mathbf{q}_{j}\rangle
+=a_{j}$, since $\langle\mathbf{q}_{i},\mathbf{q}_{j}\rangle$ equals one when $i=j$
+and zero otherwise. For the norm formula, use orthogonality on the expansion
+$\|\mathbf{v}\|^{2}=\langle\sum_{i}a_{i}\mathbf{q}_{i},\sum_{j}a_{j}\mathbf{q}_{j}\rangle$;
+the cross terms all vanish.
+\end{proof}
+
+The second equality is called Parseval's identity: in an orthonormal basis the total length is
+the square root of the sum of squared coordinates; in a skew basis that property fails.
+
+The next question comes from the opening problem: $\mathbf{b}$ lies outside the subspace
+$W$, and we want the point of $W$ closest to it. That point is called the projection,
+and the way to find it is to add up the shadow of $\mathbf{b}$ on each orthonormal direction of $W$.
+
+\kamus{projection}{proyeksi}{The shadow of a stick on the floor: the point on the floor that is
+closest to the tip of the stick.}
+
+\begin{definisi}[Orthogonal projection]
+Suppose $W\subseteq\mathbb{R}^{m}$ is a subspace with orthonormal basis
+$(\mathbf{q}_{1},\dots,\mathbf{q}_{k})$. The \emph{orthogonal projection} of $\mathbf{b}$ onto $W$
+is
+\[
+  \operatorname{proj}_{W}\mathbf{b}=\sum_{i=1}^{k}\langle\mathbf{b},\mathbf{q}_{i}\rangle\mathbf{q}_{i},
+  \qquad
+  \mathbf{r}=\mathbf{b}-\operatorname{proj}_{W}\mathbf{b}.
+\]
+The vector $\mathbf{r}$ is called the \emph{residual}.\index{projection}
+\end{definisi}
+
+That residual is orthogonal to all of $W$, not merely to the basis vectors: because
+$\langle\mathbf{r},\mathbf{q}_{j}\rangle=\langle\mathbf{b},\mathbf{q}_{j}\rangle
+-\langle\mathbf{b},\mathbf{q}_{j}\rangle=0$ and every vector of $W$ is a combination of
+the $\mathbf{q}_{j}$.
+
+What makes the projection useful: it is not just one point in $W$, it is the closest
+point. That is a claim about every other point in $W$, so it needs a proof.
+
+\begin{bacakeras}
+Read aloud, two voices taking turns.
+
+\textbf{Voice one:} There is a point hanging above the floor, and the floor is asked to produce its stand-in.
+
+\textbf{Voice two:} The floor cannot rise. It can only drop a shadow, and that shadow is the floor point closest to the point above.
+
+\textbf{Voice one:} Then where does the part that never reaches the floor go?
+
+\textbf{Voice two:} That part stands upright. It has no floor to stand on, so no path on the floor can shorten it.
+
+Repeat this line until it sits on the tongue: \emph{what falls to the floor is what is closest, what stands upright is what cannot be brought back down.}
+\end{bacakeras}
+
+\begin{teorema}[Best approximation]
+For every $\mathbf{w}\in W$,
+$\|\mathbf{b}-\operatorname{proj}_{W}\mathbf{b}\|\le\|\mathbf{b}-\mathbf{w}\|$, with
+equality only when $\mathbf{w}=\operatorname{proj}_{W}\mathbf{b}$.
+\end{teorema}
+
+\begin{proof}
+Write $\mathbf{p}=\operatorname{proj}_{W}\mathbf{b}$. For arbitrary $\mathbf{w}\in W$,
+\[
+  \mathbf{b}-\mathbf{w}=(\mathbf{b}-\mathbf{p})+(\mathbf{p}-\mathbf{w}).
+\]
+The two terms are orthogonal: the first is orthogonal to all of $W$, and
+$\mathbf{p}-\mathbf{w}\in W$. Therefore the squared norm splits:
+\[
+  \|\mathbf{b}-\mathbf{w}\|^{2}=\|\mathbf{b}-\mathbf{p}\|^{2}+\|\mathbf{p}-\mathbf{w}\|^{2}.
+\]
+The second term is nonnegative, so the right-hand side is smallest when $\mathbf{w}=\mathbf{p}$.
+\end{proof}
+
+The geometric reading is in Figure~\ref{fig:proyeksi-sisa}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.18]
+  \draw[->,layergrey] (-0.5,0)--(3.4,0) node[right,font=\small]{$x_{1}$};
+  \draw[->,layergrey] (0,-0.5)--(0,3.9) node[above,font=\small]{$x_{2}$};
+  \draw[very thick,accent] (-0.42,-0.21)--(2.75,1.375)
+    node[right,font=\small]{$W$};
+  \draw[densely dotted,thick,layergrey] (0.2,3.4)--(2.6,1.3);
+  \fill[layergrey] (2.6,1.3) circle (1.2pt);
+  \node[font=\small,layergrey,below right=-2pt] at (2.6,1.3) {$\mathbf{w}$};
+  \node[font=\small,layergrey,above right=-3pt] at (1.05,2.62)
+    {$\|\mathbf{b}-\mathbf{w}\|$};
+  \draw[->,very thick,layerteal] (0,0)--(0.2,3.4)
+    node[left,font=\small]{$\mathbf{b}$};
+  \draw[->,thick,layerindigo] (0,0)--(1.52,0.76);
+  \node[font=\small,layerindigo,below right=-2pt] at (1.34,0.6) {$\mathbf{p}$};
+  \draw[-{Latex},very thick,layerplum] (1.52,0.76)--(0.2,3.4);
+  \node[font=\small,layerplum,right=2pt] at (0.95,2.15) {$\mathbf{r}$};
+  \draw[thick,layergrey] (1.717,0.858)--(1.619,1.055)--(1.422,0.957);
+  \fill[layerplum] (1.52,0.76) circle (1.4pt);
+\end{tikzpicture}
+\caption{Orthogonal projection of $\mathbf{b}=(0.2;\,3.4)$ onto the line $W$
+spanned by $\mathbf{q}=(2,1)/\sqrt{5}$. Its perpendicular foot is
+$\mathbf{p}=(1.52;\,0.76)$, marked as a right angle with $W$, and the residual
+$\mathbf{r}=\mathbf{b}-\mathbf{p}$ is perpendicular to all of $W$. The point
+$\mathbf{w}=(2.6;\,1.3)$, which also lies in $W$, gives distance
+$\|\mathbf{b}-\mathbf{w}\|\approx3.19$, longer than
+$\|\mathbf{b}-\mathbf{p}\|\approx2.95$.}
+\label{fig:proyeksi-sisa}
+\end{figure}
+
+\begin{tangan}
+Materials: one pencil, one desk lamp, one sheet of paper, and a ruler.
+
+Place the paper on the table, then move the lamp to the far end of the room until its light is almost parallel. A lamp that is too close lengthens the shadow, and what is measured is then no longer an orthogonal projection.
+
+Hold the pencil upright with its tip touching the paper, and mark that point. Tilt the pencil to an angle of sixty degrees with the paper, mark the end of the shadow, then repeat at forty-five and thirty degrees. Measure the three shadows with the ruler.
+
+What to look for: the shadow is longest when the pencil almost lies on the paper, and shortest when the pencil is upright. The length of the shadow does not care how high the tip of the pencil is above the paper; it records only the horizontal part. That upright part is the residual the floor cannot reach.
+\end{tangan}
+
+If the columns of $\mathbf{Q}$ are $\mathbf{q}_{1},\dots,\mathbf{q}_{k}$, the projection formula becomes a
+single matrix product: $\mathbf{p}=\mathbf{Q}\mathbf{Q}^{\top}\mathbf{b}$. The matrix
+$\mathbf{P}=\mathbf{Q}\mathbf{Q}^{\top}$ satisfies $\mathbf{P}^{2}=\mathbf{P}$ and
+$\mathbf{P}^{\top}=\mathbf{P}$: projecting twice is the same as once. Its trace is $k$,
+the dimension of $W$; for the example in the seventh section the trace is $2$.
+
+Now we know how to project, but we do not yet have a way to obtain an orthonormal basis.
+The Gram-Schmidt algorithm builds one vector at a time: normalize the first vector, then strip
+from each following vector the part parallel to those already present. Each step
+uses only the projection we have just proved.
+
+\begin{teorema}[Gram-Schmidt and the QR factorization]
+Suppose $\mathbf{a}_{1},\dots,\mathbf{a}_{n}$ are linearly independent in $\mathbb{R}^{m}$.
+Define in order
+\[
+  \mathbf{v}_{1}=\mathbf{a}_{1},\qquad
+  \mathbf{v}_{j}=\mathbf{a}_{j}-\sum_{i<j}\langle\mathbf{a}_{j},\mathbf{q}_{i}\rangle\mathbf{q}_{i},
+  \qquad
+  \mathbf{q}_{j}=\frac{\mathbf{v}_{j}}{\|\mathbf{v}_{j}\|}
+\]
+for $j=2,\dots,n$. Then $\mathbf{q}_{1},\dots,\mathbf{q}_{n}$ are orthonormal and
+$\operatorname{span}(\mathbf{q}_{1},\dots,\mathbf{q}_{j})
+=\operatorname{span}(\mathbf{a}_{1},\dots,\mathbf{a}_{j})$ for every $j$. Consequently
+$\mathbf{A}=\mathbf{Q}\mathbf{R}$ with $\mathbf{Q}$ having orthonormal columns and
+$\mathbf{R}$ upper triangular with positive diagonal.\index{Gram-Schmidt}\index{QR}
+\end{teorema}
+
+\begin{proof}
+We prove this by induction on $j$. For $j=1$, $\mathbf{q}_{1}$ is
+$\mathbf{a}_{1}$ normalized, so the claim holds. Assume the claim holds up to $j-1$.
+The vector $\mathbf{v}_{j}$ is $\mathbf{a}_{j}$ minus its combination with
+$\mathbf{q}_{1},\dots,\mathbf{q}_{j-1}$, so $\mathbf{v}_{j}$ still lies in
+$\operatorname{span}(\mathbf{a}_{1},\dots,\mathbf{a}_{j})$. For every $i<j$,
+\[
+  \langle\mathbf{v}_{j},\mathbf{q}_{i}\rangle
+  =\langle\mathbf{a}_{j},\mathbf{q}_{i}\rangle-\langle\mathbf{a}_{j},\mathbf{q}_{i}\rangle=0,
+\]
+because $\mathbf{q}_{i}$ is orthonormal. So $\mathbf{v}_{j}$ is orthogonal to all the
+previous vectors. That vector is not zero: if it were, $\mathbf{a}_{j}$ would become a
+combination of $\mathbf{a}_{1},\dots,\mathbf{a}_{j-1}$, contradicting linear independence.
+Therefore $\mathbf{q}_{j}$ is defined and the set stays orthonormal as it grows.
+
+For the factorization, write each $\mathbf{a}_{j}$ as
+$\|\mathbf{v}_{j}\|\mathbf{q}_{j}+\sum_{i<j}\langle\mathbf{a}_{j},\mathbf{q}_{i}\rangle\mathbf{q}_{i}$.
+Those coefficients fill column $j$ of $\mathbf{R}$; the entries above the diagonal are
+$\langle\mathbf{a}_{j},\mathbf{q}_{i}\rangle$ and the diagonal entries are $\|\mathbf{v}_{j}\|>0$.
+\end{proof}
+
+One warning: classical Gram-Schmidt computes each coefficient against the original vector
+$\mathbf{a}_{j}$, not against the vector already reduced. If the columns of $\mathbf{A}$ are
+nearly dependent, the result stops being orthonormal; subtracting from $\mathbf{v}_{j}$ first
+repairs it at almost no cost. The eighth section shows the numbers: on a
+matrix with $\kappa\approx6.8\times10^{6}$, the classical version gives
+$\|\mathbf{Q}^{\top}\mathbf{Q}-\mathbf{I}\|=2.05\times10^{-2}$, the modified version
+$3.40\times10^{-10}$, Householder $1.19\times10^{-15}$; the first number means two
+columns that should be at right angles differ by an angle of about one degree.
+
+\section{Least squares and the normal equations}
+\tingkat{intermediate}
+
+Back to the five probe readings. The system $\mathbf{A}\mathbf{x}=\mathbf{b}$ has no solution,
+but we can demand that the residual $\mathbf{b}-\mathbf{A}\mathbf{x}$ be as small as possible:
+demanding a zero residual amounts to demanding a solution, while demanding minimum length always
+has an answer. The measure used is the sum of squared differences, not the sum of absolute values,
+because the sum of squares is born from the inner product, which puts the whole projection
+machinery at our disposal; the sum of absolute values does not, and its answer may fail to be unique.
+
+\kamus{least squares}{kuadrat terkecil}{When no line passes through all the points,
+choose the line whose sum of squared errors is smallest.}
+
+\begin{definisi}[Least-squares solution]
+For $\mathbf{A}\in\mathbb{R}^{m\times n}$ and $\mathbf{b}\in\mathbb{R}^{m}$,
+a vector $\hat{\mathbf{x}}\in\mathbb{R}^{n}$ is called a \emph{least-squares solution}
+if $\|\mathbf{A}\hat{\mathbf{x}}-\mathbf{b}\|\le\|\mathbf{A}\mathbf{x}-\mathbf{b}\|$
+for every $\mathbf{x}\in\mathbb{R}^{n}$.\index{least squares}
+\end{definisi}
+
+That definition does not mention derivatives. What is used is geometry: $\mathbf{A}\mathbf{x}$ always
+lies in $\operatorname{col}(\mathbf{A})$, so the smallest residual is the point of
+$\operatorname{col}(\mathbf{A})$ closest to $\mathbf{b}$; that is exactly the projection
+problem from before.
+
+\begin{teorema}[Normal equations]
+The vector $\hat{\mathbf{x}}$ minimizes $\|\mathbf{A}\mathbf{x}-\mathbf{b}\|$ if and
+only if
+\[
+  \mathbf{A}^{\top}\mathbf{A}\hat{\mathbf{x}}=\mathbf{A}^{\top}\mathbf{b}.
+\]
+\end{teorema}
+
+\begin{proof}
+Take arbitrary $\mathbf{x}$ and arbitrary $\mathbf{h}\in\mathbb{R}^{n}$, then write
+$\mathbf{x}+\mathbf{h}$ as a neighbor of $\mathbf{x}$. Then
+\[
+  \|\mathbf{A}(\mathbf{x}+\mathbf{h})-\mathbf{b}\|^{2}
+  =\|\mathbf{A}\mathbf{x}-\mathbf{b}\|^{2}
+   +2\mathbf{h}^{\top}\mathbf{A}^{\top}(\mathbf{A}\mathbf{x}-\mathbf{b})
+   +\|\mathbf{A}\mathbf{h}\|^{2}.
+\]
+
+First, suppose $\mathbf{A}^{\top}(\mathbf{A}\mathbf{x}-\mathbf{b})=\mathbf{0}$.
+The middle term vanishes for every $\mathbf{h}$, and the last term is nonnegative, so
+$\|\mathbf{A}(\mathbf{x}+\mathbf{h})-\mathbf{b}\|^{2}\ge\|\mathbf{A}\mathbf{x}-\mathbf{b}\|^{2}$.
+Hence $\mathbf{x}$ minimizes.
+
+Second, suppose $\mathbf{A}^{\top}(\mathbf{A}\mathbf{x}-\mathbf{b})=\mathbf{z}\ne\mathbf{0}$.
+Choose $\mathbf{h}=-\epsilon\mathbf{z}$ with small $\epsilon>0$. The middle term becomes
+$-2\epsilon\|\mathbf{z}\|^{2}$, while the last term grows by
+$\epsilon^{2}\|\mathbf{A}\mathbf{z}\|^{2}$. For $\epsilon$ small enough, the negative part
+beats the positive part, so $\mathbf{x}$ is not a minimizer. Hence the condition is necessary.
+\end{proof}
+
+The system $\mathbf{A}^{\top}\mathbf{A}\mathbf{x}=\mathbf{A}^{\top}\mathbf{b}$ is called the
+\emph{normal equations}. The condition
+$\mathbf{A}^{\top}(\mathbf{A}\hat{\mathbf{x}}-\mathbf{b})=\mathbf{0}$ says that the residual
+$\mathbf{r}=\mathbf{b}-\mathbf{A}\hat{\mathbf{x}}$ is orthogonal to every column of
+$\mathbf{A}$, hence to all of $\operatorname{col}(\mathbf{A})$. In other words
+$\mathbf{A}\hat{\mathbf{x}}$ is the projection of $\mathbf{b}$ onto the column space.\index{normal equations}
+
+From here one practical question follows: when is the answer unique? The matrix
+$\mathbf{A}^{\top}\mathbf{A}$ is always square and symmetric, but not necessarily
+invertible.
+
+\begin{akibat}
+If the columns of $\mathbf{A}$ are linearly independent, then $\mathbf{A}^{\top}\mathbf{A}$ is
+invertible and the least-squares solution is unique, namely
+$\hat{\mathbf{x}}=(\mathbf{A}^{\top}\mathbf{A})^{-1}\mathbf{A}^{\top}\mathbf{b}$.
+\end{akibat}
+
+\begin{proof}
+Suppose $\mathbf{A}^{\top}\mathbf{A}\mathbf{z}=\mathbf{0}$. Multiply from the left by
+$\mathbf{z}^{\top}$, which gives $\|\mathbf{A}\mathbf{z}\|^{2}
+=\mathbf{z}^{\top}\mathbf{A}^{\top}\mathbf{A}\mathbf{z}=0$, hence
+$\mathbf{A}\mathbf{z}=\mathbf{0}$. Linear independence of the columns forces $\mathbf{z}=\mathbf{0}$.
+So the kernel of $\mathbf{A}^{\top}\mathbf{A}$ contains only the zero vector, and a square
+matrix with trivial kernel is invertible. Uniqueness of $\hat{\mathbf{x}}$ then follows from
+the normal equations theorem.
+\end{proof}
+
+\begin{resep}
+\begin{enumerate}
+  \item Build $\mathbf{A}$ and $\mathbf{b}$: one row of $\mathbf{A}$ per equation, with the columns being the functions used.
+  \item Form $\mathbf{A}^{\top}\mathbf{A}$, which is $n\times n$, and $\mathbf{A}^{\top}\mathbf{b}$, which is $n\times1$.
+  \item Solve $\mathbf{A}^{\top}\mathbf{A}\hat{\mathbf{x}}=\mathbf{A}^{\top}\mathbf{b}$; check $\det(\mathbf{A}^{\top}\mathbf{A})\ne0$ first, since zero means the answer is not unique.
+  \item Compute $\mathbf{r}=\mathbf{b}-\mathbf{A}\hat{\mathbf{x}}$, check $\mathbf{A}^{\top}\mathbf{r}=\mathbf{0}$, then report $\|\mathbf{r}\|$.
+\end{enumerate}
+Warning about order: do not invert anything before the third step. $\mathbf{A}$ is not square, so $\mathbf{A}^{-1}$ does not exist, and turning $\mathbf{A}^{\top}\mathbf{b}$ into $\mathbf{b}^{\top}\mathbf{A}$ gives a $1\times n$ row vector, not a system of equations.
+\end{resep}
+
+Conversely, if the columns of $\mathbf{A}$ are dependent, $\mathbf{A}^{\top}\mathbf{A}$ is singular
+and there are infinitely many solutions; the fifth section chooses one of them. The normal
+equations turn an $m\times n$ problem into an $n\times n$ one, a large saving for
+$m\gg n$, and the price shows up in the sixth section.
+
+\section{Singular value decomposition}
+\tingkat{advanced}
+
+Chapter 9 turned square matrices into diagonal form by choosing one basis.
+The condition is heavy: the matrix must have enough eigenvectors, and for a real matrix its
+eigenvalues must be real. Our calibration matrix is $5\times2$, so it is not even
+square, and there is no such thing as an eigenvalue for it.
+
+The way out: allow two different bases, one in the domain and one in the codomain,
+both orthonormal. With that relaxation every matrix is diagonal; that is the
+singular value decomposition. The numbers on the diagonal are the lengths of the axes of the ellipse
+produced from the unit ball, always real and nonnegative even when the matrix is not
+symmetric.
+
+\kamus{singular value}{nilai singular}{How far a direction is stretched by the
+matrix; zero means that direction is flattened until it disappears.}
+
+\begin{definisi}[Singular values]
+Suppose $\mathbf{A}\in\mathbb{R}^{m\times n}$. The \emph{singular values} of $\mathbf{A}$
+are the square roots of the eigenvalues of $\mathbf{A}^{\top}\mathbf{A}$, sorted in decreasing order:
+$\sigma_{1}\ge\sigma_{2}\ge\dots\ge\sigma_{n}\ge0$ with
+$\sigma_{i}=\sqrt{\lambda_{i}(\mathbf{A}^{\top}\mathbf{A})}$.\index{singular value}
+\end{definisi}
+
+That definition is legitimate if $\mathbf{A}^{\top}\mathbf{A}$ has $n$ real eigenvalues with
+orthonormal eigenvectors; for a symmetric matrix that is true, and we state it as a
+lemma, with one step honestly labelled as not done.
+
+\begin{lemma}[Spectral theorem for symmetric matrices]
+If $\mathbf{S}\in\mathbb{R}^{n\times n}$ is symmetric, then there is an orthonormal basis
+$\mathbf{v}_{1},\dots,\mathbf{v}_{n}$ of $\mathbb{R}^{n}$ and real numbers
+$\lambda_{1},\dots,\lambda_{n}$ with $\mathbf{S}\mathbf{v}_{i}=\lambda_{i}\mathbf{v}_{i}$.
+\end{lemma}
+
+\begin{proof}[Sketch]
+The function $\mathbf{x}\mapsto\mathbf{x}^{\top}\mathbf{S}\mathbf{x}$ is continuous on the closed
+and bounded unit sphere, so it attains a maximum at some point
+$\mathbf{v}_{1}$ of norm one. By the Lagrange multiplier method, that point satisfies
+$\mathbf{S}\mathbf{v}_{1}=\lambda_{1}\mathbf{v}_{1}$; the value $\lambda_{1}$ is that
+maximum. Next, $\mathbf{v}_{1}^{\perp}$ is also invariant under $\mathbf{S}$, because
+$\langle\mathbf{S}\mathbf{w},\mathbf{v}_{1}\rangle
+=\langle\mathbf{w},\mathbf{S}\mathbf{v}_{1}\rangle
+=\lambda_{1}\langle\mathbf{w},\mathbf{v}_{1}\rangle=0$ for $\mathbf{w}\perp\mathbf{v}_{1}$.
+The restriction of $\mathbf{S}$ to $\mathbf{v}_{1}^{\perp}$ is symmetric and of dimension $n-1$, so
+induction supplies the rest of the orthonormal basis.
+
+The step not carried out here is the proof that a continuous function on a closed and bounded set
+attains a maximum. That is the extreme value theorem, proved in Chapter 11,
+and a full proof of this lemma is in Axler, \emph{Linear Algebra Done Right} 4th edition,
+section 7B, or in Hoffman and Kunze's chapter on symmetric operators.
+\end{proof}
+
+With that lemma, $\mathbf{A}^{\top}\mathbf{A}$ is symmetric and
+$\mathbf{x}^{\top}\mathbf{A}^{\top}\mathbf{A}\mathbf{x}=\|\mathbf{A}\mathbf{x}\|^{2}\ge0$,
+so its eigenvalues are nonnegative and their roots are real. Now the main theorem.
+
+\begin{teorema}[Singular value decomposition]
+Every $\mathbf{A}\in\mathbb{R}^{m\times n}$ of rank $r$ can be written as
+\[
+  \mathbf{A}=\mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\top},
+\]
+with $\mathbf{U}\in\mathbb{R}^{m\times m}$ and $\mathbf{V}\in\mathbb{R}^{n\times n}$
+matrices with orthonormal columns, and $\boldsymbol{\Sigma}\in\mathbb{R}^{m\times n}$
+diagonal with entries $\sigma_{1}\ge\dots\ge\sigma_{r}>0$ and the rest zero.
+\index{SVD}
+\end{teorema}
+
+\begin{proof}
+Because $\mathbf{A}^{\top}\mathbf{A}$ is symmetric, the spectral lemma gives an orthonormal basis
+$\mathbf{v}_{1},\dots,\mathbf{v}_{n}$ with
+$\mathbf{A}^{\top}\mathbf{A}\mathbf{v}_{i}=\sigma_{i}^{2}\mathbf{v}_{i}$ and
+$\sigma_{1}\ge\dots\ge\sigma_{n}\ge0$. The nonzero eigenvalues number $r$;
+call their indices $1,\dots,r$.
+
+For $i\le r$ define $\mathbf{u}_{i}=\mathbf{A}\mathbf{v}_{i}/\sigma_{i}$, which
+has norm one because $\|\mathbf{A}\mathbf{v}_{i}\|^{2}
+=\mathbf{v}_{i}^{\top}\mathbf{A}^{\top}\mathbf{A}\mathbf{v}_{i}=\sigma_{i}^{2}$.
+For $i,j\le r$,
+\[
+  \langle\mathbf{u}_{i},\mathbf{u}_{j}\rangle
+  =\frac{1}{\sigma_{i}\sigma_{j}}\mathbf{v}_{i}^{\top}\mathbf{A}^{\top}\mathbf{A}\mathbf{v}_{j}
+  =\frac{\sigma_{j}^{2}}{\sigma_{i}\sigma_{j}}\langle\mathbf{v}_{i},\mathbf{v}_{j}\rangle
+  =\delta_{ij},
+\]
+so $\mathbf{u}_{1},\dots,\mathbf{u}_{r}$ are orthonormal. For $i>r$ we have
+$\|\mathbf{A}\mathbf{v}_{i}\|^{2}=\sigma_{i}^{2}=0$, hence $\mathbf{A}\mathbf{v}_{i}=\mathbf{0}$.
+
+Those vectors do not necessarily fill $\mathbb{R}^{m}$; complete them to an orthonormal basis with
+Gram-Schmidt on any basis of their orthogonal complement. Define
+$\mathbf{B}=\sum_{i\le r}\sigma_{i}\mathbf{u}_{i}\mathbf{v}_{i}^{\top}$. For $j\le r$
+we have $\mathbf{B}\mathbf{v}_{j}=\sigma_{j}\mathbf{u}_{j}=\mathbf{A}\mathbf{v}_{j}$, and
+for $j>r$ both are zero. The two matrices agree on a basis, so $\mathbf{B}=\mathbf{A}$.
+\end{proof}
+
+The geometric reading: the unit ball is mapped by $\mathbf{A}$ to an ellipsoid. The columns
+$\mathbf{v}_{i}$ point along the axes of the ball, $\mathbf{u}_{i}$ along the axes of the ellipsoid, and $\sigma_{i}$
+is the length of that axis: $\mathbf{V}^{\top}$ rotates, $\boldsymbol{\Sigma}$ stretches,
+$\mathbf{U}$ rotates again.
+
+Figure~\ref{fig:svd-lingkaran-elips} carries out that reading on
+$\mathbf{A}=\begin{pmatrix}0&3\\4&1\end{pmatrix}$: the axis $\mathbf{v}_{1}$, tilted
+$26.57^\circ$, ends up as the axis $\mathbf{u}_{1}$ of the ellipse, tilted
+$71.57^\circ$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.55]
+  \draw[->,gray] (-1.3,0)--(1.3,0);
+  \draw[->,gray] (0,-1.3)--(0,1.3);
+  \draw[thick,accent] (0,0) circle (1);
+  \draw[->,very thick,blue!55!black] (0,0)--(0.894,0.447)
+    node[above right=-3pt] {$\mathbf{v}_{1}$};
+  \draw[->,very thick,blue!55!black] (0,0)--(-0.447,0.894)
+    node[above left=-3pt] {$\mathbf{v}_{2}$};
+  \node[below,font=\small] at (0,-1.5) {unit circle};
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[scale=0.68]
+  \draw[->,gray] (-3.5,0)--(3.5,0);
+  \draw[->,gray] (0,-4.6)--(0,4.6);
+  \draw[thick,accent] plot[domain=0:360,samples=160]
+    ({3*sin(\x)},{4*cos(\x)+sin(\x)});
+  \draw[->,very thick,blue!55!black] (0,0)--(1.342,4.025)
+    node[right=3pt] {$\sigma_{1}\mathbf{u}_{1}$};
+  \draw[->,very thick,blue!55!black] (0,0)--(2.683,-0.894)
+    node[below right=-3pt] {$\sigma_{2}\mathbf{u}_{2}$};
+  \node[below,font=\small] at (0,-5.1) {its image};
+\end{tikzpicture}
+\caption{The action of $\mathbf{A}=\begin{pmatrix}0&3\\4&1\end{pmatrix}$ on the unit circle.
+Left: two orthonormal axes of the circle, $\mathbf{v}_{1}=(2,1)/\sqrt{5}$ and
+$\mathbf{v}_{2}=(-1,2)/\sqrt{5}$. Right: the image is an ellipse with semi-axes
+$\sigma_{1}=3\sqrt{2}\approx4.243$ (numpy prints $4.242641$) along
+$\mathbf{u}_{1}=(1,3)/\sqrt{10}$, and $\sigma_{2}=2\sqrt{2}\approx2.828$ (numpy
+$2.828427$) along $\mathbf{u}_{2}=(3,-1)/\sqrt{10}$.}
+\label{fig:svd-lingkaran-elips}
+\end{figure}
+
+The sum form $\mathbf{A}=\sum_{i}\sigma_{i}\mathbf{u}_{i}\mathbf{v}_{i}^{\top}$
+is the most honest way to read it: the matrix is broken into $r$ layers of rank
+one, ordered from the largest contribution. Truncating after $k$ terms gives the best
+rank-$k$ approximation in the Frobenius norm; that is the Eckart-Young theorem, whose proof
+is not carried out here and can be read in Golub and Van Loan, section 2.4.
+
+Figure~\ref{fig:potret-singular} displays the singular value portrait of the same matrix:
+truncating after the first term kills $\sigma_{2}$, and the remaining error is exactly
+$\sigma_{2}=2.828427$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=9.6cm, height=5.4cm,
+  ybar, bar width=15pt,
+  xmin=0.35, xmax=2.65, ymin=0, ymax=6.4,
+  ylabel={singular value},
+  xtick={1,2}, xticklabels={$\sigma_{1}$,$\sigma_{2}$},
+  tick label style={font=\small},
+  label style={font=\small},
+  axis lines=left,
+  legend style={font=\small,draw=none,at={(0.03,0.97)},anchor=north west},
+  legend cell align=left,
+]
+\addplot[fill=accent!55,draw=accent,bar shift=-8.5pt]
+  coordinates {(1,4.243) (2,2.828)};
+\addlegendentry{full $\mathbf{A}$}
+\addplot[fill=blue!25,draw=blue!55!black,bar shift=8.5pt]
+  coordinates {(1,4.243) (2,0)};
+\addlegendentry{$k=1$}
+\draw[<->,gray,thick] (axis cs:2.30,0)--(axis cs:2.30,2.828)
+  node[midway,right=2pt,font=\scriptsize] {$\sigma_{2}$};
+\draw[gray,densely dotted] (axis cs:2.03,2.828)--(axis cs:2.30,2.828);
+\end{axis}
+\end{tikzpicture}
+\caption{Singular value portrait of $\mathbf{A}=\begin{pmatrix}0&3\\4&1\end{pmatrix}$.
+Red bars: full $\mathbf{A}$, $\sigma_{1}=4.243$ and $\sigma_{2}=2.828$. Blue
+bars: the rank-one approximation $\sigma_{1}\mathbf{u}_{1}\mathbf{v}_{1}^{\top}$, which
+leaves zero in the second slot. The difference of their tips, namely $\sigma_{2}=2.828$,
+is the Frobenius error of that approximation.}
+\label{fig:potret-singular}
+\end{figure}
+
+Several consequences follow directly, and all of them are used in the next section.
+
+\begin{akibat}
+For $\mathbf{A}\in\mathbb{R}^{m\times n}$ with singular values
+$\sigma_{1}\ge\dots\ge\sigma_{r}>0$:
+\begin{enumerate}
+  \item $\operatorname{rank}\mathbf{A}=r$, the number of nonzero singular values;
+  \item $\|\mathbf{A}\mathbf{x}\|\le\sigma_{1}\|\mathbf{x}\|$ for every $\mathbf{x}$,
+        and that bound is attained;
+  \item $\|\mathbf{A}\|_{F}^{2}=\sum_{i}\sigma_{i}^{2}$ and
+        $\|\mathbf{A}\|_{2}=\sigma_{1}$;
+  \item if $\mathbf{A}$ is square and invertible,
+        $|\det\mathbf{A}|=\prod_{i}\sigma_{i}$ and
+        $\kappa(\mathbf{A})=\sigma_{1}/\sigma_{n}$.
+\end{enumerate}
+\end{akibat}
+
+\begin{proof}
+First item: $\mathbf{A}\mathbf{x}=\sum_{i}\sigma_{i}\mathbf{u}_{i}
+(\mathbf{v}_{i}^{\top}\mathbf{x})$, so the range of $\mathbf{A}$ is spanned by
+$\mathbf{u}_{1},\dots,\mathbf{u}_{r}$, which are linearly independent. Second item:
+$\|\mathbf{A}\mathbf{x}\|^{2}=\sum_{i}\sigma_{i}^{2}(\mathbf{v}_{i}^{\top}\mathbf{x})^{2}
+\le\sigma_{1}^{2}\|\mathbf{x}\|^{2}$, with equality at $\mathbf{x}=\mathbf{v}_{1}$.
+Third item: the cross terms vanish, so the squared Frobenius norm is the sum of
+$\sigma_{i}^{2}$. Fourth item: $|\det\mathbf{A}|=|\det\mathbf{U}\det\boldsymbol{\Sigma}
+\det\mathbf{V}^{\top}|=\prod_{i}\sigma_{i}$, since the determinant of an orthogonal matrix is $\pm1$.
+\end{proof}
+
+The number $\kappa$ in the fourth item is the \emph{condition number}, the ratio of the largest
+singular value to the smallest; for a matrix of rank less than $n$ the ratio is infinite.
+A large $\kappa$ means one direction is almost flat, so a small error in the data becomes a
+large error in the answer; the sixth section uses it to compare two ways of
+solving least squares.\index{condition number}
+
+One warning: singular values are not eigenvalues. The matrix
+$\begin{pmatrix}0&1\\0&0\end{pmatrix}$ has eigenvalues $0$ and $0$, while its singular
+values are $1$ and $0$. The two agree only when the matrix is symmetric and positive
+semidefinite.
+
+\section{Pseudoinverse and minimum-norm solutions}
+\tingkat{advanced}
+
+Now we return to the attacker's question. The score is one number, the counters are three,
+and the set of changes that give the same shift contains infinitely many answers. All those
+answers are correct; what separates them is the size of the change, and the attacker wants
+the smallest.
+
+\begin{untukanak}
+Imagine you have to go to the shop at the end of the street. There are many roads: through the
+market, across the field, or around by the bridge. All of them reach the same shop. If all
+you count is ``arrive or not'', every road is equally good. But if you count
+footsteps, only one road is shortest, and that road is usually the
+straightest.
+
+Remember the two rulers that differ by one hundredth of a centimeter? A difference that small
+drowns easily in reading mistakes. That is why two roads that are the same mathematically can
+give very different answers when the numbers are computed by a machine.
+
+In this chapter we will learn why among many roads there is one that is shortest, why that
+shortest road is always perpendicular to every other road that does not change the
+destination, and why a machine sometimes chooses a road that is not the most direct.
+\end{untukanak}
+
+The tool that answers this is the generalized inverse. $\mathbf{A}$ is not necessarily square, so it
+does not necessarily have an inverse. The singular value decomposition gives a way to invert ``as much
+as can be inverted'': invert every $\sigma_{i}$ that is nonzero, and let a direction that is
+already lost stay lost.
+
+\kamus{pseudoinverse}{pseudoinvers}{An inverse that still works when some directions are already
+flat: what can be inverted is inverted, what is lost is left lost.}
+
+\begin{definisi}[Pseudoinverse]
+Suppose $\mathbf{A}=\mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\top}$ has rank $r$.
+The \emph{pseudoinverse} $\mathbf{A}^{+}\in\mathbb{R}^{n\times m}$ is defined as
+\[
+  \mathbf{A}^{+}=\mathbf{V}\boldsymbol{\Sigma}^{+}\mathbf{U}^{\top},
+  \qquad
+  \boldsymbol{\Sigma}^{+}=\operatorname{diag}(1/\sigma_{1},\dots,1/\sigma_{r},0,\dots,0),
+\]
+that is, the matrix $\boldsymbol{\Sigma}$ transposed and then with every nonzero entry
+inverted.\index{pseudoinverse}
+\end{definisi}
+
+$\mathbf{A}^{+}$ always exists, even for the zero matrix. If $\mathbf{A}$ is square and
+invertible, all $\sigma_{i}>0$ and $\mathbf{A}^{+}=\mathbf{A}^{-1}$; this definition
+extends the inverse, it does not replace it.
+
+The vector $\mathbf{A}^{+}\mathbf{b}$ answers two demands at once: the residual is smallest, and
+among those with the smallest residual, its length is shortest.
+
+\begin{teorema}
+For every $\mathbf{b}\in\mathbb{R}^{m}$, the vector
+$\mathbf{x}^{+}=\mathbf{A}^{+}\mathbf{b}$ satisfies
+$\|\mathbf{A}\mathbf{x}^{+}-\mathbf{b}\|\le\|\mathbf{A}\mathbf{x}-\mathbf{b}\|$ for
+all $\mathbf{x}$, and among all vectors satisfying that inequality,
+$\mathbf{x}^{+}$ has the smallest norm.
+\end{teorema}
+
+\begin{proof}
+Write $\mathbf{A}=\mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\top}$ and let
+$\mathbf{y}=\mathbf{V}^{\top}\mathbf{x}$. Because $\mathbf{V}$ is square with orthonormal
+columns, $\|\mathbf{x}\|=\|\mathbf{y}\|$ and the map $\mathbf{x}\mapsto\mathbf{y}$ is
+bijective. Expand $\mathbf{b}$ along the columns of $\mathbf{U}$:
+$\mathbf{b}=\sum_{i=1}^{r}b_{i}\mathbf{u}_{i}+\mathbf{b}_{\perp}$ with
+$b_{i}=\langle\mathbf{u}_{i},\mathbf{b}\rangle$ and $\mathbf{b}_{\perp}$ orthogonal
+to all $\mathbf{u}_{i}$. Then
+\[
+  \mathbf{A}\mathbf{x}-\mathbf{b}
+  =\sum_{i=1}^{r}(\sigma_{i}y_{i}-b_{i})\mathbf{u}_{i}+\sum_{i=r+1}^{m}0\cdot\mathbf{u}_{i}
+   -\mathbf{b}_{\perp},
+\]
+and the three groups of terms are mutually orthogonal. Therefore
+\[
+  \|\mathbf{A}\mathbf{x}-\mathbf{b}\|^{2}
+  =\sum_{i=1}^{r}(\sigma_{i}y_{i}-b_{i})^{2}+\|\mathbf{b}_{\perp}\|^{2}.
+\]
+The last term does not depend on $\mathbf{x}$, so the minimum is attained with
+$y_{i}=b_{i}/\sigma_{i}$ for $i\le r$. The coordinates $y_{r+1},\dots,y_{n}$ appear in
+no formula: whatever their values, the squared residual is the same. But
+$\|\mathbf{y}\|^{2}=\sum_{i\le r}(b_{i}/\sigma_{i})^{2}+\sum_{i>r}y_{i}^{2}$, so the
+minimum norm is attained when $y_{i}=0$ for $i>r$. The resulting vector is
+$\mathbf{x}^{+}=\sum_{i\le r}(b_{i}/\sigma_{i})\mathbf{v}_{i}
+=\mathbf{V}\boldsymbol{\Sigma}^{+}\mathbf{U}^{\top}\mathbf{b}$.
+\end{proof}
+
+That proof contains the answer to the attacker's question. On an underdetermined system, $n>r$, and
+the coordinates $y_{r+1},\dots,y_{n}$ do not affect the residual at all; those coordinates
+lie along $\mathbf{v}_{r+1},\dots,\mathbf{v}_{n}$, exactly the vectors that span
+the kernel of $\mathbf{A}$. So the set of all solutions is $\mathbf{x}^{+}+\ker\mathbf{A}$, an
+affine space of dimension $n-r$, and the pseudoinverse picks the point with zero kernel component:
+the only one orthogonal to the kernel, that is, in the row space of $\mathbf{A}$.
+Every other solution is $\mathbf{x}^{+}$ plus a nonzero vector in the kernel, and that
+addition increases the length by Pythagoras:
+$\|\mathbf{x}^{+}+\mathbf{k}\|^{2}=\|\mathbf{x}^{+}\|^{2}+\|\mathbf{k}\|^{2}$.
+
+For the two extreme cases there are closed formulas.
+
+\begin{akibat}
+If $\mathbf{A}$ has full column rank, $\mathbf{A}^{+}
+=(\mathbf{A}^{\top}\mathbf{A})^{-1}\mathbf{A}^{\top}$. If $\mathbf{A}$ has full
+row rank, $\mathbf{A}^{+}=\mathbf{A}^{\top}(\mathbf{A}\mathbf{A}^{\top})^{-1}$.
+\end{akibat}
+
+\begin{proof}
+For the first case we repeat the argument with the SVD. Take
+$\mathbf{A}=\mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\top}$ with $\mathbf{V}$ square and
+orthonormal; then
+\[
+  (\mathbf{A}^{\top}\mathbf{A})^{-1}\mathbf{A}^{\top}
+  =\mathbf{V}\boldsymbol{\Sigma}^{-2}\mathbf{V}^{\top}\mathbf{V}\boldsymbol{\Sigma}\mathbf{U}^{\top}
+  =\mathbf{V}\boldsymbol{\Sigma}^{-1}\mathbf{U}^{\top}=\mathbf{A}^{+}.
+\]
+The second case is obtained by applying the first to $\mathbf{A}^{\top}$ and then
+transposing: $(\mathbf{A}^{\top})^{+}=(\mathbf{A}\mathbf{A}^{\top})^{-1}\mathbf{A}$,
+and its transpose is $\mathbf{A}^{\top}(\mathbf{A}\mathbf{A}^{\top})^{-1}$. Since
+$\mathbf{A}^{+}=(\mathbf{A}^{\top})^{+}{}^{\top}$ by definition, the result is correct.
+\end{proof}
+
+That second consequence is what answers the attacker's problem. The $2\times3$ detector matrix has full
+row rank, so the minimum change is
+$\mathbf{A}^{\top}(\mathbf{A}\mathbf{A}^{\top})^{-1}\boldsymbol{\delta}$, and that formula
+needs only the inverse of a $2\times2$ matrix. Note that
+$\mathbf{A}\mathbf{A}^{\top}$ is invertible precisely because its rows are linearly independent, not
+its columns.
+
+\begin{tantangan}
+Take
+\[
+  \mathbf{A}=\begin{pmatrix}1&0\\0&1\\1&1\end{pmatrix},\qquad \mathbf{b}=(1,1,3).
+\]
+The system $\mathbf{A}\mathbf{x}=\mathbf{b}$ has no solution: the first two rows force
+$\mathbf{x}=(1,1)$, while the third row demands $x_{1}+x_{2}=3$.
+
+There is still one least-squares solution, because the columns are linearly independent. Determine $\hat{\mathbf{x}}$, then find all values of $c$ such that for $\mathbf{b}=(1,1,c)$ the length of the least-squares residual is exactly $1$. There are two answers, and both are symmetric about $c=2$.
+
+Hint 1: the residual is always parallel to one fixed direction; find that direction first.
+
+Hint 2: the distance from $\mathbf{b}$ to the column plane is $|c-2|/\sqrt{3}$, so only one equation remains to be solved.
+
+If you get stuck, go back to the section Least squares and the normal equations.
+\end{tantangan}
+
+\section{Why SVD is safer than the normal equations}
+\tingkat{advanced}
+
+The normal equations and the pseudoinverse give the same answer mathematically. Numerically
+the two differ widely, and the reason is one line: the normal equations work on
+$\mathbf{A}^{\top}\mathbf{A}$, whose singular values are $\sigma_{i}^{2}$, not
+$\sigma_{i}$. Since the condition number is a ratio of singular values, it is squared as well.
+
+\begin{akibat}
+If $\mathbf{A}$ has full column rank, $\kappa(\mathbf{A}^{\top}\mathbf{A})
+=\kappa(\mathbf{A})^{2}$.
+\end{akibat}
+
+\begin{proof}
+From $\mathbf{A}=\mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\top}$ we get
+$\mathbf{A}^{\top}\mathbf{A}=\mathbf{V}\boldsymbol{\Sigma}^{2}\mathbf{V}^{\top}$, with
+$\mathbf{V}$ orthogonal. So the singular values of $\mathbf{A}^{\top}\mathbf{A}$ are
+$\sigma_{i}^{2}$, and the ratio of largest to smallest becomes
+$\sigma_{1}^{2}/\sigma_{n}^{2}=(\sigma_{1}/\sigma_{n})^{2}$.
+\end{proof}
+
+It means this. In binary fractions with about sixteen digits, the relative error of the
+answer is roughly $\kappa$ times the relative error of the data: at $\kappa=10^{7}$ nine
+digits remain, at $\kappa^{2}=10^{14}$ two remain, and at $\kappa=10^{8}$ every digit is
+gone.
+
+The numbers in the following table were computed with numpy and scipy, against a 50-digit reference
+from mpmath. The first row is the probe calibration from the chapter opening; the second row is a
+degree-nine polynomial fit on twelve points, a problem that looks
+harmless.
+
+\begin{center}
+\begin{tabular}{lrrr}
+\hline
+case & $\kappa(\mathbf{A})$ & relative error normal equations & relative error SVD \\
+\hline
+calibration $5\times2$ & $7.36\times10^{3}$ & $9.10\times10^{-11}$ & $4.72\times10^{-13}$ \\
+polynomial $12\times10$ & $6.84\times10^{6}$ & $2.87\times10^{-4}$ & $4.90\times10^{-12}$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Both rows follow the same pattern. In the first row, $\kappa=7.36\times10^{3}$ and
+$\kappa^{2}=5.42\times10^{7}$; the normal equations differ from the
+reference by $9.10\times10^{-11}$, the SVD by $4.72\times10^{-13}$, a ratio of $193$. In the second row,
+$\kappa(\mathbf{A})=6.84\times10^{6}$ and $\kappa(\mathbf{A}^{\top}\mathbf{A})
+=4.68\times10^{13}$; the normal equations differ by $2.87\times10^{-4}$, the SVD
+by $4.90\times10^{-12}$, a ratio of $5.9\times10^{7}$. That difference grows together with
+$\kappa$, far faster for the normal equations; both are still below the bound
+$\kappa^{2}\epsilon$ because that bound is a worst case, not a prediction. What matters is the
+order, not the absolute numbers.
+
+The squared residuals of the two roads are nearly the same, $4.47019\times10^{-6}$ versus
+$4.47018\times10^{-6}$, even though the coefficients differ widely: a small residual does not prove the
+coefficients are right.
+
+The honest conclusion: SVD does not remove the sensitivity, it only removes one source of
+magnification, namely the squaring, so the error grows like $\kappa$ and not like
+$\kappa^{2}$. When $\kappa$ approaches $10^{16}$, no double precision
+saves you; what remains is regularization, that is, deliberately discarding directions with
+small $\sigma_{i}$, equivalent to approximating $\mathbf{A}$ by a matrix of lower
+rank. Chapter 26 discusses how to choose the threshold.
+
+\section{Worked examples}
+\tingkat{intermediate}
+
+The four computations below use simple fractions, so they can be checked again by
+hand without a machine.
+
+\emph{First, projection onto a plane.} Take
+$\mathbf{a}_{1}=(1,1,0)$, $\mathbf{a}_{2}=(1,0,1)$, and $\mathbf{b}=(3,1,3)$ in
+$\mathbb{R}^{3}$. The subspace $W=\operatorname{span}(\mathbf{a}_{1},\mathbf{a}_{2})$
+has dimension two. Gram-Schmidt gives
+\[
+  \mathbf{q}_{1}=\frac{1}{\sqrt{2}}(1,1,0),\qquad
+  \mathbf{u}_{2}=\mathbf{a}_{2}-\frac{1}{\sqrt{2}}\mathbf{q}_{1}
+  =\Bigl(\tfrac12,-\tfrac12,1\Bigr),\qquad
+  \mathbf{q}_{2}=\frac{1}{\sqrt{6}}(1,-1,2),
+\]
+because $\|\mathbf{u}_{2}\|=\sqrt{3/2}=\sqrt{6}/2$. The projection coefficients are
+$\langle\mathbf{b},\mathbf{q}_{1}\rangle=4/\sqrt{2}=2\sqrt{2}$ and
+$\langle\mathbf{b},\mathbf{q}_{2}\rangle=8/\sqrt{6}$. So
+\[
+  \mathbf{p}=2\sqrt{2}\,\mathbf{q}_{1}+\frac{8}{\sqrt{6}}\,\mathbf{q}_{2}
+  =(2,2,0)+\frac{4}{3}(1,-1,2)
+  =\Bigl(\tfrac{10}{3},\tfrac23,\tfrac83\Bigr).
+\]
+The residual is $\mathbf{r}=\mathbf{b}-\mathbf{p}=(-\tfrac13,\tfrac13,\tfrac13)$, with
+$\|\mathbf{r}\|=1/\sqrt{3}=0.577350$. Check: $\mathbf{a}_{1}^{\top}\mathbf{r}=0$
+and $\mathbf{a}_{2}^{\top}\mathbf{r}=0$, so the residual is indeed perpendicular to both spanning vectors.
+The distance from $\mathbf{b}$ to the plane is $0.577$; no other point in $W$ is closer.
+
+\emph{Second, least squares $5\times2$.} For the chapter's opening data,
+$\mathbf{A}$ has columns $(1,1,1,1,1)^{\top}$ and $(100,101,102,103,104)^{\top}$, so
+\[
+  \mathbf{A}^{\top}\mathbf{A}=
+  \begin{pmatrix}5&510\\ 510&52030\end{pmatrix},
+  \qquad
+  \mathbf{A}^{\top}\mathbf{y}=\begin{pmatrix}1540\\ 157109.7\end{pmatrix},
+  \qquad
+  \det(\mathbf{A}^{\top}\mathbf{A})=5\cdot52030-510^{2}=50 .
+\]
+Cramer's rule gives
+\begin{align*}
+  a&=\frac{1540\cdot52030-510\cdot157109.7}{50}=\frac{253}{50}=5.06,\\
+  b&=\frac{5\cdot157109.7-510\cdot1540}{50}=\frac{148.5}{50}=2.97 .
+\end{align*}
+The predicted readings become $302.06$, $305.03$, $308.00$, $310.97$, and $313.94$,
+whereas the actual data are $302.0$, $305.1$, $307.9$, $311.2$, $313.8$. The residual is
+\[
+  \mathbf{r}=(-0.06,\;0.07,\;-0.10,\;0.23,\;-0.14),
+  \qquad
+  \|\mathbf{r}\|^{2}=0.0910,\qquad \|\mathbf{r}\|=0.301662 .
+\]
+Two checks must pass if the computation is right: $\sum_{i}r_{i}=0$ and
+$\sum_{i}t_{i}r_{i}=0$. The first because $\mathbf{r}$ is perpendicular to the column of ones, the
+second because it is perpendicular to the column $t$. Both are indeed zero here.
+
+\emph{Third, SVD of a $3\times2$ matrix.} Take
+$\mathbf{A}=\begin{pmatrix}1&1\\ 1&1\\ 1&-1\end{pmatrix}$. Then
+\[
+  \mathbf{A}^{\top}\mathbf{A}=\begin{pmatrix}3&1\\ 1&3\end{pmatrix},
+  \qquad
+  \lambda^{2}-6\lambda+8=0\;\Longrightarrow\;\lambda=4,\,2,
+\]
+so $\sigma_{1}=2$ and $\sigma_{2}=\sqrt{2}=1.41421$, with
+$\kappa(\mathbf{A})=\sqrt{2}$. Its right singular vectors are
+$\mathbf{v}_{1}=\frac{1}{\sqrt{2}}(1,1)$ and
+$\mathbf{v}_{2}=\frac{1}{\sqrt{2}}(1,-1)$; the left singular vectors are computed from
+$\mathbf{u}_{i}=\mathbf{A}\mathbf{v}_{i}/\sigma_{i}$, namely
+$\mathbf{u}_{1}=\frac{1}{\sqrt{2}}(1,1,0)$ and $\mathbf{u}_{2}=(0,0,1)$. Check one entry:
+$(2\,\mathbf{u}_{1}\mathbf{v}_{1}^{\top}+\sqrt{2}\,\mathbf{u}_{2}\mathbf{v}_{2}^{\top})_{32}
+=-\sqrt{2}/\sqrt{2}=-1$, which matches $\mathbf{A}$.
+
+\emph{Fourth, a rank-one matrix.} Take
+$\mathbf{B}=\begin{pmatrix}1&2\\ 2&4\\ 3&6\end{pmatrix}$, whose second column is twice
+the first column. Then $\mathbf{B}^{\top}\mathbf{B}=14\begin{pmatrix}1&2\\ 2&4\end{pmatrix}$
+with eigenvalues $70$ and $0$, so $\sigma_{1}=\sqrt{70}=8.36660$ and
+$\sigma_{2}=0$. Its rank is one, and $\kappa$ is infinite. For $\mathbf{b}=(1,0,0)$,
+the projection onto the column space is $\frac{1}{14}(1,2,3)$, so $\mathbf{B}\mathbf{x}$
+must equal that vector. Since $\mathbf{B}(s,2s)=5s(1,2,3)$, we need
+$5s=1/14$, that is, $s=1/70$. The minimum-norm solution is
+\[
+  \mathbf{x}^{+}=\Bigl(\tfrac{1}{70},\tfrac{2}{70}\Bigr)=(0.0142857,\;0.0285714),
+  \qquad
+  \|\mathbf{x}^{+}\|=\frac{\sqrt{5}}{70}=0.031944 .
+\]
+The least-squares residual:
+\[
+  \mathbf{r}=\mathbf{b}-\mathbf{B}\mathbf{x}^{+}
+  =\Bigl(\tfrac{13}{14},-\tfrac17,-\tfrac{3}{14}\Bigr),
+  \qquad
+  \|\mathbf{r}\|=\sqrt{13/14}=0.963624 .
+\]
+That residual cannot be zero: $\mathbf{b}$ lies outside the column space. Other solutions still give the
+same residual, for instance $\mathbf{x}^{+}+(-\tfrac27,\tfrac17)$, but their norm is
+larger.
+
+\kertas{Repeat the second computation with the last reading $314.3$ and not $313.8$.
+Predict first whether $a$ goes up or down, then compute. Note that the point
+with the largest $t$ shifts the line more than a point in the middle; explain this through the
+columns of $\mathbf{A}$ and the formula $(\mathbf{A}^{\top}\mathbf{A})^{-1}\mathbf{A}^{\top}$.
+Compute the new $\|\mathbf{r}\|$ as well and compare it with $0.301662$.}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+The two blocks below were run with numpy 2.5.2, scipy 1.18.0, Python 3.14.4; the output is
+copied as it stands.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from scipy.linalg import lstsq, qr
+
+np.set_printoptions(precision=6, suppress=True, linewidth=72)
+
+# 1. projection onto a plane
+a1 = np.array([1., 1., 0.])
+a2 = np.array([1., 0., 1.])
+b = np.array([3., 1., 3.])
+Q, _ = qr(np.column_stack([a1, a2]), mode="economic")
+P = Q @ Q.T
+print("Q =\n", Q)
+print("P b =", P @ b, " residual =", b - P @ b)
+nr = np.linalg.norm(b - P @ b)
+print("residual norm =", nr, " 1/sqrt3 =", 1/np.sqrt(3))
+print("P^2 = P:", np.allclose(P @ P, P), " P^T = P:", np.allclose(P.T, P))
+
+# 2. least squares 5x2
+t = np.array([100., 101., 102., 103., 104.])
+A = np.column_stack([np.ones(5), t])
+y = np.array([302.0, 305.1, 307.9, 311.2, 313.8])
+print("\nA^T A =\n", A.T @ A, " det =", np.linalg.det(A.T @ A))
+print("A^T y =", A.T @ y)
+xn = np.linalg.solve(A.T @ A, A.T @ y)
+xs = lstsq(A, y)[0]
+print("normal equations:", xn)
+print("lstsq           :", xs)
+print("solution gap    :", np.linalg.norm(xn - xs))
+cA = np.linalg.cond(A)
+print("cond A =", cA, " cond A^T A =", np.linalg.cond(A.T @ A))
+r = y - A @ xn
+print("residual =", r, " norm =", np.linalg.norm(r))
+print("A^T r =", A.T @ r)
+
+# 3. SVD of a 3x2 matrix
+S = np.array([[1., 1.], [1., 1.], [1., -1.]])
+U, s, Vt = np.linalg.svd(S, full_matrices=False)
+print("\nsingular:", s)
+print("rank", np.linalg.matrix_rank(S), " cond", np.linalg.cond(S))
+print("U =\n", U, "\nV^T =\n", Vt)
+print("reconstruction error:", np.linalg.norm(U @ np.diag(s) @ Vt - S))
+\end{verbatim}
+Actual output:
+\begin{verbatim}
+Q =
+ [[-0.707107  0.408248]
+ [-0.707107 -0.408248]
+ [-0.        0.816497]]
+P b = [3.333333 0.666667 2.666667]  residual = [-0.333333  0.333333  0.333333]
+residual norm = 0.5773502691896251  1/sqrt3 = 0.5773502691896258
+P^2 = P: True  P^T = P: True
+
+A^T A =
+ [[    5.   510.]
+ [  510. 52030.]]  det = 49.999999999983494
+A^T y = [  1540.  157109.7]
+normal equations: [5.06 2.97]
+lstsq           : [5.06 2.97]
+solution gap    : 5.315035090945416e-10
+cond A = 7358.860135917719  cond A^T A = 54152822.48728771
+residual = [-0.06  0.07 -0.1   0.23 -0.14]  norm = 0.30166206257998296
+A^T r = [0. 0.]
+
+singular: [2.       1.414214]
+rank 2  cond 1.414213562373095
+U =
+ [[-0.707107 -0.      ]
+ [-0.707107 -0.      ]
+ [-0.        1.      ]] 
+V^T =
+ [[-0.707107 -0.707107]
+ [ 0.707107 -0.707107]]
+reconstruction error: 6.568167990716596e-16
+\end{verbatim}
+\end{lab}
+
+Three things need reading. First, $\mathbf{Q}$ from scipy differs in sign from the hand result:
+its columns are $-(1,1,0)/\sqrt{2}$ and $-(1,-1,2)/\sqrt{6}$. The sign of the columns in QR is not unique,
+and $\mathbf{Q}\mathbf{Q}^{\top}$ does not change because of it; the entries of $\mathbf{P}$ stay
+$(10/3,2/3,8/3)$, with residual $(-0.333333,$ $0.333333,$ $0.333333)$.
+
+Second, the value of $\det(\mathbf{A}^{\top}\mathbf{A})$ is reported as $49.999999999983494$ and not
+$50$; the difference $1.7\times10^{-11}$ is purely rounding. What matters is
+$\kappa(\mathbf{A}^{\top}\mathbf{A})=5.415\times10^{7}$, the square of
+$\kappa(\mathbf{A})=7.359\times10^{3}$.
+
+Third, $\mathbf{A}^{\top}\mathbf{r}$ is reported as $(0,0)$ to six digits and the difference between
+the two solutions is $5.32\times10^{-10}$: they only differ in the ninth digit, and that
+is no guarantee.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+import mpmath as mp
+from scipy.linalg import lstsq
+
+mp.mp.dps = 50
+np.set_printoptions(precision=4, suppress=True, linewidth=72)
+
+# 4. rank one: nonzero residual, minimum-norm solution
+B = np.array([[1., 2.], [2., 4.], [3., 6.]])
+b2 = np.array([1., 0., 0.])
+sB = np.linalg.svd(B, compute_uv=False)
+print("singular B:", sB, " rank", np.linalg.matrix_rank(B))
+xb = np.linalg.pinv(B) @ b2
+print("x+ =", xb, " B x+ =", B @ xb)
+nr = np.linalg.norm(B @ xb - b2)
+print("residual norm =", nr, " sqrt(13/14) =", np.sqrt(13/14))
+
+# 5. underdetermined system: minimum norm
+C = np.array([[1., 1., 1.], [0., 1., 1.]])
+b3 = np.array([3., 1.])
+xp = np.linalg.pinv(C) @ b3
+print("\nx+ =", xp, " C x+ =", C @ xp, " norm =", np.linalg.norm(xp))
+print("norm (2,1,0) =", np.linalg.norm([2., 1., 0.]))
+
+# 6. least squares: normal equations vs lstsq vs 50-digit reference
+x = np.linspace(0, 1, 12)
+V = np.vander(x, 10, increasing=True)
+b = V @ (0.1 * np.arange(1, 11)) + 0.001 * np.sin(np.arange(12))
+Vm, bm = mp.matrix(V.tolist()), mp.matrix(b.tolist())
+ref = np.array([float(v) for v in mp.lu_solve(Vm.T * Vm, Vm.T * bm)])
+xne = np.linalg.solve(V.T @ V, V.T @ b)
+xls = lstsq(V, b)[0]
+rel = lambda u: np.linalg.norm(u - ref) / np.linalg.norm(ref)
+print("\ncond V     :", np.linalg.cond(V))
+print("cond V^T V :", np.linalg.cond(V.T @ V))
+print("relative error normal equations:", rel(xne))
+print("relative error lstsq           :", rel(xls))
+print("residual normal equations:", np.linalg.norm(V @ xne - b))
+print("residual lstsq           :", np.linalg.norm(V @ xls - b))
+
+# 7. classical vs modified Gram-Schmidt vs Householder
+def cgs(M):
+    m, n = M.shape
+    Q = np.zeros((m, n)); R = np.zeros((n, n))
+    for j in range(n):
+        v = M[:, j].astype(float).copy()
+        for i in range(j):
+            R[i, j] = Q[:, i] @ M[:, j]
+            v -= R[i, j] * Q[:, i]
+        R[j, j] = np.linalg.norm(v)
+        Q[:, j] = v / R[j, j]
+    return Q
+
+def mgs(M):
+    m, n = M.shape
+    Q = np.zeros((m, n)); R = np.zeros((n, n)); W = M.astype(float).copy()
+    for j in range(n):
+        for i in range(j):
+            R[i, j] = Q[:, i] @ W[:, j]
+            W[:, j] -= R[i, j] * Q[:, i]
+        R[j, j] = np.linalg.norm(W[:, j])
+        Q[:, j] = W[:, j] / R[j, j]
+    return Q
+
+ort = lambda Q: np.linalg.norm(Q.T @ Q - np.eye(Q.shape[1]))
+Qh, _ = np.linalg.qr(V)
+print("\n||Q^T Q - I||  classical  :", ort(cgs(V)))
+print("||Q^T Q - I||  modified   :", ort(mgs(V)))
+print("||Q^T Q - I||  Householder:", ort(Qh))
+\end{verbatim}
+Actual output:
+\begin{verbatim}
+singular B: [8.3666 0.    ]  rank 1
+x+ = [0.0143 0.0286]  B x+ = [0.0714 0.1429 0.2143]
+residual norm = 0.9636241116594315  sqrt(13/14) = 0.9636241116594315
+
+x+ = [2.  0.5 0.5]  C x+ = [3. 1.]  norm = 2.121320343559642
+norm (2,1,0) = 2.23606797749979
+
+cond V     : 6841129.486331141
+cond V^T V : 46788641042301.25
+relative error normal equations: 0.0002869502788738492
+relative error lstsq           : 4.899523677448492e-12
+residual normal equations: 4.4701872339775605e-06
+residual lstsq           : 4.47017846708843e-06
+
+|||Q^T Q - I||  classical  : 0.020506481578936916
+|||Q^T Q - I||  modified   : 3.397900311236548e-10
+|||Q^T Q - I||  Householder: 1.1933579412809552e-15
+\end{verbatim}
+\end{lab}
+
+First reading: the least-squares residual of the rank-one matrix is exactly
+$\sqrt{13/14}$; numpy gives the same number to sixteen digits, so the fractional formula
+in the seventh section is not an approximation.
+
+Second reading: $\mathbf{C}\mathbf{x}=(3,1)$ gives
+$\mathbf{x}^{+}=(2,\,0.5,\,0.5)$ with norm $2.12132$, whereas $(2,1,0)$ gives
+$2.23607$; the difference of squared norms is $0.5$, exactly $2t^{2}$ at $t=0.5$ for
+$\mathbf{k}=(0,1,-1)$. The pseudoinverse chooses $t=0$.
+
+Third and fourth readings: on the $12\times10$ Vandermonde, the normal equations differ by
+$2.87\times10^{-4}$ from the 50-digit reference and \texttt{lstsq} by $4.90\times10^{-12}$,
+even though the residuals are practically the same ($4.47019\times10^{-6}$ versus $4.47018\times10^{-6}$).
+The coefficients are wrong, the residual is right. For Gram-Schmidt,
+classical gives $2.05\times10^{-2}$, modified $3.40\times10^{-10}$, Householder
+$1.19\times10^{-15}$.
+
+\begin{untukdosen}
+The order that has worked: projection first, the definition of the inner product afterwards.
+Students who see the shadow first accept $\mathbf{Q}\mathbf{Q}^{\top}$ as the
+answer to the question ``which point is closest'', not as a magic formula; after that
+Gram-Schmidt becomes a need, not a memorized fact.
+
+Two typical misconceptions. First, $\mathbf{A}^{\top}\mathbf{A}$ is assumed always invertible
+because ``squaring a matrix never gives zero''; use the corollary in the third section, then ask for the
+kernel of $\mathbf{A}^{\top}\mathbf{A}$ for a rank-one $2\times2$ matrix. Second, the SVD
+is assumed to give eigenvalues; the matrix $\begin{pmatrix}0&1\\0&0\end{pmatrix}$ is enough to
+break that.
+
+Class activity: give five clearly non-collinear points, ask half the class
+to project $\mathbf{b}$ by hand and half to use \texttt{lstsq}; compare the
+residual vectors, not the coefficients.
+
+A sign of readiness to go further: a student can explain why adding one equation does not
+always improve the answer, and name one situation in which the pseudoinverse is better
+than the inverse.
+\end{untukdosen}
+
+\section{Summary}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item The inner product supplies length and angle; Cauchy-Schwarz supports the triangle
+        inequality. In an orthonormal basis
+        $\mathbf{v}=\sum_{i}\langle\mathbf{v},\mathbf{q}_{i}\rangle\mathbf{q}_{i}$ and
+        $\|\mathbf{v}\|^{2}=\sum_{i}\langle\mathbf{v},\mathbf{q}_{i}\rangle^{2}$.
+  \item The projection $\mathbf{p}=\mathbf{Q}\mathbf{Q}^{\top}\mathbf{b}$ is the closest point
+        in the subspace, and the residual is perpendicular to the whole subspace. Gram-Schmidt builds an
+        orthonormal basis and gives $\mathbf{A}=\mathbf{Q}\mathbf{R}$.
+  \item Least squares satisfies $\mathbf{A}^{\top}\mathbf{A}\hat{\mathbf{x}}
+        =\mathbf{A}^{\top}\mathbf{b}$; if the columns of $\mathbf{A}$ are linearly independent, the answer is unique.
+  \item Every matrix has $\mathbf{A}=\mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\top}$:
+        the rank is the number of $\sigma_{i}>0$, $\|\mathbf{A}\|_{2}=\sigma_{1}$, and
+        $\kappa(\mathbf{A})=\sigma_{1}/\sigma_{n}$.
+  \item The pseudoinverse $\mathbf{A}^{+}=\mathbf{V}\boldsymbol{\Sigma}^{+}\mathbf{U}^{\top}$
+        gives the smallest residual and at the same time the smallest norm, and on an underdetermined system
+        it chooses the answer perpendicular to the kernel.
+  \item The normal equations work at $\kappa^{2}$, the SVD at $\kappa$; that is why a badly
+        conditioned problem loses digits twice as fast through $\mathbf{A}^{\top}\mathbf{A}$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Project $\mathbf{b}=(1,2,2)$ onto $W=\operatorname{span}\{(1,0,0),(0,1,1)\}$
+        by hand, check with \texttt{numpy.linalg.qr}, then compute the distance from
+        $\mathbf{b}$ to $W$.
+
+  \item Prove $\|\mathbf{b}\|^{2}=\|\operatorname{proj}_{W}\mathbf{b}\|^{2}
+        +\|\mathbf{r}\|^{2}$ for arbitrary $W$ and $\mathbf{b}$, then explain why
+        that equality fails when $\mathbf{p}$ is not the orthogonal projection. (Hint: take a
+        skew basis in $\mathbb{R}^{2}$ for the second part.)
+
+  \item If the columns of $\mathbf{A}$ are orthonormal, prove $\mathbf{A}^{\top}\mathbf{A}=\mathbf{I}$,
+        $\hat{\mathbf{x}}=\mathbf{A}^{\top}\mathbf{b}$, and $\kappa(\mathbf{A})=1$.
+
+  \item Evaluate this claim: \emph{if $\mathbf{A}^{\top}\mathbf{A}$ is invertible then
+        the rows of $\mathbf{A}$ are linearly independent.} Decide whether it is true, false, or not enough
+        evidence to decide, and include a counterexample if needed.
+
+  \item Compute the SVD of $\mathbf{A}=\begin{pmatrix}1&1\\ 1&1\end{pmatrix}$ by hand: singular
+        values, $\mathbf{U}$, $\mathbf{V}$, rank. Determine $\mathbf{A}^{+}\mathbf{b}$
+        for $\mathbf{b}=(1,3)$, compute the residual, check with
+        \texttt{numpy.linalg.pinv}.
+
+  \item Prove that the least-squares residual is always perpendicular to $\operatorname{col}(\mathbf{A})$
+        and conversely, then state where linear independence of the columns is used.
+        (Hint: use the splitting of the norm as in the proof of the normal equations; the
+        ``necessary'' argument chooses the direction $\mathbf{h}$.)
+
+  \item Run Gram-Schmidt on $\{(1,1,1),(1,1,0),(1,0,0)\}$ by hand, compare
+        with \texttt{numpy.linalg.qr}, compute $\|\mathbf{Q}^{\top}\mathbf{Q}-\mathbf{I}\|$
+        for both, and explain why their signs may differ.
+
+  \item Suppose $m<n$ and the rows of $\mathbf{A}$ are linearly independent. Prove that
+        $\mathbf{A}\mathbf{A}^{\top}$ is invertible, and that
+        \[ \mathbf{A}^{\top}(\mathbf{A}\mathbf{A}^{\top})^{-1}\mathbf{b} \]
+        is the solution perpendicular to the kernel of $\mathbf{A}$. (Hint: imitate the proof of the
+        corollary for the full-column case with $\mathbf{A}^{\top}$ as the matrix.)
+
+  \item With the calibration data in the seventh section, change the last reading to
+        $314.3$. Recompute $a$ and $b$ through Cramer's rule, compare with
+        \texttt{scipy.linalg.lstsq}, and explain why a point at the end shifts the line
+        more than a point in the middle.
+
+  \item For $\mathbf{B}=\begin{pmatrix}1&2\\ 2&4\\ 3&6\end{pmatrix}$ and
+        $\mathbf{b}=(1,0,0)$, write all least-squares solutions in the form
+        $\mathbf{x}^{+}+t\mathbf{k}$, determine $\mathbf{k}$, then show that
+        $\|\mathbf{x}^{+}+t\mathbf{k}\|^{2}$ is minimal at $t=0$.
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+What is proved in this chapter: Cauchy-Schwarz and the triangle inequality for an arbitrary
+inner-product space; uniqueness of coefficients in an orthonormal basis; the best-approximation property
+of the projection; the correctness of Gram-Schmidt; the equivalence of least squares with the normal
+equations; the existence of the SVD; and the pseudoinverse theorem. What is borrowed is only the spectral
+lemma, whose proof uses the extreme value theorem on the unit sphere (Chapter 11); here it is only sketched.
+
+Two claims are often popularized. First, the claim that ``the SVD is always stable''. What is true:
+the SVD algorithm is backward stable, meaning the computed answer is the exact answer for
+a matrix that differs slightly from $\mathbf{A}$; the distance to the answer for $\mathbf{A}$
+itself can still grow by a factor of $\kappa$. Second, the claim that truncating small singular values
+``removes noise''. Truncation removes a direction, and whether that direction is noise
+or signal cannot be decided from $\mathbf{A}$ alone.
+
+Primary sources: Axler 4th edition, sections 6A through 6C and 7E through 7F; Anton 11th edition,
+sections 6.1 through 6.4 and 9.4 and 9.5; for the numerical side, Trefethen and Bau,
+\emph{Numerical Linear Algebra}, and Golub and Van Loan, \emph{Matrix Computations}
+4th edition, sections 2.4 and 5.3.
+
+Open questions. The threshold at which a singular value counts as zero has no parameter-free
+answer; the choice depends on the scale of the data and on the error that can be accepted (Chapter 22).
+For large matrices, randomized algorithms only guarantee anything probabilistically. The limit of this chapter:
+real matrices of finite dimension; for complex matrices the transpose is replaced by the conjugate transpose,
+and for infinite-dimensional spaces the SVD is replaced by the decomposition of compact operators, whose
+singular values can accumulate at zero.
+\end{untukpeneliti}
+
+\peta{This chapter follows Anton 11th edition, sections 6.1 (Inner Products), 6.2 (Angle and
+Orthogonality), 6.3 (Gram-Schmidt; QR-Decomposition), 6.4 (Best Approximation; Least
+Squares), 9.4 (Singular Value Decomposition), and 9.5 (Data Compression Using SVD).
+The abstract counterpart is Axler 4th edition, Chapter 6 sections 6A through 6C and Chapter 7 sections 7E
+through 7F, with the spectral theorem in 7B. Strang 6th edition gives the geometric road,
+but the copy in the source directory contains only the cover and the preface. The numerical side:
+Trefethen and Bau; Golub and Van Loan 2.4, 5.3.}

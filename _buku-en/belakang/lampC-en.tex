@@ -1,0 +1,77 @@
+\chapter{Guidelines and Grading Criteria for Exercises}
+\label{app:petunjuk}
+
+The answer key is in Appendix~D, but its form is deliberately incomplete: final numbers
+and sketches of the steps, not full proofs. The reason is consistency. A final number
+without a trace of checking will teach the reader the very habit this book wants to
+remove, and a proof served up whole removes the only useful exercise, namely finding for
+yourself where an argument does not yet close. So use this key as a last comparison, not
+as a place to start. What is provided here is a way to check your own work before you
+open Appendix~D.
+
+\section*{Three kinds of exercises and how to check them}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{2.6cm}p{5.6cm}p{5.8cm}@{}}
+\toprule
+\textbf{Type} & \textbf{What is assessed} & \textbf{How to check} \\
+\midrule
+Proof & every step must start from a definition or a result already
+  proved; no leaps are allowed & swap drafts with a classmate; ask her
+  to point to the sentence she cannot derive herself \\
+Computation & the final number and the intermediate steps & redo it with Python; compute the relative
+  error against the exact result; check whether the answer makes sense in
+  order of magnitude \\
+Evaluating a claim & the quality of the argument, not a binary true-false & first write down what
+  must be true for the claim to hold; look for one example that breaks it;
+  only then decide ``true'', ``false'', or ``not enough evidence'' \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{Verification tools per part}
+
+\begin{center}
+\small
+\begin{tabular}{@{}llp{7.2cm}@{}}
+\toprule
+\textbf{Chapter} & \textbf{Tool} & \textbf{Typical check} \\
+\midrule
+1--5 & \texttt{python3} & table of values, factorization, partial sums; compare
+  with an analytic estimate (e.g. $H_n\approx\ln n+\gamma$) \\
+6--10 & \texttt{numpy}, \texttt{scipy.linalg} & rank, null space (\texttt{null\_space}),
+  eigenvalues, SVD, least squares (\texttt{lstsq}); check
+  $\|A\mathbf{v}-\lambda\mathbf{v}\|$ \\
+11--16 & \texttt{scipy.integrate}, finite differences & quadrature vs antiderivative; rate of
+  error at several $h$ or several $n$ \\
+17--21 & \texttt{numpy.random}, \texttt{scipy.stats} & Monte Carlo simulation with a
+  fixed \emph{seed}; compare the empirical probability with the exact probability and
+  report its standard error \\
+22 & \texttt{struct}, \texttt{float.hex} & bitfields, ULP, machine epsilon;
+  compare the naive algorithm with Kahan \\
+23--24 & \texttt{scipy.optimize} & \texttt{linprog}, \texttt{minimize},
+  \texttt{milp}; check the KKT conditions and strong duality numerically \\
+25--26 & \texttt{numpy} & gradient check by finite differences; training vs validation
+  error curves at several regularization settings \\
+27--30 & \texttt{numpy}, \texttt{scikit-learn} when available & confusion matrix from
+  stored predictions; Wilson interval for proportions; accuracy under attack
+  for several $\varepsilon$ and several \emph{seed} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{How to grade your own work}
+
+\begin{enumerate}
+  \item First write down what is given and what is to be proved.
+        If neither is clear, the difficulty is not in the mathematics.
+  \item For computation exercises, guess the answer before computing. A wrong guess
+        is still useful: it shows where intuition misses.
+  \item Compare the result by two different methods. One method can be right by
+        accident; two methods that agree are rarely an accident.
+  \item If the results differ greatly, look for the mistake in a simple case first
+        (one variable, one step, $n=1$).
+  \item Write down the limits of validity of the answer. An answer that is correct for a
+        special case but presented as a general answer is the mistake that most often slips through.
+\end{enumerate}

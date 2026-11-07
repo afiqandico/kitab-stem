@@ -1,0 +1,1070 @@
+\chapter{Sequences and Limits}
+
+A small program prints one number per line. The rule is only one: the next term is
+the square root of two plus the previous term, starting from one. What appears on
+the screen: 1.000000, then 1.732051, 1.931852, 1.982890, 1.995718, 1.998929, and
+so on. On the twelfth line the screen shows 1.999999738545. That number appears to
+stop moving. But appearing and being true are two different things: the program
+does not know whether the thousandth line will still shift, and it also does not
+know which number this run is heading toward.
+
+The second example is more mischievous. The sequence $(1+1/n)^n$ for $n=10$ has
+value 2.5937424601, for $n=100$ has value 2.7048138294, for $n=1000$ has value
+2.7169239322, and for $n=10^7$ has value 2.7182816941. The first six digits appear
+settled at 2.71828. But the true value at $n=10^7$ is 2.7182816925, so the last
+seven digits in that machine output are rounding error, not a sign of closeness.
+A table can deceive in two directions at once: it makes a divergent sequence look
+calm, and it makes a convergent sequence look off course. Chapter 22 will explain
+why machine arithmetic behaves that way; this chapter prepares the tools that let
+us not depend on tables.
+
+Chapter 3 already supplied the raw material: the field axioms, the order axioms,
+and the supremum property. But the supremum only works once the set of terms has
+been collected; it does not tell us whether the sequence stops moving. What we
+need is a definition that can be checked on paper, and then theorems that turn
+that check into estimated work: the $\varepsilon$-$N$ definition, the algebraic
+properties of limits, the squeeze theorem, monotone sequences, subsequences, the
+Cauchy criterion, and the limit superior.
+
+\begin{untukanak}
+Have you ever walked toward a door under a strange rule: each step covers only
+half of the distance that remains? The first step takes you halfway. The second
+cuts half of what is left, so you are already three quarters of the way. The third
+adds another eighth. Every step moves you forward, yet there is always a remainder
+you have not reached. If that rule is kept up, you never actually touch the door.
+
+Even so, there are questions that can be answered with certainty. How many steps
+are needed so that the distance to the door is less than a hand's width? The answer
+can be computed before you set out, and it does not change when the room becomes
+twice as long: you only need a few extra steps. So there are two different things
+here. ``Never arrives'' and ``as close as one likes can be approached'' are not two
+contradictory statements. In fact both are true at once.
+
+Now the question that makes one curious. What if the rule is changed slightly, say
+each step covers a third of the remaining distance, or half plus a little? Can you
+still guess where that journey ends, and can its speed still be computed? In this
+chapter we will know why such questions have definite answers, and why we never
+obtain the answers merely by watching numbers on a screen.
+\end{untukanak}
+
+\section{The definition of a limit and how to use it}
+\tingkat{basic}
+
+\kamus{sequence}{barisan}{a run of numbers given consecutive numbers, like the house
+numbers along one side of a street that never ends}
+
+A limit answers one question: how close the later terms gather, and from when on.
+In everyday language, a sequence tends to $L$ when, after a few initial terms are
+discarded, all the remaining terms are as close as one likes to $L$.
+
+\begin{definisi}[Convergence]
+A sequence $(x_n)$ of real numbers \emph{converges} to $L \in \mathbb{R}$ if for
+every $\varepsilon>0$ there is $N \in \mathbb{N}$ such that for every $n>N$ we have
+$|x_n-L|<\varepsilon$. We write $x_n \to L$, and $L$ is called the
+\emph{limit}\index{limit of a sequence} of the sequence. A sequence that does not
+converge to any real number is called \emph{divergent}\index{divergent sequence}.
+\end{definisi}
+
+The order of the quantifiers in that definition decides everything. The value
+$\varepsilon$ is chosen first, then $N$ follows and may depend on $\varepsilon$.
+Reversing that order produces a far stronger and usually false statement: there are
+sequences that satisfy ``for every $n$ there is $N$'' vacuously, because $N=n$ can
+always be used. A healthy way to read it is as a game between two parties. The
+challenger names an $\varepsilon$, however small. The responder must answer with an
+$N$ that works for all later terms. The sequence converges when the responder
+always has an answer, for every challenge.
+
+Figure~\ref{fig:pita-epsilon} captures that game for $x_n=1+1/n$. Two bands centered
+at $L=1$ are drawn with different widths, and each has its own threshold: $N=2$ for
+$\varepsilon=0.5$, $N=10$ for $\varepsilon=0.1$. Nothing about the sequence changes;
+only the challenger's demand changes.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=0.72cm,y=3.0cm,>=Stealth,font=\footnotesize]
+  \fill[layerteal!14] (0,0.5) rectangle (14,1.5);
+  \fill[layerorange!20] (0,0.9) rectangle (14,1.1);
+  \draw[->,ink] (-0.1,0.35) -- (14.6,0.35) node[right] {$n$};
+  \draw[->,ink] (0,0.35) -- (0,2.15) node[above] {$x_n$};
+  \draw[dashed,layergrey,thick] (0,1) -- (14.1,1);
+  \node[layergrey,anchor=south west] at (0.08,1.02) {$L=1$};
+  \foreach \n/\y in {1/2.0000,2/1.5000,3/1.3333,4/1.2500,5/1.2000,6/1.1667,%
+      7/1.1429,8/1.1250,9/1.1111,10/1.1000,11/1.0909,12/1.0833,13/1.0769,14/1.0714}
+    \fill[accent] (\n,\y) circle (2.2pt);
+  \draw[dashed,layerteal,thick] (2,0.35) -- (2,1.52);
+  \draw[dashed,layerorange,thick] (10,0.35) -- (10,1.12);
+  \node[anchor=north] at (2,0.30) {$N_1=2$};
+  \node[anchor=north] at (10,0.30) {$N_2=10$};
+  \node[anchor=north west,align=left] at (4.6,2.28)
+    {outer band: $\varepsilon=0.5$\\ inner band: $\varepsilon=0.1$};
+\end{tikzpicture}
+\caption{The sequence $x_n=1+1/n$ entering the $\varepsilon$ band around $L=1$. With
+$\varepsilon=0.5$ every term after $n=2$ is already inside the band; with
+$\varepsilon=0.1$ the threshold shifts to $n=10$. A narrower band demands a more
+distant threshold.}
+\label{fig:pita-epsilon}
+\end{figure}
+
+\begin{bacakeras}
+Two voices take turns. The first asks, the second answers. Read it aloud slowly,
+pause at every period, and do not add words in between.
+
+``Longer and longer?'' \ ``Closer and closer.'' \ ``How close?'' \ ``As close as
+requested.'' \ ``What if one thousandth is requested?'' \ ``Wait a thousand steps,
+then measure.'' \ ``What if one hundredth of a millionth?'' \ ``Wait one hundred
+million steps. Patience costs nothing.'' \ ``So it will arrive?'' \ ``No. It never
+arrives.'' \ ``Then what is the use of waiting?'' \ ``Because the distance shrinks,
+and the one who asks is free to choose how small.'' \ ``And if the requests stop?''
+\ ``Then there is nothing to prove.''
+
+The line repeated three times, more slowly each time: close is not arrived; close
+is a distance we are allowed to set ourselves.
+\end{bacakeras}
+
+For $x_n=1/n$ the answer is immediate: take $N$ a natural number with
+$N>1/\varepsilon$, which exists by the Archimedean property in Chapter 3. For $n>N$
+we have $|1/n-0|=1/n<1/N<\varepsilon$. If the challenger asks for
+$\varepsilon=10^{-3}$, the answer is $N=1000$; at $n=1000$ the error is exactly
+$10^{-3}$ and does not yet meet the strict condition, whereas at $n=1001$ the error
+is $0.000999$. This one-term difference is not pedantry: the definition uses $n>N$,
+not $n \ge N$, so the $N$ that is chosen must genuinely pass the threshold.
+
+\begin{tangan}
+Materials: duct tape, a tape measure, chalk, and one sheet of notes. Mark a number
+line on the floor two meters long: zero at the left end, two at the right end, and
+the number one exactly in the middle. Stick down two horizontal strips as wide as a
+foot, centered at the number one: a wide band from one half to one and a half
+meters, a narrow band from nine tenths to one point one meters.
+
+Now walk to the position one plus one over n, for n equal to one, two, three, up to
+fourteen. Each time, note whether your heel lands in the wide band, in the narrow
+band, or outside both, then walk back so the marks are not stepped on.
+
+What should be visible: the first two steps are still outside the narrow band, the
+tenth step stops exactly at its edge, and after that no heel comes out again. A
+narrower band demands more steps, while the number one is never touched by a heel.
+\end{tangan}
+
+The use of a definition is felt most strongly when we want to prove that something
+does \emph{not} converge. The negation of the definition reads: there is
+$\varepsilon>0$ such that for every $N$ there is $n>N$ with $|x_n-L| \ge
+\varepsilon$. Note that $L$ is still a free name there; to refute convergence we
+must do it for every $L$.
+
+\begin{contoh}
+The sequence $x_n=(-1)^n$ is divergent.
+\end{contoh}
+
+\begin{proof}
+Suppose $x_n \to L$ for some $L$. Take $\varepsilon=1$; there is $N$ such that
+$|x_n-L|<1$ for all $n>N$. Choose an even $n>N$; then $x_n=1$ and $|1-L|<1$. The
+next term $n+1$ also exceeds $N$ and is odd, so $x_{n+1}=-1$ and $|-1-L|<1$. The
+triangle inequality gives
+\[
+2 = |1-(-1)| \le |1-L| + |L-(-1)| < 1+1 = 2,
+\]
+an impossibility. So no $L$ satisfies the definition.
+\end{proof}
+
+The proof just given shows a pattern that will appear often: to refute, we choose an
+$\varepsilon$ smaller than the distance between two groups of terms. The even and
+odd groups are a fixed distance $2$ apart, so no single $N$ can separate them when
+$\varepsilon<1$.
+
+The first property worth recording is uniqueness. In everyday words: a sequence
+cannot stop in two different places at once.
+
+\begin{teorema}[Uniqueness of the limit]
+If $x_n \to L$ and $x_n \to M$, then $L=M$.
+\end{teorema}
+
+\begin{proof}
+Suppose $L \neq M$ and let $\varepsilon=|L-M|/2>0$. There is $N_1$ with
+$|x_n-L|<\varepsilon$ for $n>N_1$, and $N_2$ with $|x_n-M|<\varepsilon$ for
+$n>N_2$. For $n>\max(N_1,N_2)$ both inequalities hold at once, so
+\[
+|L-M| \le |L-x_n| + |x_n-M| < 2\varepsilon = |L-M| .
+\]
+The inequality $|L-M|<|L-M|$ is impossible, so the supposition is false.
+\end{proof}
+
+The phrase ``for $n$ sufficiently large'' means: there is $N$ such that the stated
+property holds for all $n>N$. With that vocabulary, the definition of a limit in
+brief: $x_n$ is as close as one likes to $L$ when $n$ is sufficiently large.
+
+The second property: a convergent sequence cannot run off to infinity.
+
+\begin{teorema}
+Every convergent sequence is bounded.
+\end{teorema}
+
+\begin{proof}
+Suppose $x_n \to L$. Take $\varepsilon=1$; there is $N$ with $|x_n-L|<1$ for
+$n>N$, so $|x_n| \le |x_n-L|+|L| < |L|+1$. Only the first term up to term $N$ is
+still uncontrolled, and there are finitely many of those. Hence
+\[
+M=\max\{|x_1|,|x_2|,\dots,|x_N|,|L|+1\}
+\]
+is a bound that works for every $n$.
+\end{proof}
+
+The converse does not hold: $(-1)^n$ is bounded but divergent. Boundedness is a
+necessary condition, not a sufficient one; from a table that looks calm we may only
+conclude boundedness.
+
+\section{Algebraic properties of limits}
+\tingkat{intermediate}
+
+In everyday language: a limit is polite toward addition, multiplication, and
+division, as long as the divisor does not tend to zero.
+
+Before proving those properties we need one small control: a sequence tending to a
+nonzero number eventually stays away from zero.
+
+\begin{lemma}
+If $y_n \to y$ with $y \neq 0$, then there is $N$ such that $|y_n|>|y|/2$ for all
+$n>N$.
+\end{lemma}
+
+\begin{proof}
+Take $\varepsilon=|y|/2>0$. There is $N$ with $|y_n-y|<|y|/2$ for $n>N$. Then
+$|y_n| \ge |y|-|y_n-y| > |y|-|y|/2 = |y|/2$.
+\end{proof}
+
+The consequence for computation: limits can be computed term by term, and the only
+exception is division by zero.
+
+\begin{teorema}[Algebraic properties of limits]
+If $x_n \to x$ and $y_n \to y$, then
+$x_n+y_n \to x+y$, \ $x_n y_n \to xy$, and $c x_n \to cx$ for every
+$c \in \mathbb{R}$. If $y \neq 0$ and $y_n \neq 0$ for all $n$, then
+$x_n/y_n \to x/y$.
+\end{teorema}
+
+\begin{proof}
+For the sum, take $\varepsilon>0$. Choose $N_1$ with $|x_n-x|<\varepsilon/2$ for
+$n>N_1$ and $N_2$ with $|y_n-y|<\varepsilon/2$ for $n>N_2$. For
+$n>\max(N_1,N_2)$,
+$|(x_n+y_n)-(x+y)| \le |x_n-x|+|y_n-y| < \varepsilon$. The scalar multiple case is
+similar and shorter: for $c=0$ the sequence is constant; for $c \neq 0$ use
+$\varepsilon/|c|$.
+
+For the product, write the difference as two parts,
+\[
+x_n y_n - xy = x_n(y_n-y) + (x_n-x)y .
+\]
+Because $(x_n)$ converges it is bounded: there is $M>0$ with $|x_n| \le M$ for all
+$n$. Choose $N$ so that for $n>N$ we have $|y_n-y|<\varepsilon/(2M)$ and
+$|x_n-x|<\varepsilon/(2(|y|+1))$. Then
+\[
+|x_n y_n - xy| \le M|y_n-y| + |x_n-x|\,|y| < \frac{\varepsilon}{2}
++ \frac{\varepsilon}{2} = \varepsilon .
+\]
+The denominator $|y|+1$ is used so that it is never zero when $y=0$; it stays a
+positive constant, so it does not change the conclusion.
+
+For the quotient it suffices to show $1/y_n \to 1/y$, then use the product result.
+By the lemma, for $n>N_1$ we have $|y_n|>|y|/2$, so
+\[
+\left|\frac{1}{y_n}-\frac{1}{y}\right| = \frac{|y-y_n|}{|y_n y|}
+\le \frac{2}{|y|^2}\,|y_n-y| .
+\]
+The right side is smaller than $\varepsilon$ as long as $|y_n-y|<\varepsilon|y|^2/2$,
+and that can be guaranteed by choosing $N_2$.
+\end{proof}
+
+Note the technique that has just appeared: adding and subtracting the same term to
+split a difference into two small parts. Almost every convergence proof involving a
+product uses it, and the threshold taken is always the largest one.
+
+The next property concerns order, not operations. In everyday language: a limit
+cannot jump over a fence that all terms obey.
+
+\begin{teorema}[Order property]
+If $x_n \to x$ and $x_n \ge 0$ for all $n$, then $x \ge 0$. More generally, if
+$x_n \le y_n$ for all sufficiently large $n$, $x_n \to x$, and $y_n \to y$, then
+$x \le y$.
+\end{teorema}
+
+\begin{proof}
+Suppose $x<0$ and take $\varepsilon=-x>0$. There is $N$ with $|x_n-x|<\varepsilon$
+for $n>N$, so in particular $x_n < x+\varepsilon = 0$. That contradicts
+$x_n \ge 0$. For the second statement, apply the first part to $y_n-x_n \ge 0$,
+whose limit is $y-x$ by the previous theorem.
+\end{proof}
+
+Note that the legitimate conclusion is $x \ge 0$, not $x>0$: the sequence $1/n$ is
+entirely positive but its limit is zero. The order property also must not be used
+backwards. From $x_n<y_n$ we only obtain $x \le y$; a strict gap can vanish in the
+limit.
+
+With the algebraic properties, limits of rational sequences can be computed as
+usual. For
+\[
+x_n=\frac{3n^2+2n}{n^2-5},
+\]
+divide numerator and denominator by $n^2$:
+$x_n=\dfrac{3+2/n}{1-5/n^2}$. Because $1/n \to 0$ and $1/n^2 \to 0$, the numerator
+tends to $3$ and the denominator to $1 \neq 0$, so $x_n \to 3$. The numerical values
+do creep there: $x_{10}=3.368421$, $x_{100}=3.021511$. Another example,
+\[
+y_n=\frac{2n^2-n}{3n^2+7} \longrightarrow \frac{2}{3},
+\]
+with $y_{10}=0.618893$ and $y_{100}=0.663179$; both are still far from $2/3$ at
+$n=100$ because the error is about $1/n$.
+
+The algebraic properties speak only about limits that already exist; applying them
+to a sequence not yet known to converge is an expensive mistake.
+
+\section{The squeeze theorem and comparison sequences}
+\tingkat{intermediate}
+
+Sometimes the limit of a sequence cannot be computed directly, but it can be trapped
+from above and from below by two sequences with the same limit. In everyday
+language: when two guards walk close together with a child between them, the child
+must stop in the same place as they do.
+
+\begin{teorema}[Squeeze theorem]
+\index{squeeze theorem}
+Suppose $a_n \le x_n \le b_n$ for all sufficiently large $n$. If
+$a_n \to L$ and $b_n \to L$, then $x_n \to L$.
+\end{teorema}
+
+\begin{proof}
+Take $\varepsilon>0$. Choose $N_1$ so that $|a_n-L|<\varepsilon$ for $n>N_1$, that
+is $a_n>L-\varepsilon$, and $N_2$ so that $b_n<L+\varepsilon$ for $n>N_2$. Also take
+$N_3$ so that the squeezing holds for $n>N_3$. For $n>\max(N_1,N_2,N_3)$,
+\[
+L-\varepsilon < a_n \le x_n \le b_n < L+\varepsilon,
+\]
+so $|x_n-L|<\varepsilon$.
+\end{proof}
+
+Before using it we need one comparison sequence that will keep appearing: powers that
+shrink to zero.
+
+\begin{lemma}
+If $0<q<1$, then $q^n \to 0$.
+\end{lemma}
+
+\begin{proof}
+Write $1/q=1+h$ with $h>0$. Bernoulli's inequality, proved by induction in Chapter
+1, gives $(1+h)^n \ge 1+nh$. Since both sides are positive,
+\[
+0 < q^n = \frac{1}{(1+h)^n} \le \frac{1}{1+nh} .
+\]
+Given $\varepsilon>0$, the Archimedean property gives $n$ with $1+nh>1/\varepsilon$,
+that is $1/(1+nh)<\varepsilon$. By the squeeze theorem, $q^n \to 0$.
+\end{proof}
+
+Now an example that cannot be settled by dividing by the highest power. For
+$x_n=(2^n+3^n)^{1/n}$, the largest term inside the brackets is $3^n$; factor that
+power out:
+\[
+x_n = 3\left(1+\left(\tfrac{2}{3}\right)^{n}\right)^{1/n}.
+\]
+Because $(2/3)^n \to 0$ and $1 \le 1+(2/3)^n \le 2$, we obtain
+$1 \le x_n/3 \le 2^{1/n}$. It remains to show $2^{1/n} \to 1$: write
+$2^{1/n}=1+a_n$ with $a_n \ge 0$, then
+$2=(1+a_n)^n \ge 1+na_n$, so $0 \le a_n \le 1/n$. The squeeze theorem closes both
+ends, and $x_n \to 3$. Python numbers confirm the direction:
+$x_1=5$, $x_2=3.605551$, $x_5=3.075152$, $x_{10}=3.005162$, and $x_{100}=3$.
+
+\begin{untukanak}
+Two school guards walk side by side along a corridor, and a pupil walks between them.
+The guard on the left steps toward the exit, the guard on the right does too, and the
+two get closer until their shoulders almost touch. The pupil squeezed in the middle
+does not need to know the way; he only needs to stay between the two guards. Wherever
+those guards stop, there the pupil stops as well.
+
+Now the question that makes one curious. What if the left guard stops earlier than
+the right guard: can we still guess where the pupil stops? And what if their distance
+is never zero, only smaller from day to day? Does the pupil still have a definite
+place to stop, or does he keep walking with no end?
+
+It turns out the answer does not depend on the faces of the guards, only on two
+things: where the left guard is heading, and where the right guard is heading. If
+both head for the same place, the pupil in the middle has no other choice. That way
+of thinking, ``squeezed between two parties'', is what mathematicians use for
+sequences whose formula is too complicated to compute directly.
+\end{untukanak}
+
+\section{Monotone sequences and the monotone convergence theorem}
+\tingkat{intermediate}
+
+In everyday language: a sequence that moves in only one direction, and never crosses
+a certain fence, must stop somewhere. This is where completeness works most cheaply,
+because the limit need not be guessed in advance.
+
+\kamus{monotone sequence}{barisan monoton}{a staircase whose steps only go up, never
+down}
+
+The everyday language is simple: one direction only, never turning back.
+
+\begin{definisi}[Monotone sequence]
+A sequence $(x_n)$ is called \emph{increasing}\index{monotone sequence} if
+$x_n \le x_{n+1}$ for all $n$, and \emph{decreasing} if $x_n \ge x_{n+1}$ for all
+$n$. A sequence is called monotone if it is increasing or decreasing.
+\end{definisi}
+
+A rough picture: what moves in one direction without crossing a fence must stop, and
+it stops exactly at the nearest fence it never crosses.
+
+\begin{teorema}[Monotone convergence]
+\index{monotone convergence theorem}
+An increasing sequence bounded above converges, and its limit is
+$\sup\{x_n : n \in \mathbb{N}\}$.
+\end{teorema}
+
+\begin{proof}
+Suppose $(x_n)$ is increasing and bounded above. Its set of terms is nonempty and
+bounded above, so by the supremum property in Chapter 3 it has a supremum; call it
+$s=\sup\{x_n\}$. Take $\varepsilon>0$. Because $s-\varepsilon$ is not an upper bound,
+there is $N$ with $x_N>s-\varepsilon$. For $n>N$, monotonicity gives
+$x_n \ge x_N>s-\varepsilon$, while $x_n \le s$ by the definition of supremum. So
+$|x_n-s|<\varepsilon$.
+\end{proof}
+
+The immediate consequence: for such a sequence the limit can be read off from its set
+of terms, without computing term by term.
+
+\begin{akibat}
+A decreasing sequence bounded below converges, and its limit is the infimum of its
+set of terms.
+\end{akibat}
+
+\begin{proof}
+Apply the theorem to $(-x_n)$, which is increasing and bounded above, then use the
+scalar multiple property of limits and the identity
+$\sup\{-x_n\}=-\inf\{x_n\}$.
+\end{proof}
+
+Note that this theorem does not say the limit equals the bound we use. The bound $3$
+in the following example is only a proof device; the limit is in fact $e$.
+
+The first application is the recursive sequence that opens this chapter. Suppose
+$x_1=1$ and $x_{n+1}=\sqrt{2+x_n}$.
+
+First, all terms lie between $1$ and $2$. For $n=1$ this is clear. If
+$1 \le x_n \le 2$, then $3 \le 2+x_n \le 4$, so
+$1 \le \sqrt{3} \le x_{n+1} \le 2$. By induction, $1 \le x_n \le 2$ for all $n$.
+
+Second, the sequence is increasing. Because $x_n \le 2$,
+\[
+x_{n+1} \ge x_n \iff 2+x_n \ge x_n^2 \iff (2-x_n)(1+x_n) \ge 0,
+\]
+and the last inequality is true since $x_n \le 2$ and $x_n \ge 1$.
+
+By the monotone convergence theorem, $(x_n)$ converges; call its limit $L$. Because
+$x_n \le 2$ for all $n$, the order property gives $L \le 2$. Now square the relation:
+$x_{n+1}^2=2+x_n$. The left side tends to $L^2$ by the product property, the right
+side to $2+L$, so $L^2=2+L$, or $(L-2)(L+1)=0$. Since $L \ge 1$, the only
+possibility is $L=2$.
+
+Note that we never use continuity of the square root; the algebraic properties of
+limits and the order property are enough, so the machinery of Chapter 11 is not
+needed here.
+
+The second application is the sequence $y_n=(1+1/n)^n$. The binomial expansion gives
+\[
+y_n = \sum_{k=0}^{n} \binom{n}{k}\frac{1}{n^k}
+= \sum_{k=0}^{n} \frac{1}{k!}\prod_{j=1}^{k-1}\left(1-\frac{j}{n}\right),
+\]
+with the empty product equal to $1$ for $k=0$ and $k=1$. Every factor $1-j/n$
+increases as $n$ grows, so every term with index $k$ increases; the sum also gains
+one new positive term. Hence $(y_n)$ is increasing. Every factor is at most $1$, so
+\[
+y_n \le \sum_{k=0}^{n}\frac{1}{k!} \le 1+1+\frac12+\frac14+\cdots = 3,
+\]
+because $1/k! \le 1/2^{k-1}$ for $k \ge 1$, which is checked by induction. The
+sequence is increasing and bounded above by $3$, so it converges. We give its limit
+the name $e$.
+
+Figure~\ref{fig:monoton-e} displays that sequence for $n=1$ up to $n=30$. The points
+rise without ever turning back, the dashed line at $3$ is the fence used in the proof,
+and the dotted line at $2.71828$ is where it actually stops. The gap between fence and
+destination stays there throughout the figure; the fence works because it is never
+crossed, not because it is reached.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=0.32cm,y=3.0cm,>=Stealth,font=\footnotesize]
+  \draw[->,ink] (-0.6,1.85) -- (31.2,1.85) node[right] {$n$};
+  \draw[->,ink] (0,1.85) -- (0,3.12) node[above] {$y_n$};
+  \draw[dashed,layergrey,thick] (0,3.0) -- (30.6,3.0);
+  \node[layergrey,anchor=south] at (20,3.02) {proof bound $B=3$};
+  \draw[densely dotted,layerindigo,very thick] (0,2.71828) -- (30.4,2.71828);
+  \node[layerindigo,anchor=west] at (31.3,2.71828) {limit $e\approx2.71828$};
+  \foreach \n/\y in {1/2.0000,2/2.2500,3/2.3704,4/2.4414,5/2.4883,6/2.5216,%
+      7/2.5465,8/2.5658,9/2.5812,10/2.5937,11/2.6042,12/2.6130,13/2.6206,%
+      14/2.6272,15/2.6329,16/2.6379,17/2.6424,18/2.6464,19/2.6500,20/2.6533,%
+      21/2.6563,22/2.6590,23/2.6615,24/2.6637,25/2.6658,26/2.6678,27/2.6696,%
+      28/2.6713,29/2.6728,30/2.6743}
+    \fill[accent] (\n,\y) circle (1.7pt);
+  \draw[->,layerteal,thick] (9.5,2.42) -- (15.5,2.60);
+  \node[layerteal,anchor=north] at (12,2.40) {increasing, never turning back};
+\end{tikzpicture}
+\caption{The sequence $y_n=(1+1/n)^n$ for $n=1$ up to $n=30$. The points rise and
+never turn back; the fence $B=3$ is never touched; the value approached is
+$e\approx2.71828$, not the fence.}
+\label{fig:monoton-e}
+\end{figure}
+
+\section{Subsequences, Bolzano--Weierstrass, and the Cauchy criterion}
+\tingkat{advanced}
+
+In everyday language: from a bounded sequence one can always pick a run of children
+that stops somewhere, even when the parent run is chaotic.
+
+\kamus{subsequence}{subbarisan}{sorting out some letters from a pile without changing
+their order}
+
+A subsequence is formed by choosing only some terms: the indices used grow larger,
+but any number of terms may be skipped.
+
+\begin{definisi}[Subsequence]
+Let $n_1<n_2<n_3<\cdots$ be increasing natural numbers. The sequence $(x_{n_k})_{k
+\in \mathbb{N}}$ is called a \emph{subsequence}\index{subsequence} of $(x_n)$.
+\end{definisi}
+
+Because $n_k \ge k$ for every $k$, which is checked by induction, a subsequence
+cannot be ``slower'' than its parent sequence in terms of index.
+
+In everyday language: choosing some terms does not change the stopping place, it only
+slows down or speeds up its arrival.
+
+\begin{proposisi}
+If $x_n \to L$, then every subsequence $(x_{n_k})$ also converges to $L$.
+\end{proposisi}
+
+\begin{proof}
+Take $\varepsilon>0$ and $N$ with $|x_n-L|<\varepsilon$ for $n>N$. For $k>N$ we have
+$n_k \ge k>N$, so $|x_{n_k}-L|<\varepsilon$.
+\end{proof}
+
+The consequence is simple but most often used to refute: two different stopping places
+are already enough.
+
+\begin{akibat}
+If $(x_n)$ has two subsequences with different limits, then $(x_n)$ is divergent.
+\end{akibat}
+
+\begin{proof}
+If $(x_n)$ converged, all its subsequences would converge to the same limit, and
+uniqueness of the limit forbids two different values.
+\end{proof}
+
+This corollary explains the example $(-1)^n$ without an argument by impossibility: the
+even subsequence tends to $1$, the odd subsequence to $-1$. The way it works also
+explains why divergence is more often provable than convergence.
+
+To prove Bolzano--Weierstrass we need the following lemma. Its content: every
+sequence, however chaotic, contains a monotone subsequence.
+
+\begin{lemma}
+Every real sequence has a monotone subsequence.
+\end{lemma}
+
+\begin{proof}
+Call an index $n$ a \emph{peak} if $x_n \ge x_m$ for all $m>n$, that is, if no later
+term is larger. There are two possibilities.
+
+If there are infinitely many peaks, list them as $n_1<n_2<\cdots$. Because $n_1$ is a
+peak, $x_{n_1} \ge x_{n_2}$; because $n_2$ is a peak, $x_{n_2} \ge x_{n_3}$; and so
+on. The result is a decreasing subsequence.
+
+If there are only finitely many peaks, take $n_1$ beyond the last peak. Because $n_1$
+is not a peak, there is $n_2>n_1$ with $x_{n_2}>x_{n_1}$. Because $n_2$ also lies
+beyond the last peak, it is not a peak either, so there is $n_3>n_2$ with
+$x_{n_3}>x_{n_2}$. The process continues without end and produces an increasing
+subsequence.
+\end{proof}
+
+The content of this theorem: from a trapped sequence one can always pick some terms
+that genuinely tend to a single point.
+
+\begin{teorema}[Bolzano--Weierstrass]
+\index{bolzano-weierstrass}
+Every bounded real sequence has a convergent subsequence.
+\end{teorema}
+
+\begin{proof}
+By the lemma, $(x_n)$ has a monotone subsequence. A subsequence of a bounded sequence
+is also bounded. A bounded monotone sequence converges by the monotone convergence
+theorem. Hence that subsequence converges.
+\end{proof}
+
+An alternative proof uses repeated bisection of intervals and the nested interval
+property; both proofs lean on completeness, which we borrowed above through the
+supremum.
+
+\kamus{Cauchy sequence}{barisan Cauchy}{passengers crowding ever tighter in a train
+corridor, without knowing where the exit door is}
+
+Now consider a different problem. The definition of a limit requires us to name $L$
+first, whereas in many computations it is $L$ that we are seeking. All we have is a
+list of numbers. We therefore need a measure of closeness between the terms
+themselves, without naming a destination.
+
+\begin{definisi}[Cauchy sequence]
+A sequence $(x_n)$ is called \emph{Cauchy}\index{cauchy sequence} if for every
+$\varepsilon>0$ there is $N$ such that for all $m,n>N$ we have
+$|x_n-x_m|<\varepsilon$.
+\end{definisi}
+
+Note the difference in the order of ideas. In the definition of a limit all terms are
+compared with one fixed number $L$; in the Cauchy definition terms are compared with
+other terms, with no outside number. That is why the Cauchy definition makes sense in
+any space that has a distance, whereas the limit definition demands a candidate
+destination.
+
+\begin{teorema}[Cauchy criterion]
+\index{cauchy sequence}
+A real sequence converges if and only if it is Cauchy.
+\end{teorema}
+
+\begin{proof}
+Suppose $x_n \to L$ and take $\varepsilon>0$. There is $N$ with
+$|x_n-L|<\varepsilon/2$ for $n>N$. For $m,n>N$,
+\[
+|x_n-x_m| \le |x_n-L| + |L-x_m| < \varepsilon .
+\]
+So convergence gives Cauchy.
+
+Conversely, suppose $(x_n)$ is Cauchy. Take $\varepsilon=1$; there is $N_0$ such that
+$|x_n-x_m|<1$ for $m,n>N_0$. Choosing $m=N_0+1$ gives
+$|x_n|<|x_{N_0+1}|+1$ for $n>N_0$, so $(x_n)$ is bounded. By Bolzano--Weierstrass
+there is a subsequence $x_{n_k} \to L$. Take $\varepsilon>0$; choose $N_1$ with
+$|x_n-x_m|<\varepsilon/2$ for $m,n>N_1$, and $K$ with $|x_{n_k}-L|<\varepsilon/2$ for
+$k>K$. Choose $k>K$ that also satisfies $n_k>N_1$; then for $n>N_1$,
+\[
+|x_n-L| \le |x_n-x_{n_k}| + |x_{n_k}-L| < \varepsilon .
+\]
+So $x_n \to L$.
+\end{proof}
+
+The second direction uses Bolzano--Weierstrass, which uses the monotone convergence
+theorem, which uses the supremum. That chain cannot be cut: inside $\mathbb{Q}$ this
+theorem fails. The sequence of decimal truncations
+$1;\ 1.4;\ 1.41;\ 1.414;\ 1.4142;\ \dots$ tending to the square root of two is Cauchy,
+since the difference of two terms is at most $10^{-k}$ when both pass term $k$, yet no
+rational number is its limit. If that sequence converged to $L$, then $a_k^2 \to L^2$;
+on the other hand $a_k^2 \to 2$, so $L^2=2$. Chapter 3 already showed that no rational
+has square $2$. So ``Cauchy'' and ``convergent'' are two different properties; what
+makes them agree is completeness, and that is the content of the supremum axiom.
+
+\begin{tantangan}
+The sequence $h_n=1+\frac12+\cdots+\frac1n$ grows very slowly: $h_{10}=2.928968$,
+$h_{100}=5.187378$, $h_{1000}=7.485471$, and $h_{10^6}=14.392727$. The difference of
+two consecutive terms, namely $1/(n+1)$, tends to zero, so this sequence passes the
+shallowest test, the one that most often deceives: its terms get closer together. The
+question is whether $(h_n)$ converges. Prove your answer, and explain why
+$h_{10^6}<15$ is not a proof that the sequence is bounded.
+
+Hint 1: do not inspect terms one by one. Sum in blocks whose lengths double, that is
+one term, two terms, four terms, eight terms, and so on.
+
+Hint 2: the $k$-th block contains $2^{k-1}$ terms, and the smallest term in it is at
+least $1/2^k$; so every block contributes at least $1/2$. Compare the result with
+$h_{2^m}$ and see what happens as $m$ grows.
+
+If you are stuck, return to the Monotone Convergence Theorem: there an increasing
+sequence is proved convergent precisely because a fence exists, and here it is
+precisely the fence that is missing.
+\end{tantangan}
+
+\section{Limit superior and limit inferior}
+\tingkat{advanced}
+
+In everyday language: for a sequence that oscillates, we can still name the highest and
+the lowest place it oscillates to, even though the sequence itself has no limit.
+
+\kamus{limit superior}{limit superior}{the highest peak still visited by the sequence
+as often as one likes after passing any point}
+
+Throughout this section $(x_n)$ is bounded. For every $n$ form the tail set
+$\{x_k : k \ge n\}$ and write
+\[
+s_n=\sup\{x_k : k \ge n\}, \qquad t_n=\inf\{x_k : k \ge n\}.
+\]
+Because the tails shrink, $(s_n)$ is decreasing and $(t_n)$ is increasing; both are
+bounded, so both converge by the corollary to the monotone convergence theorem.
+
+In everyday language: what we track is not where the sequence is, but how high and how
+low it still visits after any point.
+
+\begin{definisi}[Limit superior and inferior]
+For a bounded sequence $(x_n)$,
+\[
+\limsup_{n\to\infty} x_n = \lim_{n\to\infty} s_n
+\qquad \text{and} \qquad
+\liminf_{n\to\infty} x_n = \lim_{n\to\infty} t_n .
+\]
+The first number is called the \emph{limit superior}\index{limit superior}, the second
+the \emph{limit inferior}\index{limit inferior}.
+\end{definisi}
+
+Because $s_n \ge t_n$ for every $n$ and limits preserve order, we always have
+$\liminf x_n \le \limsup x_n$. The two can differ greatly, and precisely that
+difference is the measure of the chaos of the sequence.
+
+\begin{contoh}
+For $x_n=(-1)^n+1/n$, the tail contains the even terms $1+1/k$ and the odd terms
+$-1+1/k$. The supremum of the $n$-th tail comes from the smallest even term still
+available, so $s_1=1.5$, $s_2=1.5$, $s_3=1.25$, $s_4=1.25$, $s_5=1.166667$, and so on
+decreasing toward $1$. The infimum of the tail behaves differently: the odd terms
+$-1+1/k$ are always present in every tail and decrease toward $-1$ without ever
+reaching it, so $t_n=-1$ for all $n$, even though not a single term equals $-1$. Hence
+$\limsup x_n=1$ and $\liminf x_n=-1$, while the sequence is divergent.
+\end{contoh}
+
+Figure~\ref{fig:divergen-ayun} plots the $n$-th term against $n$ for the same sequence.
+The run of even points clings near $1$, the run of odd points clings near $-1$, and the
+distance between the two groups is fixed at $2$. No single horizontal line can be
+approached by all the points, however far we walk.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=0.62cm,y=1.9cm,>=Stealth,font=\footnotesize]
+  \draw[->,ink] (-0.3,0) -- (13.4,0) node[right] {$n$};
+  \draw[->,ink] (0,-1.3) -- (0,2.0) node[above] {$x_n$};
+  \draw[densely dotted,layerindigo,very thick] (0,1) -- (13.0,1);
+  \draw[densely dotted,layerplum,very thick] (0,-1) -- (13.0,-1);
+  \node[layerindigo,anchor=south west] at (0.1,1.03) {$\limsup x_n=1$};
+  \node[layerplum,anchor=north west] at (0.1,-1.03) {$\liminf x_n=-1$};
+  \foreach \n/\y in {1/0.0000,2/1.5000,3/-0.6667,4/1.2500,5/-0.8000,6/1.1667,%
+      7/-0.8571,8/1.1250,9/-0.8889,10/1.1000,11/-0.9091,12/1.0833}
+    \fill[accent] (\n,\y) circle (2.2pt);
+  \draw[<->,layerbrown,thick] (12.5,-1) -- (12.5,1) node[midway,right] {distance $2$};
+\end{tikzpicture}
+\caption{Graph of the $n$-th term against $n$ for $x_n=(-1)^n+1/n$. The even points
+cling near $1$, the odd points near $-1$, and the distance between the two groups is
+fixed at $2$. No horizontal band contains all the terms, so this sequence is
+divergent.}
+\label{fig:divergen-ayun}
+\end{figure}
+
+In everyday language: the highest value still visited by the sequence as often as one
+likes really is visited by some of its terms, not merely approached from afar.
+
+\begin{teorema}
+For a bounded sequence $(x_n)$, its limit superior is the largest subsequential limit:
+$\limsup x_n$ equals the supremum of the set of all limits of convergent subsequences,
+and that value itself is attained by some subsequence.
+\end{teorema}
+
+\begin{proof}
+Write $S=\limsup x_n$. First, every subsequential limit is at most $S$. If
+$x_{n_k} \to L$, then for every $k$ we have $x_{n_k} \le s_{n_k}$, and because
+$n_k \ge k$ and $(s_n)$ is decreasing, $s_{n_k} \le s_k$. So $x_{n_k} \le s_k$, and
+taking limits gives $L \le S$.
+
+Second, we build a subsequence tending to $S$, starting from $n_0=0$. For every $k$,
+because $s_n \to S$ and $(s_n)$ is decreasing, there is $M \ge k$ with $s_M<S+1/k$.
+The tail $\{x_n : n \ge M\}$ has supremum $s_M$ and contains indices as large as we
+like, so there is $n_k>\max(k,n_{k-1})$ with $n_k \ge M$ and $x_{n_k}>s_M-1/k$. For
+that choice
+\[
+S - \frac1k \le s_M - \frac1k < x_{n_k} \le s_M < S + \frac1k ,
+\]
+so $|x_{n_k}-S|<1/k$. Hence $x_{n_k} \to S$.
+\end{proof}
+
+The consequence: equality of limit inferior and limit superior becomes the cheapest way
+to check convergence without guessing the limit in advance.
+
+\begin{akibat}
+A bounded sequence $(x_n)$ converges to $L$ if and only if
+$\liminf x_n = \limsup x_n = L$.
+\end{akibat}
+
+\begin{proof}
+If $x_n \to L$, every subsequence also tends to $L$, so the set of subsequential limits
+contains only $L$ and its supremum is $L$; in the same way its infimum is $L$.
+Conversely, if both values equal $L$, then $t_n \le x_n \le s_n$ and both fences tend to
+$L$, so the squeeze theorem gives $x_n \to L$.
+\end{proof}
+
+For unbounded sequences the convention $\limsup x_n=+\infty$ is used when $(x_n)$ is not
+bounded above; the arithmetic laws for $\infty$ do not hold automatically, and we do not
+use them here.
+
+\section{Worked examples}
+\tingkat{intermediate}
+
+We return to the two opening sequences, this time with numbers that can be rechecked and
+with the intermediate steps written down.
+
+\begin{resep}
+\begin{enumerate}
+  \item Write the difference. Form $|x_n-L|$, then simplify until a single fraction in
+        $n$ is left; for the example below, $|x_n-3|=5/(n+2)$.
+  \item Solve for $n$. Solve $5/(n+2)<\varepsilon$ for $n>5/\varepsilon-2$, and name
+        that threshold $g(\varepsilon)$.
+  \item Choose $N$. Take $N=\lfloor g(\varepsilon)\rfloor$, the smallest admissible
+        integer, then check the error at $n=N$ and $n=N+1$ before writing anything.
+  \item Close with the sentence of the definition: for every $\varepsilon>0$ that $N$
+        is chosen for, every $n>N$ then satisfies $|x_n-3|<\varepsilon$.
+\end{enumerate}
+Order warning: $\varepsilon$ is named first, $N$ answers. Setting up $N$ and then
+looking for a matching $\varepsilon$ reverses the game; the result is usually an $N$
+that depends on $n$, not on $\varepsilon$, and at that point the proof collapses.
+\end{resep}
+
+For $x_n=(3n+1)/(n+2)$,
+\[
+|x_n-3| = \left|\frac{3n+1-3n-6}{n+2}\right| = \frac{5}{n+2}.
+\]
+The inequality $5/(n+2)<\varepsilon$ is equivalent to $n>5/\varepsilon-2$. Because the
+condition is strict, the largest integer still below that threshold is already
+admissible: $N=\lfloor 5/\varepsilon-2 \rfloor$ is the smallest choice that satisfies the
+definition. For $\varepsilon=10^{-2}$ the threshold is $498$ and $N=498$. Test the
+boundary: at $n=498$ the error is $5/500=0.01$, which is \emph{not} smaller than
+$\varepsilon$; at $n=499$ the error is $5/501=0.00998004$, which just meets it. For
+$\varepsilon=10^{-4}$ we obtain $N=49998$, with error $0.0001$ at $n=49998$ and
+$9.9998 \times 10^{-5}$ at $n=49999$.
+
+The terms move very slowly: $n=10$ gives $2.583333$, $n=1000$ gives $2.995010$, and an
+error of $10^{-4}$ is only reached at term $49999$. Four digits before the decimal point
+are already correct long before the error is small.
+
+\kertas{For $x_n=(3n+1)/(n+2)$, compute a valid $N$ for $\varepsilon=10^{-3}$ with the
+formula $N=\lfloor 5/\varepsilon-2 \rfloor$, then check the error at $n=N$ and $n=N+1$.
+Explain why the error at $n=N$ may be exactly equal to $\varepsilon$ while the definition
+is still satisfied.}
+
+For $y_n=(1+1/n)^n$, 40-digit arithmetic gives error $0.124539$ at $n=10$, $0.00135790$
+at $n=10^3$, and $1.35914 \times 10^{-7}$ at $n=10^7$. The product of $n$ with its error
+is nearly constant: $1.245394$, $1.357896$, then creeping to $1.3591409 = e/2$. So the
+error falls like $1/n$, not $1/n^2$; one extra digit after the decimal point demands an
+$n$ ten times larger. This is where the machine table at the opening of the chapter
+breaks: at $n=10^7$ float64 reports $1.34327 \times 10^{-7}$, because a small relative
+error in $1+1/n$ is amplified by the power $n$.
+
+For the recursion $x_{n+1}=\sqrt{2+x_n}$ with $x_1=1$, the error relative to $2$ is
+$2.679 \times 10^{-1}$ at $n=2$, $1.711 \times 10^{-2}$ at $n=4$, and
+$2.615 \times 10^{-7}$ at $n=12$. The ratio of two consecutive errors settles at
+$0.250000$.
+
+The number $1/4$ is no coincidence. From the relation,
+\[
+x_{n+1}-2 = \frac{(2+x_n)-4}{\sqrt{2+x_n}+2}
+= \frac{x_n-2}{\sqrt{2+x_n}+2},
+\]
+so
+\[
+|x_{n+1}-2| = \frac{|x_n-2|}{\sqrt{2+x_n}+2}
+\le \frac{|x_n-2|}{2+\sqrt{2}} = 0.292893\,|x_n-2| ,
+\]
+because $x_n \ge 1$ gives $\sqrt{2+x_n} \ge \sqrt{3}$. The bound $0.292893$ holds for
+all $n$, and the actual ratio tends to $1/4$ because the denominator tends to $4$. The
+practical consequence: error $10^{-6}$ is reached at $n=12$, $10^{-9}$ at $n=17$, and
+machine precision around $n=27$; far cheaper than bisecting an interval again and again.
+
+\section{Computational lab: four checks}
+\tingkat{advanced}
+
+\kamus{truncation error}{galat pemotongan}{the difference between a portrait and the
+actual face}
+
+Four claims in this chapter can be checked with one short script: the explicit threshold
+$N$, the error rate of $(1+1/n)^n$, machine precision, and the error ratio of the
+recursion.
+
+\begin{lab}
+\begin{verbatim}
+import math, mpmath as mp
+
+def N_for(eps):
+    N = int(5/eps - 2)
+    while 5/(N+2) >= eps: N += 1
+    while N > 0 and 5/(N+2) < eps: N -= 1
+    return N
+
+print("== 1. explicit N for (3n+1)/(n+2) -> 3 ==")
+for eps in (1e-2, 1e-4):
+    N = N_for(eps)
+    print("eps=%.0e  N=%d  err(N)=%.6g  err(N+1)=%.6g"
+          % (eps, N, abs((3*N+1)/(N+2)-3), abs((3*N+4)/(N+3)-3)))
+
+print("== 2. (1+1/n)^n in float64 ==")
+for k in range(1, 8):
+    n = 10**k
+    print("n=1e%d  %.16f  e-y=%.3e" % (k, (1+1/n)**n, math.e-(1+1/n)**n))
+
+print("== 3. true error (mpmath, 40 digits) ==")
+mp.mp.dps = 40
+for k in (5, 6, 7):
+    n = 10**k
+    y = (1+mp.mpf(1)/n)**n
+    print("n=1e%d  e-y=%s  (float64: %.3e)"
+          % (k, mp.nstr(mp.e-y, 6), math.e-(1+1/n)**n))
+
+print("== 4. recursion x_{n+1}=sqrt(2+x_n), x_1=1 ==")
+x, xs = 1.0, []
+for _ in range(30):
+    xs.append(x); x = math.sqrt(2+x)
+for n in (1, 2, 3, 4, 5, 6, 11, 12, 13, 14):
+    e = abs(xs[n-1]-2)
+    r = "" if n == 1 else "  ratio=%.6f" % (e/abs(xs[n-2]-2))
+    print("n=%2d  x=%.12f  error=%.3e%s" % (n, xs[n-1], e, r))
+e6 = next(n for n in range(1, 31) if abs(xs[n-1]-2) < 1e-6)
+e9 = next(n for n in range(1, 31) if abs(xs[n-1]-2) < 1e-9)
+print("error < 1e-6 first at n=%d ; error < 1e-9 at n=%d" % (e6, e9))
+\end{verbatim}
+\end{lab}
+
+\newpage
+The output, as it stands:
+
+\begin{verbatim}
+== 1. explicit N for (3n+1)/(n+2) -> 3 ==
+eps=1e-02  N=498  err(N)=0.01  err(N+1)=0.00998004
+eps=1e-04  N=49998  err(N)=0.0001  err(N+1)=9.9998e-05
+== 2. (1+1/n)^n in float64 ==
+n=1e1  2.5937424601000023  e-y=1.245e-01
+n=1e2  2.7048138294215285  e-y=1.347e-02
+n=1e3  2.7169239322355936  e-y=1.358e-03
+n=1e4  2.7181459268249255  e-y=1.359e-04
+n=1e5  2.7182682371922975  e-y=1.359e-05
+n=1e6  2.7182804690957534  e-y=1.359e-06
+n=1e7  2.7182816941320818  e-y=1.343e-07
+== 3. true error (mpmath, 40 digits) ==
+n=1e5  e-y=1.35913e-5  (float64: 1.359e-05)
+n=1e6  e-y=1.35914e-6  (float64: 1.359e-06)
+n=1e7  e-y=1.35914e-7  (float64: 1.343e-07)
+== 4. recursion x_{n+1}=sqrt(2+x_n), x_1=1 ==
+n= 1  x=1.000000000000  error=1.000e+00
+n= 2  x=1.732050807569  error=2.679e-01  ratio=0.267949
+n= 3  x=1.931851652578  error=6.815e-02  ratio=0.254333
+n= 4  x=1.982889722748  error=1.711e-02  ratio=0.251074
+n= 5  x=1.995717846477  error=4.282e-03  ratio=0.250268
+n= 6  x=1.998929174953  error=1.071e-03  ratio=0.250067
+n=11  x=1.999998954179  error=1.046e-06  ratio=0.250000
+n=12  x=1.999999738545  error=2.615e-07  ratio=0.250000
+n=13  x=1.999999934636  error=6.536e-08  ratio=0.250000
+n=14  x=1.999999983659  error=1.634e-08  ratio=0.250000
+error < 1e-6 first at n=12 ; error < 1e-9 at n=17
+\end{verbatim}
+
+Three things need to be read from that output. First, the error at $n=N$ is exactly
+equal to $\varepsilon$ in both lines; that is why the definition uses the strict
+condition $n>N$. Second, the $e-y$ column shrinks by a factor of ten each time $n$ grows
+tenfold up to $n=10^6$, then stops following the pattern; part 3 shows that what stops
+is float64 precision, not the convergence of the sequence. The truncation error keeps
+shrinking like $e/(2n)$, but the rounding error takes over as soon as the two meet.
+Third, the error ratio in part 4 falls to $0.250000$ and stays there, exactly as in the
+hand computation before. The program proves nothing: it only checks claims we have
+already proved.
+
+\begin{untukdosen}
+Teaching order: start with the $\varepsilon$-$N$ game in class, not with the theorems.
+Point to two rows of students; one names $\varepsilon$, one answers $N$ for
+$x_n=(3n+1)/(n+2)$, and the instructor writes it down until the formula appears by
+itself. After that come uniqueness, the algebraic properties, the squeeze theorem,
+monotone sequences, then subsequences and Cauchy. The limit superior is placed at the
+end, as ``a limit for sequences that have no limit''.
+
+Two typical misconceptions. First, students think $N$ may depend on $n$, then write
+``for every $n$ there is $N=n$'' and believe the definition is met; the symptom shows
+when they cannot produce a single $N$ for the whole tail. Second, they identify ``terms
+getting closer together'' with ``convergent'' and use the Cauchy criterion without
+checking the space; the decimal truncations of the square root of two inside
+$\mathbb{Q}$ are an effective cure.
+
+Board activity: ask students to write the negation of the definition of a limit, then
+prove the divergence of $(-1)^n$ with that negation, not by contradiction. The class is
+ready to move on when they can produce an explicit $N$ without being given a formula
+and name one bounded sequence that is divergent.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item $x_n \to L$ means that for every $\varepsilon>0$ there is $N$ such that
+        $|x_n-L|<\varepsilon$ for all $n>N$. The $\varepsilon$ is chosen first; $N$
+        answers, and may depend on $\varepsilon$ alone.
+  \item The limit is unique, and a convergent sequence is bounded. The converse fails:
+        boundedness is only a necessary condition.
+  \item Limits respect $+$, $\times$, and division by a nonzero denominator; order is
+        never jumped over, only weakly preserved.
+  \item The squeeze theorem turns trapping into a limit, and the lemma $q^n \to 0$
+        supplies a comparison used repeatedly. A bounded monotone sequence always
+        converges, and its limit is the supremum or the infimum.
+  \item Every bounded sequence has a convergent subsequence; a real sequence converges
+        if and only if it is Cauchy, and that equivalence is completeness.
+  \item $\liminf \le \limsup$, and the two are equal to $L$ exactly when the sequence
+        converges to $L$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Prove from the definition that $x_n=(2n-1)/(3n+4)$ converges to $2/3$, and give
+        an explicit $N$ as a function of $\varepsilon$. Compare it with the smallest
+        $n$ that satisfies the condition.
+  \item Prove: if $x_n \to L$ then $|x_n| \to |L|$. Show by example that the converse is
+        false.
+  \item Compute $\limsup$ and $\liminf$ of $x_n=1+(-1)^n+1/n$ and of
+        $y_n=(-1)^n(1+1/n)$. Check your answers with Python for $n$ up to $1000$.
+  \item Evaluate this claim: ``Because $(1+1/n)^n$ is increasing and bounded above by
+        $3$, its limit is $3$.'' True, false, or not yet enough evidence? Say which part
+        is right and which part is wrong.
+  \item Prove that $(2^n+3^n)^{1/n} \to 3$ by writing out both fences completely,
+        including a proof that $2^{1/n} \to 1$.
+  \item For the recursion $x_{n+1}=\sqrt{2+x_n}$ with $x_1=1$, use Python to find the
+        smallest term with error below $10^{-6}$ and below $10^{-12}$. Compare with the
+        guess from the ratio $1/4$.
+  \item Prove that a Cauchy sequence is bounded, without using Bolzano--Weierstrass.
+        Then prove that a bounded monotone sequence is Cauchy.
+  \item For $x_n=(3n+1)/(n+2)$ and $\varepsilon=10^{-3}$, determine the smallest
+        admissible $N$, then compute the error at $n=N$, $N+1$, and $N+2$ with Python.
+        Explain why $N-1$ is not admissible.
+  \item Prove: if every subsequence of $(x_n)$ has a subsequence converging to $L$, then
+        $x_n \to L$.
+\end{enumerate}
+
+Hints for the three hardest items. Item 5: use
+$1 \le (1+(2/3)^n)^{1/n} \le 2^{1/n}$ and then the lemma $2^{1/n} \to 1$ via Bernoulli's
+inequality. Item 7: for the second part, compare $|x_n-x_m|$ with $x_m-x_n$ when $m>n$
+and use monotone convergence. Item 9: suppose $x_n$ does not tend to $L$, build a
+subsequence staying a fixed distance from $L$, then use Bolzano--Weierstrass.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is really proved here is only the following equivalence, and all of it rests on one
+axiom: the supremum property. In an ordered field, the following statements are
+equivalent: every nonempty set bounded above has a supremum; every bounded increasing
+sequence converges; every Cauchy sequence converges; every bounded sequence has a
+convergent subsequence. The chain of proofs is in Rudin, \emph{Principles of Mathematical
+Analysis}, Chapter 3 (the sections Convergent Sequences, Subsequences, Cauchy Sequences)
+and Abbott, \emph{Understanding Analysis}, Chapter 2 (sections 2.2 to 2.6). What is
+popular but not proved: ``a Cauchy sequence always converges''. That is false without
+completeness, and the decimal truncations of the square root of two inside
+$\mathbb{Q}$ are the counterexample.
+
+An open question: how fast a sequence converges, and whether that rate can always be
+computed. The answer is no. A classical result of Specker (1949) gives a computable,
+increasing, bounded sequence of rationals whose limit is not computable; so
+``convergent'' does not automatically give an error bound that can be programmed.
+
+Limits of validity: this whole chapter works in $\mathbb{R}$ with the usual distance. In
+a general metric space, Bolzano--Weierstrass becomes a statement about compactness, and
+the Cauchy criterion remains a necessary condition but no longer sufficient. The squeeze
+theorem is also silent when the two fences do not tend to the same value; there we need a
+finer comparison, and that is the material of Chapter 5.
+\end{untukpeneliti}
+
+\peta{Chapter 4 in Rudin, \emph{Principles of Mathematical Analysis}: Chapter 3 (Numerical
+Sequences and Series, with the sections Convergent Sequences, Subsequences, Cauchy
+Sequences, Upper and Lower Limits, and Some Special Sequences). In Abbott,
+\emph{Understanding Analysis}: Chapter 2 (The Limit of a Sequence, The Algebraic and
+Order Limit Theorems, The Monotone Convergence Theorem and a First Look at Infinite
+Series, Subsequences and the Bolzano--Weierstrass Theorem, The Cauchy Criterion).
+The axioms and completeness consequences used here are built in Chapter 3 of this book,
+not repeated.}

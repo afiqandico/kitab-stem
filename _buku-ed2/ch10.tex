@@ -1,0 +1,1316 @@
+\chapter{Ortogonalitas, SVD, dan Kuadrat Terkecil}
+
+Lima pembacaan dari satu probe suhu: $100$, $101$, $102$, $103$, dan $104$ derajat.
+Bacaan yang tercatat berturut-turut $302{,}0$, $305{,}1$, $307{,}9$, $311{,}2$, dan
+$313{,}8$. Model kalibrasinya satu garis lurus $y=a+bT$, jadi ada lima persamaan untuk
+dua anu:
+\[
+  a+100b=302{,}0,\qquad a+101b=305{,}1,\qquad \dots,\qquad a+104b=313{,}8 .
+\]
+Tidak ada pasangan $(a,b)$ yang memenuhi kelimanya; kelima titik itu tidak pernah
+segaris, dan selisih tiap persamaan berbeda tanda. Tetap ada satu pasangan yang
+paling masuk akal. Dalam pengertian apa pasangan itu terbaik, dan seberapa jauh ia
+bergeser bila satu bacaan berubah sepersepuluh?
+
+Pertanyaan yang sama muncul dari sisi yang berlawanan. Sebuah detektor menghitung skor
+$s=\mathbf{w}^{\top}\mathbf{x}$ dari tiga pencacah, dan penyerang ingin menggeser $s$
+tepat sebesar $\Delta$ dengan perubahan $\mathbf{x}$ sesedikit mungkin, karena perubahan
+besar mudah terlihat. Ada tiga anu dan satu syarat, jadi solusinya terlalu banyak, bukan
+tidak ada: dari sekian perubahan yang memberi pergeseran sama, mana yang paling kecil?
+
+Dua persoalan itu satu persoalan. Pada kasus pertama himpunan calon jawaban kosong dan
+kita mencari yang terdekat; pada kasus kedua terlalu besar dan kita mencari yang
+terpendek. Keduanya diselesaikan proyeksi tegak lurus. Bab 9 memberi nilai eigen, tetapi
+hanya untuk matriks persegi yang vektornya cukup.
+Matriks kalibrasi di atas berukuran $5\times2$, dan matriks detektor $2\times3$.
+Memaksa keduanya menjadi persegi lewat $\mathbf{A}^{\top}\mathbf{A}$ memang bisa,
+tetapi jalan itu mengkuadratkan kepekaan terhadap galat. Bagian keenam menunjukkan
+harganya dengan angka.
+
+\begin{untukanak}
+Pernahkah kamu berdiri di bawah lampu dan melihat bayanganmu di lantai? Bayangan itu
+bukan kamu: ia lebih pendek, gepeng, dan tidak bisa menunjukkan wajahmu. Tetapi ia hal
+terbaik yang bisa dilakukan lantai: dari semua titik di lantai, bayanganmu yang paling
+dekat dengan ujung kepalamu. Kalau lampu digeser, bayangan ikut bergeser, padahal kamu
+tidak bergerak.
+
+Sekarang bayangkan dua penggaris yang bedanya hanya seperseratus sentimeter. Kalau kamu
+mengukur meja dengan keduanya lalu mengurangkan hasilnya, angka sisa itu hampir
+seluruhnya berasal dari kekeliruan membaca. Selisih kecil mudah tenggelam.
+
+Di bab ini kita akan tahu mengapa bayangan yang ``paling dekat'' itu bisa dihitung dengan
+rapi, mengapa dari banyak jalan menuju tujuan yang sama ada satu jalan terpendek, dan
+mengapa dua aturan ukur yang hampir kembar membuat jawaban kita goyah.
+\end{untukanak}
+
+\section{Hasilkali dalam, norma, dan ketaksamaan Cauchy-Schwarz}
+\tingkat{dasar}
+
+Panjang dan sudut adalah dua kata yang kita pakai sejak sekolah tanpa pernah
+mendefinisikannya. Untuk vektor di $\mathbb{R}^{n}$ keduanya berasal dari satu operasi
+yang memakan dua vektor dan mengembalikan satu bilangan; operasi itulah yang memberi
+ruang vektor ukuran, karena aksioma ruang vektor di Bab 6 tidak menyebut jarak.
+
+Aturannya: kalikan komponen demi komponen, lalu jumlahkan. Hasilnya nol tepat ketika
+kedua vektor bersudut siku, sehingga operasi ini dipakai sebagai pengganti sudut bahkan
+di ruang berdimensi seratus.
+
+\kamus{hasilkali dalam}{inner product}{Dua daftar angka dilipat menjadi satu angka yang
+mengukur seberapa searah keduanya.}
+
+\begin{definisi}[Hasilkali dalam dan norma]
+\emph{Hasilkali dalam} pada ruang vektor real $V$ adalah fungsi
+$\langle\cdot,\cdot\rangle\colon V\times V\to\mathbb{R}$ yang memenuhi tiga syarat:
+\begin{enumerate}
+  \item simetris, $\langle\mathbf{u},\mathbf{v}\rangle=\langle\mathbf{v},\mathbf{u}\rangle$;
+  \item linear pada argumen pertama,
+        $\langle c\mathbf{u}+\mathbf{w},\mathbf{v}\rangle
+         =c\langle\mathbf{u},\mathbf{v}\rangle+\langle\mathbf{w},\mathbf{v}\rangle$;
+  \item definit positif, $\langle\mathbf{v},\mathbf{v}\rangle\ge0$ dengan kesamaan
+        hanya bila $\mathbf{v}=\mathbf{0}$.
+\end{enumerate}
+Pada $\mathbb{R}^{n}$ hasilkali dalam bakunya
+$\langle\mathbf{u},\mathbf{v}\rangle=\sum_{i}u_{i}v_{i}
+=\mathbf{u}^{\top}\mathbf{v}$. \emph{Norma} yang ditimbulkannya adalah
+$\|\mathbf{v}\|=\sqrt{\langle\mathbf{v},\mathbf{v}\rangle}$.\index{hasilkali dalam}
+\index{norma}
+\end{definisi}
+
+Syarat ketiga yang membuat $\|\mathbf{v}\|=0$ hanya untuk vektor nol, sehingga norma
+layak disebut panjang. Norma juga memenuhi $\|c\mathbf{v}\|=|c|\,\|\mathbf{v}\|$ dan
+$\|\mathbf{u}+\mathbf{v}\|\le\|\mathbf{u}\|+\|\mathbf{v}\|$; yang kedua tidak otomatis,
+melainkan akibat ketaksamaan berikut.
+
+Dalam bahasa sehari-hari: hasilkali dalam dua vektor tidak pernah lebih besar daripada
+hasil kali panjangnya. Dua vektor bisa sangat panjang, tetapi bila arahnya bersiku hasil
+kalinya tetap kecil.
+
+\begin{teorema}[Cauchy-Schwarz]
+Untuk semua $\mathbf{u},\mathbf{v}\in V$ berlaku
+$|\langle\mathbf{u},\mathbf{v}\rangle|\le\|\mathbf{u}\|\,\|\mathbf{v}\|$, dengan
+kesamaan tepat ketika salah satu vektor kelipatan skalar vektor yang lain.
+\index{Cauchy-Schwarz}
+\end{teorema}
+
+\begin{proof}
+Bila $\mathbf{v}=\mathbf{0}$, kedua ruas nol dan tidak ada yang perlu dibuktikan.
+Misalkan $\mathbf{v}\ne\mathbf{0}$ dan $t\in\mathbb{R}$ sebarang. Definit positif
+memberi
+\[
+  0\le\|\mathbf{u}-t\mathbf{v}\|^{2}
+   =\|\mathbf{u}\|^{2}-2t\langle\mathbf{u},\mathbf{v}\rangle+t^{2}\|\mathbf{v}\|^{2}.
+\]
+Ruas kanan adalah polinomial kuadrat dalam $t$ yang tidak pernah negatif. Koefisien
+$t^{2}$ positif, jadi diskriminannya tidak boleh positif:
+\[
+  4\langle\mathbf{u},\mathbf{v}\rangle^{2}-4\|\mathbf{u}\|^{2}\|\mathbf{v}\|^{2}\le0 .
+\]
+Setelah dibagi empat dan diakarkan, diperoleh ketaksamaan yang diminta. Kesamaan
+terjadi tepat ketika polinomial itu punya akar kembar, yaitu ketika
+$\mathbf{u}-t\mathbf{v}=\mathbf{0}$ untuk suatu $t$.
+\end{proof}
+
+Bukti itu tidak memakai koordinat, jadi ketaksamaan berlaku di setiap ruang
+berhasilkali dalam, termasuk ruang fungsi.
+
+\begin{akibat}[Ketaksamaan segitiga]
+$\|\mathbf{u}+\mathbf{v}\|\le\|\mathbf{u}\|+\|\mathbf{v}\|$.
+\end{akibat}
+
+\begin{proof}
+Kembangkan $\|\mathbf{u}+\mathbf{v}\|^{2}
+=\|\mathbf{u}\|^{2}+2\langle\mathbf{u},\mathbf{v}\rangle+\|\mathbf{v}\|^{2}$.
+Cauchy-Schwarz membatasi suku tengah oleh $2\|\mathbf{u}\|\|\mathbf{v}\|$, sehingga
+\[
+  \|\mathbf{u}+\mathbf{v}\|^{2}\le\|\mathbf{u}\|^{2}+2\|\mathbf{u}\|\|\mathbf{v}\|
+  +\|\mathbf{v}\|^{2}=(\|\mathbf{u}\|+\|\mathbf{v}\|)^{2}.
+\]
+Kedua ruas tidak negatif, jadi akar kuadratnya boleh diambil.
+\end{proof}
+
+Sekarang kita punya panjang. Sudut menyusul lewat definisi: dua vektor tegak lurus bila
+hasilkali dalamnya nol. Itu masuk akal karena Cauchy-Schwarz menjamin
+$\langle\mathbf{u},\mathbf{v}\rangle/(\|\mathbf{u}\|\|\mathbf{v}\|)$ terletak antara $-1$
+dan $1$, sehingga boleh dibaca sebagai kosinus.
+
+\kamus{ortogonal}{orthogonal}{Dua arah yang tidak saling menyumbang sama sekali; bayangan
+satu arah pada arah lain panjangnya nol.}
+
+\begin{definisi}[Ortogonal dan ortonormal]
+$\mathbf{u}$ dan $\mathbf{v}$ \emph{ortogonal} bila
+$\langle\mathbf{u},\mathbf{v}\rangle=0$, ditulis $\mathbf{u}\perp\mathbf{v}$. Himpunan
+vektor disebut \emph{ortogonal} bila setiap dua anggotanya yang berbeda ortogonal, dan
+\emph{ortonormal} bila semua anggotanya juga bernorma satu.\index{ortogonalitas}
+\end{definisi}
+
+Akibat kecil yang langsung dari pengembangan norma: bila $\mathbf{u}\perp\mathbf{v}$
+maka $\|\mathbf{u}+\mathbf{v}\|^{2}=\|\mathbf{u}\|^{2}+\|\mathbf{v}\|^{2}$. Teorema
+Pythagoras adalah kasus khusus definisi ini, bukan sebaliknya.
+
+\section{Himpunan ortogonal, proyeksi, dan Gram-Schmidt}
+\tingkat{menengah}
+
+Untuk basis sembarang kita harus menyelesaikan sistem persamaan linear; untuk basis
+ortonormal tidak, sebab tiap koefisien dibaca dengan satu hasilkali dalam. Satu fakta
+membuatnya sah: himpunan ortogonal tanpa vektor nol selalu bebas linear.
+
+\begin{lemma}
+Bila $\mathbf{v}_{1},\dots,\mathbf{v}_{k}$ ortogonal dan semuanya bukan vektor nol,
+maka himpunan itu bebas linear.
+\end{lemma}
+
+\begin{proof}
+Misalkan $\sum_{i}c_{i}\mathbf{v}_{i}=\mathbf{0}$. Ambil hasilkali dalam dengan
+$\mathbf{v}_{j}$. Semua suku dengan $i\ne j$ lenyap karena ortogonal, sehingga tinggal
+$c_{j}\langle\mathbf{v}_{j},\mathbf{v}_{j}\rangle=0$. Karena $\mathbf{v}_{j}\ne\mathbf{0}$,
+normanya bukan nol, jadi $c_{j}=0$. Ini berlaku untuk setiap $j$.
+\end{proof}
+
+Sekarang pernyataan tentang koefisien tadi, dalam bentuk yang paling sering dipakai.
+
+\begin{proposisi}
+Misalkan $(\mathbf{q}_{1},\dots,\mathbf{q}_{n})$ basis ortonormal dari $V$. Maka untuk
+setiap $\mathbf{v}\in V$,
+\[
+  \mathbf{v}=\sum_{i=1}^{n}\langle\mathbf{v},\mathbf{q}_{i}\rangle\,\mathbf{q}_{i},
+  \qquad
+  \|\mathbf{v}\|^{2}=\sum_{i=1}^{n}\langle\mathbf{v},\mathbf{q}_{i}\rangle^{2}.
+\]
+\end{proposisi}
+
+\begin{proof}
+Tulis $\mathbf{v}=\sum_{i}a_{i}\mathbf{q}_{i}$; koefisien itu ada dan tunggal karena
+basis. Hasilkali dalam dengan $\mathbf{q}_{j}$ memberi
+$\langle\mathbf{v},\mathbf{q}_{j}\rangle=\sum_{i}a_{i}\langle\mathbf{q}_{i},\mathbf{q}_{j}\rangle
+=a_{j}$, sebab $\langle\mathbf{q}_{i},\mathbf{q}_{j}\rangle$ bernilai satu bila $i=j$
+dan nol bila tidak. Untuk rumus norma, pakai ortogonalitas pada pengembangan
+$\|\mathbf{v}\|^{2}=\langle\sum_{i}a_{i}\mathbf{q}_{i},\sum_{j}a_{j}\mathbf{q}_{j}\rangle$;
+suku silang semuanya nol.
+\end{proof}
+
+Kesamaan kedua disebut kesamaan Parseval: pada basis ortonormal, panjang total adalah
+akar jumlah kuadrat koordinat; pada basis miring sifat itu gagal.
+
+Pertanyaan berikutnya muncul dari masalah pembuka: $\mathbf{b}$ berada di luar subruang
+$W$, dan kita ingin titik $W$ yang paling dekat dengannya. Titik itu disebut proyeksi,
+dan cara menemukannya: jumlahkan bayangan $\mathbf{b}$ pada setiap arah ortonormal $W$.
+
+\kamus{proyeksi}{projection}{Bayangan sebuah tongkat di lantai: titik di lantai yang
+paling dekat dengan ujung tongkat.}
+
+\begin{definisi}[Proyeksi ortogonal]
+Misalkan $W\subseteq\mathbb{R}^{m}$ subruang dengan basis ortonormal
+$(\mathbf{q}_{1},\dots,\mathbf{q}_{k})$. \emph{Proyeksi ortogonal} $\mathbf{b}$ pada $W$
+adalah
+\[
+  \operatorname{proj}_{W}\mathbf{b}=\sum_{i=1}^{k}\langle\mathbf{b},\mathbf{q}_{i}\rangle\mathbf{q}_{i},
+  \qquad
+  \mathbf{r}=\mathbf{b}-\operatorname{proj}_{W}\mathbf{b}.
+\]
+Vektor $\mathbf{r}$ disebut \emph{sisa} (residu).\index{proyeksi}
+\end{definisi}
+
+Sisa itu ortogonal terhadap seluruh $W$, bukan hanya terhadap vektor basis: karena
+$\langle\mathbf{r},\mathbf{q}_{j}\rangle=\langle\mathbf{b},\mathbf{q}_{j}\rangle
+-\langle\mathbf{b},\mathbf{q}_{j}\rangle=0$ dan setiap vektor $W$ adalah kombinasi
+$\mathbf{q}_{j}$.
+
+Yang membuat proyeksi berguna: ia bukan sekadar satu titik di $W$, melainkan titik
+terdekat. Itu klaim tentang semua titik lain di $W$, jadi perlu bukti.
+
+\begin{bacakeras}
+Bacalah keras, dua suara bergantian.
+
+\textbf{Suara satu:} Ada satu titik menggantung di atas lantai, dan lantai diminta mengambilkan wakilnya.
+
+\textbf{Suara dua:} Lantai tidak bisa naik. Ia hanya bisa menjatuhkan bayangan, dan bayangan itu titik lantai yang paling dekat dengan titik tadi.
+
+\textbf{Suara satu:} Lalu ke mana perginya bagian yang tidak sampai ke lantai?
+
+\textbf{Suara dua:} Bagian itu berdiri tegak. Ia tidak punya lantai untuk berpijak, jadi tidak ada jalan di lantai yang bisa memendekkannya.
+
+Ulangi satu baris ini sampai terasa di lidah: \emph{yang jatuh ke lantai adalah yang terdekat, yang berdiri tegak adalah yang tak terpulangkan.}
+\end{bacakeras}
+
+\begin{teorema}[Hampiran terbaik]
+Untuk setiap $\mathbf{w}\in W$ berlaku
+$\|\mathbf{b}-\operatorname{proj}_{W}\mathbf{b}\|\le\|\mathbf{b}-\mathbf{w}\|$, dengan
+kesamaan hanya bila $\mathbf{w}=\operatorname{proj}_{W}\mathbf{b}$.
+\end{teorema}
+
+\begin{proof}
+Tulis $\mathbf{p}=\operatorname{proj}_{W}\mathbf{b}$. Untuk sembarang $\mathbf{w}\in W$,
+\[
+  \mathbf{b}-\mathbf{w}=(\mathbf{b}-\mathbf{p})+(\mathbf{p}-\mathbf{w}).
+\]
+Kedua suku ortogonal: yang pertama ortogonal terhadap seluruh $W$, dan
+$\mathbf{p}-\mathbf{w}\in W$. Karena itu norma kuadratnya terbagi:
+\[
+  \|\mathbf{b}-\mathbf{w}\|^{2}=\|\mathbf{b}-\mathbf{p}\|^{2}+\|\mathbf{p}-\mathbf{w}\|^{2}.
+\]
+Suku kedua tidak negatif, sehingga ruas kanan paling kecil ketika $\mathbf{w}=\mathbf{p}$.
+\end{proof}
+
+Bacaan geometrinya ada pada Gambar~\ref{fig:proyeksi-sisa}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.18]
+  \draw[->,layergrey] (-0.5,0)--(3.4,0) node[right,font=\small]{$x_{1}$};
+  \draw[->,layergrey] (0,-0.5)--(0,3.9) node[above,font=\small]{$x_{2}$};
+  \draw[very thick,accent] (-0.42,-0.21)--(2.75,1.375)
+    node[right,font=\small]{$W$};
+  \draw[densely dotted,thick,layergrey] (0.2,3.4)--(2.6,1.3);
+  \fill[layergrey] (2.6,1.3) circle (1.2pt);
+  \node[font=\small,layergrey,below right=-2pt] at (2.6,1.3) {$\mathbf{w}$};
+  \node[font=\small,layergrey,above right=-3pt] at (1.05,2.62)
+    {$\|\mathbf{b}-\mathbf{w}\|$};
+  \draw[->,very thick,layerteal] (0,0)--(0.2,3.4)
+    node[left,font=\small]{$\mathbf{b}$};
+  \draw[->,thick,layerindigo] (0,0)--(1.52,0.76);
+  \node[font=\small,layerindigo,below right=-2pt] at (1.34,0.6) {$\mathbf{p}$};
+  \draw[-{Latex},very thick,layerplum] (1.52,0.76)--(0.2,3.4);
+  \node[font=\small,layerplum,right=2pt] at (0.95,2.15) {$\mathbf{r}$};
+  \draw[thick,layergrey] (1.717,0.858)--(1.619,1.055)--(1.422,0.957);
+  \fill[layerplum] (1.52,0.76) circle (1.4pt);
+\end{tikzpicture}
+\caption{Proyeksi ortogonal $\mathbf{b}=(0{,}2;\,3{,}4)$ pada garis $W$ yang
+direntang $\mathbf{q}=(2,1)/\sqrt{5}$. Kaki tegak lurusnya
+$\mathbf{p}=(1{,}52;\,0{,}76)$, ditandai siku-siku dengan $W$, dan sisa
+$\mathbf{r}=\mathbf{b}-\mathbf{p}$ tegak lurus terhadap seluruh $W$. Titik
+$\mathbf{w}=(2{,}6;\,1{,}3)$ yang juga berada di $W$ memberi jarak
+$\|\mathbf{b}-\mathbf{w}\|\approx3{,}19$, lebih panjang daripada
+$\|\mathbf{b}-\mathbf{p}\|\approx2{,}95$.}
+\label{fig:proyeksi-sisa}
+\end{figure}
+
+\begin{tangan}
+Bahan: satu pensil, satu lampu meja, satu lembar kertas, dan penggaris.
+
+Letakkan kertas di meja, lalu jauhkan lampu ke ujung ruangan sampai sinarnya hampir sejajar. Lampu yang terlalu dekat memanjangkan bayangan, dan yang terukur bukan lagi proyeksi ortogonal.
+
+Pegang pensil tegak dengan ujungnya menyentuh kertas, dan tandai titik itu. Miringkan pensil sampai bersudut enam puluh derajat dengan kertas, tandai ujung bayangannya, lalu ulangi pada empat puluh lima dan tiga puluh derajat. Ukur ketiga bayangan dengan penggaris.
+
+Yang perlu dilihat: bayangan paling panjang ketika pensil hampir menempel kertas, dan paling pendek ketika pensil tegak. Panjang bayangan tidak peduli seberapa tinggi ujung pensil di atas kertas; ia hanya mencatat bagian mendatar. Bagian tegak itulah sisa yang tidak bisa dijangkau lantai.
+\end{tangan}
+
+Bila $\mathbf{Q}$ kolomnya $\mathbf{q}_{1},\dots,\mathbf{q}_{k}$, rumus proyeksi menjadi
+satu perkalian matriks: $\mathbf{p}=\mathbf{Q}\mathbf{Q}^{\top}\mathbf{b}$. Matriks
+$\mathbf{P}=\mathbf{Q}\mathbf{Q}^{\top}$ bersifat $\mathbf{P}^{2}=\mathbf{P}$ dan
+$\mathbf{P}^{\top}=\mathbf{P}$: memproyeksikan dua kali sama dengan sekali. Jejaknya $k$,
+yaitu dimensi $W$; untuk contoh di bagian ketujuh jejaknya $2$.
+
+Sekarang kita tahu memproyeksikan, tetapi belum punya cara memperoleh basis ortonormal.
+Algoritme Gram-Schmidt membangunnya satu per satu: normalkan vektor pertama, lalu buang
+dari vektor berikutnya bagian yang sejajar dengan yang sudah ada. Setiap langkahnya
+hanya memakai proyeksi yang baru kita buktikan.
+
+\begin{teorema}[Gram-Schmidt dan faktorisasi QR]
+Misalkan $\mathbf{a}_{1},\dots,\mathbf{a}_{n}$ bebas linear di $\mathbb{R}^{m}$.
+Definisikan berturut-turut
+\[
+  \mathbf{v}_{1}=\mathbf{a}_{1},\qquad
+  \mathbf{v}_{j}=\mathbf{a}_{j}-\sum_{i<j}\langle\mathbf{a}_{j},\mathbf{q}_{i}\rangle\mathbf{q}_{i},
+  \qquad
+  \mathbf{q}_{j}=\frac{\mathbf{v}_{j}}{\|\mathbf{v}_{j}\|}
+\]
+untuk $j=2,\dots,n$. Maka $\mathbf{q}_{1},\dots,\mathbf{q}_{n}$ ortonormal dan
+$\operatorname{span}(\mathbf{q}_{1},\dots,\mathbf{q}_{j})
+=\operatorname{span}(\mathbf{a}_{1},\dots,\mathbf{a}_{j})$ untuk setiap $j$. Akibatnya
+$\mathbf{A}=\mathbf{Q}\mathbf{R}$ dengan $\mathbf{Q}$ berkolom ortonormal dan
+$\mathbf{R}$ segitiga atas dengan diagonal positif.\index{Gram-Schmidt}\index{QR}
+\end{teorema}
+
+\begin{proof}
+Kita buktikan dengan induksi pada $j$. Untuk $j=1$, $\mathbf{q}_{1}$ adalah
+$\mathbf{a}_{1}$ yang dinormalkan, jadi benar. Andaikan klaim benar sampai $j-1$.
+Vektor $\mathbf{v}_{j}$ adalah $\mathbf{a}_{j}$ dikurangi kombinasinya dengan
+$\mathbf{q}_{1},\dots,\mathbf{q}_{j-1}$, sehingga $\mathbf{v}_{j}$ tetap berada di
+$\operatorname{span}(\mathbf{a}_{1},\dots,\mathbf{a}_{j})$. Untuk setiap $i<j$,
+\[
+  \langle\mathbf{v}_{j},\mathbf{q}_{i}\rangle
+  =\langle\mathbf{a}_{j},\mathbf{q}_{i}\rangle-\langle\mathbf{a}_{j},\mathbf{q}_{i}\rangle=0,
+\]
+karena $\mathbf{q}_{i}$ ortonormal. Jadi $\mathbf{v}_{j}$ ortogonal terhadap semua
+vektor sebelumnya. Vektor itu bukan nol: bila nol, $\mathbf{a}_{j}$ akan menjadi
+kombinasi $\mathbf{a}_{1},\dots,\mathbf{a}_{j-1}$, bertentangan dengan kebebasan linear.
+Karena itu $\mathbf{q}_{j}$ terdefinisi dan himpunan bertambah ortonormal.
+
+Untuk faktorisasi, tulis setiap $\mathbf{a}_{j}$ sebagai
+$\|\mathbf{v}_{j}\|\mathbf{q}_{j}+\sum_{i<j}\langle\mathbf{a}_{j},\mathbf{q}_{i}\rangle\mathbf{q}_{i}$.
+Koefisien itu mengisi kolom ke-$j$ dari $\mathbf{R}$; yang berada di atas diagonal adalah
+$\langle\mathbf{a}_{j},\mathbf{q}_{i}\rangle$ dan diagonalnya $\|\mathbf{v}_{j}\|>0$.
+\end{proof}
+
+Satu peringatan: Gram-Schmidt klasik menghitung setiap koefisien terhadap vektor asli
+$\mathbf{a}_{j}$, bukan terhadap vektor yang sudah dikurangi. Bila kolom $\mathbf{A}$
+hampir bergantung, hasilnya berhenti ortonormal; mengurangi $\mathbf{v}_{j}$ lebih dulu
+memperbaikinya dengan biaya hampir nol. Bagian kedelapan menunjukkan angkanya: pada
+matriks dengan $\kappa\approx6{,}8\times10^{6}$, versi klasik memberi
+$\|\mathbf{Q}^{\top}\mathbf{Q}-\mathbf{I}\|=2{,}05\times10^{-2}$, versi modifikasi
+$3{,}40\times10^{-10}$, Householder $1{,}19\times10^{-15}$; angka pertama berarti dua
+kolom yang seharusnya bersiku berselisih sudut sekitar satu derajat.
+
+\section{Kuadrat terkecil dan persamaan normal}
+\tingkat{menengah}
+
+Kembali ke lima bacaan probe. Sistem $\mathbf{A}\mathbf{x}=\mathbf{b}$ tidak punya solusi,
+tetapi kita bisa menuntut sisa $\mathbf{b}-\mathbf{A}\mathbf{x}$ sekecil mungkin:
+menuntut sisa nol berarti menuntut solusi, menuntut panjangnya minimum selalu punya
+jawaban. Ukuran yang dipakai jumlah kuadrat selisih, bukan jumlah nilai mutlak, karena
+jumlah kuadrat lahir dari hasilkali dalam sehingga seluruh mesin proyeksi bisa dipakai;
+jumlah nilai mutlak tidak, dan jawabannya bisa tidak tunggal.
+
+\kamus{kuadrat terkecil}{least squares}{Ketika tidak ada garis yang melewati semua titik,
+pilih garis yang jumlah kuadrat kesalahannya paling kecil.}
+
+\begin{definisi}[Penyelesaian kuadrat terkecil]
+Untuk $\mathbf{A}\in\mathbb{R}^{m\times n}$ dan $\mathbf{b}\in\mathbb{R}^{m}$,
+vektor $\hat{\mathbf{x}}\in\mathbb{R}^{n}$ disebut \emph{penyelesaian kuadrat terkecil}
+bila $\|\mathbf{A}\hat{\mathbf{x}}-\mathbf{b}\|\le\|\mathbf{A}\mathbf{x}-\mathbf{b}\|$
+untuk setiap $\mathbf{x}\in\mathbb{R}^{n}$.\index{kuadrat terkecil}
+\end{definisi}
+
+Definisi itu tidak menyebut turunan. Yang dipakai geometri: $\mathbf{A}\mathbf{x}$ selalu
+di dalam $\operatorname{col}(\mathbf{A})$, jadi sisa terkecil adalah titik
+$\operatorname{col}(\mathbf{A})$ terdekat dengan $\mathbf{b}$; itu tepat masalah proyeksi
+tadi.
+
+\begin{teorema}[Persamaan normal]
+Vektor $\hat{\mathbf{x}}$ meminimumkan $\|\mathbf{A}\mathbf{x}-\mathbf{b}\|$ jika dan
+hanya jika
+\[
+  \mathbf{A}^{\top}\mathbf{A}\hat{\mathbf{x}}=\mathbf{A}^{\top}\mathbf{b}.
+\]
+\end{teorema}
+
+\begin{proof}
+Ambil sembarang $\mathbf{x}$ dan sembarang $\mathbf{h}\in\mathbb{R}^{n}$, lalu tulis
+$\mathbf{x}+\mathbf{h}$ sebagai tetangga $\mathbf{x}$. Maka
+\[
+  \|\mathbf{A}(\mathbf{x}+\mathbf{h})-\mathbf{b}\|^{2}
+  =\|\mathbf{A}\mathbf{x}-\mathbf{b}\|^{2}
+   +2\mathbf{h}^{\top}\mathbf{A}^{\top}(\mathbf{A}\mathbf{x}-\mathbf{b})
+   +\|\mathbf{A}\mathbf{h}\|^{2}.
+\]
+
+Pertama, andaikan $\mathbf{A}^{\top}(\mathbf{A}\mathbf{x}-\mathbf{b})=\mathbf{0}$.
+Suku tengah lenyap untuk setiap $\mathbf{h}$, dan suku terakhir tidak negatif, sehingga
+$\|\mathbf{A}(\mathbf{x}+\mathbf{h})-\mathbf{b}\|^{2}\ge\|\mathbf{A}\mathbf{x}-\mathbf{b}\|^{2}$.
+Jadi $\mathbf{x}$ meminimumkan.
+
+Kedua, andaikan $\mathbf{A}^{\top}(\mathbf{A}\mathbf{x}-\mathbf{b})=\mathbf{z}\ne\mathbf{0}$.
+Pilih $\mathbf{h}=-\epsilon\mathbf{z}$ dengan $\epsilon>0$ kecil. Suku tengah menjadi
+$-2\epsilon\|\mathbf{z}\|^{2}$, sedangkan suku terakhir tumbuh sebesar
+$\epsilon^{2}\|\mathbf{A}\mathbf{z}\|^{2}$. Untuk $\epsilon$ cukup kecil, yang negatif
+mengalahkan yang positif, sehingga $\mathbf{x}$ bukan peminimum. Jadi syarat itu perlu.
+\end{proof}
+
+Sistem $\mathbf{A}^{\top}\mathbf{A}\mathbf{x}=\mathbf{A}^{\top}\mathbf{b}$ disebut
+\emph{persamaan normal}. Syarat
+$\mathbf{A}^{\top}(\mathbf{A}\hat{\mathbf{x}}-\mathbf{b})=\mathbf{0}$ mengatakan sisa
+$\mathbf{r}=\mathbf{b}-\mathbf{A}\hat{\mathbf{x}}$ ortogonal terhadap setiap kolom
+$\mathbf{A}$, jadi terhadap seluruh $\operatorname{col}(\mathbf{A})$. Dengan kata lain
+$\mathbf{A}\hat{\mathbf{x}}$ adalah proyeksi $\mathbf{b}$ pada ruang kolom.\index{persamaan normal}
+
+Dari sini satu pertanyaan praktis: kapan jawabannya tunggal? Matriks
+$\mathbf{A}^{\top}\mathbf{A}$ selalu persegi dan simetris, tetapi belum tentu dapat
+dibalik.
+
+\begin{akibat}
+Bila kolom-kolom $\mathbf{A}$ bebas linear, maka $\mathbf{A}^{\top}\mathbf{A}$ dapat
+dibalik dan penyelesaian kuadrat terkecil tunggal, yaitu
+$\hat{\mathbf{x}}=(\mathbf{A}^{\top}\mathbf{A})^{-1}\mathbf{A}^{\top}\mathbf{b}$.
+\end{akibat}
+
+\begin{proof}
+Misalkan $\mathbf{A}^{\top}\mathbf{A}\mathbf{z}=\mathbf{0}$. Kalikan dari kiri dengan
+$\mathbf{z}^{\top}$, diperoleh $\|\mathbf{A}\mathbf{z}\|^{2}
+=\mathbf{z}^{\top}\mathbf{A}^{\top}\mathbf{A}\mathbf{z}=0$, jadi
+$\mathbf{A}\mathbf{z}=\mathbf{0}$. Kebebasan linear kolom memaksa $\mathbf{z}=\mathbf{0}$.
+Jadi inti $\mathbf{A}^{\top}\mathbf{A}$ hanya memuat vektor nol, dan matriks persegi
+dengan inti trivial dapat dibalik. Ketunggalan $\hat{\mathbf{x}}$ lalu mengikuti
+Teorema persamaan normal.
+\end{proof}
+
+\begin{resep}
+\begin{enumerate}
+  \item Susun $\mathbf{A}$ dan $\mathbf{b}$: satu baris $\mathbf{A}$ untuk tiap persamaan, kolomnya fungsi yang dipakai.
+  \item Bentuk $\mathbf{A}^{\top}\mathbf{A}$, yang berukuran $n\times n$, dan $\mathbf{A}^{\top}\mathbf{b}$, yang berukuran $n\times1$.
+  \item Selesaikan $\mathbf{A}^{\top}\mathbf{A}\hat{\mathbf{x}}=\mathbf{A}^{\top}\mathbf{b}$; periksa $\det(\mathbf{A}^{\top}\mathbf{A})\ne0$ lebih dulu, sebab nol berarti jawabannya tidak tunggal.
+  \item Hitung $\mathbf{r}=\mathbf{b}-\mathbf{A}\hat{\mathbf{x}}$, periksa $\mathbf{A}^{\top}\mathbf{r}=\mathbf{0}$, lalu laporkan $\|\mathbf{r}\|$.
+\end{enumerate}
+Peringatan urutan: jangan membalik apa pun sebelum langkah ketiga. $\mathbf{A}$ tidak persegi, jadi $\mathbf{A}^{-1}$ tidak ada, dan menukar $\mathbf{A}^{\top}\mathbf{b}$ menjadi $\mathbf{b}^{\top}\mathbf{A}$ memberi vektor baris $1\times n$, bukan sistem persamaan.
+\end{resep}
+
+Sebaliknya, bila kolom $\mathbf{A}$ bergantung, $\mathbf{A}^{\top}\mathbf{A}$ singular
+dan ada tak hingga penyelesaian; bagian kelima memilih satu di antaranya. Persamaan
+normal mengubah masalah $m\times n$ menjadi $n\times n$, penghematan besar untuk
+$m\gg n$, dan harganya terlihat di bagian keenam.
+
+\section{Dekomposisi nilai singular}
+\tingkat{lanjut}
+
+Bab 9 mengubah matriks persegi menjadi bentuk diagonal dengan memilih satu basis.
+Syaratnya berat: matriks harus punya cukup vektor eigen, dan untuk matriks real nilai
+eigennya harus real. Matriks kalibrasi kita berukuran $5\times2$, jadi ia bahkan tidak
+persegi, dan tidak ada yang namanya nilai eigen untuknya.
+
+Jalan keluarnya: izinkan dua basis berbeda, satu di domain dan satu di kodomain,
+keduanya ortonormal. Dengan kelonggaran itu setiap matriks bersifat diagonal; itulah
+dekomposisi nilai singular. Bilangan di diagonal adalah panjang sumbu elips yang
+dihasilkan dari bola satuan, selalu real dan tidak negatif meskipun matriksnya tidak
+simetris.
+
+\kamus{nilai singular}{singular value}{Seberapa panjang sebuah arah diregangkan oleh
+matriks; nol berarti arah itu digepengkan sampai hilang.}
+
+\begin{definisi}[Nilai singular]
+Misalkan $\mathbf{A}\in\mathbb{R}^{m\times n}$. \emph{Nilai singular} $\mathbf{A}$
+adalah akar kuadrat nilai eigen $\mathbf{A}^{\top}\mathbf{A}$, diurutkan menurun:
+$\sigma_{1}\ge\sigma_{2}\ge\dots\ge\sigma_{n}\ge0$ dengan
+$\sigma_{i}=\sqrt{\lambda_{i}(\mathbf{A}^{\top}\mathbf{A})}$.\index{nilai singular}
+\end{definisi}
+
+Definisi itu sah bila $\mathbf{A}^{\top}\mathbf{A}$ punya $n$ nilai eigen real dengan
+vektor eigen ortonormal; untuk matriks simetris itu benar, dan kita nyatakan sebagai
+lemma, dengan satu langkah yang jujur disebut belum dikerjakan.
+
+\begin{lemma}[Spektral untuk matriks simetris]
+Bila $\mathbf{S}\in\mathbb{R}^{n\times n}$ simetris, maka ada basis ortonormal
+$\mathbf{v}_{1},\dots,\mathbf{v}_{n}$ dari $\mathbb{R}^{n}$ dan bilangan real
+$\lambda_{1},\dots,\lambda_{n}$ dengan $\mathbf{S}\mathbf{v}_{i}=\lambda_{i}\mathbf{v}_{i}$.
+\end{lemma}
+
+\begin{proof}[Sketsa]
+Fungsi $\mathbf{x}\mapsto\mathbf{x}^{\top}\mathbf{S}\mathbf{x}$ kontinu pada bola satuan
+yang tertutup dan terbatas, jadi ia mencapai maksimum di suatu titik
+$\mathbf{v}_{1}$ dengan norma satu. Dengan metode pengali Lagrange, titik itu memenuhi
+$\mathbf{S}\mathbf{v}_{1}=\lambda_{1}\mathbf{v}_{1}$; nilai $\lambda_{1}$ adalah maksimum
+tadi. Selanjutnya $\mathbf{v}_{1}^{\perp}$ juga invarian di bawah $\mathbf{S}$, karena
+$\langle\mathbf{S}\mathbf{w},\mathbf{v}_{1}\rangle
+=\langle\mathbf{w},\mathbf{S}\mathbf{v}_{1}\rangle
+=\lambda_{1}\langle\mathbf{w},\mathbf{v}_{1}\rangle=0$ untuk $\mathbf{w}\perp\mathbf{v}_{1}$.
+Batasan $\mathbf{S}$ pada $\mathbf{v}_{1}^{\perp}$ simetris dan berdimensi $n-1$, jadi
+induksi memberi sisa basis ortonormalnya.
+
+Langkah yang tidak dikerjakan di sini adalah bukti bahwa fungsi kontinu pada himpunan
+tertutup dan terbatas mencapai maksimum. Itu teorema nilai ekstrem, dibuktikan di Bab 11,
+dan bukti penuh lemma ini ada di Axler, \emph{Linear Algebra Done Right} edisi ke-4,
+bagian 7B, atau di Hoffman dan Kunze bagian tentang operator simetris.
+\end{proof}
+
+Dengan lemma itu, $\mathbf{A}^{\top}\mathbf{A}$ simetris dan
+$\mathbf{x}^{\top}\mathbf{A}^{\top}\mathbf{A}\mathbf{x}=\|\mathbf{A}\mathbf{x}\|^{2}\ge0$,
+sehingga nilai eigennya tidak negatif dan akarnya real. Sekarang teorema utamanya.
+
+\begin{teorema}[Dekomposisi nilai singular]
+Setiap $\mathbf{A}\in\mathbb{R}^{m\times n}$ berpangkat $r$ dapat ditulis
+\[
+  \mathbf{A}=\mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\top},
+\]
+dengan $\mathbf{U}\in\mathbb{R}^{m\times m}$ dan $\mathbf{V}\in\mathbb{R}^{n\times n}$
+matriks berkolom ortonormal, serta $\boldsymbol{\Sigma}\in\mathbb{R}^{m\times n}$
+bersifat diagonal dengan entri $\sigma_{1}\ge\dots\ge\sigma_{r}>0$ dan sisanya nol.
+\index{SVD}
+\end{teorema}
+
+\begin{proof}
+Karena $\mathbf{A}^{\top}\mathbf{A}$ simetris, lemma spektral memberi basis ortonormal
+$\mathbf{v}_{1},\dots,\mathbf{v}_{n}$ dengan
+$\mathbf{A}^{\top}\mathbf{A}\mathbf{v}_{i}=\sigma_{i}^{2}\mathbf{v}_{i}$ dan
+$\sigma_{1}\ge\dots\ge\sigma_{n}\ge0$. Nilai eigen yang tidak nol berjumlah $r$;
+sebut indeksnya $1,\dots,r$.
+
+Untuk $i\le r$ definisikan $\mathbf{u}_{i}=\mathbf{A}\mathbf{v}_{i}/\sigma_{i}$, yang
+bernorma satu karena $\|\mathbf{A}\mathbf{v}_{i}\|^{2}
+=\mathbf{v}_{i}^{\top}\mathbf{A}^{\top}\mathbf{A}\mathbf{v}_{i}=\sigma_{i}^{2}$.
+Untuk $i,j\le r$,
+\[
+  \langle\mathbf{u}_{i},\mathbf{u}_{j}\rangle
+  =\frac{1}{\sigma_{i}\sigma_{j}}\mathbf{v}_{i}^{\top}\mathbf{A}^{\top}\mathbf{A}\mathbf{v}_{j}
+  =\frac{\sigma_{j}^{2}}{\sigma_{i}\sigma_{j}}\langle\mathbf{v}_{i},\mathbf{v}_{j}\rangle
+  =\delta_{ij},
+\]
+jadi $\mathbf{u}_{1},\dots,\mathbf{u}_{r}$ ortonormal. Untuk $i>r$ berlaku
+$\|\mathbf{A}\mathbf{v}_{i}\|^{2}=\sigma_{i}^{2}=0$, sehingga $\mathbf{A}\mathbf{v}_{i}=\mathbf{0}$.
+
+Vektor-vektor itu belum tentu mengisi $\mathbb{R}^{m}$; lengkapi menjadi basis ortonormal dengan
+Gram-Schmidt pada sembarang basis komplemen ortogonalnya. Definisikan
+$\mathbf{B}=\sum_{i\le r}\sigma_{i}\mathbf{u}_{i}\mathbf{v}_{i}^{\top}$. Untuk $j\le r$
+berlaku $\mathbf{B}\mathbf{v}_{j}=\sigma_{j}\mathbf{u}_{j}=\mathbf{A}\mathbf{v}_{j}$, dan
+untuk $j>r$ keduanya nol. Kedua matriks sepakat pada suatu basis, jadi $\mathbf{B}=\mathbf{A}$.
+\end{proof}
+
+Bacaan geometrinya: bola satuan dipetakan $\mathbf{A}$ menjadi elipsoid. Kolom
+$\mathbf{v}_{i}$ menunjuk sumbu bola, $\mathbf{u}_{i}$ sumbu elipsoid, dan $\sigma_{i}$
+panjang sumbu itu: $\mathbf{V}^{\top}$ memutar, $\boldsymbol{\Sigma}$ meregangkan,
+$\mathbf{U}$ memutar lagi.
+
+Gambar~\ref{fig:svd-lingkaran-elips} menjalankan bacaan itu pada
+$\mathbf{A}=\begin{pmatrix}0&3\\4&1\end{pmatrix}$: sumbu $\mathbf{v}_{1}$ yang miring
+$26{,}57^\circ$ berakhir sebagai sumbu elips $\mathbf{u}_{1}$ yang miring
+$71{,}57^\circ$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.55]
+  \draw[->,gray] (-1.3,0)--(1.3,0);
+  \draw[->,gray] (0,-1.3)--(0,1.3);
+  \draw[thick,accent] (0,0) circle (1);
+  \draw[->,very thick,blue!55!black] (0,0)--(0.894,0.447)
+    node[above right=-3pt] {$\mathbf{v}_{1}$};
+  \draw[->,very thick,blue!55!black] (0,0)--(-0.447,0.894)
+    node[above left=-3pt] {$\mathbf{v}_{2}$};
+  \node[below,font=\small] at (0,-1.5) {lingkaran satuan};
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[scale=0.68]
+  \draw[->,gray] (-3.5,0)--(3.5,0);
+  \draw[->,gray] (0,-4.6)--(0,4.6);
+  \draw[thick,accent] plot[domain=0:360,samples=160]
+    ({3*sin(\x)},{4*cos(\x)+sin(\x)});
+  \draw[->,very thick,blue!55!black] (0,0)--(1.342,4.025)
+    node[right=3pt] {$\sigma_{1}\mathbf{u}_{1}$};
+  \draw[->,very thick,blue!55!black] (0,0)--(2.683,-0.894)
+    node[below right=-3pt] {$\sigma_{2}\mathbf{u}_{2}$};
+  \node[below,font=\small] at (0,-5.1) {bayangannya};
+\end{tikzpicture}
+\caption{Aksi $\mathbf{A}=\begin{pmatrix}0&3\\4&1\end{pmatrix}$ pada lingkaran satuan.
+Kiri: dua sumbu ortonormal lingkaran, $\mathbf{v}_{1}=(2,1)/\sqrt{5}$ dan
+$\mathbf{v}_{2}=(-1,2)/\sqrt{5}$. Kanan: bayangannya elips dengan setengah-sumbu
+$\sigma_{1}=3\sqrt{2}\approx4{,}243$ (numpy mencetak $4{,}242641$) sepanjang
+$\mathbf{u}_{1}=(1,3)/\sqrt{10}$, dan $\sigma_{2}=2\sqrt{2}\approx2{,}828$ (numpy
+$2{,}828427$) sepanjang $\mathbf{u}_{2}=(3,-1)/\sqrt{10}$.}
+\label{fig:svd-lingkaran-elips}
+\end{figure}
+
+Bentuk penjumlahan $\mathbf{A}=\sum_{i}\sigma_{i}\mathbf{u}_{i}\mathbf{v}_{i}^{\top}$
+adalah cara paling jujur membacanya: matriks diuraikan menjadi $r$ lapisan berpangkat
+satu, diurutkan dari sumbangan terbesar. Memotong setelah $k$ suku memberi hampiran
+berpangkat $k$ terbaik dalam norma Frobenius; itu teorema Eckart-Young, yang buktinya
+tidak dikerjakan di sini dan dapat dibaca di Golub dan Van Loan bagian 2.4.
+
+Gambar~\ref{fig:potret-singular} menampilkan potret nilai singular matriks yang sama:
+memotong setelah suku pertama mematikan $\sigma_{2}$, dan galat yang tersisa tepat
+$\sigma_{2}=2{,}828427$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=9.6cm, height=5.4cm,
+  ybar, bar width=15pt,
+  xmin=0.35, xmax=2.65, ymin=0, ymax=6.4,
+  ylabel={nilai singular},
+  xtick={1,2}, xticklabels={$\sigma_{1}$,$\sigma_{2}$},
+  tick label style={font=\small},
+  label style={font=\small},
+  axis lines=left,
+  legend style={font=\small,draw=none,at={(0.03,0.97)},anchor=north west},
+  legend cell align=left,
+]
+\addplot[fill=accent!55,draw=accent,bar shift=-8.5pt]
+  coordinates {(1,4.243) (2,2.828)};
+\addlegendentry{$\mathbf{A}$ penuh}
+\addplot[fill=blue!25,draw=blue!55!black,bar shift=8.5pt]
+  coordinates {(1,4.243) (2,0)};
+\addlegendentry{$k=1$}
+\draw[<->,gray,thick] (axis cs:2.30,0)--(axis cs:2.30,2.828)
+  node[midway,right=2pt,font=\scriptsize] {$\sigma_{2}$};
+\draw[gray,densely dotted] (axis cs:2.03,2.828)--(axis cs:2.30,2.828);
+\end{axis}
+\end{tikzpicture}
+\caption{Potret nilai singular $\mathbf{A}=\begin{pmatrix}0&3\\4&1\end{pmatrix}$.
+Bar merah: $\mathbf{A}$ penuh, $\sigma_{1}=4{,}243$ dan $\sigma_{2}=2{,}828$. Bar
+biru: hampiran pangkat satu $\sigma_{1}\mathbf{u}_{1}\mathbf{v}_{1}^{\top}$, yang
+menyisakan nol pada tempat kedua. Selisih ujung keduanya, yaitu $\sigma_{2}=2{,}828$,
+adalah galat Frobenius hampiran itu.}
+\label{fig:potret-singular}
+\end{figure}
+
+Beberapa akibat langsung, semuanya dipakai di bagian berikutnya.
+
+\begin{akibat}
+Untuk $\mathbf{A}\in\mathbb{R}^{m\times n}$ dengan nilai singular
+$\sigma_{1}\ge\dots\ge\sigma_{r}>0$:
+\begin{enumerate}
+  \item $\operatorname{rank}\mathbf{A}=r$, yaitu banyaknya nilai singular tak nol;
+  \item $\|\mathbf{A}\mathbf{x}\|\le\sigma_{1}\|\mathbf{x}\|$ untuk setiap $\mathbf{x}$,
+        dan batas itu tercapai;
+  \item $\|\mathbf{A}\|_{F}^{2}=\sum_{i}\sigma_{i}^{2}$ dan
+        $\|\mathbf{A}\|_{2}=\sigma_{1}$;
+  \item bila $\mathbf{A}$ persegi dan dapat dibalik,
+        $|\det\mathbf{A}|=\prod_{i}\sigma_{i}$ dan
+        $\kappa(\mathbf{A})=\sigma_{1}/\sigma_{n}$.
+\end{enumerate}
+\end{akibat}
+
+\begin{proof}
+Butir pertama: $\mathbf{A}\mathbf{x}=\sum_{i}\sigma_{i}\mathbf{u}_{i}
+(\mathbf{v}_{i}^{\top}\mathbf{x})$, jadi jangkauan $\mathbf{A}$ direntang
+$\mathbf{u}_{1},\dots,\mathbf{u}_{r}$ yang bebas linear. Butir kedua:
+$\|\mathbf{A}\mathbf{x}\|^{2}=\sum_{i}\sigma_{i}^{2}(\mathbf{v}_{i}^{\top}\mathbf{x})^{2}
+\le\sigma_{1}^{2}\|\mathbf{x}\|^{2}$, dengan kesamaan di $\mathbf{x}=\mathbf{v}_{1}$.
+Butir ketiga: suku silang lenyap, jadi norma Frobenius kuadrat adalah jumlah
+$\sigma_{i}^{2}$. Butir keempat: $|\det\mathbf{A}|=|\det\mathbf{U}\det\boldsymbol{\Sigma}
+\det\mathbf{V}^{\top}|=\prod_{i}\sigma_{i}$, sebab determinan ortogonal bernilai $\pm1$.
+\end{proof}
+
+Bilangan $\kappa$ di butir keempat adalah \emph{bilangan kondisi}, nisbah nilai singular
+terbesar dan terkecil; untuk matriks berpangkat kurang dari $n$ nisbahnya tak hingga.
+$\kappa$ besar berarti satu arah hampir gepeng, sehingga galat kecil pada data menjadi
+galat besar pada jawaban; bagian keenam memakainya untuk membandingkan dua cara
+menyelesaikan kuadrat terkecil.\index{bilangan kondisi}
+
+Satu peringatan: nilai singular bukan nilai eigen. Matriks
+$\begin{pmatrix}0&1\\0&0\end{pmatrix}$ punya nilai eigen $0$ dan $0$, padahal nilai
+singularnya $1$ dan $0$. Keduanya sama hanya bila matriksnya simetris dan semidefinit
+positif.
+
+\section{Pseudoinvers dan solusi norma minimum}
+\tingkat{lanjut}
+
+Sekarang kita kembali ke pertanyaan penyerang. Skornya satu bilangan, pencacahnya tiga,
+dan himpunan perubahan yang memberi pergeseran sama berisi tak hingga jawaban. Semua
+jawaban itu benar; yang membedakan mereka adalah besar perubahan, dan penyerang ingin
+yang terkecil.
+
+\begin{untukanak}
+Bayangkan kamu harus pergi ke toko di ujung jalan. Ada banyak jalan: lewat pasar, lewat
+lapangan, atau memutar lewat jembatan. Semuanya sampai di toko yang sama. Kalau yang
+kamu hitung hanya ``sampai atau tidak'', semua jalan itu sama baiknya. Tetapi kalau kamu
+menghitung langkah kaki, hanya satu jalan yang paling pendek, dan jalan itu biasanya
+yang paling lurus.
+
+Ingat dua penggaris yang bedanya seperseratus sentimeter? Selisih sekecil itu mudah
+tenggelam dalam kekeliruan membaca. Karena itu dua jalan yang sama secara matematis bisa
+memberi jawaban yang sangat berbeda ketika angkanya dihitung mesin.
+
+Di bab ini kita akan tahu mengapa dari banyak jalan ada satu yang terpendek, mengapa
+jalan terpendek itu selalu tegak lurus terhadap semua jalan lain yang tidak mengubah
+tujuan, dan mengapa mesin kadang memilih jalan yang tidak paling langsung.
+\end{untukanak}
+
+Alat yang menjawabnya adalah invers yang diperumum. $\mathbf{A}$ belum tentu persegi, jadi
+belum tentu punya invers. Dekomposisi nilai singular memberi cara membalik ``sebanyak yang
+bisa dibalik'': balik setiap $\sigma_{i}$ yang tidak nol, biarkan arah yang sudah hilang
+tetap hilang.
+
+\kamus{pseudoinvers}{pseudoinverse}{Invers yang tetap bekerja ketika sebagian arah sudah
+gepeng: yang bisa dibalik, dibalik; yang hilang dibiarkan hilang.}
+
+\begin{definisi}[Pseudoinvers]
+Misalkan $\mathbf{A}=\mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\top}$ berpangkat $r$.
+\emph{Pseudoinvers} $\mathbf{A}^{+}\in\mathbb{R}^{n\times m}$ didefinisikan sebagai
+\[
+  \mathbf{A}^{+}=\mathbf{V}\boldsymbol{\Sigma}^{+}\mathbf{U}^{\top},
+  \qquad
+  \boldsymbol{\Sigma}^{+}=\operatorname{diag}(1/\sigma_{1},\dots,1/\sigma_{r},0,\dots,0),
+\]
+yaitu matriks $\boldsymbol{\Sigma}$ yang ditranspos lalu setiap entri tak nolnya
+dibalik.\index{pseudoinvers}
+\end{definisi}
+
+$\mathbf{A}^{+}$ selalu ada, bahkan untuk matriks nol. Bila $\mathbf{A}$ persegi dan
+dapat dibalik, semua $\sigma_{i}>0$ dan $\mathbf{A}^{+}=\mathbf{A}^{-1}$; definisi ini
+memperluas invers, bukan menggantinya.
+
+Vektor $\mathbf{A}^{+}\mathbf{b}$ menjawab dua tuntutan sekaligus: sisanya terkecil, dan
+di antara yang sisanya terkecil, panjangnya paling pendek.
+
+\begin{teorema}
+Untuk setiap $\mathbf{b}\in\mathbb{R}^{m}$, vektor
+$\mathbf{x}^{+}=\mathbf{A}^{+}\mathbf{b}$ memenuhi
+$\|\mathbf{A}\mathbf{x}^{+}-\mathbf{b}\|\le\|\mathbf{A}\mathbf{x}-\mathbf{b}\|$ untuk
+semua $\mathbf{x}$, dan di antara semua vektor yang memenuhi ketaksamaan itu,
+$\mathbf{x}^{+}$ yang normanya terkecil.
+\end{teorema}
+
+\begin{proof}
+Tulis $\mathbf{A}=\mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\top}$ dan misalkan
+$\mathbf{y}=\mathbf{V}^{\top}\mathbf{x}$. Karena $\mathbf{V}$ persegi dan berkolom
+ortonormal, $\|\mathbf{x}\|=\|\mathbf{y}\|$ dan pemetaan $\mathbf{x}\mapsto\mathbf{y}$
+bijektif. Uraikan $\mathbf{b}$ menurut kolom $\mathbf{U}$:
+$\mathbf{b}=\sum_{i=1}^{r}b_{i}\mathbf{u}_{i}+\mathbf{b}_{\perp}$ dengan
+$b_{i}=\langle\mathbf{u}_{i},\mathbf{b}\rangle$ dan $\mathbf{b}_{\perp}$ ortogonal
+terhadap semua $\mathbf{u}_{i}$. Maka
+\[
+  \mathbf{A}\mathbf{x}-\mathbf{b}
+  =\sum_{i=1}^{r}(\sigma_{i}y_{i}-b_{i})\mathbf{u}_{i}+\sum_{i=r+1}^{m}0\cdot\mathbf{u}_{i}
+   -\mathbf{b}_{\perp},
+\]
+dan ketiga kelompok suku itu saling ortogonal. Karena itu
+\[
+  \|\mathbf{A}\mathbf{x}-\mathbf{b}\|^{2}
+  =\sum_{i=1}^{r}(\sigma_{i}y_{i}-b_{i})^{2}+\|\mathbf{b}_{\perp}\|^{2}.
+\]
+Suku terakhir tidak bergantung pada $\mathbf{x}$, jadi minimum dicapai dengan
+$y_{i}=b_{i}/\sigma_{i}$ untuk $i\le r$. Koordinat $y_{r+1},\dots,y_{n}$ tidak muncul
+di rumus mana pun: berapa pun nilainya, sisa kuadratnya sama. Tetapi
+$\|\mathbf{y}\|^{2}=\sum_{i\le r}(b_{i}/\sigma_{i})^{2}+\sum_{i>r}y_{i}^{2}$, sehingga
+norma minimum tercapai ketika $y_{i}=0$ untuk $i>r$. Vektor yang dihasilkan adalah
+$\mathbf{x}^{+}=\sum_{i\le r}(b_{i}/\sigma_{i})\mathbf{v}_{i}
+=\mathbf{V}\boldsymbol{\Sigma}^{+}\mathbf{U}^{\top}\mathbf{b}$.
+\end{proof}
+
+Bukti itu memuat jawaban pertanyaan penyerang. Pada sistem kurang tentsu, $n>r$, dan
+koordinat $y_{r+1},\dots,y_{n}$ tidak mempengaruhi sisa sama sekali; koordinat itu
+berada di sepanjang $\mathbf{v}_{r+1},\dots,\mathbf{v}_{n}$, tepat vektor yang merentang
+inti $\mathbf{A}$. Jadi himpunan semua penyelesaian adalah $\mathbf{x}^{+}+\ker\mathbf{A}$,
+ruang affine berdimensi $n-r$, dan pseudoinvers memilih titik dengan komponen inti nol:
+satu-satunya yang ortogonal terhadap inti, yaitu di ruang baris $\mathbf{A}$.
+Setiap penyelesaian lain adalah $\mathbf{x}^{+}$ ditambah vektor tak nol di inti, dan
+penambahan itu menambah panjang menurut Pythagoras:
+$\|\mathbf{x}^{+}+\mathbf{k}\|^{2}=\|\mathbf{x}^{+}\|^{2}+\|\mathbf{k}\|^{2}$.
+
+Untuk dua kasus ekstrem ada rumus tertutup.
+
+\begin{akibat}
+Bila $\mathbf{A}$ berpangkat kolom penuh, $\mathbf{A}^{+}
+=(\mathbf{A}^{\top}\mathbf{A})^{-1}\mathbf{A}^{\top}$. Bila $\mathbf{A}$ berpangkat
+baris penuh, $\mathbf{A}^{+}=\mathbf{A}^{\top}(\mathbf{A}\mathbf{A}^{\top})^{-1}$.
+\end{akibat}
+
+\begin{proof}
+Kasus pertama kita ulang alasannya dengan SVD. Ambil
+$\mathbf{A}=\mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\top}$ dengan $\mathbf{V}$ persegi
+ortonormal; maka
+\[
+  (\mathbf{A}^{\top}\mathbf{A})^{-1}\mathbf{A}^{\top}
+  =\mathbf{V}\boldsymbol{\Sigma}^{-2}\mathbf{V}^{\top}\mathbf{V}\boldsymbol{\Sigma}\mathbf{U}^{\top}
+  =\mathbf{V}\boldsymbol{\Sigma}^{-1}\mathbf{U}^{\top}=\mathbf{A}^{+}.
+\]
+Kasus kedua diperoleh dengan menerapkan kasus pertama pada $\mathbf{A}^{\top}$, lalu
+mentranspos: $(\mathbf{A}^{\top})^{+}=(\mathbf{A}\mathbf{A}^{\top})^{-1}\mathbf{A}$,
+dan transposnya $\mathbf{A}^{\top}(\mathbf{A}\mathbf{A}^{\top})^{-1}$. Karena
+$\mathbf{A}^{+}=(\mathbf{A}^{\top})^{+}{}^{\top}$ menurut definisi, hasilnya benar.
+\end{proof}
+
+Akibat kedua itu yang menjawab masalah penyerang. Matriks detektor $2\times3$ berpangkat
+baris penuh, jadi perubahan minimum adalah
+$\mathbf{A}^{\top}(\mathbf{A}\mathbf{A}^{\top})^{-1}\boldsymbol{\delta}$, dan rumus itu
+hanya membutuhkan invers matriks $2\times2$. Perhatikan bahwa
+$\mathbf{A}\mathbf{A}^{\top}$ dapat dibalik justru karena barisnya bebas linear, bukan
+kolomnya.
+
+\begin{tantangan}
+Ambil
+\[
+  \mathbf{A}=\begin{pmatrix}1&0\\0&1\\1&1\end{pmatrix},\qquad \mathbf{b}=(1,1,3).
+\]
+Sistem $\mathbf{A}\mathbf{x}=\mathbf{b}$ tidak punya solusi: dua baris pertama memaksa
+$\mathbf{x}=(1,1)$, sedangkan baris ketiga menuntut $x_{1}+x_{2}=3$.
+
+Tetap ada satu penyelesaian kuadrat terkecil, karena kolomnya bebas linear. Tentukan $\hat{\mathbf{x}}$, lalu cari semua nilai $c$ sehingga untuk $\mathbf{b}=(1,1,c)$ panjang sisa kuadrat terkecilnya tepat $1$. Ada dua jawaban, dan keduanya simetris terhadap $c=2$.
+
+Petunjuk 1: sisa selalu sejajar satu arah tetap; cari arah itu lebih dulu.
+
+Petunjuk 2: jarak $\mathbf{b}$ ke bidang kolom adalah $|c-2|/\sqrt{3}$, jadi tinggal menyelesaikan satu persamaan.
+
+Kalau mentok, kembali ke bagian Kuadrat terkecil dan persamaan normal.
+\end{tantangan}
+
+\section{Mengapa SVD lebih aman daripada persamaan normal}
+\tingkat{lanjut}
+
+Persamaan normal dan pseudoinvers memberi jawaban yang sama secara matematis. Secara
+numerik keduanya berbeda jauh, dan alasannya satu baris: persamaan normal bekerja pada
+$\mathbf{A}^{\top}\mathbf{A}$, yang nilai singularnya $\sigma_{i}^{2}$, bukan
+$\sigma_{i}$. Karena bilangan kondisi adalah nisbah nilai singular, ia ikut dikuadratkan.
+
+\begin{akibat}
+Bila $\mathbf{A}$ berpangkat kolom penuh, $\kappa(\mathbf{A}^{\top}\mathbf{A})
+=\kappa(\mathbf{A})^{2}$.
+\end{akibat}
+
+\begin{proof}
+Dari $\mathbf{A}=\mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\top}$ diperoleh
+$\mathbf{A}^{\top}\mathbf{A}=\mathbf{V}\boldsymbol{\Sigma}^{2}\mathbf{V}^{\top}$, dengan
+$\mathbf{V}$ ortogonal. Jadi nilai singular $\mathbf{A}^{\top}\mathbf{A}$ adalah
+$\sigma_{i}^{2}$, dan nisbah terbesar terhadap terkecil menjadi
+$\sigma_{1}^{2}/\sigma_{n}^{2}=(\sigma_{1}/\sigma_{n})^{2}$.
+\end{proof}
+
+Artinya begini. Dalam pecahan biner dengan sekitar enam belas digit, galat relatif
+jawaban kira-kira $\kappa$ kali galat relatif data: pada $\kappa=10^{7}$ tersisa sembilan
+digit, pada $\kappa^{2}=10^{14}$ tersisa dua, dan pada $\kappa=10^{8}$ seluruh digit
+habis.
+
+Angka pada tabel berikut dihitung dengan numpy dan scipy, dengan acuan 50 digit dari
+mpmath. Baris pertama adalah kalibrasi probe dari pembuka bab; baris kedua adalah
+pencocokan polinomial derajat sembilan pada dua belas titik, masalah yang tampak tidak
+berbahaya.
+
+\begin{center}
+\begin{tabular}{lrrr}
+\hline
+kasus & $\kappa(\mathbf{A})$ & galat relatif persamaan normal & galat relatif SVD \\
+\hline
+kalibrasi $5\times2$ & $7{,}36\times10^{3}$ & $9{,}10\times10^{-11}$ & $4{,}72\times10^{-13}$ \\
+polinomial $12\times10$ & $6{,}84\times10^{6}$ & $2{,}87\times10^{-4}$ & $4{,}90\times10^{-12}$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Kedua baris berpola sama. Pada baris pertama, $\kappa=7{,}36\times10^{3}$ dan
+$\kappa^{2}=5{,}42\times10^{7}$; persamaan normal berselisih $9{,}10\times10^{-11}$ dari
+acuan, SVD $4{,}72\times10^{-13}$, rasionya $193$. Pada baris kedua,
+$\kappa(\mathbf{A})=6{,}84\times10^{6}$ dan $\kappa(\mathbf{A}^{\top}\mathbf{A})
+=4{,}68\times10^{13}$; persamaan normal berselisih $2{,}87\times10^{-4}$, SVD
+$4{,}90\times10^{-12}$, rasionya $5{,}9\times10^{7}$. Selisih itu membesar bersama
+$\kappa$, jauh lebih cepat pada persamaan normal; keduanya masih di bawah batas
+$\kappa^{2}\epsilon$ karena batas itu kasus terburuk, bukan ramalan. Yang penting
+urutannya, bukan angka mutlaknya.
+
+Sisa kuadrat kedua jalan nyaris sama, $4{,}47019\times10^{-6}$ versus
+$4{,}47018\times10^{-6}$, padahal koefisiennya berbeda jauh: sisa kecil tidak membuktikan
+koefisien benar.
+
+Kesimpulan yang jujur: SVD tidak menghapus kepekaan, ia hanya menghilangkan satu sumber
+perbesaran, yaitu pengkuadratan, sehingga galat tumbuh sebesar $\kappa$ dan bukan
+$\kappa^{2}$. Bila $\kappa$ mendekati $10^{16}$, tidak ada presisi ganda yang
+menyelamatkan; yang tersisa adalah regularisasi, yaitu sengaja membuang arah dengan
+$\sigma_{i}$ kecil, setara menghampiri $\mathbf{A}$ dengan matriks berpangkat lebih
+rendah. Bab 26 membahas pilihan ambangnya.
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Empat hitungan berikut memakai pecahan sederhana, jadi dapat diperiksa ulang dengan
+tangan tanpa mesin.
+
+\emph{Pertama, proyeksi pada bidang.} Ambil
+$\mathbf{a}_{1}=(1,1,0)$, $\mathbf{a}_{2}=(1,0,1)$, dan $\mathbf{b}=(3,1,3)$ di
+$\mathbb{R}^{3}$. Subruang $W=\operatorname{span}(\mathbf{a}_{1},\mathbf{a}_{2})$
+berdimensi dua. Gram-Schmidt memberi
+\[
+  \mathbf{q}_{1}=\frac{1}{\sqrt{2}}(1,1,0),\qquad
+  \mathbf{u}_{2}=\mathbf{a}_{2}-\frac{1}{\sqrt{2}}\mathbf{q}_{1}
+  =\Bigl(\tfrac12,-\tfrac12,1\Bigr),\qquad
+  \mathbf{q}_{2}=\frac{1}{\sqrt{6}}(1,-1,2),
+\]
+karena $\|\mathbf{u}_{2}\|=\sqrt{3/2}=\sqrt{6}/2$. Koefisien proyeksi:
+$\langle\mathbf{b},\mathbf{q}_{1}\rangle=4/\sqrt{2}=2\sqrt{2}$ dan
+$\langle\mathbf{b},\mathbf{q}_{2}\rangle=8/\sqrt{6}$. Jadi
+\[
+  \mathbf{p}=2\sqrt{2}\,\mathbf{q}_{1}+\frac{8}{\sqrt{6}}\,\mathbf{q}_{2}
+  =(2,2,0)+\frac{4}{3}(1,-1,2)
+  =\Bigl(\tfrac{10}{3},\tfrac23,\tfrac83\Bigr).
+\]
+Sisanya $\mathbf{r}=\mathbf{b}-\mathbf{p}=(-\tfrac13,\tfrac13,\tfrac13)$, dengan
+$\|\mathbf{r}\|=1/\sqrt{3}=0{,}577350$. Pemeriksaan: $\mathbf{a}_{1}^{\top}\mathbf{r}=0$
+dan $\mathbf{a}_{2}^{\top}\mathbf{r}=0$, jadi sisa memang tegak lurus kedua pembangun.
+Jarak $\mathbf{b}$ ke bidang itu $0{,}577$; tidak ada titik lain di $W$ yang lebih dekat.
+
+\emph{Kedua, kuadrat terkecil $5\times2$.} Untuk data pembuka bab,
+$\mathbf{A}$ berkolom $(1,1,1,1,1)^{\top}$ dan $(100,101,102,103,104)^{\top}$, sehingga
+\[
+  \mathbf{A}^{\top}\mathbf{A}=
+  \begin{pmatrix}5&510\\ 510&52030\end{pmatrix},
+  \qquad
+  \mathbf{A}^{\top}\mathbf{y}=\begin{pmatrix}1540\\ 157109{,}7\end{pmatrix},
+  \qquad
+  \det(\mathbf{A}^{\top}\mathbf{A})=5\cdot52030-510^{2}=50 .
+\]
+Aturan Cramer memberi
+\begin{align*}
+  a&=\frac{1540\cdot52030-510\cdot157109{,}7}{50}=\frac{253}{50}=5{,}06,\\
+  b&=\frac{5\cdot157109{,}7-510\cdot1540}{50}=\frac{148{,}5}{50}=2{,}97 .
+\end{align*}
+Ramalan bacaan menjadi $302{,}06$, $305{,}03$, $308{,}00$, $310{,}97$, dan $313{,}94$,
+sedangkan data sebenarnya $302{,}0$, $305{,}1$, $307{,}9$, $311{,}2$, $313{,}8$. Sisanya
+\[
+  \mathbf{r}=(-0{,}06,\;0{,}07,\;-0{,}10,\;0{,}23,\;-0{,}14),
+  \qquad
+  \|\mathbf{r}\|^{2}=0{,}0910,\qquad \|\mathbf{r}\|=0{,}301662 .
+\]
+Dua pemeriksaan yang harus lolos bila hitungan benar: $\sum_{i}r_{i}=0$ dan
+$\sum_{i}t_{i}r_{i}=0$. Yang pertama karena $\mathbf{r}$ tegak lurus kolom satuan, yang
+kedua karena tegak lurus kolom $t$. Keduanya memang nol di sini.
+
+\emph{Ketiga, SVD matriks $3\times2$.} Ambil
+$\mathbf{A}=\begin{pmatrix}1&1\\ 1&1\\ 1&-1\end{pmatrix}$. Maka
+\[
+  \mathbf{A}^{\top}\mathbf{A}=\begin{pmatrix}3&1\\ 1&3\end{pmatrix},
+  \qquad
+  \lambda^{2}-6\lambda+8=0\;\Longrightarrow\;\lambda=4,\,2,
+\]
+jadi $\sigma_{1}=2$ dan $\sigma_{2}=\sqrt{2}=1{,}41421$, dengan
+$\kappa(\mathbf{A})=\sqrt{2}$. Vektor singular kanannya
+$\mathbf{v}_{1}=\frac{1}{\sqrt{2}}(1,1)$ dan
+$\mathbf{v}_{2}=\frac{1}{\sqrt{2}}(1,-1)$; vektor singular kirinya dihitung dari
+$\mathbf{u}_{i}=\mathbf{A}\mathbf{v}_{i}/\sigma_{i}$, yaitu
+$\mathbf{u}_{1}=\frac{1}{\sqrt{2}}(1,1,0)$ dan $\mathbf{u}_{2}=(0,0,1)$. Periksa satu entri:
+$(2\,\mathbf{u}_{1}\mathbf{v}_{1}^{\top}+\sqrt{2}\,\mathbf{u}_{2}\mathbf{v}_{2}^{\top})_{32}
+=-\sqrt{2}/\sqrt{2}=-1$, cocok dengan $\mathbf{A}$.
+
+\emph{Keempat, matriks berpangkat satu.} Ambil
+$\mathbf{B}=\begin{pmatrix}1&2\\ 2&4\\ 3&6\end{pmatrix}$, yang kolom keduanya dua kali
+kolom pertama. Maka $\mathbf{B}^{\top}\mathbf{B}=14\begin{pmatrix}1&2\\ 2&4\end{pmatrix}$
+dengan nilai eigen $70$ dan $0$, jadi $\sigma_{1}=\sqrt{70}=8{,}36660$ dan
+$\sigma_{2}=0$. Pangkatnya satu, dan $\kappa$ tak hingga. Untuk $\mathbf{b}=(1,0,0)$,
+proyeksi pada ruang kolom adalah $\frac{1}{14}(1,2,3)$, sehingga $\mathbf{B}\mathbf{x}$
+harus sama dengan vektor itu. Karena $\mathbf{B}(s,2s)=5s(1,2,3)$, kita perlu
+$5s=1/14$, yaitu $s=1/70$. Solusi norma minimumnya
+\[
+  \mathbf{x}^{+}=\Bigl(\tfrac{1}{70},\tfrac{2}{70}\Bigr)=(0{,}0142857,\;0{,}0285714),
+  \qquad
+  \|\mathbf{x}^{+}\|=\frac{\sqrt{5}}{70}=0{,}031944 .
+\]
+Sisa kuadrat terkecil:
+\[
+  \mathbf{r}=\mathbf{b}-\mathbf{B}\mathbf{x}^{+}
+  =\Bigl(\tfrac{13}{14},-\tfrac17,-\tfrac{3}{14}\Bigr),
+  \qquad
+  \|\mathbf{r}\|=\sqrt{13/14}=0{,}963624 .
+\]
+Sisa itu tidak mungkin nol: $\mathbf{b}$ di luar ruang kolom. Solusi lain tetap memberi
+sisa yang sama, misalnya $\mathbf{x}^{+}+(-\tfrac27,\tfrac17)$, tetapi normanya lebih
+besar.
+
+\kertas{Ulangi hitungan kedua dengan bacaan terakhir $314{,}3$ dan bukan $313{,}8$.
+Ramalkan lebih dulu apakah $a$ naik atau turun, baru hitung. Perhatikan bahwa titik
+dengan $t$ terjauh menggeser garis lebih banyak daripada titik di tengah; jelaskan lewat
+kolom $\mathbf{A}$ dan rumus $(\mathbf{A}^{\top}\mathbf{A})^{-1}\mathbf{A}^{\top}$.
+Hitung juga $\|\mathbf{r}\|$ yang baru dan bandingkan dengan $0{,}301662$.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Dua blok berikut dijalankan dengan numpy 2.5.2, scipy 1.18.0, Python 3.14.4; keluarannya
+disalin apa adanya.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from scipy.linalg import lstsq, qr
+
+np.set_printoptions(precision=6, suppress=True, linewidth=72)
+
+# 1. proyeksi pada bidang
+a1 = np.array([1., 1., 0.])
+a2 = np.array([1., 0., 1.])
+b = np.array([3., 1., 3.])
+Q, _ = qr(np.column_stack([a1, a2]), mode="economic")
+P = Q @ Q.T
+print("Q =\n", Q)
+print("P b =", P @ b, " sisa =", b - P @ b)
+nr = np.linalg.norm(b - P @ b)
+print("norma sisa =", nr, " 1/sqrt3 =", 1/np.sqrt(3))
+print("P^2 = P:", np.allclose(P @ P, P), " P^T = P:", np.allclose(P.T, P))
+
+# 2. kuadrat terkecil 5x2
+t = np.array([100., 101., 102., 103., 104.])
+A = np.column_stack([np.ones(5), t])
+y = np.array([302.0, 305.1, 307.9, 311.2, 313.8])
+print("\nA^T A =\n", A.T @ A, " det =", np.linalg.det(A.T @ A))
+print("A^T y =", A.T @ y)
+xn = np.linalg.solve(A.T @ A, A.T @ y)
+xs = lstsq(A, y)[0]
+print("persamaan normal:", xn)
+print("lstsq           :", xs)
+print("selisih solusi  :", np.linalg.norm(xn - xs))
+cA = np.linalg.cond(A)
+print("cond A =", cA, " cond A^T A =", np.linalg.cond(A.T @ A))
+r = y - A @ xn
+print("sisa =", r, " norma =", np.linalg.norm(r))
+print("A^T r =", A.T @ r)
+
+# 3. SVD sebuah matriks 3x2
+S = np.array([[1., 1.], [1., 1.], [1., -1.]])
+U, s, Vt = np.linalg.svd(S, full_matrices=False)
+print("\nsingular:", s)
+print("rank", np.linalg.matrix_rank(S), " cond", np.linalg.cond(S))
+print("U =\n", U, "\nV^T =\n", Vt)
+print("galat rekonstruksi:", np.linalg.norm(U @ np.diag(s) @ Vt - S))
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+Q =
+ [[-0.707107  0.408248]
+ [-0.707107 -0.408248]
+ [-0.        0.816497]]
+P b = [3.333333 0.666667 2.666667]  sisa = [-0.333333  0.333333  0.333333]
+norma sisa = 0.5773502691896251  1/sqrt3 = 0.5773502691896258
+P^2 = P: True  P^T = P: True
+
+A^T A =
+ [[    5.   510.]
+ [  510. 52030.]]  det = 49.999999999983494
+A^T y = [  1540.  157109.7]
+persamaan normal: [5.06 2.97]
+lstsq           : [5.06 2.97]
+selisih solusi  : 5.315035090945416e-10
+cond A = 7358.860135917719  cond A^T A = 54152822.48728771
+sisa = [-0.06  0.07 -0.1   0.23 -0.14]  norma = 0.30166206257998296
+A^T r = [0. 0.]
+
+singular: [2.       1.414214]
+rank 2  cond 1.414213562373095
+U =
+ [[-0.707107 -0.      ]
+ [-0.707107 -0.      ]
+ [-0.        1.      ]] 
+V^T =
+ [[-0.707107 -0.707107]
+ [ 0.707107 -0.707107]]
+galat rekonstruksi: 6.568167990716596e-16
+\end{verbatim}
+\end{lab}
+
+Tiga hal perlu dibaca. Pertama, $\mathbf{Q}$ dari scipy berbeda tanda dari hasil tangan:
+kolomnya $-(1,1,0)/\sqrt{2}$ dan $-(1,-1,2)/\sqrt{6}$. Tanda kolom pada QR tidak tunggal,
+dan $\mathbf{Q}\mathbf{Q}^{\top}$ tidak berubah karenanya; entri $\mathbf{P}$ tetap
+$(10/3,2/3,8/3)$, dengan sisa $(-0.333333,$ $0.333333,$ $0.333333)$.
+
+Kedua, nilai $\det(\mathbf{A}^{\top}\mathbf{A})$ dilaporkan $49{,}999999999983494$ dan bukan
+$50$; selisih $1{,}7\times10^{-11}$ itu murni pembulatan. Yang penting adalah
+$\kappa(\mathbf{A}^{\top}\mathbf{A})=5{,}415\times10^{7}$, kuadrat dari
+$\kappa(\mathbf{A})=7{,}359\times10^{3}$.
+
+Ketiga, $\mathbf{A}^{\top}\mathbf{r}$ dilaporkan $(0,0)$ sampai enam digit dan selisih
+kedua solusi $5{,}32\times10^{-10}$: keduanya baru berselisih di digit kesembilan, dan itu
+bukan jaminan.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+import mpmath as mp
+from scipy.linalg import lstsq
+
+mp.mp.dps = 50
+np.set_printoptions(precision=4, suppress=True, linewidth=72)
+
+# 4. peringkat satu: sisa bukan nol, solusi norma minimum
+B = np.array([[1., 2.], [2., 4.], [3., 6.]])
+b2 = np.array([1., 0., 0.])
+sB = np.linalg.svd(B, compute_uv=False)
+print("singular B:", sB, " rank", np.linalg.matrix_rank(B))
+xb = np.linalg.pinv(B) @ b2
+print("x+ =", xb, " B x+ =", B @ xb)
+nr = np.linalg.norm(B @ xb - b2)
+print("norma sisa =", nr, " sqrt(13/14) =", np.sqrt(13/14))
+
+# 5. sistem kurang tentsu: norma minimum
+C = np.array([[1., 1., 1.], [0., 1., 1.]])
+b3 = np.array([3., 1.])
+xp = np.linalg.pinv(C) @ b3
+print("\nx+ =", xp, " C x+ =", C @ xp, " norma =", np.linalg.norm(xp))
+print("norma (2,1,0) =", np.linalg.norm([2., 1., 0.]))
+
+# 6. kuadrat terkecil: persamaan normal vs lstsq vs acuan 50 digit
+x = np.linspace(0, 1, 12)
+V = np.vander(x, 10, increasing=True)
+b = V @ (0.1 * np.arange(1, 11)) + 0.001 * np.sin(np.arange(12))
+Vm, bm = mp.matrix(V.tolist()), mp.matrix(b.tolist())
+ref = np.array([float(v) for v in mp.lu_solve(Vm.T * Vm, Vm.T * bm)])
+xne = np.linalg.solve(V.T @ V, V.T @ b)
+xls = lstsq(V, b)[0]
+rel = lambda u: np.linalg.norm(u - ref) / np.linalg.norm(ref)
+print("\ncond V     :", np.linalg.cond(V))
+print("cond V^T V :", np.linalg.cond(V.T @ V))
+print("galat relatif persamaan normal:", rel(xne))
+print("galat relatif lstsq           :", rel(xls))
+print("sisa persamaan normal:", np.linalg.norm(V @ xne - b))
+print("sisa lstsq           :", np.linalg.norm(V @ xls - b))
+
+# 7. Gram-Schmidt klasik vs modifikasi vs Householder
+def cgs(M):
+    m, n = M.shape
+    Q = np.zeros((m, n)); R = np.zeros((n, n))
+    for j in range(n):
+        v = M[:, j].astype(float).copy()
+        for i in range(j):
+            R[i, j] = Q[:, i] @ M[:, j]
+            v -= R[i, j] * Q[:, i]
+        R[j, j] = np.linalg.norm(v)
+        Q[:, j] = v / R[j, j]
+    return Q
+
+def mgs(M):
+    m, n = M.shape
+    Q = np.zeros((m, n)); R = np.zeros((n, n)); W = M.astype(float).copy()
+    for j in range(n):
+        for i in range(j):
+            R[i, j] = Q[:, i] @ W[:, j]
+            W[:, j] -= R[i, j] * Q[:, i]
+        R[j, j] = np.linalg.norm(W[:, j])
+        Q[:, j] = W[:, j] / R[j, j]
+    return Q
+
+ort = lambda Q: np.linalg.norm(Q.T @ Q - np.eye(Q.shape[1]))
+Qh, _ = np.linalg.qr(V)
+print("\n||Q^T Q - I||  klasik     :", ort(cgs(V)))
+print("||Q^T Q - I||  modifikasi :", ort(mgs(V)))
+print("||Q^T Q - I||  Householder:", ort(Qh))
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+singular B: [8.3666 0.    ]  rank 1
+x+ = [0.0143 0.0286]  B x+ = [0.0714 0.1429 0.2143]
+norma sisa = 0.9636241116594315  sqrt(13/14) = 0.9636241116594315
+
+x+ = [2.  0.5 0.5]  C x+ = [3. 1.]  norma = 2.121320343559642
+norma (2,1,0) = 2.23606797749979
+
+cond V     : 6841129.486331141
+cond V^T V : 46788641042301.25
+galat relatif persamaan normal: 0.0002869502788738492
+galat relatif lstsq           : 4.899523677448492e-12
+sisa persamaan normal: 4.4701872339775605e-06
+sisa lstsq           : 4.47017846708843e-06
+
+||Q^T Q - I||  klasik     : 0.020506481578936916
+||Q^T Q - I||  modifikasi : 3.397900311236548e-10
+||Q^T Q - I||  Householder: 1.1933579412809552e-15
+\end{verbatim}
+\end{lab}
+
+Bacaan pertama: sisa kuadrat terkecil matriks berpangkat satu besarnya persis
+$\sqrt{13/14}$; numpy memberi angka yang sama sampai enam belas digit, jadi rumus pecahan
+di bagian ketujuh bukan hampiran.
+
+Bacaan kedua: $\mathbf{C}\mathbf{x}=(3,1)$ memberi
+$\mathbf{x}^{+}=(2,\,0{,}5,\,0{,}5)$ bernorma $2{,}12132$, sedangkan $(2,1,0)$ memberi
+$2{,}23607$; selisih kuadrat normanya $0{,}5$ tepat $2t^{2}$ pada $t=0{,}5$ untuk
+$\mathbf{k}=(0,1,-1)$. Pseudoinvers memilih $t=0$.
+
+Bacaan ketiga dan keempat: pada Vandermonde $12\times10$, persamaan normal berselisih
+$2{,}87\times10^{-4}$ dari acuan 50 digit dan \texttt{lstsq} $4{,}90\times10^{-12}$,
+padahal sisanya praktis sama ($4{,}47019\times10^{-6}$ versus $4{,}47018\times10^{-6}$).
+Koefisien salah, sisa benar. Pada Gram-Schmidt,
+klasik memberi $2{,}05\times10^{-2}$, modifikasi $3{,}40\times10^{-10}$, Householder
+$1{,}19\times10^{-15}$.
+
+\begin{untukdosen}
+Urutan yang berhasil dipakai: proyeksi dulu, definisi hasilkali dalam kemudian.
+Mahasiswa yang melihat bayangan lebih dulu menerima $\mathbf{Q}\mathbf{Q}^{\top}$ sebagai
+jawaban atas pertanyaan ``titik mana yang terdekat'', bukan rumus ajaib; sesudah itu
+Gram-Schmidt menjadi kebutuhan, bukan hafalan.
+
+Dua miskonsepsi khas. Pertama, $\mathbf{A}^{\top}\mathbf{A}$ dianggap selalu dapat dibalik
+karena ``kuadrat matriks tidak pernah nol''; pakai akibat di bagian ketiga, lalu minta
+inti $\mathbf{A}^{\top}\mathbf{A}$ untuk matriks $2\times2$ berpangkat satu. Kedua, SVD
+dianggap memberi nilai eigen; matriks $\begin{pmatrix}0&1\\0&0\end{pmatrix}$ cukup untuk
+mematahkannya.
+
+Aktivitas papan tulis: beri lima titik yang jelas tidak segaris, minta separuh kelas
+memproyeksikan $\mathbf{b}$ dengan tangan dan separuh memakai \texttt{lstsq}; bandingkan
+sisa vektornya, bukan koefisiennya.
+
+Tanda kesiapan lanjut: mahasiswa dapat menjelaskan mengapa menambah satu persamaan tidak
+selalu memperbaiki jawaban, dan menyebut satu situasi di mana pseudoinvers lebih baik
+daripada invers.
+\end{untukdosen}
+
+\section{Ringkasan}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Hasilkali dalam memberi panjang dan sudut; Cauchy-Schwarz menopang ketaksamaan
+        segitiga. Pada basis ortonormal
+        $\mathbf{v}=\sum_{i}\langle\mathbf{v},\mathbf{q}_{i}\rangle\mathbf{q}_{i}$ dan
+        $\|\mathbf{v}\|^{2}=\sum_{i}\langle\mathbf{v},\mathbf{q}_{i}\rangle^{2}$.
+  \item Proyeksi $\mathbf{p}=\mathbf{Q}\mathbf{Q}^{\top}\mathbf{b}$ adalah titik terdekat
+        di subruang, dan sisanya tegak lurus seluruh subruang. Gram-Schmidt membangun
+        basis ortonormal dan memberi $\mathbf{A}=\mathbf{Q}\mathbf{R}$.
+  \item Kuadrat terkecil memenuhi $\mathbf{A}^{\top}\mathbf{A}\hat{\mathbf{x}}
+        =\mathbf{A}^{\top}\mathbf{b}$; bila kolom $\mathbf{A}$ bebas linear, jawabannya tunggal.
+  \item Setiap matriks punya $\mathbf{A}=\mathbf{U}\boldsymbol{\Sigma}\mathbf{V}^{\top}$:
+        pangkat adalah banyaknya $\sigma_{i}>0$, $\|\mathbf{A}\|_{2}=\sigma_{1}$, dan
+        $\kappa(\mathbf{A})=\sigma_{1}/\sigma_{n}$.
+  \item Pseudoinvers $\mathbf{A}^{+}=\mathbf{V}\boldsymbol{\Sigma}^{+}\mathbf{U}^{\top}$
+        memberi sisa terkecil sekaligus norma terkecil, dan pada sistem kurang tentsu
+        memilih jawaban tegak lurus inti.
+  \item Persamaan normal bekerja pada $\kappa^{2}$, SVD pada $\kappa$; karena itu masalah
+        berkondisi buruk kehilangan digit dua kali lebih cepat lewat $\mathbf{A}^{\top}\mathbf{A}$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Proyeksikan $\mathbf{b}=(1,2,2)$ pada $W=\operatorname{span}\{(1,0,0),(0,1,1)\}$
+        dengan tangan, periksa dengan \texttt{numpy.linalg.qr}, lalu hitung jarak
+        $\mathbf{b}$ ke $W$.
+
+  \item Buktikan $\|\mathbf{b}\|^{2}=\|\operatorname{proj}_{W}\mathbf{b}\|^{2}
+        +\|\mathbf{r}\|^{2}$ untuk sembarang $W$ dan $\mathbf{b}$, lalu jelaskan mengapa
+        kesamaan itu gagal bila $\mathbf{p}$ bukan proyeksi ortogonal. (Petunjuk: ambil
+        basis miring di $\mathbb{R}^{2}$ untuk bagian kedua.)
+
+  \item Bila kolom $\mathbf{A}$ ortonormal, buktikan $\mathbf{A}^{\top}\mathbf{A}=\mathbf{I}$,
+        $\hat{\mathbf{x}}=\mathbf{A}^{\top}\mathbf{b}$, dan $\kappa(\mathbf{A})=1$.
+
+  \item Nilai klaim ini: \emph{bila $\mathbf{A}^{\top}\mathbf{A}$ dapat dibalik maka
+        baris-baris $\mathbf{A}$ bebas linear.} Tentukan benar, salah, atau belum cukup
+        bukti, dan sertakan contoh penyangkal bila perlu.
+
+  \item Hitung SVD $\mathbf{A}=\begin{pmatrix}1&1\\ 1&1\end{pmatrix}$ dengan tangan: nilai
+        singular, $\mathbf{U}$, $\mathbf{V}$, pangkat. Tentukan $\mathbf{A}^{+}\mathbf{b}$
+        untuk $\mathbf{b}=(1,3)$, hitung sisanya, periksa dengan
+        \texttt{numpy.linalg.pinv}.
+
+  \item Buktikan sisa kuadrat terkecil selalu tegak lurus $\operatorname{col}(\mathbf{A})$
+        dan sebaliknya, lalu sebutkan di mana kebebasan linear kolom dipakai.
+        (Petunjuk: pakai penguraian norma seperti pada bukti persamaan normal; argumen
+        ``perlu'' memilih arah $\mathbf{h}$.)
+
+  \item Jalankan Gram-Schmidt pada $\{(1,1,1),(1,1,0),(1,0,0)\}$ dengan tangan, bandingkan
+        dengan \texttt{numpy.linalg.qr}, hitung $\|\mathbf{Q}^{\top}\mathbf{Q}-\mathbf{I}\|$
+        untuk keduanya, dan jelaskan mengapa tandanya boleh berbeda.
+
+  \item Misalkan $m<n$ dan baris $\mathbf{A}$ bebas linear. Buktikan
+        $\mathbf{A}\mathbf{A}^{\top}$ dapat dibalik, dan bahwa
+        \[ \mathbf{A}^{\top}(\mathbf{A}\mathbf{A}^{\top})^{-1}\mathbf{b} \]
+        adalah penyelesaian yang tegak lurus inti $\mathbf{A}$. (Petunjuk: tiru bukti
+        akibat kasus kolom penuh dengan $\mathbf{A}^{\top}$ sebagai matriksnya.)
+
+  \item Dengan data kalibrasi di bagian ketujuh, ganti bacaan terakhir menjadi
+        $314{,}3$. Hitung ulang $a$ dan $b$ lewat aturan Cramer, bandingkan dengan
+        \texttt{scipy.linalg.lstsq}, dan jelaskan mengapa titik di ujung menggeser garis
+        lebih banyak daripada titik di tengah.
+
+  \item Untuk $\mathbf{B}=\begin{pmatrix}1&2\\ 2&4\\ 3&6\end{pmatrix}$ dan
+        $\mathbf{b}=(1,0,0)$, tuliskan semua penyelesaian kuadrat terkecil dalam bentuk
+        $\mathbf{x}^{+}+t\mathbf{k}$, tentukan $\mathbf{k}$, lalu tunjukkan bahwa
+        $\|\mathbf{x}^{+}+t\mathbf{k}\|^{2}$ minimum di $t=0$.
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang terbukti di bab ini: Cauchy-Schwarz dan ketaksamaan segitiga untuk sebarang ruang
+berhasilkali dalam; ketunggalan koefisien pada basis ortonormal; sifat terbaik proyeksi;
+kebenaran Gram-Schmidt; kesetaraan kuadrat terkecil dengan persamaan normal; eksistensi
+SVD; dan teorema pseudoinvers. Yang dipinjam hanya lemma spektral, yang buktinya memakai
+teorema nilai ekstrem pada bola satuan (Bab 11); di sini hanya sketsanya.
+
+Yang sering dipopulerkan ada dua. Pertama, klaim bahwa ``SVD selalu stabil''. Yang benar:
+algoritme SVD stabil secara backward, artinya jawaban terhitung adalah jawaban eksak dari
+matriks yang berselisih sedikit dari $\mathbf{A}$; jarak ke jawaban untuk $\mathbf{A}$
+sendiri tetap dapat membesar sebesar $\kappa$. Kedua, klaim bahwa memotong nilai singular
+kecil ``menghilangkan derau''. Pemotongan menghilangkan arah, dan apakah arah itu derau
+atau sinyal tidak dapat diputuskan dari $\mathbf{A}$ saja.
+
+Sumber primer: Axler edisi ke-4 bagian 6A sampai 6C dan 7E sampai 7F; Anton edisi ke-11
+bagian 6.1 sampai 6.4 serta 9.4 dan 9.5; untuk sisi numerik Trefethen dan Bau,
+\emph{Numerical Linear Algebra}, dan Golub dan Van Loan, \emph{Matrix Computations}
+edisi ke-4, bagian 2.4 dan 5.3.
+
+Pertanyaan terbuka. Ambang kapan nilai singular dianggap nol tidak punya jawaban bebas
+parameter; pilihannya bergantung pada skala data dan galat yang sanggup diterima (Bab 22).
+Untuk matriks besar, algoritme acak hanya menjamin secara probabilistik. Batas bab ini:
+matriks real berdimensi hingga; untuk matriks kompleks transpos diganti transpos konjugat,
+dan untuk ruang berdimensi tak hingga SVD diganti dekomposisi operator kompak, yang nilai
+singularnya dapat menumpuk di nol.
+\end{untukpeneliti}
+
+\peta{Bab ini mengikuti Anton edisi ke-11 bagian 6.1 (Inner Products), 6.2 (Angle and
+Orthogonality), 6.3 (Gram-Schmidt; QR-Decomposition), 6.4 (Best Approximation; Least
+Squares), 9.4 (Singular Value Decomposition), dan 9.5 (Data Compression Using SVD).
+Padanan abstraknya Axler edisi ke-4, Bab 6 bagian 6A sampai 6C dan Bab 7 bagian 7E
+sampai 7F, dengan teorema spektral di 7B. Strang edisi ke-6 memberi jalan geometris,
+tetapi salinan di direktori sumber hanya memuat sampul dan prakata. Sisi numerik:
+Trefethen dan Bau; Golub dan Van Loan 2.4, 5.3.}

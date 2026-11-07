@@ -1,0 +1,442 @@
+% Kunci jawaban Bab 16--23. Berkas ini di-\input langsung di dalam document.
+% Setiap angka berasal dari skrip uji Python (lihat laporan).
+
+\section*{Bab 16: Persamaan Diferensial dan Sistem Dinamik}
+\begin{enumerate}[label=\textbf{16.\arabic*}]
+  \item $y=Ce^{t^{2}}$ dengan $y(0)=1$ memberi $y=e^{t^{2}}$, jadi $y(1)=e=2{,}718282$.
+        Euler $h=0{,}1$ memakai $y_{n+1}=(1+0{,}02n)y_{n}$; hasilnya $2{,}334633$,
+        galat $3{,}8365\times10^{-1}$. Metode itu tertinggal karena memakai
+        kemiringan di ujung kiri tiap langkah.
+
+  \item Selisih $w=y_{1}-y_{2}$ memenuhi $w'=-p(t)w$ dan $w(t_{0})=0$. Kalikan dengan
+        $e^{\int p}$: $\bigl(we^{\int p}\bigr)'=0$, jadi $we^{\int p}$ konstan, dan
+        nilainya nol di $t_{0}$. Maka $w\equiv0$. Tak ada rumus solusi yang dipakai,
+        hanya aturan hasilkali dan ketunggalan nilai awal.
+
+  \item Belum cukup bukti. Linearisasi hanya melihat suku berderajat satu; nilai eigen
+        $\pm i$ hanya mengatakan bagian linearnya rotasi. Dengan $r'=r^{3}$ titik asal
+        pusat bagi linearisasi tetapi spiral keluar, sedangkan $r'=-r^{3}$ memberinya
+        spiral masuk. Jadi $\pm i$ tidak menentukan kestabilan.
+
+  \item $E'=vv'+\omega_{0}^{2}\theta\theta'=v(-\omega_{0}^{2}\theta)+\omega_{0}^{2}\theta
+        v=0$, jadi $E$ konstan. Persamaan $v^{2}/(2E)+\theta^{2}/(2E/\omega_{0}^{2})=1$
+        adalah elips, dan $\theta=A\cos(\omega_{0}t+\varphi)$ menutup satu putaran
+        dalam $2\pi/\omega_{0}$.
+
+  \item $\tau=RC=2{,}2\times10^{3}\cdot10^{-5}=0{,}022$ detik. Pada $t=\tau$:
+        $V=12(1-e^{-1})=7{,}585447$ volt. Untuk $6$ volt, $t=-\tau\ln(1-\tfrac{6}{12})
+        =0{,}022\cdot0{,}693147=15{,}249$ milidetik.
+
+  \item Dengan $v=2\cos(\theta/2)$: $v^{2}/2=2\cos^{2}(\theta/2)$ dan
+        $1-\cos\theta=2\sin^{2}(\theta/2)$, jumlahnya $E=2$. Di $\theta=\pm\pi$ nilai
+        $v=0$, jadi kurvanya menyambung kedua titik itu; ia memisahkan ayunan
+        dari putaran penuh, dan waktu menempuhnya tak hingga.
+
+  \item $T_{0}=2\pi\sqrt{0{,}25/9{,}80665}=1{,}003205$ detik.
+        $T=T_{0}\cdot\tfrac{2}{\pi}K(\sin15^{\circ})=1{,}020669$ detik; selisihnya
+        $1{,}74$ persen. Amplitudo $30^{\circ}$ memperpanjang periode, bukan
+        memendekkannya.
+
+  \item Faktor per langkah $1+h\lambda=1-100h$; syarat $|1-100h|<1$ memberi
+        $0<h<0{,}02$. Tepat pada $h=0{,}02$ faktornya $-1$: nilai berganti tanda
+        dengan besar tetap $1$, tidak meluruh dan tidak meledak. Itu batas
+        kestabilan marginal, bukan kestabilan.
+
+  \item Andaikan $y$ periodik tidak konstan. Di titik maksimumnya $y'=0$, jadi
+        $f(y_{\max})=0$. Solusi konstan $y\equiv y_{\max}$ melewati titik itu, dan
+        ketunggalan (Lipschitz) memaksa solusinya sama, bertentangan dengan
+        ketakkonsanan. Jadi tidak ada orbit periodik tak konstan.
+\end{enumerate}
+
+\section*{Bab 17: Peluang dan Peluang Bersyarat}
+\begin{enumerate}[label=\textbf{17.\arabic*}]
+  \item 
+$P(A\cup B\cup C)=P(A\cup B)+P(C)-P\bigl((A\cup B)\cap C\bigr)$, lalu
+        $P\bigl((A\cup B)\cap C\bigr)=P(A\cap C)+P(B\cap C)-P(A\cap B\cap C)$. Suku
+        rangkap tiga terkurang tiga kali, satu untuk tiap pasangan, lalu
+        dikembalikan sekali dengan tanda $+$.
+
+  \item Salah pada ruang umum. $P(A\mid B)=0$ hanya berarti $P(A\cap B)=0$. Pada
+        ruang berhingga dengan peluang positif, itu memaksa $A\cap B=\varnothing$.
+        Pada ruang kontinu tidak: $A=\{1/2\}$ dan $B=(0,1)$ seragam memberi
+        $P(A\cap B)=0$ padahal $1/2\in A\cap B$.
+
+  \item Dari $10\,000$ orang: $200$ sakit, $190$ benar positif; dengan spesifisitas
+        $0{,}90$ ada $980$ positif palsu, jadi $190/1170=19/117\approx0{,}1624$.
+        Dengan $0{,}99$: positif palsunya tinggal $98$, jadi $190/288=95/144
+        \approx0{,}6597$: ketepatannya naik empat kali lipat.
+
+  \item $P(A)=P(A\cap B)+P(A\cap B^{c})$, jadi
+        $P(A\cap B^{c})=P(A)-P(A)P(B)=P(A)(1-P(B))=P(A)P(B^{c})$. Untuk
+        $A^{c},B^{c}$ pakai $P(A^{c}\cap B^{c})=1-P(A\cup B)$ dan inklusi--eksklusi,
+        atau terapkan hasil tadi dua kali.
+
+  \item $1-\prod_{k=0}^{29}(1-k/365)=0{,}706316$, sedangkan
+        $1-e^{-435/365}=0{,}696320$; selisih $0{,}009996$. Aproksimasi memakai
+        $1-x\approx e^{-x}$ untuk $x$ sampai $29/365$, dan menganggap kejadian
+        pasangan saling bebas padahal tidak.
+
+  \item $A=(A\cap B)\cup(A\cap B^{c})$ dan kedua potong itu saling lepas, sebab
+        $B\cap B^{c}=\varnothing$. Aditivitas memberi
+        $P(A)=P(A\cap B)+P(A\cap B^{c})=P(A\mid B)P(B)+P(A\mid B^{c})P(B^{c})$,
+        memakai definisi peluang bersyarat dua kali.
+
+  \item Peluang menang dengan berpindah $3/4=0{,}75$: pilihan awal menang hanya bila
+        mobil memang di situ ($1/4$). Simulasi $10^{4}$ permainan memberi sekitar
+        $0{,}75$ dengan ayunan baku $\sqrt{0{,}75\cdot0{,}25/10^{4}}\approx0{,}0043$.
+
+  \item 
+Angka benar $0{,}9075$, bukan $0{,}9999$: dengan kelaziman $0{,}1$ persen,
+        dari $1000$ orang hanya $1$ sakit, sedangkan positif palsu pada dua uji
+        positif $999\cdot0{,}01^{2}\approx0{,}1$ orang. Karena itu
+        $0{,}99^{2}\cdot0{,}001/(0{,}99^{2}\cdot0{,}001+0{,}01^{2}\cdot0{,}999)=0{,}9075$.
+        Asumsinya: kedua uji bebas bersyarat dan sensitivitas serta spesifisitasnya
+        tepat $0{,}99$.
+
+  \item Tidak cukup. Ambil $A$ koin pertama gambar, $B$ koin kedua gambar, $C$ kedua
+        koin sama. Tiap pasangan memberi $1/4=P\cdot P$, tetapi
+        $P(A\cap B\cap C)=1/4$ sedangkan $P(A)P(B)P(C)=1/8$; selisihnya $1/8$.
+\end{enumerate}
+
+\section*{Bab 18: Variabel Acak dan Distribusi}
+\begin{enumerate}[label=\textbf{18.\arabic*}]
+  \item $c=1-(0{,}1+0{,}4)=0{,}5$; $\mathbb{E}[X]=-0{,}2+0+1{,}5=1{,}3$;
+        $\mathbb{E}[X^{2}]=0{,}4+0+4{,}5=4{,}9$; $\operatorname{Var}(X)=4{,}9-1{,}69=3{,}21$.
+
+  \item $(-\infty,b]=(-\infty,a]\cup(a,b]$ dan kedua potong lepas, jadi
+        $F(b)=F(a)+P(a<X\le b)$. Untuk diskret $P(X=a)>0$ membuat
+        $P(a\le X\le b)$ lebih besar; untuk kontinu $P(X=a)=0$ sehingga keduanya sama.
+
+  \item Benar bahwa $P(X=x)=0$ untuk setiap $x$ pada sebaran kontinu. Kelirunya
+        menyimpulkan ``mustahil'': peluang nol tidak berarti himpunan kosong.
+        Aditivitas terbilang memberi peluang nol pada gabungan terbilang titik, tetapi
+        selang memuat tak terbilang titik dan berpeluang satu.
+
+  \item Turunkan $\sum q^{k}=1/(1-q)$ dua kali: $\sum k(k-1)q^{k-2}=2/(1-q)^{3}$.
+        Karena $\sum k^{2}q^{k-1}=(1+q)/(1-q)^{3}$, dengan $q=1-p$ diperoleh
+        $\mathbb{E}[X^{2}]=p(1+q)/p^{3}=(1+q)/p^{2}=(2-p)/p^{2}$.
+        Maka $\operatorname{Var}=(2-p)/p^{2}-1/p^{2}=(1-p)/p^{2}$; untuk $p=0{,}2$:
+        $\mathbb{E}[X^{2}]=45$ dan $\operatorname{Var}=20$.
+
+  \item $\sigma=2$: $P(X>1)=1-\Phi(-1)=0{,}841345$;
+        $P(1<X<5)=2\Phi(1)-1=0{,}682689$; kuantil $0{,}2$ ialah
+        $3+2(-0{,}841621)=1{,}316758$. Ketiganya cocok dengan
+        \texttt{scipy.stats.norm} sampai enam angka.
+
+  \item $\sum_{k=0}^{40}e^{-2{,}5}2{,}5^{k}/k!=1-5{,}39\times10^{-35}$, yaitu $1$
+        sampai semua digit tercetak. $P(X\ge8)=0{,}004247$, sedangkan binomial
+        $n=1000$, $p=0{,}0025$ memberi $0{,}004191$; binomial lebih kecil karena
+        variansinya $2{,}4938<2{,}5$ dan terbatas di atas oleh $n$.
+
+  \item $P(X>s+t\mid X>s)=e^{-\lambda(s+t)}/e^{-\lambda s}=e^{-\lambda t}$.
+        Geometrik: $P(X>k)=q^{k}$, jadi nisbahnya $q^{s+t}/q^{s}=q^{t}$. Seragam pada
+        bilangan bulat gagal sebab peluang ekornya habis, dan nisbahnya bergantung
+        pada $s$.
+
+  \item $f_{Y}(y)=\frac{1}{4\sqrt{y}}$ untuk $0<y<1$ (dua pramasuk) dan
+        $\frac{1}{8\sqrt{y}}$ untuk $1\le y<9$ (satu pramasuk). Integralnya
+        $\tfrac12+\tfrac12=1$. $\mathbb{E}[Y]=\frac14\int_{-1}^{3}x^{2}\,dx=7/3
+        =2{,}3333$, sama dengan $\mathbb{E}[X^{2}]$, dan lewat $f_{Y}$:
+        $\int_{0}^{1}\frac{y}{4\sqrt{y}}\,dy+\int_{1}^{9}\frac{y}{8\sqrt{y}}\,dy
+        =\tfrac16+\tfrac{13}6=\tfrac73$.
+
+  \item Ambil $X$ seragam pada $\{-1,0,1\}$ dan $Y=|X|$. Maka
+        $\mathbb{E}[XY]=\mathbb{E}[X]=0$, jadi $\operatorname{Cov}=0$ dan $\rho=0$.
+        Tetapi $P(X=0,Y=0)=1/3$ sedangkan $P(X=0)P(Y=0)=1/9$: tidak bebas.
+
+  \item 
+$\operatorname{se}(\bar X)=\sqrt{p(1-p)/(nR)}\le0{,}005$ memberi
+        $R\ge0{,}2275/(20\cdot0{,}000025)=455$. Untuk variansi,
+        $\operatorname{se}(\bar s^{2})=\sigma^{2}\sqrt{2/((n-1)R)}$ (aproksimasi
+        normal) dengan $\sigma^{2}=4{,}55$ dan $n=20$, jadi
+        $R\ge2\cdot4{,}55^{2}/(19\cdot0{,}02^{2})=5\,448{,}03$, jadi $R=5\,449$.
+        Memakai $2\cdot4{,}55^{2}/0{,}02^{2}$ saja melewatkan faktor $n-1$ dan
+        memberi angka sembilan belas kali terlalu besar.
+  \end{enumerate}
+
+\section*{Bab 19: Hukum Bilangan Besar dan Teorema Limit Pusat}
+\begin{enumerate}[label=\textbf{19.\arabic*}]
+  \item $\{|(X_{n}+Y_{n})-(X+Y)|>\varepsilon\}$ termuat dalam
+        $\{|X_{n}-X|>\varepsilon/2\}\cup\{|Y_{n}-Y|>\varepsilon/2\}$. Batas gabungan
+        memberi peluang paling besar jumlah dua suku, masing-masing menuju $0$.
+        $\varepsilon/2$ perlu supaya dua galat yang sama-sama di bawahnya berjumlah
+        kurang dari $\varepsilon$.
+
+  \item $\mathbb{E}[X]=0$ dan $\mathbb{E}[X^{2}]=2a^{2}\cdot\sigma^{2}/(2a^{2})=\sigma^{2}$,
+        jadi $\operatorname{Var}(X)=\sigma^{2}$. Lalu
+        $P(|X|\ge a)=\sigma^{2}/a^{2}$, tepat sama dengan batas Chebyshev: batas itu
+        tercapai, jadi tajam.
+
+  \item Salah. Teorema limit pusat menuntut variansi berhingga dan amatan iid; ia juga
+        hanya bercerita tentang limit, bukan $n=30$. Pada bagian lab, eksponensial
+        dengan $n=30$ masih memberi $D=0{,}0219$ dengan $p=0{,}000$, dan Cauchy
+        memberi median $|\bar X_{n}|$ yang menetap sekitar $1$.
+
+  \item Chebyshev: $n\ge\sigma^{2}/(\varepsilon^{2}\delta)=0{,}25/(0{,}0025\cdot0{,}05)
+        =2000$. Hitungan binomial eksak memberi $n=371$ (ekor $0{,}0484$). Batas
+        Chebyshev lima kali lebih longgar.
+
+  \item $\mathbb{E}[X_{n}]=n^{2}\cdot(1/n)=n\to\infty$, sedangkan untuk
+        $\varepsilon$ tetap $P(|X_{n}|>\varepsilon)=1/n\to0$. Jadi $X_{n}\to0$ dalam
+        peluang tetapi harapannya meledak: tidak ada dominasi yang boleh dipakai.
+
+  \item Eksak: $0{,}069545$. Tanpa koreksi, $z=(50-60)/\sqrt{42}=-1{,}5430$ memberi
+        $0{,}061411$, galat $0{,}008134$. Dengan koreksi $50{,}5$:
+        $0{,}071340$, galat $0{,}001795$. Koreksi kontinuitas memperbaiki empat kali.
+
+  \item Median $|\bar X_{n}|$: $1{,}004$; $1{,}008$; $1{,}040$; $0{,}973$ untuk
+        $n=10$ sampai $10^{4}$. $P(|\bar X_{n}|>10)$: $0{,}0630$; $0{,}0680$;
+        $0{,}0653$; $0{,}0580$, teori $0{,}0635$. Simpangan baku $33{,}0$; $863{,}6$;
+        $23{,}9$; $379{,}5$ tak mengecil sebab variansi Cauchy tak hingga.
+
+  \item $\varphi_{\bar X_{n}}(t)=\bigl[\varphi(t/n)\bigr]^{n}
+        =\bigl[e^{-|t|/n}\bigr]^{n}=e^{-|t|}$, jadi rata-ratanya Cauchy lagi untuk
+        setiap $n$. Karena itu se selamanya sebesar skala data itu sendiri, dan
+        ``rata-rata $\pm$ dua se'' tidak menyempit walau $n$ dinaikkan.
+
+  \item $n=(1{,}96\cdot0{,}491971/0{,}0005)^{2}=3\,719\,214$; untuk setengah lebar
+        $0{,}001$ cukup $929\,803$. Rasionya $4$, sebab $n\propto h^{-2}$: lebar
+        dipotong dua, tarikan naik empat kali.
+
+  \item Untuk $t<c$ dan $\varepsilon=c-t$:
+        $P(X_{n}\le t)\le P(X_{n}\le c-\varepsilon)+P(|X_{n}-c|>\varepsilon)\to0$;
+        untuk $t>c$ pakai komplemennya. Syarat konstanta tak dapat dibuang:
+        ambil $X$ Rademacher dan $X_{n}=(-1)^{n}X$. Setiap $X_{n}$ tetap
+        Rademacher (sebab $X$ simetris), jadi $X_{n}\rightsquigarrow X$; tetapi
+        untuk $n$ ganjil $|X_{n}-X|=2$ dengan peluang $1$, sehingga $X_{n}$ tidak
+        menuju $X$ dalam peluang.
+\end{enumerate}
+
+\section*{Bab 20: Estimasi, Interval Kepercayaan, dan Uji Hipotesis}
+\begin{enumerate}[label=\textbf{20.\arabic*}]
+  \item Salah. Nilai-p $0{,}42$ berarti data tidak cukup membantah $p=0{,}5$; ia tidak
+        membuktikan $p=0{,}5$. Perhitungan penambah: selang $95$ persen, misalnya
+        $(0{,}28;\,0{,}57)$, dan daya uji pada selisih yang dianggap penting.
+
+  \item $\mathbb{E}[\hat p(1-\hat p)]=p-\bigl(p^{2}+p(1-p)/n\bigr)
+        =p(1-p)(n-1)/n$. Penaksir tak biasnya
+        $\frac{n}{n-1}\hat p(1-\hat p)$. Untuk $p=0{,}3$, $n=20$: harapannya
+        $0{,}21\cdot19/20=0{,}1995$, dan penaksir itu mengembalikannya ke $0{,}21$.
+
+  \item Tulis $\hat\theta_{n}-\theta=\operatorname{bias}_{n}
+        +(\hat\theta_{n}-\mathbb{E}\hat\theta_{n})$. Suku pertama menuju $0$; suku
+        kedua menuju $0$ dalam peluang menurut Chebyshev, sebab variansinya menuju
+        $0$. MSE $=\operatorname{bias}^{2}+\operatorname{Var}$ menuju $0$ lebih kuat,
+        tetapi yang dipakai hanya kedua syarat tadi.
+
+  \item 
+$7/40$: Wilson $(0{,}0875;\,0{,}3195)$, lebar $0{,}2320$; Wald
+        $(0{,}0572;\,0{,}2928)$, lebar $0{,}2355$. $13/20$: Wilson lebar $0{,}3860$,
+        Wald $0{,}4181$. Lebih sempitnya $7/40$ bukan tanda ketelitian lebih tinggi. Sebagian
+        karena $n=40$; sebagian karena $\hat p=0{,}175$ jauh dari $0{,}5$
+        mengecilkan $\hat p(1-\hat p)$: pada $n=40$ dengan $\hat p=0{,}5$ lebar
+        Wilson $0{,}2960$, masih lebih lebar daripada $0{,}2320$. (Pada $n$ sama,
+        $7/20$ dan $13/20$ sama-sama memberi $0{,}3860$, sebab $\hat p(1-\hat p)$
+        simetris terhadap $1/2$.) Yang menentukan ketelitian bukan lebar melainkan
+        cakupan: cakupan Wald pada $p=0{,}175$, $n=40$ hanya $0{,}921$, sedangkan
+        Wilson $0{,}943$. Lebar kecil di dekat tepi dibayar dengan cakupan di
+        bawah $95$ persen.
+
+  \item $|k-15|>1{,}96\sqrt{7{,}5}=5{,}3676$, jadi tolak bila $k\le9$ atau $k\ge21$.
+        Ukuran eksaknya $0{,}042774$; dayanya pada $p=0{,}7$ hanya $0{,}588816$.
+        Dengan $n=100$ (tolak bila $k\le40$ atau $k\ge60$) daya naik ke $0{,}987502$.
+
+  \item Wald: $|\hat p-p_{0}|\le z\sqrt{\hat p(1-\hat p)/n}$, yang setara dengan
+        $p_{0}$ termuat dalam $\hat p\pm z\sqrt{\hat p(1-\hat p)/n}$. Uji yang memakai
+        $\sqrt{p_{0}(1-p_{0})/n}$ memakai penyebut lain, sehingga himpunan $p_{0}$
+        yang tidak ditolak bukan selang Wald itu.
+
+  \item 
+Misalkan selisih teramati $0{,}87$ jam dengan galat baku $0{,}86$ jam.
+``Dengan taraf $5$ persen, data tidak menolak kesamaan kedua metode
+        ($p=0{,}31$). Selang $95$ persen untuk selisihnya $(-0{,}82;\,2{,}56)$ jam,
+        jadi selisih $2$ jam masih termasuk nilai yang wajar dan selisih $0{,}5$ jam
+        pun belum dapat disingkirkan. Daya uji ini untuk selisih $0{,}5$ jam hanya
+        $0{,}09$: ketiadaan bukti perbedaan bukan bukti kesamaan, dan yang jujur
+        disimpulkan adalah data ini belum memutuskan.''
+
+  \item Aturan tiga: $3/100=0{,}03$. Batas eksak satu sisi
+        $1-0{,}05^{1/100}=0{,}029513$; batas atas Wilson $0{,}036993$. Ketiganya
+        berbeda karena aturan tiga hanya pendekatan dan Wilson dua sisi. Untuk
+        kalimat ``paling tinggi $5$ persen'' yang sah pada taraf $95$ persen:
+        batas eksak $0{,}0295$.
+
+  \item $\bar x=19{,}125$, $s=1{,}082191$, $\operatorname{se}=0{,}312401$;
+        $t_{11;0{,}95}=1{,}795885$ memberi $(18{,}5640;\,19{,}6860)$ dengan lebar
+        $1{,}1221$, sedangkan $95$ persen memberi lebar $1{,}3752$. Lebar berbanding
+        $1/\sqrt{n}$, jadi separuhnya perlu $n=48$.
+\end{enumerate}
+
+\section*{Bab 21: Regresi dan Statistika Terapan}
+\begin{enumerate}[label=\textbf{21.\arabic*}]
+  \item Belum cukup bukti. $R^{2}=0{,}99$ hanya mengatakan ragam terjelaskan;
+        $s$ yang menentukan galat. Pada data kafe $R^{2}=0{,}992821$ tetapi
+        $s=0{,}365148$ jam $=21{,}9$ menit, dan setengah lebar selang prediksi $95$
+        persen di $x_{0}=5$ ialah $0{,}9101$ jam, yaitu $55$ menit. Yang perlu
+        disebut: $s$ dan selang prediksi.
+
+  \item Persamaan normal $X^{\top}e=0$. Kolom pertama $X$ berisi satu, jadi
+        $\sum e_{i}=0$; kolom kedua berisi $x_{i}$, jadi $\sum x_{i}e_{i}=0$.
+        Tanpa kolom satu (garis lewat titik asal), $\sum e_{i}=0$ tak lagi dipaksakan
+        dan umumnya gagal.
+
+  \item $\hat b-\beta=\sum_{i}(x_{i}-\bar x)\varepsilon_{i}/S_{xx}$. Suku-sukunya
+        saling bebas dan $\operatorname{Var}(\varepsilon_{i})=\sigma^{2}$, jadi
+        $\operatorname{Var}(\hat b)=\sigma^{2}\sum(x_{i}-\bar x)^{2}/S_{xx}^{2}
+        =\sigma^{2}/S_{xx}$. Tak ada rumus matriks yang dipakai.
+
+  \item $\hat b=0{,}7$, $\hat a=1{,}3$, $S_{xx}=10$, $s=0{,}516398$,
+        $\operatorname{se}(\hat b)=0{,}163299$; dengan $t_{3}=3{,}182446$ selangnya
+        $(0{,}1803;\,1{,}2197)$. Lebih lebar daripada data kafe karena $n=5$,
+        $S_{xx}$ kecil, dan $s$ besar.
+
+  \item 
+Pada data kafe $\bar x=5$, $n=9$, $S_{xx}=60$, jadi pengungkitnya
+$c(x_{0})=1/9+(x_{0}-5)^{2}/60$: $c(2)=0{,}261111$ dan $c(9)=0{,}377778$.
+Dengan $2{,}364624\sqrt{0{,}133333\,(1+c)}$ setengah lebarnya $0{,}9696$ untuk
+$x_{0}=2$ dan $1{,}0135$ untuk $x_{0}=9$; lebarnya berbeda karena
+$(x_{0}-\bar x)^{2}/S_{xx}$ lebih besar di titik yang lebih jauh dari pusat.
+Suku itu mengecil sebanding $1/n$, sehingga selisih kedua selang memang
+menghilang untuk $n$ besar: keduanya menuju $1{,}96\sigma=0{,}716$ setengah
+lebar. Yang tidak pernah hilang adalah lebar itu sendiri, sebab suku $+1$
+(galat satu pengamatan baru) tetap ada: selang prediksi tidak menyempit ke
+nol, ia menyempit ke selebar sebaran galatnya.
+
+  \item Ruang kolom model besar memuat ruang kolom model kecil, jadi proyeksinya paling
+        dekat: SSE tak dapat naik. $R^{2}$ boleh tetap, tetapi pembagi $n-p$ mengecil,
+        sehingga $R^{2}_{\text{adj}}$ turun: dari $0{,}991795$ ($p=2$) ke
+        $0{,}990428$ ($p=3$).
+
+  \item $\mathrm{VIF}=1/(1-0{,}81)=5{,}263158$, jadi
+        $\operatorname{se}(\hat b_{1})$ membesar $\sqrt{5{,}263158}$ kali. Dengan
+        $x_{2}$: $\sqrt{2/(50\cdot0{,}19)}=0{,}458831$. Tanpa $x_{2}$:
+        $\sqrt{2/50}=0{,}2$. Rasionya $2{,}294157$.
+
+  \item 
+Kelompok A: $(1;2)$, $(2;1{,}8)$, $(3;1{,}6)$; kelompok B: $(5;4{,}0)$,
+        $(6;3{,}8)$, $(7;3{,}6)$. Kemiringan tiap kelompok $-0{,}2$, kemiringan
+        gabungan $+0{,}4$. Dekomposisi yang sah menjumlahkan kontribusi, bukan
+        kemiringan:
+        $b_{\text{gab}}=(S_{xy}^{\text{dalam}}+S_{xy}^{\text{antar}})/S_{xx}=-0{,}8/28+12/28=-0{,}028571+0{,}428571=0{,}4$,
+        sedangkan kemiringan antarkelompok sendiri $12/24=0{,}5$.
+
+  \item ``Dari dua belas model yang dicoba, yang terbaik memberi $p=0{,}03$. Setelah
+        koreksi untuk dua belas perbandingan (Bonferroni: $0{,}36$) efeknya tidak
+        lagi berarti; karena itu data ini belum memutuskan.''
+\end{enumerate}
+
+\section*{Bab 22: Aritmetika Floating-Point dan Analisis Galat}
+\begin{enumerate}[label=\textbf{22.\arabic*}]
+  \item $\operatorname{ulp}(1)=2^{-52}=2{,}220\times10^{-16}$;
+        $\operatorname{ulp}(1024)=2^{-42}=2{,}274\times10^{-13}$;
+        $\operatorname{ulp}(0{,}1)=2^{-56}=1{,}388\times10^{-17}$;
+        $\operatorname{ulp}(3\times10^{8})=2^{-24}=5{,}960\times10^{-8}$.
+        $|x|u$ berbeda dari ulp paling banyak faktor dua, sebab ulp tetap di dalam satu
+        oktad. Pada $[1,2)$ ada $2^{52}$ bilangan.
+
+  \item $2^{-53}$ tepat setengah ulp dari $1$, dan pembulatan ke genap
+        mengembalikannya ke $1$: $1+2^{-53}=1$. Karena $2^{-52}$ satu ulp penuh,
+        $1+2^{-52}>1$. Pada binary32, $u=2^{-24}$ dan ulp$(1)=2^{-23}$, jadi bilangan
+        positif terkecilnya $2^{-23}=1{,}192\times10^{-7}$.
+
+  \item $\operatorname{fl}(x)$ adalah bilangan terdekat, jadi
+        $|\operatorname{fl}(x)-x|\le\tfrac12\operatorname{ulp}(x)$ menurut definisi
+        pembulatan. Kesamaan tak dapat berlaku untuk semua $x$: bila $x$ sendiri
+        terwakili, galatnya $0$, dan $\tfrac12$ ulp hanya tercapai di titik tengah
+        dua bilangan.
+
+  \item Salah. Setiap operasi dibulatkan benar, tetapi galatnya menumpuk sepanjang
+        algoritme. Contoh dari bab ini: penjumlahan berurutan $1+10^{6}\cdot10^{-16}$
+        tetap $1$, sedangkan Kahan memberi $1{,}0000000001$; selisih $10^{-10}$
+        jauh di atas $u$.
+
+  \item Dengan penyebut $2^{54}$: $(0{,}1+0{,}2)+0{,}3=10808639105689192/2^{54}$ dan
+        $0{,}1+(0{,}2+0{,}3)=10808639105689190/2^{54}$. Selisihnya $2/2^{54}=2^{-53}$,
+        tepat satu ulp. \texttt{fsum} memberi $0{,}6$; \texttt{float.hex} berbeda di
+        digit terakhir.
+
+  \item Rumus lugu memberi $0{,}4996003611$; identitas sudut ganda memberi
+        $0{,}4999999999999996$, dan $0{,}5-x^{2}/24+x^{4}/720$ memberi angka yang sama.
+        Galat relatifnya $-7{,}99\times10^{-4}$, berasal dari pembatalan $1-\cos x$:
+        $\cos x$ membuang digit yang dibutuhkan selisihnya.
+
+  \item Lugu: akar kecil $-1{,}0000000111\times10^{-4}$. Bentuk stabil
+        $-2c/\bigl(b+\sqrt{b^{2}-4ac}\bigr)$ memberi
+        $-1{,}0000000100\times10^{-4}$, galat relatif $1{,}12\times10^{-9}$.
+        Bilangan kondisi pengurangannya $\bigl(2\cdot10^{4}\bigr)/\bigl(2\cdot
+        10^{-4}\bigr)=10^{8}$, jadi sekitar delapan digit hilang.
+
+  \item Pada tingkat $j$ ada $2^{k-j}$ penjumlahan, masing-masing bergalat paling besar
+        $u$ kali jumlah nilai mutlak masukannya; dijumlahkan seluruh pohon, galatnya
+        $\le ku\sum|x_{i}|$ dengan $k=\log_{2}n$. Kedalaman pohon itulah yang
+        menggantikan $n$ pada batas penjumlahan berurutan.
+
+  \item Berurutan: setiap $10^{-16}$ di bawah $\tfrac12\operatorname{ulp}(1)
+        =1{,}11\times10^{-16}$, jadi hasilnya tetap $1$. Kahan:
+        $1{,}0000000001$, sama dengan nilai eksaknya. Setiap langkah Kahan juga
+        dibulatkan, tetapi sisa yang hilang disimpan di $c$ dan dikembalikan pada
+        langkah berikutnya.
+
+  \item $\kappa\approx1+\bar x^{2}/s^{2}$. Untuk $1000$ nilai
+        $999+\bigl((k\bmod7)-3\bigr)/4$ dengan $k=1,\dots,1000$:
+        $\bar x=999{,}00075$, $s=0{,}4997$ (simpangan baku populasi, sesuai
+        pembagi $1/n$ pada soal),
+        $\kappa\approx4{,}0\times10^{6}$. Dengan $u_{32}=5{,}96\times10^{-8}$,
+        $\kappa u\approx0{,}238$: hampir semua digit hilang. Terukur: satu lintasan
+        galat $25$ persen, dua lintasan $4{,}4\times10^{-8}$.
+\end{enumerate}
+
+\section*{Bab 23: Optimasi Konveks dan Dualitas}
+\begin{enumerate}[label=\textbf{23.\arabic*}]
+  \item $f$: Hessian $\begin{pmatrix}2&1\\1&2\end{pmatrix}$, nilai eigen $1$ dan $3$,
+        definit positif, konveks ketat. $g$: $\begin{pmatrix}0&1\\1&0\end{pmatrix}$,
+        nilai eigen $\pm1$, indefinit, tidak keduanya. $h$:
+        $\begin{pmatrix}4&-4\\-4&6\end{pmatrix}$, nilai eigen $0{,}8769$ dan $9{,}1231$,
+        definit positif. Tak satu pun semidefinit singular; pada $x_{1}^{2}+2x_{1}x_{2}
+        +x_{2}^{2}$ (nilai eigen $0$ dan $4$) minimumnya tak tunggal.
+
+  \item Untuk $x,y\in C_{1}\cap C_{2}$ dan $t\in[0,1]$, titik campurannya ada di
+        $C_{1}$ dan di $C_{2}$, jadi di irisannya. Gabungan: $[0,1]\cup[2,3]$ memuat
+        $1$ dan $2$ tetapi tidak $(1+2)/2=1{,}5$.
+
+  \item $f_{i}(tx+(1-t)y)\le tf_{i}(x)+(1-t)f_{i}(y)\le tM(x)+(1-t)M(y)$ untuk tiap
+        $i$, lalu ambil maksimum. Untuk $\max\{x_{1}^{2},x_{2}\}$ di $(0,0)$ gradien
+        tak ada (patahan sepanjang $x_{2}=x_{1}^{2}$), tetapi subdiferensialnya
+        $\operatorname{conv}\{(0,0),(0,1)\}$ memuat $\mathbf{0}$: minimum. Di $(1,1)$
+        subdiferensialnya $\operatorname{conv}\{(2,0),(0,1)\}$ tanpa nol, bukan minimum.
+
+  \item Tanpa $x_{1}\ge1$: $x_{1}=0{,}8$, $x_{2}=1{,}6$, melanggar. Jadi $x_{1}=1$,
+        $x_{2}=1{,}5$, $p^{*}=3{,}25$. Pengalinya $\nu=-1{,}5$ bagi kesamaan dan
+        $\lambda=0{,}5\ge0$ bagi pertidaksamaan. \texttt{scipy.optimize.mini\-mize}
+        memberi nilai yang sama.
+
+  \item $g(\lambda)=\min_{x}\bigl[x_{1}^{2}+x_{2}^{2}+\lambda(2-x_{1}-x_{2})\bigr]
+        =2\lambda-\lambda^{2}/2$. Turunannya $2-\lambda$, jadi maksimum di $\lambda=2$
+        dengan $d^{*}=2=p^{*}$. Celahnya nol karena kendalanya affine dan
+        $x=(1{,}5;\,1{,}5)$ layak ketat: Slater terpenuhi.
+
+  \item Salah. Dualitas kuat hanya menyamakan nilai, bukan menjamin pencapaian.
+        Contoh: minimumkan $e^{x}$ atas $\mathbb{R}$. $p^{*}=0$ tetapi tak tercapai;
+        sisi dualnya juga $0$, jadi celahnya nol sementara optimum primal tidak ada.
+
+  \item Salah. Kelengkapan komplementer menyatakan $\lambda_{i}g_{i}(\mathbf{x}^{*})=0$:
+        kendala yang aktif boleh berpengali nol, dan kendala tak aktif wajib
+        berpengali nol. Implikasinya satu arah, jadi ``aktif $\Rightarrow$ positif''
+        tidak sah.
+
+  \item Tanpa pembatas, $(x_{1}-2)^{2}+(x_{2}-2)^{2}$ pada $x_{1}+x_{2}=2$ diminimumkan
+        di $x_{1}=x_{2}=1$. Itu memenuhi $x_{1}\le c$ bila dan hanya bila $c\ge1$, jadi
+        pada $c=1$ pengalinya $\lambda=0$ dan $p^{*}=2$; kendala baru menekan untuk
+        $c<1$ (pada $c=0{,}5$: $p^{*}=2{,}5$, $\lambda=2$).
+
+  \item Untuk $\lambda>0$ dan $x_{k}\to-\infty$, suku $\lambda x_{k}^{3}$ mendominasi
+        dan bernilai negatif, jadi $g(\lambda)=-\infty$. Hanya $\lambda=0$ berhingga:
+        $g(0)=\min(x-2)^{2}=0$, maka $d^{*}=0$. Sedangkan $p^{*}=1$ di $x=1$ (potongan
+        $[0,1]$), sebab di $x=-1$ nilainya $9$. Celahnya $1$, seratus persen.
+
+  \item Ketaksamaan orde pertama fungsi konveks memberi
+        $f(y)\ge f(x^{*})+\nabla f(x^{*})^{\top}(y-x^{*})=f(x^{*})$ untuk setiap $y$,
+        tanpa memakai ketatnya konveksitas. Bukti itu gagal pada $f(x)=x^{3}$ sebab
+        $f$ tidak konveks; syarat yang dilanggar justru konveksitas $f$, di $x=0$
+        dengan $\nabla f=0$ tetapi bukan minimum.
+\end{enumerate}

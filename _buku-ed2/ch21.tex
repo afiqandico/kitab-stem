@@ -1,0 +1,1080 @@
+\chapter{Regresi dan Statistika Terapan}
+
+Sebuah kafe kecil mencatat sembilan hari dagang. Dua angka ditulis setiap malam:
+banyak pesanan daring dalam puluhan, dan jam lembur dapur. Pemilik kafe membutuhkan
+satu angka untuk satu pertanyaan: bila pesanan bertambah sepuluh, berapa tambahan jam
+lembur yang harus ia siapkan besok?
+
+\begin{center}
+\small
+\begin{tabular}{l*{9}{r}}
+\hline
+hari               & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+pesanan (puluhan)  & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+lembur (jam)       & 10 & 12 & 13 & 14 & 16 & 18 & 19 & 20 & 22 \\
+\hline
+\end{tabular}
+\end{center}
+
+Jawaban cepat tersedia tanpa alat apa pun: dari hari pertama ke hari terakhir pesanan
+naik delapan puluhan dan lembur naik dua belas jam, jadi kira-kira $1{,}5$ jam per
+sepuluh pesanan. Kuadrat terkecil, yang akan kita susun di bab ini, memberi
+$1{,}466667$. Kedua angka itu dekat, dan justru karena dekat kita tergoda menganggap
+persoalannya selesai. Tiga pertanyaan penting tidak terjawab oleh keduanya. Seberapa
+jauh angka itu bergeser bila sembilan hari itu diganti sembilan hari lain? Bila besok
+pesanannya delapan puluh, berapa jam yang harus disiapkan? Dan bila satu hari ternyata
+salah catat, berapa besar kerusakannya?
+
+Bab 10 sudah memberi gambarannya: kuadrat terkecil adalah proyeksi ortogonal vektor
+pengamatan ke ruang kolom matriks rancangan, dan persamaan normal menyatakan bahwa
+sisaannya tegak lurus ruang itu. Yang belum ada di sana adalah ketidakpastian. Bab 20
+sudah memberi selang kepercayaan dan uji hipotesis, tetapi untuk satu parameter dari
+pengamatan yang saling bebas dan berbagi satu sebaran. Di sini parameter yang dicari
+adalah kemiringan, nisbah dua jumlah yang keduanya acak, dan pengamatan tidak lagi
+sederajat: titik di ujung rentang lebih berpengaruh daripada titik di tengah. Bab ini
+menyambung keduanya dan berhenti di tempat yang jujur: seberapa jauh kesimpulan boleh
+dibawa.
+
+\begin{untukanak}
+Seorang nenek menjual es kelapa di depan rumah. Ia tidak pernah mencatat apa pun
+dengan rapi, tetapi ingatannya cukup: hari yang panas, dagangannya habis sebelum
+sore. Hari yang mendung, separuh es mencair di termos. Suatu hari cucunya datang
+dengan buku tulis dan mencatat Sembilan hari berturut-turut: berapa kira-kira panasnya,
+dan berapa gelas yang terjual.
+
+Dari sembilan catatan itu cucunya menarik satu garis lurus: makin panas, makin banyak
+yang terjual. Neneknya mengangguk, tetapi lalu bertanya, ``kalau besok lebih panas
+sedikit, berapa gelas yang harus saya siapkan?'' Cucunya terdiam. Garis itu mengatakan
+arahnya, bukan angkanya. Lagi pula, satu hari pernah hujan deras padahal panas, dan
+penjualannya jelek sekali; titik itu jauh dari garis.
+
+Di bab ini kita akan tahu mengapa garis yang paling pas tetap bukan ramalan yang pasti,
+mengapa satu hari yang aneh dapat menggeser garis lebih jauh daripada lima hari biasa,
+dan mengapa orang yang menjual angka harus menyebutkan seberapa lebar ketidakpastiannya.
+\end{untukanak}
+
+\section{Sembilan hari dan satu garis}
+\tingkat{dasar}
+
+Sembilan pasang angka, dua bilangan yang dicari, sembilan persamaan. Sistem seperti ini
+sudah kita temui di Bab 8: lebih banyak persamaan daripada bilangan yang tidak diketahui,
+sehingga solusi tepat hanya ada bila kesembilan titik itu kebetulan segaris. Tidak ada
+garis yang lewat persis di semua titik di atas, dan itu bukan kegagalan pengukuran,
+melainkan keadaan biasa. Yang bisa dicari hanyalah garis yang paling dekat, dan
+``paling dekat'' harus didefinisikan lebih dahulu.
+
+Kalimat sehari-harinya: kita mencari satu garis yang jumlah kesalahannya sekecil mungkin,
+dengan kesalahan dihitung sebagai jarak tegak dari titik ke garis.
+
+\kamus{regresi}{regression}{menarik satu garis yang paling dekat ke semua titik, bukan
+garis yang lewat di semua titik}
+
+\begin{definisi}[Model regresi linear sederhana]
+\index{regresi}
+Untuk pengamatan $i=1,\dots,n$,
+\[
+y_i = a + b\,x_i + \varepsilon_i ,
+\]
+dengan $x_i$ peubah penjelas yang teramati, $y_i$ peubah yang dijelaskan, $a$ titik
+potong, $b$ kemiringan, dan $\varepsilon_i$ galat yang tidak teramati. Model disebut
+\emph{linear} karena linear dalam parameter $a$ dan $b$, bukan karena garisnya lurus
+dalam $x$.
+\end{definisi}
+
+Satu perbedaan kecil yang menentukan seluruh bab: $\varepsilon_i$ dan sisaan bukan
+benda yang sama. Galat $\varepsilon_i$ adalah selisih antara nilai sebenarnya dan garis
+populasi yang tidak pernah kita lihat; sisaan $e_i=y_i-\hat y_i$ adalah selisih antara
+nilai teramati dan garis yang kita pasang dari data itu sendiri. Sisaan dapat dihitung
+dan digambar, galat hanya dapat diasumsikan. Setiap kali sebuah buku menyebut asumsi
+galat lalu memeriksanya lewat gambar sisaan, ada satu lompatan yang tidak boleh
+dilupakan: yang diperiksa adalah pengganti, bukan barang aslinya.
+
+\section{Kuadrat terkecil sebagai proyeksi}
+\tingkat{menengah}
+
+Susun $y\in\mathbb{R}^n$ sebagai vektor pengamatan dan $X$ matriks $n\times2$ yang
+kolomnya satu dan $x$. Mencari garis terbaik berarti memilih $\hat y$ di ruang kolom $X$
+yang paling dekat ke $y$: persoalan Bab 10, dengan tambahan bahwa kita butuh bentuk
+eksplisit koefisiennya untuk menghitung ketidakpastiannya.
+
+\begin{definisi}[Penaksir kuadrat terkecil]
+\index{kuadrat terkecil}
+$\hat\beta=(\hat a,\hat b)$ adalah penaksir kuadrat terkecil bila ia meminimumkan
+\[
+\operatorname{RSS}(\beta)=\|y-X\beta\|^2=\sum_{i=1}^{n}\bigl(y_i-a-bx_i\bigr)^2 .
+\]
+\end{definisi}
+
+\kamus{kuadrat terkecil}{least squares}{menjumlahkan semua kesalahan setelah
+dikuadratkan, lalu memilih garis yang jumlahnya paling kecil}
+
+\begin{teorema}[Persamaan normal]
+\index{persamaan normal}
+$\hat\beta$ meminimumkan RSS jika dan hanya jika
+\[
+X^{\top}(y-X\hat\beta)=0 ,
+\qquad\text{yaitu}\qquad X^{\top}X\hat\beta=X^{\top}y .
+\]
+Bila kolom $X$ bebas linear, $\hat\beta=(X^{\top}X)^{-1}X^{\top}y$ tunggal.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Tulis $f(\beta)=\|y-X\beta\|^2=y^{\top}y-2\beta^{\top}X^{\top}y+\beta^{\top}X^{\top}X\beta$.
+Gradiennya $-2X^{\top}y+2X^{\top}X\beta$, jadi syarat stasioner tepat persamaan normal.
+Karena $X^{\top}X$ definit positif bila kolomnya bebas linear, $f$ konveks ketat dan
+titik stasioner itu minimum global.
+
+Arah sebaliknya lebih informatif. Andaikan $X^{\top}(y-X\hat\beta)=0$. Untuk sebarang
+$\beta$,
+\[
+\|y-X\beta\|^2=\|y-X\hat\beta\|^2+\|X(\hat\beta-\beta)\|^2
++2(\hat\beta-\beta)^{\top}X^{\top}(y-X\hat\beta),
+\]
+dan suku silang lenyap. Jadi $\operatorname{RSS}(\beta)\ge\operatorname{RSS}(\hat\beta)$
+untuk semua $\beta$, dengan kesamaan hanya bila $X\beta=X\hat\beta$.
+\end{proof}
+
+Pembuktian itu memuat seluruh isi geometrisnya: sisaan tegak lurus setiap kolom $X$.
+Karena kolom pertama vektor satu dan kolom kedua $x$, berlaku $\sum_i e_i=0$ dan
+$\sum_i x_ie_i=0$, dan kedua kesamaan itulah yang menopang dekomposisi jumlah kuadrat
+di bagian berikutnya.
+
+\begin{proposisi}[Matriks topi]
+\index{matriks topi}
+Dengan $H=X(X^{\top}X)^{-1}X^{\top}$, berlaku $\hat y=Hy$, $H^{\top}=H$, $H^2=H$,
+$\operatorname{tr}H=2$, dan $0\le h_{ii}\le1$ dengan $\sum_i h_{ii}=2$. Nilai $h_{ii}$
+disebut \emph{leverage} titik $i$.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Simetri dan idempotensi diperoleh langsung dari definisi:
+\[
+H^2=X(X^{\top}X)^{-1}X^{\top}X(X^{\top}X)^{-1}X^{\top}=H .
+\]
+Karena itu $H$ adalah matriks proyeksi ortogonal,
+sehingga $h_{ii}=e_i^{\top}He_i=\|He_i\|^2\ge0$ dan $h_{ii}\le\|e_i\|^2=1$. Terakhir
+$\operatorname{tr}H=\operatorname{tr}\bigl((X^{\top}X)^{-1}X^{\top}X\bigr)
+=\operatorname{tr}I_2=2$.
+\end{proof}
+
+Sekarang angkanya, karena seluruh bab bergantung pada satu perhitungan yang dapat
+diperiksa ulang. Untuk data kafe,
+\[
+X^{\top}X=\begin{pmatrix}9&45\\45&285\end{pmatrix},
+\qquad X^{\top}y=\begin{pmatrix}144\\808\end{pmatrix},
+\qquad \det(X^{\top}X)=9\cdot285-45^2=540 .
+\]
+Maka
+\[
+\hat\beta=\frac1{540}\begin{pmatrix}285&-45\\-45&9\end{pmatrix}
+\begin{pmatrix}144\\808\end{pmatrix}
+=\frac1{540}\begin{pmatrix}4680\\792\end{pmatrix}
+=\begin{pmatrix}8{,}666667\\1{,}466667\end{pmatrix}.
+\]
+Angka $808$ layak diperiksa dengan tangan: $\sum x_iy_i=10+24+39+56+80+108+133+160+198$.
+Angka $4680$ juga: $285\cdot144-45\cdot808=41040-36360$.
+
+Satu teorema lagi diperlukan sebelum kita boleh bicara tentang mutu penaksir. Teorema
+itu menjelaskan mengapa kuadrat terkecil dipakai di hampir semua bidang, dan sekaligus
+mengapa ia bukan pilihan suci.
+
+\begin{teorema}[Gauss--Markov]
+\index{gauss-markov}
+Andaikan (A1) $y=X\beta+\varepsilon$; (A2) $\mathbb{E}[\varepsilon\mid X]=0$;
+(A3) $\operatorname{Var}(\varepsilon\mid X)=\sigma^2I$; (A4) kolom $X$ bebas linear.
+Maka $\hat\beta$ tak bias dengan $\operatorname{Var}(\hat\beta)=\sigma^2(X^{\top}X)^{-1}$,
+dan di antara semua penaksir linear tak bias, $\hat\beta$ yang bervariansi terkecil.
+Penaksir seperti itu disebut \emph{BLUE} (\emph{best linear unbiased estimator}).
+\end{teorema}
+
+\begin{proof}[Bukti]
+Ketakbiasan: $\mathbb{E}[\hat\beta\mid X]=(X^{\top}X)^{-1}X^{\top}X\beta=\beta$ memakai
+(A2). Variansi: $\hat\beta-\beta=(X^{\top}X)^{-1}X^{\top}\varepsilon$, jadi
+$\operatorname{Var}(\hat\beta)=(X^{\top}X)^{-1}X^{\top}(\sigma^2I)X(X^{\top}X)^{-1}
+=\sigma^2(X^{\top}X)^{-1}$.
+
+Bagian ketiga tidak dibuktikan penuh di sini. Sketsanya: setiap penaksir linear tak
+bias berbentuk $\tilde\beta=Cy$ dengan $CX=I$, sehingga $\tilde\beta-\beta=C\varepsilon$
+dan $\operatorname{Var}(\tilde\beta)=\sigma^2CC^{\top}$. Menulis $C=(X^{\top}X)^{-1}X^{\top}+D$
+memberi $DX=0$ dan
+\[
+CC^{\top}-(X^{\top}X)^{-1}=DD^{\top},
+\]
+yang matriks semi-definit positif, sehingga setiap komponen $\tilde\beta$ bervariansi
+tak lebih kecil daripada komponen yang sepadan dari $\hat\beta$. Bukti lengkap ada di
+Seber dan Lee, \emph{Linear Regression Analysis}, Bab 3, dan di Greene,
+\emph{Econometric Analysis}, Bab 3.
+\end{proof}
+
+\section{Koefisien dan satuannya}
+\tingkat{dasar}
+
+Kemiringan $1{,}466667$ tidak berarti apa pun sebelum satuannya disebut. Satuannya jam
+per puluhan pesanan: setiap tambahan sepuluh pesanan menaikkan ramalan lembur sebesar
+$1{,}466667$ jam, yaitu $88$ menit, atau $8{,}8$ menit per pesanan. Kalimat itu dapat
+dipakai pemilik kafe; kalimat ``koefisiennya $1{,}47$'' tidak.
+
+Titik potong $8{,}666667$ jam adalah ramalan untuk $x=0$, yaitu hari tanpa satu pun
+pesanan daring. Tidak ada hari seperti itu dalam data, dan di luar rentang $1$ sampai
+$9$ garisnya tidak dijamin berlaku. Menyebut angka itu ``biaya tetap lembur'' adalah
+\index{ekstrapolasi}ekstrapolasi yang dibungkus nama: kita memakai garis di luar
+tempat ia dipasang. Yang aman: titik potong adalah bilangan yang membuat garis lewat
+$(\bar x,\bar y)$, sebab $\hat a=\bar y-\hat b\bar x$; ia berguna untuk perhitungan,
+bukan untuk tafsiran.
+
+Perubahan satuan tidak mengubah kesimpulan. Bila $x$ ditulis dalam pesanan, bukan
+puluhan, kemiringannya $0{,}146667$ jam per pesanan dan galat bakunya $0{,}004714$,
+keduanya terbagi sepuluh; $t$ dan $R^2$ tidak bergerak. Mengalikan satu peubah dengan
+konstanta $c$ mengalikan koefisien dan galat bakunya dengan $c$ atau $1/c$, sedangkan
+nisbah keduanya tetap, sehingga laporan yang menyebut $t$ tanpa satuan tidak terbaca.
+
+\begin{tangan}
+Siapkan kertas berpetak, sembilan koin, dan seutas benang sepanjang sisi kertas. Letakkan
+koin pada petak sesuai sembilan pasang angka di awal bab: mendatar pesanan, tegak lembur,
+satu petak satu satuan. Ikat ujung benang pada dua ujung kertas sehingga benang dapat
+digeser sebagai garis lurus. Geser dan putar benang sampai jumlah jarak tegak semua koin
+ke benang terasa paling kecil; jangan mengukur, cukup bandingkan dengan mata, lalu
+kunci dengan selotip.
+
+Yang harus terlihat: dua orang akan menaruh benang di tempat yang sedikit berbeda, dan
+selisihnya paling besar ketika engkau menggeser ujung benang. Sekarang angkat koin
+paling kiri satu petak ke atas, dan perhatikan betapa besar benang harus berputar.
+Kembalikan, lalu angkat koin tengah satu petak: hampir tidak ada yang berubah. Itulah
+leverage, dan engkau baru saja melihatnya dengan tangan sebelum bertemu rumusnya.
+\end{tangan}
+
+\section{R kuadrat dan korelasinya}
+\tingkat{menengah}
+
+Sesudah garisnya ada, orang bertanya ``seberapa bagus''. Jawaban yang paling sering
+dipakai adalah satu angka yang membandingkan sisaan dengan sebaran asli $y$. Kalimat
+sehari-harinya: berapa bagian dari goyangan $y$ yang berhasil dijelaskan garis, dan
+berapa bagian yang tertinggal.
+
+\begin{definisi}[$R^2$]
+\index{koefisien determinasi}
+Dengan $\mathrm{SST}=\sum_i(y_i-\bar y)^2$, $\mathrm{SSE}=\sum_i e_i^2$, dan
+$\mathrm{SSR}=\sum_i(\hat y_i-\bar y)^2$, koefisien determinasi adalah
+\[
+R^2=1-\frac{\mathrm{SSE}}{\mathrm{SST}}=\frac{\mathrm{SSR}}{\mathrm{SST}} .
+\]
+\end{definisi}
+
+\kamus{koefisien determinasi}{coefficient of determination}{bagian dari goyangan yang
+berhasil dijelaskan garis, dinyatakan sebagai pecahan dari keseluruhan}
+
+\begin{teorema}[Dekomposisi jumlah kuadrat]
+Bila $X$ memuat kolom satu, maka $\mathrm{SST}=\mathrm{SSR}+\mathrm{SSE}$ dan
+$0\le R^2\le1$.
+\end{teorema}
+
+\begin{proof}[Bukti]
+Tulis $y-\bar y\mathbf{1}=(\hat y-\bar y\mathbf{1})+e$. Karena $\sum e_i=0$, vektor $e$
+tegak lurus $\bar y\mathbf{1}$, dan menurut persamaan normal $e$ juga tegak lurus
+$\hat y$. Jadi kedua suku di ruas kanan saling tegak lurus, dan teorema Pythagoras
+memberi $\|y-\bar y\mathbf{1}\|^2=\|\hat y-\bar y\mathbf{1}\|^2+\|e\|^2$.
+\end{proof}
+
+Untuk data kafe, $\mathrm{SST}=130$, $\mathrm{SSE}=0{,}933333$, sehingga
+$R^2=1-0{,}933333/130=0{,}992821$. Pada regresi sederhana, $R^2$ sama dengan kuadrat
+korelasi: $r=88/\sqrt{60\cdot130}=0{,}996404$ dan $r^2=0{,}992821$. Kesamaan itu
+khusus untuk satu peubah penjelas; begitu penjelasnya dua, $R^2$ bukan lagi kuadrat
+korelasi apa pun.
+
+Angka $0{,}992821$ mudah membuat orang berhenti berpikir, jadi mari kita jinakkan. Yang
+dijelaskan adalah $99{,}28$ persen \emph{goyangan} lembur, dan goyangan itu diukur
+terhadap rata-ratanya sendiri. Sisaannya masih bervariansi $s^2=0{,}933333/7=0{,}133333$,
+yaitu simpangan baku $s=0{,}365148$ jam atau $21{,}9$ menit. Pemilik kafe yang menyiapkan
+lembur atas dasar garis ini masih bisa meleset lebih dari dua puluh menit. $R^2$ bersifat
+nisbi; $s$ bersifat mutlak, dan yang dirasakan orang adalah $s$.
+
+\begin{untukanak}
+Bayangkan dua siswa. Yang pertama ikut lomba lari seratus meter dan finis $0{,}2$
+detik lebih lambat daripada juara. Yang kedua ikut lomba maraton dan finis dua puluh
+menit lebih lambat daripada juara. Keduanya kalah, tetapi tidak dalam arti yang sama.
+Dua persepuluh detik itu sangat dekat; dua puluh menit itu sangat jauh. Kalau gurunya
+hanya menuliskan ``peringkat dua'' untuk keduanya, kita kehilangan seluruh ceritanya.
+
+Angka yang mirip terjadi pada bab ini. Ada angka yang mengukur \emph{bagian} yang
+berhasil ditebak, dan ada angka yang mengukur \emph{besar} kesalahan yang masih
+tersisa. Yang pertama bisa tampak hampir sempurna sementara yang kedua tetap besar.
+Orang yang hanya membaca angka pertama akan menyiapkan terlalu sedikit, lalu bingung
+mengapa ramalannya meleset.
+
+Di bab ini kita akan tahu mengapa dua angka harus disebut berpasangan, mengapa angka
+bagus tidak sama dengan ramalan yang sempit, dan kapan garis yang rapi sebaiknya
+ditinggalkan.
+\end{untukanak}
+
+\begin{proposisi}[Menambah peubah tidak pernah menurunkan $R^2$]
+Bila kolom $X_2$ ditambahkan pada $X_1$ sehingga ruang kolomnya memuat ruang kolom
+$X_1$, maka $\mathrm{SSE}$ tidak bertambah dan $R^2$ tidak berkurang.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Himpunan vektor $X_1\beta_1$ termuat dalam himpunan $X_2\beta_2$, jadi minimum jarak
+ke $y$ dihimpun atas himpunan yang lebih besar tidak dapat lebih tinggi. Karena itu
+$R^2$ tidak dapat turun, meskipun peubah yang ditambahkan tidak berhubungan dengan $y$.
+\end{proof}
+
+Akibat praktisnya penting: membandingkan model dengan $R^2$ mentah selalu memihak model
+yang lebih gemuk. Koreksi yang lazim adalah
+$R^2_{\text{adj}}=1-(1-R^2)(n-1)/(n-p)$ dengan $p$ banyak parameter. Untuk model
+berganda di bagian berikutnya, $R^2=0{,}997951$ turun menjadi $0{,}997496$ ketika $p=3$
+dan $n=12$; pada $n$ kecil dengan banyak peubah koreksi itu dapat membalik urutan.
+
+\section{Regresi berganda dan kolinearitas}
+\tingkat{lanjut}
+
+Sampai sini satu peubah penjelas. Kenyataannya hampir setiap persoalan menuntut lebih
+dari satu, dan di situlah muncul penyakit khasnya: dua penjelas yang membawa informasi
+hampir sama.
+
+Dua belas cabang sebuah kedai dicatat: penjualan harian $y$ dalam juta rupiah, banyak
+karyawan $x_1$, dan luas ruang duduk $x_2$ dalam meter persegi.
+
+\begin{center}
+\small
+\begin{tabular}{l*{12}{r}}
+\hline
+cabang   & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 \\
+$x_1$    & 6 & 7 & 7 & 8 & 8 & 9 & 9 & 10 & 10 & 11 & 12 & 12 \\
+$x_2$    & 18 & 22 & 20 & 26 & 24 & 28 & 26 & 32 & 30 & 34 & 36 & 38 \\
+$y$      & 11,2 & 12,4 & 12,0 & 14,1 & 13,6 & 15,2 & 14,8 & 17,0 & 16,4 & 18,1 & 19,4 & 19,9 \\
+\hline
+\end{tabular}
+\end{center}
+
+Kuadrat terkecil memberi
+\[
+\hat y=2{,}442991+0{,}686916\,x_1+0{,}239252\,x_2,
+\]
+dengan galat baku $0{,}207583$, $0{,}135366$, dan $0{,}042101$; nilai $t$ berturut-turut
+$11{,}7687$, $5{,}0745$, dan $5{,}6828$ pada $9$ derajat kebebasan; $s=0{,}143607$ dan
+$R^2=0{,}997951$. Semua tampak sehat. Lalu kita pasang satu penjelas saja: $y$ atas $x_1$
+memberi $1{,}446019$, $y$ atas $x_2$ memberi $0{,}450075$, keduanya hampir dua kali
+koefisien bergandanya.
+
+Bukan karena salah hitung. Karyawan dan luas ruang hampir saling menentukan: korelasi
+keduanya $r_{12}=0{,}986801$. Setelah $x_2$ masuk, $x_1$ hampir tidak membawa
+keterangan baru, jadi koefisiennya menyusut menjadi efek tambahannya saja, yaitu
+$0{,}687$ juta per karyawan pada luas yang tetap. Koefisien tunggal $1{,}446$ mencampur
+efek karyawan dengan efek luas yang biasanya menyertainya, dan jurang antara keduanya
+adalah ukuran seberapa jauh kedua peubah itu bertumpang.
+
+\begin{definisi}[Faktor inflasi varians]
+\index{varians inflasi}
+Untuk peubah penjelas ke-$j$, misalkan $R_j^2$ adalah koefisien determinasi regresi
+$x_j$ atas seluruh penjelas lain. Faktor inflasi variansnya
+\[
+\mathrm{VIF}_j=\frac{1}{1-R_j^2}.
+\]
+\end{definisi}
+
+\kamus{varians inflasi}{variance inflation factor}{seberapa banyak galat baku sebuah
+koefisien digelembungkan oleh penjelas lain yang membawa informasi serupa}
+
+\begin{proposisi}[VIF dua penjelas]
+\index{kolinearitas}
+Bila hanya ada dua penjelas, $\operatorname{Var}(\hat b_1)=\sigma^2/\bigl(S_{11}
+(1-r_{12}^2)\bigr)$, dengan $S_{11}=\sum_i(x_{i1}-\bar x_1)^2$. Jadi galat baku
+$\hat b_1$ tergelembung tepat sebesar $\sqrt{\mathrm{VIF}_1}$ dibanding keadaan penjelas
+yang saling ortogonal.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Untuk dua penjelas, invers matriks $2\times2$ dari bagian terpusat $X^{\top}X$ memberi
+unsur pertama $S_{22}/(S_{11}S_{22}-S_{12}^2)$, dan $S_{12}=r_{12}\sqrt{S_{11}S_{22}}$.
+Membagi pembilang dan penyebut dengan $S_{22}$ menghasilkan
+$\sigma^2/\bigl(S_{11}(1-r_{12}^2)\bigr)$.
+\end{proof}
+
+Angkanya dapat diperiksa: $S_{11}=42{,}9167$, $r_{12}^2=0{,}973775$, sehingga
+$\mathrm{VIF}=38{,}132232$ dan $\sqrt{\mathrm{VIF}}=6{,}1751$. Galat baku $\hat b_1$
+memang $0{,}135366$, sedangkan $\sigma/\sqrt{S_{11}}$ hanya $0{,}021921$; nisbahnya
+$6{,}1751$, cocok dengan akar VIF sampai empat angka.
+
+Kolinearitas tidak merusak ramalan; ia merusak tafsiran. Nilai $R^2=0{,}997951$
+menunjukkan garisnya masih dekat ke titik, dan ramalan pada $x_1=9$, $x_2=28$ masih
+berguna. Yang tidak dapat dipercaya adalah kalimat ``satu karyawan tambahan menaikkan
+penjualan $0{,}687$ juta'': selang $95$ persennya $(0{,}380697;\ 0{,}993135)$ lebar,
+dan bila data bergeser sedikit koefisien itu dapat berubah banyak tanpa garisnya
+berubah banyak.
+
+\section{Selang, uji $t$, dan selang prediksi}
+\tingkat{lanjut}
+
+Pertanyaan berikutnya sama dengan Bab 20, hanya bendanya berganti: bukan rata-rata,
+melainkan kemiringan. Kita memerlukan satu besaran yang sebarannya diketahui bila
+modelnya benar, lalu membaliknya menjadi selang.
+
+Kalimat sehari-harinya: kita mengukur seberapa jauh kemiringan yang teramati dari nol,
+dalam satuan goyangan khas kemiringan itu sendiri.
+
+\kamus{selang prediksi}{prediction interval}{selang untuk satu hari yang belum terjadi,
+selalu lebih lebar daripada selang untuk rata-rata karena ia harus menanggung kejutan
+hari itu juga}
+
+\begin{teorema}[Uji $t$ dan selang untuk satu koefisien]
+Andaikan (A1) sampai (A4) dan galatnya normal. Dengan $p$ banyak parameter,
+$s^2=\mathrm{SSE}/(n-p)$, dan $\operatorname{se}(\hat b_j)=s\sqrt{[(X^{\top}X)^{-1}]_{jj}}$,
+maka
+\[
+\frac{\hat b_j-\beta_j}{\operatorname{se}(\hat b_j)}\sim t_{n-p},
+\]
+sehingga selang $1-\alpha$ untuk $\beta_j$ adalah
+$\hat b_j\pm t_{n-p,1-\alpha/2}\operatorname{se}(\hat b_j)$, dan uji $H_0\colon\beta_j=0$
+menolak pada taraf $\alpha$ bila $|t|>t_{n-p,1-\alpha/2}$.
+\end{teorema}
+
+\begin{proof}[Bukti]
+$\hat b_j$ adalah kombinasi linear $y$ dengan koefisien tetap, jadi ia normal dengan
+harapan $\beta_j$ dan variansi $\sigma^2[(X^{\top}X)^{-1}]_{jj}$ menurut Gauss--Markov.
+Selanjutnya $\mathrm{SSE}/\sigma^2\sim\chi^2_{n-p}$ dan bebas dari $\hat\beta$, sebab
+sisaan tegak lurus ruang kolom sedangkan $\hat\beta$ seluruhnya di dalam ruang itu.
+Nisbah peubah normal baku dengan akar peubah khi-kuadrat dibagi derajat kebebasannya
+mengikuti sebaran $t$. Bukti lengkapnya ada di Wasserman, \emph{All of Statistics},
+Bab 13.
+\end{proof}
+
+Untuk data kafe, $\hat b=1{,}466667$, $s=0{,}365148$, $S_{xx}=60$, jadi
+$\operatorname{se}(\hat b)=0{,}047140$. Dengan $t_{7,0{,}975}=2{,}364624$,
+\[
+\hat b\pm t\,\operatorname{se}(\hat b)=1{,}466667\pm0{,}111470
+=(1{,}355197;\ 1{,}578136),
+\]
+dan $t=31{,}1127$ dengan nilai-p di bawah $10^{-6}$. Menolak $\beta=0$ di sini bukan
+prestasi: dengan sisaan sesempit $22$ menit dan rentang $x$ selebar ini, hampir semua
+data akan menolaknya. Yang layak dilaporkan justru selangnya, karena ia mengatakan
+bahwa tambahan lembur per sepuluh pesanan ada di antara $1{,}36$ dan $1{,}58$ jam.
+
+Sekarang bedakan dua pertanyaan yang sering tertukar. Berapa rata-rata lembur pada hari
+dengan delapan puluh pesanan? Dan berapa lembur pada satu hari tertentu dengan delapan
+puluh pesanan? Jawaban pertama menyempit sebanding $1/\sqrt n$; jawaban kedua tidak
+pernah menyempit di bawah simpangan baku sisaan, sebab satu hari membawa kejutannya
+sendiri.
+
+\begin{proposisi}[Dua ragam ramalan]
+Untuk $x_0$ tetap dan pengamatan baru $y_0=x_0^{\top}\beta+\varepsilon_0$ yang bebas
+dari data lama,
+\[
+\operatorname{Var}(\hat y_0)=\sigma^2x_0^{\top}(X^{\top}X)^{-1}x_0,
+\qquad
+\operatorname{Var}(y_0-\hat y_0)=\sigma^2\bigl(1+x_0^{\top}(X^{\top}X)^{-1}x_0\bigr).
+\]
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Yang pertama sudah muncul di Gauss--Markov. Untuk yang kedua, tulis
+$y_0-\hat y_0=\varepsilon_0-x_0^{\top}(\hat\beta-\beta)$; kedua suku bebas karena
+$\varepsilon_0$ bebas dari data lama, sehingga variansinya jumlah kedua variansi.
+\end{proof}
+
+Untuk $x_0=8$ pada data kafe, $x_0^{\top}(X^{\top}X)^{-1}x_0=1/9+9/60=0{,}261111$.
+Setengah lebar selang rata-rata $2{,}364624\sqrt{0{,}133333\cdot0{,}261111}=0{,}441209$,
+jadi $(19{,}9588;\ 20{,}8412)$ selebar $0{,}882$. Setengah lebar selang prediksi
+$2{,}364624\sqrt{0{,}133333\cdot1{,}261111}=0{,}969635$, jadi
+$(19{,}4304;\ 21{,}3696)$ selebar $1{,}939$. Nisbah lebarnya
+$\sqrt{1{,}261111/0{,}261111}=2{,}198$: selang prediksi lebih dari dua kali lebih lebar,
+dan tidak ada jumlah data yang dapat menghapus kelebihan itu. Gambar~\ref{fig:dua-selang}
+menunjukkan kedua pita untuk seluruh rentang $x$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=11.4cm, height=6.0cm,
+  xmin=0.6, xmax=9.4, ymin=8.2, ymax=25.4,
+  axis lines=left,
+  xtick={1,2,3,4,5,6,7,8,9},
+  tick label style={font=\scriptsize},
+  xlabel={pesanan daring (puluhan)}, ylabel={jam lembur},
+  xlabel style={font=\small}, ylabel style={font=\small},
+  legend style={font=\scriptsize,draw=layergrey,at={(0.02,0.98)},
+    anchor=north west,row sep=0.5pt},
+]
+\addplot[accent,very thick,domain=0.7:9.3,samples=60]
+  {8.666667+1.466667*x+0.863439*sqrt(1.111111+(x-5)^2/60)};
+\addplot[accent,very thick,domain=0.7:9.3,samples=60]
+  {8.666667+1.466667*x-0.863439*sqrt(1.111111+(x-5)^2/60)};
+\addplot[accent,very thick,domain=0.7:9.3,samples=60,forget plot]
+  {8.666667+1.466667*x};
+\addplot[layerindigo,densely dashed,thick,domain=0.7:9.3,samples=60]
+  {8.666667+1.466667*x+0.863439*sqrt(0.111111+(x-5)^2/60)};
+\addplot[layerindigo,densely dashed,thick,domain=0.7:9.3,samples=60]
+  {8.666667+1.466667*x-0.863439*sqrt(0.111111+(x-5)^2/60)};
+\addplot[only marks,mark=*,mark size=1.8pt,layerindigo] coordinates {
+  (1,10) (2,12) (3,13) (4,14) (5,16) (6,18) (7,19) (8,20) (9,22)};
+\legend{batas prediksi, , garis pas, batas rata-rata, }
+\end{axis}
+\end{tikzpicture}
+\caption{Selang kepercayaan $95$ persen untuk rata-rata lembur (garis putus-putus) dan
+selang prediksi $95$ persen untuk satu hari baru (garis tebal), keduanya di sekitar
+garis pas $\hat y=8{,}666667+1{,}466667x$. Pada $x=8$ selang rata-rata
+$(19{,}9588;\ 20{,}8412)$ selebar $0{,}882$, sedangkan selang prediksi
+$(19{,}4304;\ 21{,}3696)$ selebar $1{,}939$. Kedua pita melebar di ujung rentang,
+tempat garis kurang ditopang data; nisbah lebar keduanya $2{,}198$ tidak bergantung
+pada $n$.}
+\label{fig:dua-selang}
+\end{figure}
+
+\section{Diagnostik residual}
+\tingkat{menengah}
+
+Semua selang di atas bersyarat pada model yang benar. Karena itu langkah pertama sesudah
+memasang garis bukan menghitung nilai-p, melainkan memeriksa sisaan. Kalimat
+sehari-harinya: kita melihat apakah yang tertinggal dari garis masih berpola; sisaan
+yang berpola berarti garisnya salah bentuk, bukan kebetulan.
+
+\index{residual}
+Empat pola yang perlu dikenali: lengkungan terhadap $x$, tanda hubungannya tidak linear;
+corong yang melebar bersama $x$, tanda (A3) gagal; satu titik jauh sendirian, tersangka
+salah catat; dan pola menurut urutan waktu, tanda pengamatan tidak bebas.
+
+Untuk data kafe, sisaannya berurut
+\[
+-0{,}1333,\ 0{,}4,\ -0{,}0667,\ -0{,}5333,\ 0,\ 0{,}5333,\ 0{,}0667,\ -0{,}4,\ 0{,}1333 .
+\]
+Tidak ada lengkungan yang mencolok, dan jumlahnya nol seperti seharusnya. Yang menarik
+adalah ukurannya: sisaan terbesar $0{,}5333$ jam, sekitar $32$ menit, pada hari keempat
+dan keenam, keduanya di dekat pusat data. Titik-titik itu justru \emph{tidak}
+berpengaruh besar, karena leverage-nya hanya $0{,}1278$.
+
+Leverage titik $i$ pada regresi sederhana punya bentuk tertutup
+\[
+h_{ii}=\frac1n+\frac{(x_i-\bar x)^2}{S_{xx}},
+\]
+sehingga pada data ini $h_{11}=h_{99}=1/9+16/60=0{,}3778$, sedangkan $h_{55}=0{,}1111$.
+Titik ujung memegang $3{,}4$ kali bobot titik tengah, dan itu bukan pilihan perancang,
+melainkan akibat geometri: garis yang diputar di sekitar pusat data bergerak paling
+jauh di ujung. Pengaruh sebenarnya menggabungkan besarnya sisaan dengan leverage,
+dan ukuran yang lazim adalah jarak Cook
+\[
+D_i=\frac{e_i^2}{p\,s^2}\cdot\frac{h_{ii}}{(1-h_{ii})^2},
+\]
+yang di sini bernilai terbesar $0{,}2870$ pada hari kedua dan kedelapan, keduanya
+sisaan $0{,}4$ dengan leverage $0{,}2611$. Nilai di bawah satu umumnya dianggap tidak
+mencemaskan, tetapi ambang itu konvensi, bukan hukum.
+
+Satu peringatan yang jarang ditulis: dengan $n=9$ diagnostik hampir tidak berdaya.
+Pola pada sembilan titik mudah berasal dari kebetulan, dan pola yang sungguh ada mudah
+tidak terlihat. Diagnostik memberi tuduhan, bukan putusan.
+
+\begin{bacakeras}
+Dua suara.
+
+``$R$ kuadratnya nol koma sembilan sembilan. Berarti modelnya hampir sempurna.''
+
+``Sempurna untuk apa? Sisaannya masih dua puluh dua menit.''
+
+``Tetapi sembilan puluh sembilan persen goyangannya sudah dijelaskan.''
+
+``Dijelaskan oleh apa? Oleh pesanan. Bukan oleh dapur yang tiba-tiba lambat.''
+
+``Jadi $R$ kuadrat tinggi bukan jaminan.''
+
+``$R$ kuadrat tinggi hanya berarti garisnya rapat ke titik yang ada. Ia tidak tahu
+apa pun tentang hari yang belum datang.''
+
+Ucapkan sekali lagi, pelan: rapat ke titik lama bukan janji tentang hari baru. Ulangi
+sampai terasa wajar di mulut: rapat ke titik lama, bukan janji.
+\end{bacakeras}
+
+\begin{resep}
+\begin{enumerate}
+  \item Gambar $y$ terhadap $x$ sebelum menghitung apa pun, dan tanyakan apakah garis
+        lurus masuk akal.
+  \item Pasang garis dengan kuadrat terkecil, lalu tulis persamaannya lengkap dengan
+        satuan setiap koefisien.
+  \item Periksa sisaan terhadap $x$ dan terhadap urutan waktu; cari lengkungan,
+        corong, dan titik menyendiri.
+  \item Laporkan $s$ bersama $R^2$, lalu selang untuk koefisien yang menjadi
+        kesimpulan utama.
+  \item Bila tujuannya meramalkan satu kejadian, pakai selang prediksi; bila tujuannya
+        rata-rata, pakai selang rata-rata.
+\end{enumerate}
+Peringatan urutan: langkah 1 tidak boleh ditukar dengan langkah 2. Menggambar sesudah
+memasang garis membuat mata mencari pembenaran, bukan mencari kesalahan.
+\end{resep}
+
+\section{Ketika jawabannya ya atau tidak}
+\tingkat{lanjut}
+
+Sampai sini $y$ berupa bilangan yang dapat diukur. Banyak pertanyaan penting berbentuk
+biner: pelanggan kembali atau tidak, transaksi curang atau bukan, pasien sembuh atau
+tidak. Masih menggoda memasang garis lurus biasa pada $0$ dan $1$, lalu membacanya
+sebagai peluang. Dua hal salah sekaligus, dan keduanya dapat dihitung.
+
+Data berikut: $26$ pelanggan, jarak rumah dari kedai $x$ dalam kilometer, dan $y=1$ bila
+mereka kembali dalam tiga puluh hari. Tercatat $15$ dari $26$ kembali. Regresi linear
+pada $y$ biner, yang disebut \emph{model peluang linear}, memberi
+$\hat y=1{,}346154-0{,}096154x$. Pada $x=2$ ramalannya $1{,}153846$: peluang lebih besar
+dari satu, dan itu bukan kesalahan pembulatan melainkan cacat bentuk. Pada $x=20$,
+masih di luar rentang data tetapi hanya tujuh kilometer di luar, ramalannya $-0{,}576923$.
+
+Kerusakan kedua lebih halus. Untuk $y$ biner, variansi sisaan sebenarnya $p(1-p)$ dan
+karenanya bergantung pada $x$: pada $x=2$ nilainya $0{,}007225$, pada $x=14$ nilainya
+$0{,}028890$. Model peluang linear mengandaikan satu ragam untuk semua titik, yaitu
+$s^2=0{,}124199$ pada data ini, sehingga galat bakunya salah di tempat yang paling
+penting.
+Kuadrat terkecil biasa, yang bekerja baik ketika ragamnya tetap, di sini memakai
+asumsi yang jelas tidak berlaku.
+
+\index{regresi logistik}
+\begin{definisi}[Model logistik]
+Untuk $p_i=P(y_i=1\mid x_i)$,
+\[
+\log\frac{p_i}{1-p_i}=a+b\,x_i,
+\qquad\text{yaitu}\qquad
+p_i=\frac{1}{1+e^{-(a+bx_i)}} .
+\]
+Parameter ditaksir dengan kemungkinan maksimum, bukan dengan kuadrat terkecil, sehingga
+tidak ada bentuk tertutup dan perhitungannya memakai iterasi.
+\end{definisi}
+
+\kamus{rasio peluang}{odds ratio}{berapa kali peluang berlipat untuk satu satuan
+tambahan, bukan berapa poin peluangnya bertambah}
+
+Untuk data itu, kemungkinan maksimum memberi $\hat a=6{,}315432$ dan $\hat b=-0{,}699945$
+dengan galat baku $2{,}383413$ dan $0{,}258594$. Rasio peluangnya
+$e^{-0{,}699945}=0{,}496613$: setiap kilometer tambahan memangkas peluang kembali
+menjadi sekitar separuh, dalam arti nisbah, bukan selisih poin. Taksiran peluangnya
+$0{,}992722$ pada $x=2$ dan $0{,}029777$ pada $x=14$, keduanya sah sebagai peluang.
+Selang $95$ persen untuk $b$ adalah $(-1{,}233657;\ -0{,}166233)$; seluruhnya negatif,
+jadi arahnya jelas meskipun besarnya tidak.
+
+Satu kesalahan tafsir yang mahal: koefisien logistik bukan efek marginal pada peluang.
+Nilai $b=-0{,}699945$ bekerja pada skala log nisbah, dan efeknya pada peluang paling
+besar di sekitar $p=0{,}5$ serta paling kecil di ujung. Laporan yang baik menyebutkan
+peluang pada beberapa nilai $x$ yang bermakna, bukan hanya koefisiennya.
+
+\section{Korelasi bukan kausalitas}
+\tingkat{dasar}
+
+Sekarang bagian yang paling sering dilanggar di laporan yang tampak rapi. Dua kelompok
+karyawan mengikuti pelatihan dengan lama berbeda, dan dicatat banyak kesalahan per
+seratus transaksi.
+
+\begin{center}
+\small
+\begin{tabular}{l*{6}{r}}
+\hline
+shift pagi  & jam latihan & 1 & 2 & 3 & 4 & 5 \\
+            & kesalahan   & 4,0 & 3,6 & 3,2 & 2,9 & 2,5 \\
+\hline
+shift malam & jam latihan & 5 & 6 & 7 & 8 & 9 \\
+            & kesalahan   & 8,0 & 7,5 & 7,0 & 6,4 & 6,0 \\
+\hline
+\end{tabular}
+\end{center}
+
+Dalam shift pagi, kemiringannya $-0{,}36$ kesalahan per jam latihan. Dalam shift malam,
+$-0{,}474286$. Keduanya negatif: latihan lebih lama berpasangan dengan kesalahan lebih
+sedikit. Tetapi bila kedua kelompok digabung, kemiringannya $+0{,}359036$ dengan
+$R^2=0{,}226121$. Tanda berbalik, dan tidak ada satu pun angka yang salah.
+
+Sebabnya bukan sihir, melainkan penjumlahan dua sumber:
+\[
+b_{\text{gab}}=\frac{\sum_g S_{xy,g}+\sum_g n_g(\bar x_g-\bar x)(\bar y_g-\bar y)}
+{\sum_g S_{xx,g}+\sum_g n_g(\bar x_g-\bar x)^2}.
+\]
+Kelompok pagi menyumbang $S_{xy}=-6{,}3$ dan $S_{xx}=17{,}5$; kelompok malam
+$S_{xy}=-8{,}3$ dan $S_{xx}=17{,}5$; suku antarkelompok
+$6\cdot(-2)(-1{,}85)+6\cdot(2)(1{,}85)=44{,}4$; penyebutnya $83$. Maka
+$b_{\text{gab}}=(-6{,}3-8{,}3+44{,}4)/83=29{,}8/83=0{,}359036$. Suku antarkelompok
+$44{,}4$ mengalahkan jumlah suku dalam kelompok $-14{,}6$, dan itulah seluruh rahasianya.
+
+Tafsirannya: jam latihan tidak diberikan secara acak. Karyawan shift malam, yang
+kesalahannya lebih banyak karena jam kerja dan jenis transaksi, juga menerima latihan
+lebih banyak, sehingga yang terukur sebagai efek latihan sebagian besar adalah
+perbedaan shift. Gambar~\ref{fig:simpson} menaruh semuanya pada satu bidang.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=11.4cm, height=6.2cm,
+  xmin=0.5, xmax=10.5, ymin=1.6, ymax=8.9,
+  axis lines=left,
+  xtick={1,2,3,4,5,6,7,8,9,10},
+  tick label style={font=\scriptsize},
+  xlabel={jam latihan}, ylabel={kesalahan per 100 transaksi},
+  xlabel style={font=\small}, ylabel style={font=\small},
+  legend style={font=\scriptsize,draw=layergrey,at={(0.98,0.98)},
+    anchor=north east,row sep=0.5pt},
+]
+\addplot[only marks,mark=*,mark size=2pt,layerteal] coordinates {
+  (1,4.0) (2,3.6) (3,3.2) (4,2.9) (5,2.5)};
+\addplot[only marks,mark=square*,mark size=1.9pt,layerplum] coordinates {
+  (6,7.5) (7,7.0) (8,6.4) (9,6.0) (10,5.7)};
+\addplot[layerteal,very thick,domain=0.8:5.4,samples=2] {4.326667-0.36*x};
+\addplot[layerplum,very thick,domain=5.6:10.2,samples=2]
+  {10.32381-0.474286*x};
+\addplot[accent,thick,densely dashed,domain=0.8:10.2,samples=2]
+  {2.941968+0.359036*x};
+\legend{pagi, malam, gabungan}
+\end{axis}
+\end{tikzpicture}
+\caption{Paradoks Simpson pada data pelatihan. Di dalam setiap shift, garisnya menurun:
+$-0{,}36$ kesalahan per jam untuk pagi dan $-0{,}4743$ untuk malam. Garis gabungan,
+yang dihitung dari kedua belas titik tanpa memandang shift, justru menanjak dengan
+kemiringan $+0{,}3590$. Perubahan tanda itu berasal dari selisih antar kelompok, bukan
+dari satu titik yang aneh; suku antarkelompok $44{,}4$ mengalahkan suku dalam kelompok
+$-14{,}6$.}
+\label{fig:simpson}
+\end{figure}
+
+\begin{untukanak}
+Dua kelas mengikuti lomba membaca. Kelas A membaca buku tipis, banyak halaman, dan
+nilainya bagus. Kelas B membaca buku tebal, lebih sedikit halaman, dan nilainya jelek.
+Kalau semua murid digabung, terlihat seolah-olah makin sedikit halaman yang dibaca,
+makin tinggi nilainya. Padahal di dalam setiap kelas, makin banyak halaman, makin tinggi
+nilainya.
+
+Yang salah bukan angkanya, melainkan pencampurannya. Kelas B memang diberi buku yang
+lebih tebal, dan kelas B juga memang lebih lemah membaca. Dua hal itu bercampur menjadi
+satu garis yang menipu.
+
+Di bab ini kita akan tahu mengapa mencampur dua kelompok dapat membalik arah kesimpulan,
+mengapa pertanyaan ``apakah latihan mengurangi kesalahan'' tidak dapat dijawab hanya
+dengan menggambar semua titik, dan mengapa orang yang mengubah kebijakan harus tahu
+kelompok mana yang sebenarnya ia bandingkan.
+\end{untukanak}
+
+\begin{tantangan}
+Susun sebuah tabel dengan dua kelompok, masing-masing lima titik, sedemikian sehingga
+kedua kemiringan dalam kelompok positif tetapi kemiringan gabungan negatif, dan
+selisih rata-rata $y$ antarkelompok paling kecil yang masih memungkinkan. Berapa
+selisih terkecil itu, dan mengapa tidak bisa lebih kecil?
+
+Petunjuk 1: tanda kemiringan gabungan ditentukan oleh suku antarkelompok. Buat
+kelompok pertama memiliki $x$ kecil dan $y$ kecil, kelompok kedua $x$ besar dan $y$
+besar, lalu balik arah di dalam masing-masing kelompok.
+
+Petunjuk 2: dengan lima titik dan kemiringan dalam kelompok $+1$ pada
+$S_{xx}=10$, setiap kelompok menyumbang $S_{xy}=+10$ dan suku antarkelompok harus
+lebih kecil dari $-20$. Karena $n_g(\bar x_g-\bar x)(\bar y_g-\bar y)$ bernilai
+negatif hanya bila salah satu selisih rata-rata berlawanan tanda dengan yang lain,
+selisih rata-rata harus melewati titik di mana kedua suku itu saling meniadakan.
+
+Kalau mentok, kembali ke bagian Korelasi bukan kausalitas dan hitung ulang
+$29{,}8/83$ langkah demi langkah.
+\end{tantangan}
+
+\section{Pelaporan yang jujur}
+\tingkat{menengah}
+
+Sebuah analisis regresi dapat dikerjakan dengan benar dan dilaporkan sehingga menyesatkan
+tanpa satu pun angka dipalsukan. Empat kebiasaan menutup sebagian besar celah itu.
+
+Pertama, sebutkan berapa pengamatan dan berapa parameter, karena pembaca memerlukan
+keduanya untuk menghitung derajat kebebasan dan menilai apakah $s$ dapat dipercaya.
+Pada data kafe, $n=9$ dan $p=2$, jadi $s$ dibangun dari tujuh derajat kebebasan;
+menyembunyikan angka itu membuat $s$ tampak lebih kokoh daripada kenyataannya.
+
+Kedua, pisahkan data yang dipakai memilih model dari data yang dipakai menilai.
+Memilih bentuk model, memilih peubah, dan menghitung galat pada himpunan yang sama
+selalu menghasilkan angka yang terlalu bagus. Pada $n=9$ pemisahan itu tidak mungkin,
+dan justru karena itu kesimpulannya harus disebut lemah, bukan diperkuat dengan
+$R^2=0{,}992821$.
+
+Ketiga, sebutkan berapa banyak model yang dicoba. Bila sepuluh kemungkinan diuji dan
+yang terbaik dilaporkan, peluang sekurangnya satu di antaranya tampak berarti adalah
+$1-0{,}95^{10}=0{,}401263$ meskipun tidak satu pun efeknya nyata. Angka itu bukan
+peluang salah, melainkan peluang terpilihnya sesuatu yang kebetulan.
+
+Keempat, laporkan besaran dengan satuan dan selang, bukan hanya tanda bintang. Kalimat
+``$\hat b=0{,}687$ ($95\%$: $0{,}381$ sampai $0{,}993$ juta per karyawan)'' dapat
+diperiksa; kalimat ``berpengaruh signifikan'' tidak. Bila kesimpulannya tentang kausalitas,
+sebutkan mengapa: pengacakan, atau penyesuaian terhadap pencampur yang disebut namanya.
+
+\section{Contoh hitung dari ujung ke ujung}
+\tingkat{menengah}
+
+Kita ulang seluruh rantai pada data kafe, dengan angka antara ditulis, supaya setiap
+langkah dapat diperiksa dengan kalkulator.
+
+Rata-ratanya $\bar x=5$ dan $\bar y=16$. Simpangan kuadratnya
+$S_{xx}=\sum(x_i-5)^2=60$ dan $S_{yy}=130$; hasil kalinya
+$S_{xy}=\sum(x_i-5)(y_i-16)=808-9\cdot5\cdot16=88$. Maka
+$\hat b=88/60=1{,}466667$ dan $\hat a=16-1{,}466667\cdot5=8{,}666667$.
+
+Ramalan pada sembilan titik itu $10{,}1333$; $11{,}6$; $13{,}0667$; $14{,}5333$;
+$16$; $17{,}4667$; $18{,}9333$; $20{,}4$; $21{,}8667$. Sisaannya
+$-0{,}1333$; $0{,}4$; $-0{,}0667$; $-0{,}5333$; $0$; $0{,}5333$; $0{,}0667$;
+$-0{,}4$; $0{,}1333$, dan jumlah kuadratnya
+$\mathrm{SSE}=0{,}933333$. Dengan $n-p=7$, $s^2=0{,}133333$ dan $s=0{,}365148$ jam.
+
+Galat baku kemiringan $s/\sqrt{S_{xx}}=\sqrt{0{,}133333/60}=\sqrt{0{,}00222222}
+=0{,}047140$. Statistik $t=1{,}466667/0{,}047140=31{,}1127$, dan
+$t_{7,0{,}975}=2{,}364624$, sehingga setengah lebar selangnya $0{,}111470$ dan
+selangnya $(1{,}355197;\ 1{,}578136)$.
+
+\kertas{Ulangi perhitungan yang sama untuk satu perubahan data. Hari kesembilan
+tercatat $22$ jam lembur; andaikan catatan yang benar adalah $26$ jam. Hitung ulang
+$\hat b$, $s$, $\operatorname{se}(\hat b)$, dan selang $95$ persennya, lalu bandingkan
+dengan tabel di atas. Jawaban yang benar: $\hat b=1{,}733333$, $s=1{,}306880$,
+$\operatorname{se}(\hat b)=0{,}168718$, selang $(1{,}3344;\ 2{,}1323)$. Lebarnya
+$0{,}798$ melawan $0{,}223$, yaitu $3{,}6$ kali. Jelaskan mengapa satu titik di ujung
+dapat melakukan itu, padahal ia hanya satu dari sembilan.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Semua angka di bab ini dapat dihitung ulang dalam satu berkas pendek. Program berikut
+memakai $X^{\top}X$ secara langsung, jadi ia sekaligus memeriksa aljabar di bagian
+kedua.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from math import sqrt
+from scipy import stats
+
+x = np.arange(1, 10, dtype=float)
+y = np.array([10, 12, 13, 14, 16, 18, 19, 20, 22], dtype=float)
+n = len(y)
+X = np.column_stack([np.ones(n), x])
+
+beta = np.linalg.solve(X.T @ X, X.T @ y)
+fit = X @ beta
+e = y - fit
+s2 = (e ** 2).sum() / (n - 2)
+sst = ((y - y.mean()) ** 2).sum()
+
+print("X'X =", (X.T @ X).tolist(), " X'y =", (X.T @ y).tolist())
+print("beta = %.6f %.6f" % tuple(beta))
+sse = (e ** 2).sum()
+print("SSE = %.6f  R2 = %.6f  s = %.6f"
+      % (sse, 1 - sse / sst, sqrt(s2)))
+print("residu =", np.round(e, 4).tolist())
+
+cov = s2 * np.linalg.inv(X.T @ X)
+se = np.sqrt(np.diag(cov))
+tq = stats.t.ppf(0.975, n - 2)
+print("se = %.6f %.6f  t = %.4f %.4f"
+      % (se[0], se[1], beta[0] / se[0], beta[1] / se[1]))
+lo, hi = beta[1] - tq * se[1], beta[1] + tq * se[1]
+print("IK95 kemiringan = (%.6f, %.6f)" % (lo, hi))
+
+for x0 in (5.0, 8.0):
+    c = np.array([1.0, x0])
+    y0 = c @ beta
+    v = s2 * (c @ np.linalg.inv(X.T @ X) @ c)
+    print("x0=%.0f  yhat=%.4f  rata2 +/-%.4f  prediksi +/-%.4f"
+          % (x0, y0, tq * sqrt(v), tq * sqrt(v + s2)))
+
+h = np.einsum("ij,jk,ik->i", X, np.linalg.inv(X.T @ X), X)
+cook = e ** 2 / (2 * s2) * h / (1 - h) ** 2
+print("h_ii =", np.round(h, 4).tolist())
+print("D_Cook =", np.round(cook, 4).tolist())
+
+x1 = np.array([6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 12], dtype=float)
+x2 = np.array([18, 22, 20, 26, 24, 28, 26, 32, 30, 34, 36, 38], dtype=float)
+yb = np.array([11.2, 12.4, 12.0, 14.1, 13.6, 15.2, 14.8, 17.0, 16.4, 18.1,
+               19.4, 19.9])
+Xb = np.column_stack([np.ones(12), x1, x2])
+bb = np.linalg.solve(Xb.T @ Xb, Xb.T @ yb)
+eb = yb - Xb @ bb
+s2b = (eb ** 2).sum() / 9
+seb = np.sqrt(np.diag(s2b * np.linalg.inv(Xb.T @ Xb)))
+r12 = np.corrcoef(x1, x2)[0, 1]
+print("berganda beta = %.4f %.4f %.4f  s = %.4f"
+      % (bb[0], bb[1], bb[2], sqrt(s2b)))
+print("berganda se   = %.4f %.4f %.4f" % tuple(seb))
+print("r12 = %.4f  VIF = %.2f  akar VIF = %.2f"
+      % (r12, 1 / (1 - r12 ** 2), 1 / sqrt(1 - r12 ** 2)))
+
+
+def ols(xx, yy):
+    A = np.column_stack([np.ones(len(xx)), xx])
+    return np.linalg.solve(A.T @ A, A.T @ yy)[1]
+
+
+xp = np.array([1, 2, 3, 4, 5, 6], dtype=float)
+yp = np.array([4.0, 3.6, 3.2, 2.9, 2.5, 2.2])
+xm = np.array([5, 6, 7, 8, 9, 10], dtype=float)
+ym = np.array([8.0, 7.5, 7.0, 6.4, 6.0, 5.7])
+print("Simpson: pagi %.4f  malam %.4f  gabung %.4f"
+      % (ols(xp, yp), ols(xm, ym), ols(np.r_[xp, xm], np.r_[yp, ym])))
+
+xd = np.array([2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
+               11, 11, 12, 12, 13, 13, 14, 14], dtype=float)
+yd = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0,
+               1, 0, 0, 0, 0, 0, 0], dtype=float)
+A = np.column_stack([np.ones(len(yd)), xd])
+lpm = np.linalg.solve(A.T @ A, A.T @ yd)
+print("LPM: %.4f %+.4f  prediksi di x=2: %.4f  di x=20: %.4f"
+      % (lpm[0], lpm[1], lpm @ [1, 2], lpm @ [1, 20]))
+
+
+def nll(th):
+    z = A @ th
+    return float(np.sum(np.log1p(np.exp(-z)) + (1 - yd) * z))
+
+
+g = np.array([0.0, 0.0])
+for _ in range(40):
+    p = 1 / (1 + np.exp(-(A @ g)))
+    grad = A.T @ (p - yd)
+    Hm = A.T @ (A * (p * (1 - p))[:, None])
+    g = g - np.linalg.solve(Hm, grad)
+se_g = np.sqrt(np.diag(np.linalg.inv(Hm)))
+p = 1 / (1 + np.exp(-(A @ g)))
+print("logit: %.4f %+.4f  se %.4f %.4f" % (g[0], g[1], se_g[0], se_g[1]))
+print("devians = %.4f  p(x=2) = %.4f  p(x=14) = %.4f"
+      % (2 * nll(g), p[0], p[-1]))
+print("rasio peluang per km = %.4f" % np.exp(g[1]))
+\end{verbatim}
+\end{lab}
+
+Keluarannya, apa adanya:
+
+\begin{verbatim}
+X'X = [[9.0, 45.0], [45.0, 285.0]]  X'y = [144.0, 808.0]
+beta = 8.666667 1.466667
+SSE = 0.933333  R2 = 0.992821  s = 0.365148
+residu = [-0.1333, 0.4, -0.0667, -0.5333, 0.0, 0.5333, 0.0667, -0.4, 0.1333]
+se = 0.265274 0.047140  t = 32.6706 31.1127
+IK95 kemiringan = (1.355197, 1.578136)
+x0=5  yhat=16.0000  rata2 +/-0.2878  prediksi +/-0.9101
+x0=8  yhat=20.4000  rata2 +/-0.4412  prediksi +/-0.9696
+h_ii = [0.3778, 0.2611, 0.1778, 0.1278, 0.1111, 0.1278, 0.1778, 0.2611, 0.3778]
+D_Cook = [0.0651, 0.287, 0.0044, 0.1792, 0.0, 0.1792, 0.0044, 0.287, 0.0651]
+berganda beta = 2.4430 0.6869 0.2393  s = 0.1436
+berganda se   = 0.2076 0.1354 0.0421
+r12 = 0.9868  VIF = 38.13  akar VIF = 6.18
+Simpson: pagi -0.3600  malam -0.4743  gabung 0.3590
+LPM: 1.3462 -0.0962  prediksi di x=2: 1.1538  di x=20: -0.5769
+logit: 6.3154 -0.6999  se 2.3834 0.2586
+devians = 17.8843  p(x=2) = 0.9927  p(x=14) = 0.0298
+rasio peluang per km = 0.4966
+\end{verbatim}
+
+Dua hal perlu dibaca dari keluaran itu. Pertama, $\mathrm{X}^{\top}\mathrm{X}$ dan
+$\mathrm{X}^{\top}y$ tercetak persis seperti dihitung tangan, dan $\hat\beta$ keluar
+dari penyelesaian sistem; kesepakatan semacam ini bukan bukti kebenaran teori, tetapi ia
+menyingkirkan salah hitung, yang paling sering menjadi penyebab. Kedua, tiga bagian
+terakhir memperlihatkan mengapa tafsiran lebih rapuh daripada hitungan: $0{,}6869$
+berbanding $1{,}4460$ pada regresi tunggal, VIF $38{,}13$, dan kemiringan gabungan yang
+tandanya berbalik. Tidak satu pun dari ketiganya kesalahan program.
+
+\begin{untukdosen}
+Urutan mengajar yang saya sarankan: mulai dari tabel sembilan hari, minta kelas menebak
+kemiringannya dengan dua cara, yaitu selisih ujung dan ``garis yang paling dekat''.
+Selisih kedua jawaban kecil, dan justru itu pintu masuknya: pertanyaan sebenarnya bukan
+angkanya, melainkan goyangannya. Baru sesudah kelas gelisah, masuk ke persamaan normal
+dan tunjukkan bahwa $\sum x_ie_i=0$ adalah pernyataan geometris, bukan trik aljabar.
+
+Dua miskonsepsi yang paling sering muncul. Pertama, mahasiswa membaca $R^2$ sebagai
+``peluang ramalan benar'', lalu terkejut ketika selang prediksi selebar dua jam pada
+$R^2=0{,}99$; gejalanya tampak ketika mereka tidak dapat menjelaskan mengapa $s$ tidak
+ikut mengecil bersama $R^2$. Kedua, mereka menafsirkan koefisien berganda seperti
+koefisien tunggal, padahal pada data dua belas cabang angkanya berubah dari $1{,}446$
+menjadi $0{,}687$ hanya karena penjelas lain masuk.
+
+Aktivitas papan tulis yang berhasil: suruh dua kelompok menghitung kemiringan pada data
+pelatihan, satu kelompok memakai semua dua belas titik, satu kelompok memisahkan shift.
+Tulis kedua hasil berdampingan, lalu minta masing-masing mempertahankannya. Tanda bahwa
+kelas siap lanjut: mereka dapat menyebut satu keadaan yang membuat koefisien berganda
+berubah tanda, dan dapat menjelaskan mengapa ramalannya tetap baik.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Regresi memasang garis yang meminimumkan jumlah kuadrat sisaan. Menurut
+        persamaan normal sisaannya tegak lurus setiap kolom $X$; pada data kafe
+        $\hat b=88/60=1{,}466667$ dan $\hat a=8{,}666667$.
+  \item Koefisien hanya bermakna bersama satuannya: $1{,}466667$ jam per puluhan pesanan
+        sama dengan $8{,}8$ menit per pesanan. Mengubah skala $x$ mengubah koefisien dan
+        galat bakunya, tidak mengubah $t$ maupun $R^2$.
+  \item $R^2$ nisbi, $s$ mutlak. Pada data kafe $R^2=0{,}992821$ tetapi
+        $s=0{,}365148$ jam, yaitu $21{,}9$ menit.
+  \item Di bawah (A1)--(A4) Gauss--Markov menjamin kuadrat terkecil adalah BLUE dengan
+        $\operatorname{Var}(\hat\beta)=\sigma^2(X^{\top}X)^{-1}$; jaminan itu gugur bila
+        ragam galat tidak tetap atau penjelasnya kolinear.
+  \item Kolinearitas tidak merusak ramalan tetapi merusak tafsiran: pada dua belas cabang,
+        $r_{12}=0{,}986801$ memberi $\mathrm{VIF}=38{,}13$ dan galat baku $6{,}18$ kali
+        lebih besar, sementara $R^2$ tetap $0{,}997951$.
+  \item Selang prediksi selalu lebih lebar daripada selang rata-rata; pada $x_0=8$
+        nisbahnya $2{,}198$ dan tidak mengecil bersama $n$. Tanda kemiringan dapat
+        berbalik ketika dua kelompok dicampur: $-0{,}36$ dan $-0{,}474286$ di dalam
+        kelompok, $+0{,}359036$ setelah digabung.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Nilai klaim ini: ``Karena $R^2=0{,}99$, garis ini dapat meramalkan satu hari
+        dengan galat paling banyak dua puluh menit.'' Benar, salah, atau belum cukup
+        bukti? Sebutkan bagian yang benar, bagian yang keliru, dan angka tambahan yang
+        menyelesaikan penilaian itu.
+  \item Buktikan bahwa dengan kolom satu pada $X$ berlaku $\sum_i e_i=0$ dan
+        $\sum_i x_ie_i=0$, lalu jelaskan mengapa keduanya gagal bila garis dipaksa lewat
+        titik asal.
+  \item Buktikan $\operatorname{Var}(\hat b)=\sigma^2/S_{xx}$ dari
+        $\hat b=\sum_i(x_i-\bar x)y_i/S_{xx}$ tanpa rumus matriks.
+  \item Hitung $\hat a$, $\hat b$, $s$, $\operatorname{se}(\hat b)$, dan selang $95$
+        persen untuk $(1,2)$, $(2,2{,}5)$, $(3,4)$, $(4,3{,}5)$, $(5,5)$, lalu periksa
+        dengan Python. Mengapa selangnya jauh lebih lebar daripada selang data kafe?
+  \item Hitung selang prediksi $95$ persen untuk $x_0=2$ dan $x_0=9$ pada data kafe.
+        Mengapa lebarnya berbeda padahal $n$ sama, dan mengapa selang itu tidak pernah
+        menyempit ke nol ketika $n$ diperbesar?
+  \item Tunjukkan bahwa menambah penjelas tidak dapat menaikkan SSE, lalu jelaskan
+        mengapa $R^2_{\text{adj}}$ dapat turun. Hitung $R^2_{\text{adj}}$ untuk data kafe
+        bila $p$ naik dari $2$ menjadi $3$ pada $R^2$ yang sama.
+  \item Untuk $S_{11}=50$, $S_{22}=200$, $r_{12}=0{,}9$, dan $\sigma^2=2$, hitung VIF
+        serta galat baku $\hat b_1$ dengan dan tanpa $x_2$ dalam model.
+  \item Susun tabel dua kelompok dengan kemiringan dalam kelompok $-0{,}2$ dan kemiringan
+        gabungan $+0{,}4$, lalu periksa hasilnya dengan rumus dekomposisi.
+  \item Tulis ulang kalimat ini sehingga jujur: ``model terbaik dari dua belas model yang
+        kami coba memberi $p=0{,}03$, jadi efeknya nyata''.
+\end{enumerate}
+
+Petunjuk untuk tiga butir tersulit. Butir 3: tulis $\hat b-\beta=\sum_i(x_i-\bar x)
+\varepsilon_i/S_{xx}$, ambil variansi, pakai ketakbebasan dan
+$\operatorname{Var}(\varepsilon_i)=\sigma^2$. Butir 6: bandingkan ruang kolom kedua model,
+lalu ingat pembagi $n-p$ yang mengecil. Butir 7: $\mathrm{VIF}=1/(1-0{,}81)=5{,}263158$,
+jadi galat bakunya $\sqrt{5{,}263158}$ kali lebih besar.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di sini: persamaan normal sebagai syarat perlu dan cukup bagi
+minimum beserta ketunggalannya saat $X$ berpangkat kolom penuh; sifat matriks topi dan
+$\operatorname{tr}H=p$; ketakbiasan serta
+$\operatorname{Var}(\hat\beta)=\sigma^2(X^{\top}X)^{-1}$; ketidaksamaan Gauss--Markov
+dalam kelas penaksir linear tak bias; dekomposisi $\mathrm{SST}=\mathrm{SSR}+\mathrm{SSE}$
+bila ada kolom satu; ketakmonotonan $R^2$ terhadap penambahan kolom; sebaran $t$ untuk
+nisbah koefisien bila galat normal; dan variansi galat prediksi.
+
+Yang hanya populer: bahwa $R^2$ mengukur mutu model, bahwa koefisien berganda selalu
+merupakan efek, dan bahwa ambang $\mathrm{VIF}>10$ atau $D_i>1$ adalah hasil turunan.
+Sumber primer: Seber dan Lee, \emph{Linear Regression Analysis}, Bab 3; Greene,
+\emph{Econometric Analysis}, Bab 3; Wasserman, \emph{All of Statistics}, Bab 13;
+Simpson (1951) untuk pembalikan arah pada tabel kontingensi; Hosmer, Lemeshow, dan
+Sturdivant, \emph{Applied Logistic Regression}, Bab 1--3.
+
+Batas keberlakuan: semua selang bersyarat pada model yang benar, galat bebas, dan ragam
+tetap. Pada data berkelompok, deret waktu, atau pengamatan berulang, ketakbebasan gagal
+dan galat baku yang dilaporkan terlalu kecil. Pertanyaan terbuka: seberapa jauh selang
+pascapemilihan model menyimpang dari nominalnya, dan bagaimana diagnostik pengaruh
+disusun ketika $n$ jauh lebih kecil daripada $p$.
+\end{untukpeneliti}
+
+\peta{Bab 21 pada Wasserman, \emph{All of Statistics}: Bab 13 (Linear and Logistic
+Regression: kuadrat terkecil, sebaran $t$ untuk koefisien, dan regresi logistik) serta
+Bab 6 (Models, Statistical Inference, and Learning: tafsiran selang dan galat baku).
+Geometri kuadrat terkecil sebagai proyeksi ortogonal disusun di Bab 10 buku ini, tempat
+persamaan normal pertama kali muncul sebagai akibat ortogonalitas, dan dipakai lagi di
+Bab 24 untuk regularisasi. Selang kepercayaan, nilai-p, dan tafsiran taraf diambil dari
+Bab 20 tanpa diulang di sini. Teorema Gauss--Markov beserta syaratnya dirujuk ke Seber
+dan Lee Bab 3 dan Greene Bab 3, karena Wasserman tidak membuktikannya. Paradoks Simpson
+dirujuk ke makalah Simpson (1951) dan dipakai lagi di Bab 25 ketika membahas pemisahan
+data dan kebocoran evaluasi, serta di Bab 26 ketika membahas klaim kausal yang harus
+dibuktikan, bukan disimpulkan dari korelasi.}

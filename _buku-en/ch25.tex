@@ -1,0 +1,1291 @@
+\chapter{Neural Networks and Backpropagation}
+
+An intrusion prevention system observes four quantities on every connection: the number of
+requests per second, the connection duration, the number of rejected packets, and the average
+payload size. An analyst trying to separate malicious traffic from ordinary traffic finds a
+pattern that is awkward to read. Connections with many requests but no rejected packets are
+usually legitimate, because that is what fetching a large file looks like. Connections with many
+rejected packets but few requests are also usually legitimate, because that is what a failed scan
+looks like. The combination of the two is almost always an attack. Each feature by itself
+separates nothing, whereas their combination separates sharply.
+
+A linear threshold cannot draw such a separator, and the first part of this chapter shows that
+the obstacle is not the amount of data. What must change is the shape of the function. One hidden
+layer is already enough for that pattern. Once the shape has changed, the next question appears,
+and it is more serious: how do we tune the thirteen parameters of that small network without
+deriving a new formula for every architecture?
+
+The answer is the chain rule of Chapter 12, run backward on the computational graph. This chapter
+carries that rule down to the numbers: one forward step with given weights, all thirteen
+gradients computed by hand and then checked with NumPy, one gradient-descent step, and the
+gradient with respect to the input that later becomes a weapon in Chapter 29. What this chapter
+promises is not a clever network, but a differentiation engine that can be checked line by line.
+
+\begin{untukanak}
+Imagine an assembly line with several workers. The first worker works on the raw material, the
+second works on the output of the first, and so on until the last worker hands the finished item
+to an inspector. The inspector weighs the item, then says: too heavy, two hundred grams over.
+
+Now the question: who has to change the way they work? The first worker? The last worker? If the
+foreman can change only one setting and then rerun the whole line, he needs two tries per setting.
+With thirteen settings, that is twenty-six runs of the line for a single fix.
+
+It turns out there is a far cleverer way. After one run, we can walk back from the inspector to
+the last worker, then to the previous worker, all the way to the first. At each stop we compute
+one number: how much the final error changes if this person changes their output a little. With a
+single backward pass, every worker knows their own share, and nothing has to be run again.
+
+In this chapter we will learn why information can flow backward even though the goods only flow
+forward, and why that backward pass gives an answer exactly as accurate as running the line
+twenty-six times.
+\end{untukanak}
+
+\section{Linear thresholds and the perceptron}
+\tingkat{basic}
+
+The oldest form of classifier is the linear threshold. For an input
+$\mathbf{x}\in\mathbb{R}^{d}$, weights $\mathbf{w}\in\mathbb{R}^{d}$, and bias
+$b\in\mathbb{R}$, we compute a single score and decide the class from the sign of that score.
+
+\kamus{perceptron}{perceptron}{A classifier that decides only from which side of a single
+separating line or plane a point falls.}
+
+\begin{definisi}[Linear threshold]
+A function $f:\mathbb{R}^{d}\to\{-1,+1\}$ is called a linear threshold if there are
+$\mathbf{w}$ and $b$ such that $f(\mathbf{x})=\operatorname{sign}(\mathbf{w}^{\top}\mathbf{x}+b)$.
+The set $\{\mathbf{x}:\mathbf{w}^{\top}\mathbf{x}+b=0\}$ is the separating hyperplane, and that
+hyperplane is the only form of separator this model can learn.\index{perceptron}
+\end{definisi}
+
+Perceptron training works by correcting the weights only when there is a mistake. For a label
+$y\in\{-1,+1\}$ and an example $\mathbf{x}$, if $y\,\mathbf{w}^{\top}\mathbf{x}\le 0$ then we
+update
+\[
+  \mathbf{w}\leftarrow\mathbf{w}+y\,\mathbf{x}.
+\]
+Note that there is no learning rate here: the size of the step is determined by the size of the
+example, and training stops by itself as soon as all examples are correct. Does it always stop?
+
+\begin{teorema}[Perceptron convergence]
+Suppose every example satisfies $\lVert\mathbf{x}_{i}\rVert\le1$ and there is a unit vector
+$\mathbf{w}^{*}$ and $\gamma>0$ such that $y_{i}\,\mathbf{w}^{*\top}\mathbf{x}_{i}\ge\gamma$ for
+every $i$. Then the perceptron algorithm starting from $\mathbf{w}_{0}=\mathbf{0}$ makes at most
+$\lfloor1/\gamma^{2}\rfloor$ updates.\index{perceptron}
+\end{teorema}
+
+\begin{proof}
+Suppose an update occurs $k$ times, on the examples $\mathbf{x}_{1},\dots,\mathbf{x}_{k}$. Every
+update occurs only when that example is misclassified, so
+$y_{j}\,\mathbf{w}_{j-1}^{\top}\mathbf{x}_{j}\le0$. Hence
+\[
+  \lVert\mathbf{w}_{j}\rVert^{2}
+  =\lVert\mathbf{w}_{j-1}\rVert^{2}+2y_{j}\mathbf{w}_{j-1}^{\top}\mathbf{x}_{j}
+   +\lVert\mathbf{x}_{j}\rVert^{2}
+  \le\lVert\mathbf{w}_{j-1}\rVert^{2}+1 .
+\]
+By induction, $\lVert\mathbf{w}_{k}\rVert^{2}\le k$.
+
+On the other side, the inner product with $\mathbf{w}^{*}$ grows by at least $\gamma$ each
+time:
+\[
+  \mathbf{w}^{*\top}\mathbf{w}_{j}
+  =\mathbf{w}^{*\top}\mathbf{w}_{j-1}+y_{j}\mathbf{w}^{*\top}\mathbf{x}_{j}
+  \ge\mathbf{w}^{*\top}\mathbf{w}_{j-1}+\gamma ,
+\]
+so $\mathbf{w}^{*\top}\mathbf{w}_{k}\ge k\gamma$. Since $\mathbf{w}^{*}$ is a unit vector, the
+Cauchy-Schwarz inequality gives
+\[
+  k\gamma\le\mathbf{w}^{*\top}\mathbf{w}_{k}\le\lVert\mathbf{w}_{k}\rVert\le\sqrt{k}.
+\]
+After dividing by $\sqrt{k}$ and squaring, $k\gamma^{2}\le1$, that is $k\le1/\gamma^{2}$.
+\end{proof}
+
+That bound does not depend on the dimension or on the number of examples, and that is its
+appeal. But when $\gamma$ does not exist, this theorem says nothing, and the perceptron really
+does oscillate forever; it is also not a statement about generalization.
+
+Now a more fundamental bound. Four points in the plane are already enough to show that not every
+labeling can be separated by a single hyperplane. The points $(0,0)$ and $(1,1)$ have label $0$,
+the points $(1,0)$ and $(0,1)$ have label $1$. This pattern is usually called XOR.
+
+\begin{proposisi}
+The four XOR points are not linearly separable.
+\end{proposisi}
+
+\begin{proof}
+Suppose there are $w_{1},w_{2},b$ that separate them, with label $1$ on the positive side. Label
+$0$ at $(0,0)$ gives $b\le0$. Label $1$ at $(1,0)$ gives $w_{1}+b>0$, hence $w_{1}>-b\ge0$. By
+the same route, $w_{2}>-b\ge0$. Therefore $w_{1}+w_{2}>-2b$, and
+\[
+  w_{1}+w_{2}+b>-b\ge0 .
+\]
+But label $0$ at $(1,1)$ demands $w_{1}+w_{2}+b\le0$. Contradiction.
+\end{proof}
+
+This contradiction holds for every choice of $\mathbf{w}$ and $b$, not only for some particular
+training outcome. Adding examples, changing the learning rate, or normalizing the features will
+not help. What must change is the shape of the function, and the smallest change available is to
+insert one layer in between.
+
+\kamus{hidden layer}{lapisan tersembunyi}{A layer of units that the outside world does not see:
+its input comes from the previous layer, its output goes to the next layer.}
+
+A hidden layer works in two steps. First, compute
+$\mathbf{z}_{1}=\mathbf{W}_{1}\mathbf{x}+\mathbf{b}_{1}$ with
+$\mathbf{W}_{1}\in\mathbb{R}^{2\times4}$, then apply
+$\operatorname{ReLU}(t)=\max\{t,0\}$ to every component, and write the result $\mathbf{h}$.
+Second, compute a linear score from $\mathbf{h}$. For XOR, with
+\[
+  \mathbf{W}_{1}=\begin{pmatrix}1&1\\1&1\end{pmatrix},\qquad
+  \mathbf{b}_{1}=\begin{pmatrix}0\\-1\end{pmatrix},\qquad
+  \mathbf{w}_{2}=\begin{pmatrix}1\\-2\end{pmatrix},\qquad b_{2}=0,
+\]
+the four points give: $(0,0)$ produces $\mathbf{z}_{1}=(0,-1)$ and $\mathbf{h}=(0,0)$ with score
+$0$; the points $(1,0)$ and $(0,1)$ both produce $\mathbf{z}_{1}=(1,0)$ and $\mathbf{h}=(1,0)$
+with score $1$; the point $(1,1)$ produces $\mathbf{z}_{1}=(2,1)$ and $\mathbf{h}=(2,1)$ with
+score $1(2)-2(1)=0$. With a threshold of $0.5$ all four points are classified correctly.
+
+What makes this work is not magic but simple arithmetic. The first unit computes
+$\max\{x_{1}+x_{2},0\}$ and the second computes $\max\{x_{1}+x_{2}-1,0\}$. Both are linear, but
+their difference is a piecewise function that turns at two places. A linear combination of linear
+functions is still linear; a linear combination of piecewise functions is not.
+
+Such a boundary is made of line segments. Each unit in the first layer contributes one straight
+line, and the second layer chooses which side is used, so the final boundary is a polygon;
+Figure~\ref{fig:dua-lapis} shows its shape.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[>=latex, font=\small]
+  % left panel: two hidden layers
+  \foreach \i/\yy in {1/1.5,2/-0.5}
+    \node[circle,draw=layergrey,fill=layergrey!10,inner sep=1.7pt] (I\i) at (0.4,\yy) {};
+  \foreach \i/\yy in {1/2.4,2/1.65,3/0.9,4/0.15,5/-0.6}
+    \node[circle,draw=layerteal,fill=layerteal!12,inner sep=1.7pt] (H1\i) at (2.1,\yy) {};
+  \foreach \i/\yy in {1/1.6,2/0.7,3/-0.2}
+    \node[circle,draw=layerteal,fill=layerteal!12,inner sep=1.7pt] (H2\i) at (3.7,\yy) {};
+  \node[circle,draw=layerindigo,fill=layerindigo!12,inner sep=1.7pt] (O) at (5.1,0.7) {};
+  \foreach \i in {1,2} \foreach \j in {1,...,5} \draw[layergrey!45] (I\i) -- (H1\j);
+  \foreach \i in {1,...,5} \foreach \j in {1,2,3} \draw[layergrey!45] (H1\i) -- (H2\j);
+  \foreach \j in {1,2,3} \draw[layergrey!45] (H2\j) -- (O);
+  \node[font=\scriptsize] at (0.4,-1.35) {input};
+  \node[font=\scriptsize] at (2.1,-1.35) {five units};
+  \node[font=\scriptsize] at (3.7,-1.35) {three units};
+  \node[font=\scriptsize] at (5.1,-1.35) {output};
+  % panel kanan: bidang input
+  \draw[layergrey] (6.7,-0.9) rectangle (14.4,2.9);
+  \node[font=\scriptsize] at (14.1,-1.35) {$x_{1}$};
+  \node[font=\scriptsize] at (6.4,2.75) {$x_{2}$};
+  \fill[layerorange!18] (8.3,0.3) -- (9.7,2.4) -- (12.6,2.55) -- (13.3,1.1) -- (11.2,0.0) -- cycle;
+  \draw[layerorange,thick] (8.3,0.3) -- (9.7,2.4) -- (12.6,2.55) -- (13.3,1.1) -- (11.2,0.0) -- cycle;
+  \draw[dashed,layergrey!70] (7.50,-0.9) -- (11.43,2.9);
+  \draw[dashed,layergrey!70] (6.70,2.23) -- (14.40,2.64);
+  \draw[dashed,layergrey!70] (12.43,2.9) -- (14.27,-0.9);
+  \draw[dashed,layergrey!70] (14.40,1.68) -- (9.48,-0.9);
+  \draw[dashed,layergrey!70] (6.70,0.50) -- (14.40,-0.33);
+  \foreach \xx/\yy in {9.9/1.6, 11.4/1.3, 10.6/0.6}
+    \draw[accent,thick] (\xx-0.09,\yy-0.09) -- (\xx+0.09,\yy+0.09)
+      (\xx-0.09,\yy+0.09) -- (\xx+0.09,\yy-0.09);
+  \foreach \xx/\yy in {7.7/1.4, 8.5/-0.3, 12.3/-0.5, 13.6/2.2}
+    \draw[layergrey,fill=white] (\xx,\yy) circle (2.1pt);
+  \draw[accent,thick] (11.0,-1.30) -- (11.15,-1.15) (11.0,-1.15) -- (11.15,-1.30);
+  \node[font=\scriptsize,anchor=west] at (11.2,-1.23) {class 1};
+  \draw[layergrey,fill=white] (13.0,-1.23) circle (2.1pt);
+  \node[font=\scriptsize,anchor=west] at (13.2,-1.23) {class 0};
+\end{tikzpicture}
+\caption{A sketch of how two hidden layers turn one line into a fold. Left: each unit in the
+first layer pulls one straight line across the input plane, and the second layer combines the
+sides of those lines. Right: the decision boundary is a five-sided polygon, drawn thick; the
+dashed lines are the extension of each side, namely the line belonging to one unit. Crosses are
+class 1 inside the polygon, circles class 0 outside. The figure is a sketch, not a training
+result: the number of sides follows the number of units in the first layer.}
+\label{fig:dua-lapis}
+\end{figure}
+
+
+\section{Activation functions and two diseases of the inner layers}
+\tingkat{intermediate}
+
+Without a nonlinear function between the layers, the whole network collapses into a single
+matrix. If ReLU is replaced by the identity, the output is
+$\mathbf{W}_{2}\mathbf{W}_{1}\mathbf{x}$, that is, a single matrix product
+$\mathbf{W}\mathbf{x}$ with $\mathbf{W}=\mathbf{W}_{2}\mathbf{W}_{1}$. Every hidden layer
+therefore needs a nonlinear activation, and the choice of activation determines which disease
+will appear when the network is made deep.
+
+\kamus{activation function}{fungsi aktivasi}{The gate that determines how much of a unit's signal
+is passed on, and at the same time the one that fixes the shape of its derivative.}
+
+\begin{definisi}[ReLU, sigmoid, and tanh]
+For $t\in\mathbb{R}$,
+\[
+  \operatorname{ReLU}(t)=\max\{t,0\},\qquad
+  \sigma(t)=\frac{1}{1+e^{-t}},\qquad
+  \tanh(t)=\frac{e^{t}-e^{-t}}{e^{t}+e^{-t}} .
+\]
+The derivative of ReLU is $1$ for $t>0$ and $0$ for $t<0$; at $t=0$ the derivative does not
+exist, and this book uses the value $0$ as a convention. The derivative of tanh satisfies
+$\tanh'(t)=1-\tanh^{2}(t)$.\index{activation function}\index{relu}
+\end{definisi}
+
+The value $0$ at the break point of ReLU is a convention: the set where the derivative fails is
+only $\{0\}$, of measure zero, so it does not affect the derivative almost everywhere. The
+practical consequence: a unit whose input is always negative receives zero gradient and will
+never change.
+
+Sigmoid has a neater property, and that property is the source of the trouble.
+
+\begin{lemma}[Derivative of sigmoid]
+For every $t$ we have $\sigma'(t)=\sigma(t)\bigl(1-\sigma(t)\bigr)$, hence
+$0<\sigma'(t)\le\tfrac14$.\index{saturation}
+\end{lemma}
+
+\begin{proof}
+Write $\sigma(t)=(1+e^{-t})^{-1}$. Then
+\[
+  \sigma'(t)=-(1+e^{-t})^{-2}\cdot(-e^{-t})
+  =\frac{e^{-t}}{(1+e^{-t})^{2}}
+  =\frac{1}{1+e^{-t}}\cdot\frac{e^{-t}}{1+e^{-t}}
+  =\sigma(t)\bigl(1-\sigma(t)\bigr).
+\]
+Since $0<\sigma(t)<1$, the product is positive. Writing $s=\sigma(t)$ gives
+$s(1-s)=\tfrac14-(s-\tfrac12)^{2}\le\tfrac14$, and equality is attained when $s=\tfrac12$.
+\end{proof}
+
+The bound $\tfrac14$ is the one to hold on to. The following table computes $\sigma$,
+$\sigma'$, and $\tanh$ at several values; the numbers were produced by NumPy and are written to
+six decimals.
+
+\begin{center}
+\small
+\begin{tabular}{rrrrr}
+\hline
+$t$ & $\sigma(t)$ & $\sigma'(t)$ & $\tanh(t)$ & $1-\tanh^{2}(t)$ \\
+\hline
+$0$  & $0.500000$ & $0.250000$ & $0.000000$ & $1.000000$ \\
+$1$  & $0.731059$ & $0.196612$ & $0.761594$ & $0.419974$ \\
+$2$  & $0.880797$ & $0.104994$ & $0.964028$ & $0.070650$ \\
+$5$  & $0.993307$ & $0.006648$ & $0.999909$ & $0.000181$ \\
+$10$ & $0.999955$ & $0.000045$ & $0.999999$ & $0.000002$ \\
+\hline
+\end{tabular}
+\end{center}
+
+The fourth and fifth columns show what is called saturation: once $t$ moves away from zero, the
+output barely changes with the input, and the derivative tends to zero. At $t=10$ the derivative
+is only $4.54\times10^{-5}$, about one twenty-thousandth of its maximum.
+
+The consequence can be computed. If the error propagates backward through $L$ consecutive layers
+whose derivative is at most $\tfrac14$, the remaining signal is at most $4^{-L}$: for $L=5$ about
+$9.77\times10^{-4}$, and for $L=10$ about $9.54\times10^{-7}$. A layer far from the output
+receives a signal that is only one millionth, so it practically does not learn. This symptom is
+called the vanishing gradient. ReLU avoids it for a different reason: its derivative is $1$ on
+the positive side, so there is no shrinkage, but its derivative is $0$ on the negative side, so
+there is unit death. Both diseases are not implementation errors; both are consequences of the
+shape of the function.\index{vanishing gradient}
+
+One more statement is often quoted beyond its content: one hidden layer is enough for all
+continuous functions.
+
+\begin{teorema}[Universal approximation, statement]
+Suppose $\varphi$ is bounded, monotonically increasing, and has different limits at $-\infty$
+and $+\infty$. For every compact set $K\subset\mathbb{R}^{d}$, every continuous function
+$f:K\to\mathbb{R}$, and every $\varepsilon>0$, there are $N$ and parameters
+$\mathbf{w}_{i},b_{i},v_{i}$ such that
+\[
+  \sup_{\mathbf{x}\in K}\Bigl|f(\mathbf{x})-\sum_{i=1}^{N}v_{i}\,
+  \varphi(\mathbf{w}_{i}^{\top}\mathbf{x}+b_{i})\Bigr|<\varepsilon .
+\]
+\end{teorema}
+
+The proof of this statement is not included here; the original proof is in Cybenko (1989) and a
+more general version in Hornik (1991), and the extension to ReLU is in Leshno et al. (1993).
+What is important to read carefully is what the theorem does \emph{not} say. It states that such
+a set of functions is dense, not that a particular network equals $f$. It does not say how large
+$N$ must be for error $\varepsilon$ in dimension $d$; in the worst case $N$ grows exponentially
+with $d$ (Goodfellow et al., section 6.4.1). It also does not say that those parameters can be
+found by gradient descent, and it says nothing about data not yet seen. The sentence ``a network
+can approximate anything'' is therefore true as a statement of density and misleading as a
+practical promise.
+
+\section{From score to loss}
+\tingkat{intermediate}
+
+The network's output must be compared with the label through a single number that can be
+minimized, and the choice of that number determines how much signal reaches the lower layers.
+For binary classification with label $y\in\{0,1\}$ and output $a=\sigma(z_{2})$, the loss used
+is the binary cross-entropy
+\[
+  L(a,y)=-\bigl[y\ln a+(1-y)\ln(1-a)\bigr].
+\]
+Cross-entropy is the negative logarithm of the confidence the model gives to the correct class,
+so a confident mistake is punished far more heavily than a hesitant one.
+
+\kamus{cross-entropy}{entropi silang}{A measure of surprise: the more confident the model is in
+a wrong answer, the larger the penalty, and the penalty grows without bound.}\index{cross-entropy}
+
+\begin{proposisi}[Gradient of cross-entropy]
+For $a=\sigma(z)$ and $L$ the binary cross-entropy we have
+$\dfrac{\partial L}{\partial z}=a-y$.
+\end{proposisi}
+
+\begin{proof}
+Differentiate $L$ with respect to $a$:
+\[
+  \frac{\partial L}{\partial a}=-\frac{y}{a}+\frac{1-y}{1-a}
+  =\frac{a-y}{a(1-a)} .
+\]
+By the chain rule and the lemma on the derivative of the sigmoid,
+$\dfrac{\partial a}{\partial z}=a(1-a)$, so
+\[
+  \frac{\partial L}{\partial z}=\frac{a-y}{a(1-a)}\cdot a(1-a)=a-y .
+\]
+Numerator and denominator cancel, and that is the point.
+\end{proof}
+
+Compare with the squared loss $L=\tfrac12(a-y)^{2}$, which gives
+$\partial L/\partial z=(a-y)\,a(1-a)$. The factor $a(1-a)$ does not cancel; it shrinks exactly
+when the model is most wrong with most confidence. For $z=10$ and $y=0$,
+$a(1-a)=4.5396\times10^{-5}$, so the signal to the weights is only $4.5394\times10^{-5}$ even
+though the error is almost one. With cross-entropy the signal stays $a-y=0.999955$. The ratio of
+the two numbers is about $2.2\times10^{4}$; this is why the sigmoid output is paired with
+cross-entropy, not with the square.
+
+For $K$ classes, the same pairing holds, and this time we prove it.
+
+\kamus{softmax}{softmax}{Turns a list of scores into a division of probabilities that sums to one,
+by comparing every score with the sum of them all.}\index{softmax}
+
+\begin{proposisi}[Softmax and cross-entropy]
+Suppose $\mathbf{p}=\operatorname{softmax}(\mathbf{z})$ with
+$p_{k}=e^{z_{k}}/\sum_{j}e^{z_{j}}$, and $L=-\sum_{k}y_{k}\ln p_{k}$ with
+$\sum_{k}y_{k}=1$. Then $\dfrac{\partial L}{\partial z_{i}}=p_{i}-y_{i}$.
+\end{proposisi}
+
+\begin{proof}
+The component derivative of softmax is
+$\dfrac{\partial p_{k}}{\partial z_{i}}=p_{k}(\delta_{ki}-p_{i})$, with $\delta_{ki}$ the
+Kronecker delta. Hence
+\[
+  \frac{\partial L}{\partial z_{i}}
+  =-\sum_{k}\frac{y_{k}}{p_{k}}\cdot p_{k}(\delta_{ki}-p_{i})
+  =-\sum_{k}y_{k}\delta_{ki}+p_{i}\sum_{k}y_{k}
+  =-y_{i}+p_{i},
+\]
+because $\sum_{k}y_{k}=1$.
+\end{proof}
+
+For two classes, $\operatorname{softmax}((t,0))_{1}=\sigma(t)$, so this formula returns to $a-y$
+as before. Note also that adding a constant $c$ to all $z_{k}$ does not change $\mathbf{p}$,
+because the factor $e^{c}$ cancels; only differences of scores are meaningful, which is also why
+adding a large constant to all logits damages floating-point accuracy (Chapter 22).
+
+\begin{untukanak}
+Have you ever played a number-guessing game where, every time you are wrong, you are only told
+``too big'' or ``too small'', without being told by how much? If your guess is nine hundred and
+the answer is one hundred, the remark ``too big'' is exactly the same as if your guess were one
+hundred and one.
+
+A neural network has the same problem, but more complicated. It has thirteen knobs, and every
+knob affects the answer through several intermediaries. If we only know that the answer is
+wrong, we do not know which knob to turn, in which direction, or by how much.
+
+Fortunately, a wrong answer has a degree: how far off, and in which direction. With one measure
+called the loss, we can ask every knob: if you were turned a little, does the loss go up or down,
+and how fast? The answer is one number per knob.
+
+In this chapter we will learn why a single loss measure is enough to give thirteen answers at
+once, and why those answers can be trusted.
+\end{untukanak}
+
+\section{Backpropagation}
+\tingkat{advanced}
+
+A network is a composition of functions, so its derivative is computed with the chain rule of
+Chapter 12. What makes it cheap is the order of work: from the output backward to the input, not
+from the input forward to the output. For every intermediate quantity $u$ in the computational
+graph, we assign one number stating how much the loss changes if $u$ changes.
+
+\kamus{adjoint}{adjoint}{The image of how much the final error is affected by one quantity in the
+middle of the network; one number per quantity.}
+
+\begin{definisi}[Adjoint]
+Suppose $C$ is the loss on one example and $u$ one of the intermediate quantities. The adjoint of
+$u$ is $\bar{u}=\partial C/\partial u$.\index{adjoint}
+\end{definisi}
+
+\begin{proposisi}[Adjoint recursion]
+If $u$ affects $C$ only through $v_{1},\dots,v_{m}$, then
+$\bar{u}=\sum_{i=1}^{m}\bar{v}_{i}\,\dfrac{\partial v_{i}}{\partial u}$.
+\end{proposisi}
+
+\begin{proof}
+This is the chain rule for functions of several variables (Chapter 12) applied to $C$ as a
+function of $v_{1},\dots,v_{m}$, with each $v_{i}$ as a function of $u$. Since $u$ does not
+affect $C$ in any other way, all other terms in that chain rule are zero.
+\end{proof}
+
+That recursion turns the work into a single pass. Starting from $\bar{C}=1$, we visit the
+intermediate quantities in the reverse of the forward order. Every quantity receives
+contributions from all the quantities that use it, so nothing is missed or counted twice. This
+is backpropagation, and it is not a new algorithm: it is only the chain rule run on the graph in
+the right order.\index{backpropagation}
+
+Figure~\ref{fig:graf-balik} places both directions on one graph. Full arrows carry the forward
+values; dashed arrows carry the adjoints, and the numbers on those arrows are taken from the
+worked example in the next section.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[>=latex, font=\small]
+  \node[draw=layerteal,rounded corners=2pt,fill=layerteal!10,inner sep=4pt] (X)  at (0,0)    {$\mathbf{x}$};
+  \node[draw=layerteal,rounded corners=2pt,fill=layerteal!10,inner sep=4pt] (Z1) at (2.7,0)  {$\mathbf{z}_{1}$};
+  \node[draw=layerteal,rounded corners=2pt,fill=layerteal!10,inner sep=4pt] (H)  at (5.3,0)  {$\mathbf{h}$};
+  \node[draw=layerteal,rounded corners=2pt,fill=layerteal!10,inner sep=4pt] (Z2) at (7.5,0)  {$z_{2}$};
+  \node[draw=layerteal,rounded corners=2pt,fill=layerteal!10,inner sep=4pt] (A)  at (9.3,0)  {$a$};
+  \node[draw=layerteal,rounded corners=2pt,fill=layerteal!10,inner sep=4pt] (L)  at (11.4,0) {$L$};
+  \node (W1) at (2.7,1.45) {$\mathbf{W}_{1},\mathbf{b}_{1}$};
+  \node (W2) at (7.5,1.45) {$\mathbf{w}_{2},b_{2}$};
+  \foreach \a/\b in {X/Z1,Z1/H,H/Z2,Z2/A,A/L} \draw[->,thick,ink] (\a) -- (\b);
+  \draw[->,thick,ink] (W1) -- (Z1);
+  \draw[->,thick,ink] (W2) -- (Z2);
+  \draw[->,dashed,accent] (L.south)  .. controls +(0,-1.0) and +(0,-1.0) .. (Z2.south);
+  \draw[->,dashed,accent] (Z2.south) .. controls +(0,-1.0) and +(0,-1.0) .. (H.south);
+  \draw[->,dashed,accent] (H.south)  .. controls +(0,-1.0) and +(0,-1.0) .. (Z1.south);
+  \draw[->,dashed,accent] (Z1.south) .. controls +(0,-1.0) and +(0,-1.0) .. (X.south);
+  \draw[->,dashed,accent] (3.05,0.25) -- (3.05,1.25);
+  \draw[->,dashed,accent] (7.85,0.25) -- (7.85,1.25);
+  \node[font=\scriptsize] at (9.9,-1.4)  {$\bar{z}_{2}=a-y=-0.2554$};
+  \node[font=\scriptsize] at (6.5,-2.0)  {$\bar{\mathbf{h}}=(-0.2043;\,0.1532)$};
+  \node[font=\scriptsize] at (4.0,-1.4)  {$\bar{\mathbf{z}}_{1}=\bar{\mathbf{h}}$};
+  \node[font=\scriptsize,align=center] at (1.1,-1.95)
+    {$\nabla_{\mathbf{x}}L=(-0.0868;\,0.1328;$\\$(-0.0971;\,-0.1430)$};
+  \node[font=\scriptsize] at (2.7,2.15) {$\nabla_{\mathbf{W}_{1}}L=\bar{\mathbf{z}}_{1}\mathbf{x}^{\top}$};
+  \node[font=\scriptsize] at (9.0,2.15) {$\nabla_{\mathbf{w}_{2}}L=\bar{z}_{2}\mathbf{h}$};
+\end{tikzpicture}
+\caption{The computational graph of the 4--2--1 network on the worked example. Thick full arrows
+are the forward direction: input and weights become $\mathbf{z}_{1}$, the ReLU gate becomes
+$\mathbf{h}$, then the score $z_{2}$, the output $a$, and the loss $L$. Dashed arrows are the
+backward direction that carries the adjoints: $\bar{z}_{2}=a-y=-0.2554$ enters the output
+weights, $\bar{\mathbf{h}}=(-0.2043;\,0.1532)$ enters the gate, and
+$\nabla_{\mathbf{x}}L=(-0.0868;\,0.1328;\,-0.0971;\,-0.1430)$ exits at the input. One backward
+pass produces all thirteen gradients at once.}
+\label{fig:graf-balik}
+\end{figure}
+
+\begin{bacakeras}
+Two voices. First voice: ``The loss is too large.'' Second voice: ``Who is at fault?'' First
+voice: ``Not one person. The fault is at the end, and the fault is divided backward, little by
+little.''
+
+Listen once more, slowly. The error is born at the end, in the last number. From there it walks
+backward, stops at every junction, and asks: through here, how much is your share? The one
+closest to the end answers largest. The one far behind answers smallest, because the answer has
+already been filtered twice on the way home.
+
+Second voice: ``So the ones in front are not at fault?'' First voice: ``They are at fault to the
+extent of the share that reaches them. No more. That is why we do not accuse, we compute.''
+
+Repeat three times until it sounds right: fault at the end, divided backward, little by little,
+along the path.
+\end{bacakeras}
+
+
+Now derive it in full for the 4--2--1 network with ReLU in the hidden layer and sigmoid at the
+output. The forward computation is
+\[
+  \mathbf{z}_{1}=\mathbf{W}_{1}\mathbf{x}+\mathbf{b}_{1},\qquad
+  \mathbf{h}=\operatorname{ReLU}(\mathbf{z}_{1}),\qquad
+  z_{2}=\mathbf{w}_{2}^{\top}\mathbf{h}+b_{2},\qquad
+  a=\sigma(z_{2}),
+\]
+then $L$ is the binary cross-entropy of $a$ and $y$. Every link in the chain has its own local
+derivative, and we already have them all:
+\[
+  \frac{\partial L}{\partial z_{2}}=a-y\ \text{(previous proposition)},\qquad
+  \frac{\partial z_{2}}{\partial h_{i}}=w_{2}[i],
+\]
+\[
+  \frac{\partial h_{i}}{\partial z_{1}[i]}=\mathbb{1}\bigl[z_{1}[i]>0\bigr],\qquad
+  \frac{\partial z_{1}[i]}{\partial W_{1}[i,j]}=x_{j}.
+\]
+Multiplying backward along that chain gives, one by one,
+\[
+  \bar{z}_{2}=a-y,\qquad
+  \nabla_{\mathbf{w}_{2}}L=\bar{z}_{2}\,\mathbf{h},\qquad
+  \frac{\partial L}{\partial b_{2}}=\bar{z}_{2},
+\]
+then the signal that reaches the hidden layer
+\[
+  \bar{\mathbf{h}}=\bar{z}_{2}\,\mathbf{w}_{2},
+  \qquad
+  \bar{\mathbf{z}}_{1}=\bar{\mathbf{h}}\odot\mathbb{1}\bigl[\mathbf{z}_{1}>0\bigr],
+\]
+with $\odot$ the componentwise product. Note that $\bar{\mathbf{z}}_{1}$ is $\bar{\mathbf{h}}$
+shaved by the ReLU gate: components whose gate is closed become exactly zero, not small. After
+that
+\[
+  \nabla_{\mathbf{W}_{1}}L=\bar{\mathbf{z}}_{1}\mathbf{x}^{\top},\qquad
+  \nabla_{\mathbf{b}_{1}}L=\bar{\mathbf{z}}_{1},\qquad
+  \nabla_{\mathbf{x}}L=\mathbf{W}_{1}^{\top}\bar{\mathbf{z}}_{1}.
+\]
+The outer-product form of $\nabla_{\mathbf{W}_{1}}L$ is no accident: the derivative
+$\partial z_{1}[i]/\partial W_{1}[i,j]=x_{j}$ does not depend on $i$, so the whole $i$-th row is
+$\bar{z}_{1}[i]$ times the vector $\mathbf{x}$. Every weight receives a gradient whose size is
+proportional to the input it multiplies, and that is why large-scale features automatically
+receive large steps.
+
+None of those formulas depends on $d=4$ or on two hidden units; the pattern is the same for any
+layer.
+
+The cost is comparable: one forward step needs one matrix-vector product per layer, one backward
+step one transposed product and one outer product per layer. A centered finite difference for $P$
+parameters needs $2P$ forward steps, whereas backpropagation needs about two. For $P=13$ in this
+chapter, twenty-six against two; for a million parameters, two million against two, and that is
+the whole difference. Nielsen names this observation as the reason backpropagation is regarded
+as a great discovery, not merely an algebraic trick.
+
+\begin{tangan}
+Take three sheets of paper and a pencil, and label them: INPUT, WEIGHTS, OUTPUT. On the INPUT
+sheet write four numbers: $1$; $0.5$; $-1$; $2$. On the WEIGHTS sheet write the two weights to
+the output: $0.8$ and $-0.6$. On the OUTPUT sheet write $0.7446$, the probability the network
+gives, and remember that the true label is $1$.
+
+Lay the three sheets in a row from left to right: INPUT, WEIGHTS, OUTPUT. Now work backward,
+always from right to left. On the OUTPUT sheet, subtract $0.7446$ from $1$ and write $-0.2554$.
+Move to the WEIGHTS sheet: multiply $-0.2554$ by $0.8$, write $-0.2043$; multiply by $-0.6$,
+write $0.1532$. Move to the INPUT sheet: multiply $-0.2043$ by each number on that sheet, then
+write the row: $-0.2043$; $-0.1022$; $0.2043$; $-0.4086$.
+
+What you must see: every time a sheet moves one step to the left, the sign of the number can
+flip, and its size follows the contents of the sheet you are holding. If you reverse the
+direction, from INPUT to OUTPUT, the order of work is wrong and the result means nothing.
+\end{tangan}
+
+
+\section{Initialization and gradient descent}
+\tingkat{intermediate}
+
+Once the gradient exists, the next step is simple: move a little in the direction that lowers the
+loss. For all parameters $\boldsymbol{\theta}$,
+\[
+  \boldsymbol{\theta}\leftarrow\boldsymbol{\theta}-\eta\,\nabla_{\boldsymbol{\theta}}L,
+\]
+with $\eta$ the learning rate. For $B$ examples and the average loss
+$L=\frac{1}{B}\sum_{i}L_{i}$, the gradient is also the average of the per-example gradients; the
+backpropagation formula does not change, only how many backward passes. The conditions and
+bounds on $\eta$ are in Chapter~23; because the network is nonconvex, the guarantees there are
+only a benchmark.
+
+\kamus{stochastic gradient descent}{penurunan gradien stokastik}{Walking down a slope using a
+slope estimate from a small part of the data, not from all of the data.}\index{gradient descent}
+
+Three variants deserve mention. SGD takes a small $B$ and updates the parameters every time; the
+gradient is noisy, and the spread of that noise shrinks like $1/\sqrt{B}$ because the variance of
+the average of $B$ independent variables is $\sigma^{2}/B$. Momentum keeps a velocity,
+\[
+  \mathbf{v}\leftarrow\beta\mathbf{v}+\mathbf{g},\qquad
+  \boldsymbol{\theta}\leftarrow\boldsymbol{\theta}-\eta\mathbf{v},
+\]
+so that consistent directions accumulate and oscillating directions cancel. Adam normalizes every
+coordinate with an estimate of its second moment,
+\[
+  \mathbf{m}\leftarrow\beta_{1}\mathbf{m}+(1-\beta_{1})\mathbf{g},\qquad
+  \mathbf{v}\leftarrow\beta_{2}\mathbf{v}+(1-\beta_{2})\mathbf{g}^{2},
+\]
+\[
+  \hat{\mathbf{m}}=\frac{\mathbf{m}}{1-\beta_{1}^{t}},\qquad
+  \hat{\mathbf{v}}=\frac{\mathbf{v}}{1-\beta_{2}^{t}},\qquad
+  \boldsymbol{\theta}\leftarrow\boldsymbol{\theta}
+  -\eta\,\frac{\hat{\mathbf{m}}}{\sqrt{\hat{\mathbf{v}}}+\epsilon},
+\]
+with $t$ the step number. The factors $1-\beta_{1}^{t}$ and $1-\beta_{2}^{t}$ are called bias
+correction, and their purpose is to remove the tendency of the moments toward zero in the early
+steps. On the first step, $\hat{m}_{1}=g$ and $\hat{v}_{1}=g^{2}$, so the update is exactly
+$-\eta\,g/(\lvert g\rvert+\epsilon)$: its size is almost exactly $\eta$, however large the
+gradient. That property makes Adam scale-insensitive, and at the same time explains its weakness:
+because its step does not shrink when the gradient shrinks, Adam is not guaranteed to converge on
+all convex problems, and the counterexample can be read in Reddi, Kale, and Kumar (2018).
+
+What remains, and what is most often underestimated, is the starting point.
+
+\begin{proposisi}[Symmetry that never breaks]
+If two rows of $\mathbf{W}_{1}$ are identical and $b_{1}[1]=b_{1}[2]$ at the start of training,
+then both stay identical after every gradient update, for every data set and every learning
+rate.\index{initialization}
+\end{proposisi}
+
+\begin{proof}
+We prove it by induction on the update step. Suppose the first and second rows of
+$\mathbf{W}_{1}$ are the same and $b_{1}[1]=b_{1}[2]$. Then for every input $z_{1}[1]=z_{1}[2]$,
+so both ReLU gates make the same decision and $\bar{z}_{1}[1]=\bar{z}_{1}[2]$. Because
+$\nabla_{\mathbf{W}_{1}}L=\bar{\mathbf{z}}_{1}\mathbf{x}^{\top}$, those two rows of the gradient
+are identical, and so are the two components of $\nabla_{\mathbf{b}_{1}}L$. An update with the
+same rate preserves the equality. For a set of examples, the total gradient is the sum of the
+per-example gradients, so the equality survives that too.
+\end{proof}
+
+The consequence is blunt: eight units initialized uniformly behave like one unit, however long
+it is trained.
+
+Zero initialization is worse still. If all of $\mathbf{W}_{1}$ and $\mathbf{b}_{1}$ are zero,
+then $\mathbf{z}_{1}=\mathbf{0}$, and because the gate is $\mathbb{1}[z>0]$, all gates are
+closed: the gradient with respect to $\mathbf{W}_{1}$ is exactly zero, and the weights stay zero
+forever. The only thing that can still learn is $b_{2}$, and the result is a constant prediction
+equal to the class proportion. On the lab data, the final loss is $0.690923$, exactly the label
+entropy. Eight units, zero benefit.
+
+\begin{tantangan}
+Design a 2--2--1 network with ReLU in the hidden layer whose gradient is exactly zero on all six
+weights and both biases of the first layer from the first step, while $\mathbf{W}_{1}$ is not
+zero, and the network is still wrong on at least one point. Only $b_{2}$ may move. Show why your
+choice works.
+
+Write your answer as a table: unit, $z_{1}[i]$ for each example, its gate state, and the gradient
+that comes in.
+
+Hint 1: what freezes the weights is not the value of the weights, but the ReLU gate closing for
+all examples.
+
+Hint 2: use data in the nonnegative quadrant, then take
+$\mathbf{W}_{1}=-\mathbf{1}\mathbf{1}^{\top}$ and $\mathbf{b}_{1}=\mathbf{0}$. Then
+$z_{1}[i]=-(x_{1}+x_{2})\le0$, so $\mathbf{h}=\mathbf{0}$,
+$\bar{\mathbf{z}}_{1}=\mathbf{0}$, and $\nabla_{\mathbf{W}_{1}}L=\mathbf{0}$ even though
+$\mathbf{W}_{1}\neq\mathbf{0}$.
+
+If you get stuck, go back to the section Initialization and gradient descent.
+\end{tantangan}
+
+
+Random initialization is therefore not decoration, but a condition for those units to explore
+different functions. The next question: how large. The answer comes from computing variances. If
+the components of $\mathbf{x}$ are independent with mean zero and variance $\sigma_{x}^{2}$, and
+the weights are independent with variance $\sigma_{w}^{2}$, then
+\[
+  \operatorname{Var}\bigl(z_{1}[i]\bigr)
+  =\sum_{j=1}^{n_{\mathrm{in}}}\operatorname{Var}\bigl(W_{1}[i,j]x_{j}\bigr)
+  =n_{\mathrm{in}}\,\sigma_{w}^{2}\sigma_{x}^{2}.
+\]
+In order for that variance not to depend on $n_{\mathrm{in}}$, we need
+$\sigma_{w}^{2}\propto1/n_{\mathrm{in}}$. The He initialization uses
+$\sigma_{w}^{2}=2/n_{\mathrm{in}}$, and the number $2$ is not decoration: for symmetric $z$,
+ReLU cuts away half the distribution, so $\mathbb{E}[h^{2}]=\operatorname{Var}(z)/2=\sigma_{x}^{2}$,
+and that variance survives layer after layer. The Xavier initialization uses
+$\sigma_{w}^{2}=2/(n_{\mathrm{in}}+n_{\mathrm{out}})$, a compromise between preserving the forward
+signal and the backward signal. That compromise is exact only when
+$n_{\mathrm{in}}=n_{\mathrm{out}}$.
+
+For sigmoid layers, an initialization that is too large punishes immediately: on a two-layer
+network with standard deviation $1.0$, the initial loss reaches $2.223899$, whereas with standard
+deviation $0.5$ it is only $1.220409$. The reverse is more serious: with standard deviation $0.5$
+and eight layers, training stops at accuracy $0.5333$. Initialization is not an administrative
+detail; it determines whether the signal is still there when it reaches the first layer.
+
+\section{Worked example}
+\tingkat{intermediate}
+
+\begin{resep}
+\begin{enumerate}
+  \item Start from the end: $\bar{z}_{2}=a-y$ for sigmoid with cross-entropy, or
+        $\mathbf{p}-\mathbf{y}$ for softmax. Without this number there is nothing to divide.
+  \item Output weights: $\nabla_{\mathbf{w}_{2}}L=\bar{z}_{2}\mathbf{h}$ and
+        $\partial L/\partial b_{2}=\bar{z}_{2}$.
+  \item Signal to the previous layer: $\bar{\mathbf{h}}=\bar{z}_{2}\mathbf{w}_{2}$, then shave
+        with the gate
+        $\bar{\mathbf{z}}_{1}=\bar{\mathbf{h}}\odot\mathbb{1}[\mathbf{z}_{1}>0]$.
+  \item First-layer weights: $\nabla_{\mathbf{W}_{1}}L=\bar{\mathbf{z}}_{1}\mathbf{x}^{\top}$
+        and $\nabla_{\mathbf{b}_{1}}L=\bar{\mathbf{z}}_{1}$; if needed, the input gradient
+        $\nabla_{\mathbf{x}}L=\mathbf{W}_{1}^{\top}\bar{\mathbf{z}}_{1}$.
+\end{enumerate}
+A warning about order: step 3 must not come before step 1. $\bar{\mathbf{z}}_{1}$ is computed
+from $\bar{z}_{2}$, and the gate uses $\mathbf{z}_{1}$ from the forward computation that has
+already been stored. Swapping the two steps kills the entire gradient of the first-layer weights.
+\end{resep}
+
+
+We use one example and compute everything with exact numbers. The input is
+$\mathbf{x}=(1.0;\,0.5;\,-1.0;\,2.0)$, the label is $y=1$, and the initial parameters are
+\[
+  \mathbf{W}_{1}=\begin{pmatrix}
+  0.5&-0.5&0.25&1.0\\
+  0.1&0.2&-0.3&0.4\end{pmatrix},\quad
+  \mathbf{b}_{1}=\begin{pmatrix}0.1\\-0.2\end{pmatrix},\quad
+  \mathbf{w}_{2}=\begin{pmatrix}0.8\\-0.6\end{pmatrix},\quad b_{2}=0.05 .
+\]
+That is all the parameters.
+
+\emph{Forward step.} The first unit receives
+$0.5(1)-0.5(0.5)+0.25(-1)+1(2)+0.1=0.5-0.25-0.25+2+0.1=2.1$.
+The second unit receives
+$0.1(1)+0.2(0.5)-0.3(-1)+0.4(2)-0.2=0.1+0.1+0.3+0.8-0.2=1.1$.
+Both are positive, so $\mathbf{h}=(2.1;\,1.1)$ without clipping. The output score is
+$z_{2}=0.8(2.1)-0.6(1.1)+0.05=1.68-0.66+0.05=1.07$, so
+$a=\sigma(1.07)=0.7445969158$ and the loss is $L=-\ln a=0.2949122596$.
+
+\emph{Backward step.} The output adjoint is $\bar{z}_{2}=a-y=-0.2554030842$. From there
+\[
+  \nabla_{\mathbf{w}_{2}}L=\bar{z}_{2}\mathbf{h}
+  =(-0.5363464768;\,-0.2809433926),\qquad
+  \frac{\partial L}{\partial b_{2}}=-0.2554030842 .
+\]
+The signal to the hidden layer is
+$\bar{\mathbf{h}}=\bar{z}_{2}\mathbf{w}_{2}=(-0.2043224673;\,0.1532418505)$; both gates are
+open, so $\bar{\mathbf{z}}_{1}=\bar{\mathbf{h}}$. The outer product gives
+\[
+  \nabla_{\mathbf{W}_{1}}L=
+  \begin{pmatrix}
+  -0.2043224673&-0.1021612337&0.2043224673&-0.4086449347\\
+  0.1532418505&0.0766209253&-0.1532418505&0.3064837010
+  \end{pmatrix},
+\]
+and $\nabla_{\mathbf{b}_{1}}L=(-0.2043224673;\,0.1532418505)$. Two quick checks: the second row
+is exactly $-0.75$ times the first, because $-0.6/0.8=-0.75$; and every column is proportional
+to $x_{j}$, so the fourth column is twice the first, the second is half of it, and the third is
+its negative. The Euclidean norm of the whole gradient is $0.9796964023$.
+
+One gradient-descent step with $\eta=0.5$ updates every parameter according to
+$\theta\leftarrow\theta-\eta\,\partial L/\partial\theta$, giving
+\[
+  \mathbf{W}_{1}'=\begin{pmatrix}
+  0.6021612337&-0.4489193832&0.1478387663&1.2043224673\\
+  0.0233790747&0.1616895374&-0.2233790747&0.2467581495
+  \end{pmatrix},
+\]
+\[
+  \mathbf{b}_{1}'=(0.2021612337;\,-0.2766209253),\qquad
+  \mathbf{w}_{2}'=(1.0681732384;\,-0.4595283037),
+\]
+\[
+  b_{2}'=0.1777015421 .
+\]
+After that update $\mathbf{z}_{1}'=(2.8406689;\,0.5444983)$ and $a'=0.9508189702$, so the loss
+falls to $0.0504315919$; the difference is $-0.2444806677$, or about $83\%$ of the initial loss.
+
+The number $83\%$ invites a misreading. What is measured is a single example, with no test data,
+on a landscape that is not convex. The valid conclusion is not ``the rate $0.5$ is good'', but
+``this gradient direction lowers the loss on this example''.
+
+\kertas{Check one row of the lab table by hand. Take $W_{1}[2,1]$ and compute
+$\bar{z}_{1}[2]\,x_{1}$ to get $0.1532418505$. Then compute the centered finite difference for
+that parameter yourself: run one forward step with $W_{1}[2,1]+10^{-6}$ and one forward step with
+$W_{1}[2,1]-10^{-6}$, divide the difference of the losses by $2\times10^{-6}$, and compare with
+the analytic number above. After that, explain why the result is not exactly the same, and why
+the sign of the difference can change if $h$ is made smaller, $10^{-12}$.}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+The three blocks are run with Python 3.14.4 and NumPy 2.5.2, without machine-learning libraries;
+the output is copied as it stands.
+
+The first block checks the hand computation above, then compares every analytic gradient with a
+centered finite difference at $h=10^{-6}$.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+np.set_printoptions(precision=10, suppress=True, linewidth=76)
+
+# 4-2-1 network: ReLU hidden, sigmoid output
+x  = np.array([1.0, 0.5, -1.0, 2.0])
+y  = 1.0
+W1 = np.array([[0.5, -0.5, 0.25, 1.0],
+               [0.1,  0.2, -0.3,  0.4]])
+b1 = np.array([0.1, -0.2])
+w2 = np.array([0.8, -0.6])
+b2 = 0.05
+
+def forward(x, W1, b1, w2, b2):
+    z1 = W1 @ x + b1
+    h  = np.maximum(z1, 0.0)
+    o  = w2 @ h + b2
+    p  = 1.0/(1.0+np.exp(-o))
+    return z1, h, o, p, -(y*np.log(p) + (1-y)*np.log(1-p))
+
+def backward(x, W1, b1, w2, b2):
+    z1, h, o, p, L = forward(x, W1, b1, w2, b2)
+    d   = p - y                    # dL/dz2 for sigmoid + cross-entropy
+    dz1 = d*w2*(z1 > 0)            # ReLU gate
+    return dict(W1=np.outer(dz1, x), b1=dz1, w2=d*h, b2=d,
+                x=W1.T @ dz1), L, p, z1, h, dz1
+
+g, L, p, z1, h, dz1 = backward(x, W1, b1, w2, b2)
+print("z1 =", z1, "  h =", h)
+print("p = %.12f  L = %.12f" % (p, L))
+print("dz1 =", dz1)
+print("g_w2 =", g["w2"], " g_b2 = %.12f" % g["b2"])
+for i in range(2):
+    print("g_W1[%d] =" % i, np.array2string(g["W1"][i], precision=10,
+                                            suppress_small=False))
+print("g_x =", g["x"])
+
+# centered finite-difference check, one parameter at a time
+eps = 1e-6
+def loss_at(nama, idx, delta):
+    W, B, V, c = W1.copy(), b1.copy(), w2.copy(), b2
+    if nama == "W1":  W[idx] += delta
+    if nama == "b1":  B[idx] += delta
+    if nama == "w2":  V[idx] += delta
+    if nama == "b2":  c += delta
+    return forward(x, W, B, V, c)[4]
+
+daftar = [("W1", i, j) for i in range(2) for j in range(4)]
+daftar += [("b1", i) for i in range(2)] + [("w2", i) for i in range(2)]
+print("\nparameter     analytic        numeric     relative error")
+for nama, *idx in daftar + [("b2",)]:
+    idx = tuple(idx)
+    ana = {"W1": g["W1"], "b1": g["b1"], "w2": g["w2"], "b2": np.array(g["b2"])}
+    a = ana[nama][idx] if idx else ana[nama]
+    n = (loss_at(nama, idx, eps) - loss_at(nama, idx, -eps))/(2*eps)
+    rel = abs(a-n)/max(abs(a), abs(n), 1e-300)
+    print("%-10s %15.10f %15.10f %12.2e" %
+          (nama + "".join("[%d]" % i for i in idx), a, n, rel))
+
+# one gradient-descent step with rate 0.5
+eta = 0.5
+W1n, b1n = W1 - eta*g["W1"], b1 - eta*g["b1"]
+w2n, b2n = w2 - eta*g["w2"], b2 - eta*g["b2"]
+z1b, hb, ob, pb, Lb = forward(x, W1n, b1n, w2n, b2n)
+print("\none step: p = %.12f  L = %.12f  difference = %.12f"
+      % (pb, Lb, L - Lb))
+for i in range(2):
+    print("W1'[%d] =" % i, np.array2string(W1n[i], precision=10))
+print("w2' =", w2n, " b2' = %.12f" % b2n)
+
+# gradient with respect to the input: analytic vs finite difference
+E = np.eye(4)
+gx = np.array([(forward(x + eps*E[j], W1, b1, w2, b2)[4]
+              - forward(x - eps*E[j], W1, b1, w2, b2)[4])/(2*eps)
+               for j in range(4)])
+print("\ng_x analytic    =", g["x"])
+print("g_x finite diff =", gx)
+print("relative error   =", ["%.1e" % v for v in np.abs(gx-g["x"])/np.abs(g["x"])])
+\end{verbatim}
+The actual output:
+\begin{verbatim}
+z1 = [2.1 1.1]   h = [2.1 1.1]
+p = 0.744596915827  L = 0.294912259605
+dz1 = [-0.2043224673  0.1532418505]
+g_w2 = [-0.5363464768 -0.2809433926]  g_b2 = -0.255403084173
+g_W1[0] = [-0.2043224673 -0.1021612337  0.2043224673 -0.4086449347]
+g_W1[1] = [ 0.1532418505  0.0766209253 -0.1532418505  0.306483701 ]
+g_x = [-0.0868370486  0.1328096038 -0.097053172  -0.1430257271]
+
+parameter     analytic        numeric     relative error
+W1[0][0]     -0.2043224673   -0.2043224674     1.17e-10
+W1[0][1]     -0.1021612337   -0.1021612337     2.53e-10
+W1[0][2]      0.2043224673    0.2043224674     1.17e-10
+W1[0][3]     -0.4086449347   -0.4086449347     4.95e-11
+W1[1][0]      0.1532418505    0.1532418505     7.22e-11
+W1[1][1]      0.0766209253    0.0766209252     8.33e-10
+W1[1][2]     -0.1532418505   -0.1532418505     7.22e-11
+W1[1][3]      0.3064837010    0.3064837010     1.09e-10
+b1[0]        -0.2043224673   -0.2043224674     1.17e-10
+b1[1]         0.1532418505    0.1532418506     6.16e-10
+w2[0]        -0.5363464768   -0.5363464768     9.80e-11
+w2[1]        -0.2809433926   -0.2809433925     2.41e-10
+b2           -0.2554030842   -0.2554030842     3.59e-11
+
+one step: p = 0.950818970185  L = 0.050431591881  difference = 0.244480667724
+W1'[0] = [ 0.6021612337 -0.4489193832  0.1478387663  1.2043224673]
+W1'[1] = [ 0.0233790747  0.1616895374 -0.2233790747  0.2467581495]
+w2' = [ 1.0681732384 -0.4595283037]  b2' = 0.177701542086
+
+g_x analytic    = [-0.0868370486  0.1328096038 -0.097053172  -0.1430257271]
+g_x finite diff = [-0.0868370486  0.1328096037 -0.097053172  -0.1430257272]
+relative error   = ['7.7e-10', '5.0e-10', '1.4e-10', '9.8e-11']
+\end{verbatim}
+\end{lab}
+
+That table is the proof that was asked for. All thirteen parameters agree to nine or ten digits,
+with the largest relative error $8.33\times10^{-10}$ at $W_{1}[1,2]$. That number should not be
+zero: the centered finite difference carries a truncation error of order $h^{2}$ and a rounding
+error of order $\varepsilon_{\mathrm{mach}}/h$ (Chapter 22), so there is a best $h$ that cannot
+make the error zero. For $h=10^{-6}$ an order of $10^{-10}$ is exactly what is expected.
+ 
+
+The gradient with respect to the input agrees to $7.7\times10^{-10}$ on the first component. That
+number means: raising the second feature slightly raises the loss fastest, whereas raising the
+fourth feature lowers it fastest. In Chapter 29 this direction is used in reverse, to raise the
+loss as fast as possible on inputs the attacker is allowed to change.
+
+The second block trains a 2--8--1 network from scratch on two-dimensional data with an XOR
+pattern, then compares it with a linear baseline and with two defective initializations.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+rng = np.random.default_rng(7)
+n = 240
+X = rng.uniform(-1.0, 1.0, size=(n, 2))
+y = (X[:, 0]*X[:, 1] > 0).astype(float)        # label 1 when the signs agree
+print("examples =", n, " class 1 =", int(y.sum()))
+
+def sig(o):
+    return 1.0/(1.0+np.exp(-o))
+
+def bce(p, t):
+    p = np.clip(p, 1e-12, 1-1e-12)
+    return float(-np.mean(t*np.log(p) + (1-t)*np.log(1-p)))
+
+def init(mode, rs, nh=8):
+    if mode == "nol":
+        return np.zeros((nh, 2)), np.zeros(nh), np.zeros(nh), 0.0
+    if mode == "seragam":
+        return np.full((nh, 2), 0.5), np.zeros(nh), np.full(nh, 0.5), 0.0
+    return (rs.normal(0, np.sqrt(2/2), (nh, 2)), np.zeros(nh),
+            rs.normal(0, np.sqrt(2/nh), nh), 0.0)          # He
+
+def fwd(X, W1, b1, w2, b2):
+    Z1 = X @ W1.T + b1
+    H  = np.maximum(Z1, 0.0)
+    return Z1, H, sig(H @ w2 + b2)
+
+def grads(X, t, W1, b1, w2, b2):
+    Z1, H, P = fwd(X, W1, b1, w2, b2)
+    d  = (P - t)/len(t)
+    dZ = np.outer(d, w2)*(Z1 > 0)
+    return dZ.T @ X, dZ.sum(0), H.T @ d, d.sum()
+
+def latih(mode, langkah=3000, lr=0.5, seed=0):
+    W1, b1, w2, b2 = init(mode, np.random.default_rng(seed))
+    jejak = []
+    for t in range(langkah + 1):
+        gW1, gb1, gw2, gb2 = grads(X, y, W1, b1, w2, b2)
+        W1, b1 = W1 - lr*gW1, b1 - lr*gb1
+        w2, b2 = w2 - lr*gw2, b2 - lr*gb2
+        if t % 500 == 0:
+            jejak.append((t, bce(fwd(X, W1, b1, w2, b2)[2], y)))
+    Z1, H, P = fwd(X, W1, b1, w2, b2)
+    mati = int(np.sum(np.all(H <= 0, axis=0)))
+    return jejak, float(np.mean((P > 0.5) == (y > 0.5))), bce(P, y), mati
+
+jejak, akur, L, mati = latih("he")
+for t, v in jejak:
+    print("step %4d   L = %.6f" % (t, v))
+print("He      : accuracy = %.4f  dead units = %d/8" % (akur, mati))
+for mode in ("nol", "seragam"):
+    j, a, l, m = latih(mode)
+    print("%-8s: L final = %.6f  accuracy = %.4f  dead units = %d/8"
+          % (mode, l, a, m))
+
+w, b = np.zeros(2), 0.0             # garis dasar linear, tanpa lapisan
+for t in range(4000):
+    p = sig(X @ w + b)
+    w -= 0.5*(X.T @ (p - y))/n
+    b -= 0.5*np.mean(p - y)
+pl = sig(X @ w + b)
+print("linear  : L = %.6f  accuracy = %.4f"
+      % (bce(pl, y), float(np.mean((pl > 0.5) == (y > 0.5)))))
+\end{verbatim}
+The actual output:
+\begin{verbatim}
+examples = 240  class 1 = 112
+step    0   L = 0.648815
+step  500   L = 0.060245
+step 1000   L = 0.036445
+step 1500   L = 0.027164
+step 2000   L = 0.022039
+step 2500   L = 0.018717
+step 3000   L = 0.016349
+He      : accuracy = 1.0000  dead units = 0/8
+nol     : L final = 0.690923  accuracy = 0.5333  dead units = 8/8
+seragam : L final = 0.539475  accuracy = 0.7167  dead units = 0/8
+linear  : L = 0.686130  accuracy = 0.7208
+\end{verbatim}
+\end{lab}
+
+Its loss curve decreases at every sampling, from $0.648815$ to $0.016349$. Training accuracy
+reaches $1.0000$ with eight units and zero dead units. The linear baseline, which uses the same
+optimization and the same data but no hidden layer, stops at $0.7208$. That difference of $0.28$
+is the price of a single separating plane, and it agrees with the XOR proposition: this pattern
+is not linearly separable.
+
+Figure~\ref{fig:kurva-kerugian} plots those seven points.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=12.0cm, height=5.6cm,
+  xlabel={training step}, ylabel={loss $L$},
+  xmin=-80, xmax=3080, ymin=0, ymax=0.75,
+  axis lines=left,
+  grid=major, grid style={layergrey!15},
+  tick label style={font=\scriptsize},
+  ytick={0,0.2,0.4,0.6}, yticklabels={$0$,$0.2$,$0.4$,$0.6$},
+  label style={font=\small},
+  legend style={font=\scriptsize, draw=none, fill=none,
+                at={(0.98,0.98)}, anchor=north east},
+]
+\addplot[thick, accent, mark=*, mark size=1.7pt] coordinates {
+  (0,0.648815) (500,0.060245) (1000,0.036445) (1500,0.027164)
+  (2000,0.022039) (2500,0.018717) (3000,0.016349) };
+\addplot[dashed, layergrey, domain=0:3000, samples=2] {0.693147};
+\legend{training loss, $\ln 2=0.693147$}
+\end{axis}
+\end{tikzpicture}
+\caption{The training loss curve of the 2--8--1 network in the second block, from $0.648815$ at
+step $0$ to $0.016349$ at step $3000$. The dashed line is $\ln 2=0.693147$, the loss of a
+uniform guess; the first point is already below it because it is measured after the first
+update.}
+\label{fig:kurva-kerugian}
+\end{figure}
+
+
+Zero initialization teaches a harsher lesson. Its final loss is $0.690923$, equal to the label
+entropy to six decimals, and its accuracy is $0.5333$, namely the proportion of the majority
+class; all eight units are dead. Uniform initialization gives $0.7167$, practically the same as
+the linear baseline.
+
+The third block measures two things: how many layers a sigmoid network can still learn through,
+and how fast the signal shrinks from the output to the first layer.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+rng = np.random.default_rng(7)
+n = 240
+X = rng.uniform(-1.0, 1.0, size=(n, 2))
+y = (X[:, 0]*X[:, 1] > 0).astype(float)
+
+def sig(o):
+    return 1.0/(1.0+np.exp(-o))
+
+def bce(p, t):
+    p = np.clip(np.ravel(p), 1e-12, 1-1e-12)
+    t = np.ravel(t)
+    return float(-np.mean(t*np.log(p) + (1-t)*np.log(1-p)))
+
+def bangun(dalam, std, seed=0):
+    rs = np.random.default_rng(seed)
+    ukuran = [2] + [16]*(dalam-1) + [1]
+    W = [rs.normal(0, std, (ukuran[i+1], ukuran[i])) for i in range(dalam)]
+    return W, [np.zeros(ukuran[i+1]) for i in range(dalam)]
+
+def maju(W, b, X):
+    A = [X]
+    for Wl, bl in zip(W[:-1], b[:-1]):
+        A.append(sig(A[-1] @ Wl.T + bl))
+    return A, sig(A[-1] @ W[-1].T + b[-1])
+
+def mundur(W, b, X, t):
+    A, P = maju(W, b, X)
+    d = (P - t[:, None])/len(t)
+    gW, gb = [None]*len(W), [None]*len(b)
+    gW[-1], gb[-1] = d.T @ A[-1], d.sum(0)
+    delta = d @ W[-1]
+    for l in range(len(W)-1, 0, -1):
+        delta = delta*A[l]*(1 - A[l])
+        gW[l-1], gb[l-1] = delta.T @ A[l-1], delta.sum(0)
+        if l > 1:
+            delta = delta @ W[l-1]
+    return gW, gb, bce(P, t), P
+
+print("depth  std   L(start)   L(final)  accuracy  ||gW1||/||gWlast||")
+for dalam in (1, 2, 4, 8):
+    for std in (0.5, 1.0):
+        W, b = bangun(dalam, std)
+        gW, gb, L0, P = mundur(W, b, X, y)
+        rasio = np.linalg.norm(gW[0])/np.linalg.norm(gW[-1])
+        for t in range(2000):
+            gW, gb, L, P = mundur(W, b, X, y)
+            for l in range(dalam):
+                W[l] -= 0.5*gW[l]
+                b[l] -= 0.5*gb[l]
+        akur = float(np.mean((np.ravel(P) > 0.5) == (y > 0.5)))
+        print("%5d %5.1f %9.6f %9.6f %8.4f %14.2e"
+              % (dalam, std, L0, bce(P, y), akur, rasio))
+\end{verbatim}
+The actual output:
+\begin{verbatim}
+depth  std   L(start)   L(final)  accuracy  ||gW1||/||gWlast||
+    1   0.5  0.693190  0.686130   0.7208       1.00e+00
+    1   1.0  0.693951  0.686130   0.7208       1.00e+00
+    2   0.5  1.220409  0.332913   0.8417       1.66e-02
+    2   1.0  2.223899  0.299519   0.8542       2.16e-02
+    4   0.5  0.691597  0.147887   0.9458       5.77e-02
+    4   1.0  0.701977  0.023491   0.9958       2.05e-01
+    8   0.5  0.739920  0.690867   0.5333       1.26e-04
+    8   1.0  0.875314  0.002383   1.0000       3.76e-03
+\end{verbatim}
+\end{lab}
+
+The first three rows of that table are a promise and a warning at once. Depth one gives $0.7208$,
+the same as the linear baseline in the previous block; depth two gives $0.8417$ and depth four
+$0.9458$. But the last row with standard deviation $0.5$ gives $0.5333$ with loss $0.690867$:
+eight sigmoid layers with a small initialization practically do not learn. The gradient-norm
+ratio in the last column explains why: $1.26\times10^{-4}$, four orders of magnitude smaller than
+at depth four. The same row with standard deviation $1.0$ succeeds perfectly. So the failure is
+not about depth alone, but about the initial scale.
+
+Two limits of these lab results must be stated. The data is only 240 self-made two-dimensional
+examples, with no test set, so all of it is training accuracy; generalization is the business of
+Chapter 26 and Chapter 27. All experiments use a single seed, so variation between seeds is
+invisible. What may be concluded is only what was checked directly: backpropagation agrees with
+finite differences, the loss decreases, zero and uniform initialization fail in ways that can be
+explained, and a deep network with a small initialization loses its signal.
+
+\begin{untukdosen}
+The order that has worked: start from one separating line and four XOR points, then show the
+2--2--1 construction on the board, and only after that the general definition. The proof that XOR
+is impossible is usually accepted easily; what stops students is the backward step, so set aside
+the most time for backpropagation, not for activation functions.
+
+Two typical misconceptions. First, ``backpropagation is another algorithm, not the chain rule'',
+so that students memorize formulas without being able to derive them for another architecture;
+the cure is to ask them to re-derive the 4--2--1 network with three hidden units on the board.
+Second, ``a relative error of $10^{-10}$ means the implementation is proved correct''; a small
+error only checks agreement at one point, for one set of parameters, and does not check the sign,
+the scaling, or the case of a closed gate.
+
+The most helpful board activity: give a network with one hidden unit whose $z_{1}<0$, ask the
+class to compute the gradient of the whole row $\mathbf{W}_{1}$, then ask what happens to that
+unit after a hundred steps. The answer ``nothing happens, ever'' usually opens the discussion
+about unit death and about why a large learning rate is dangerous.
+
+Sign of readiness to go on: students can write the backpropagation for a network with two hidden
+layers without looking at their notes, and can explain why zero initialization fails not because
+of ``too little data'' but because of symmetry.
+\end{untukdosen}
+
+\section{Summary}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item A linear threshold can only separate sets that are linearly separable, and the four XOR
+        points are not one of them. The proof does not depend on the algorithm, so adding data
+        does not help. One hidden layer with ReLU is already enough for that pattern.
+  \item Without a nonlinear activation, a layered network collapses into a single matrix. Sigmoid
+        and tanh shrink the signal because their derivatives are at most $\tfrac14$ and $1$;
+        through $L$ sigmoid layers the remaining signal is at most $4^{-L}$, namely
+        $9.54\times10^{-7}$ for $L=10$. ReLU does not shrink, but it kills units whose input is
+        always negative.
+  \item Cross-entropy is paired with sigmoid or softmax so that the output adjoint is exactly
+        $a-y$ or $\mathbf{p}-\mathbf{y}$. With the squared loss, the factor $a(1-a)$ is left
+        behind and the signal shrinks exactly when the model is most confidently wrong; at $z=10$
+        the ratio is about $2.2\times10^{4}$.
+  \item Backpropagation is the chain rule of Chapter 12 run on the computational graph in reverse
+        order. For 4--2--1, all the gradients are:
+        $\bar{z}_{2}=a-y$, $\nabla_{\mathbf{w}_{2}}L=\bar{z}_{2}\mathbf{h}$,
+        $\bar{\mathbf{z}}_{1}=\bar{z}_{2}\mathbf{w}_{2}\odot\mathbb{1}[\mathbf{z}_{1}>0]$,
+        $\nabla_{\mathbf{W}_{1}}L=\bar{\mathbf{z}}_{1}\mathbf{x}^{\top}$,
+        $\nabla_{\mathbf{x}}L=\mathbf{W}_{1}^{\top}\bar{\mathbf{z}}_{1}$. Its cost is about two
+        forward steps, not $2P$. On the 4--2--1 example, those thirteen gradients agree with
+        centered finite differences to a relative error of $8.33\times10^{-10}$.
+  \item Initialization determines whether the network can learn. Zero closes all gates and leaves
+        a prediction equal to the class proportion; uniform preserves the symmetry so that the
+        effective capacity is one unit; too small shrinks the signal before the first layer; too
+        large saturates the sigmoid. He uses $\sigma_{w}^{2}=2/n_{\mathrm{in}}$, Xavier
+        $2/(n_{\mathrm{in}}+n_{\mathrm{out}})$.
+  \item Gradient descent, SGD, momentum, and Adam differ only in how they use the same gradient.
+        Adam's first step has a size of almost exactly $\eta$ however large the gradient, and that
+        property explains both its robustness and its failure on some problems.
+  
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+
+\begin{latihan}
+\begin{enumerate}
+  \item For data with margin $\gamma=0.2$ and $\lVert\mathbf{x}_{i}\rVert\le1$, what is the upper
+        bound on the number of perceptron updates according to the convergence theorem, and what
+        is it for $\gamma=0.05$? Explain why that bound does not depend on the number of examples
+        and why it is useless when $\gamma$ is small.
+
+  \item Prove that a two-layer network with identity activation in the hidden layer is no stronger
+        than a linear threshold, that is, that
+        $\mathbf{W}_{2}\operatorname{id}(\mathbf{W}_{1}\mathbf{x}+\mathbf{b}_{1})+\mathbf{b}_{2}$
+        can be written as a single linear threshold. Explain the consequence for further identity
+        layers.
+
+  
+
+  \item Compute $\nabla_{\mathbf{W}_{1}}L$ for the network in the worked example if
+        $\mathbf{x}=(0.5;\,-1.0;\,0.25;\,2.0)$ and $y=0$, with the same parameters. Determine
+        which unit's gate is closed, and why that row has zero gradient without meaning that the
+        loss is minimal.
+
+  \item Assess this claim: \emph{because the largest relative error is only
+        $8.33\times10^{-10}$, the backpropagation implementation in this chapter is proved
+        correct.} Decide true, false, or not enough evidence, and name the additional checks
+        required.
+
+  \item Assess this claim: \emph{the universal approximation theorem guarantees that a network
+        with one hidden layer can reach an arbitrarily small error on test data.} Decide true,
+        false, or not enough evidence, and name two things the theorem does not state.
+
+  \item With $\bar{z}_{2}=-0.2554030842$, compute one Adam step for $b_{2}=0.05$ with
+        $\eta=0.01$, $\beta_{1}=0.9$, $\beta_{2}=0.999$, $\epsilon=10^{-8}$, at $t=1$. Show that
+        the step size is practically $\eta$, then compute the same step if the gradient is $100$
+        times larger.
+
+  \item Show that for two ReLU units in $\mathbb{R}^{2}$ the output is a piecewise linear
+        function, and that the input plane is divided into at most four regions with a linear
+        formula each. How many regions for $k$ ReLU units in $\mathbb{R}^{2}$ in general
+        position? (Hint: each unit gives one line $z_{1}[i]=0$, and inside each cell all gates
+        stay fixed.)
+
+  \item Compute the gradient with respect to the input for the worked example, then determine the
+        perturbation $\boldsymbol{\delta}$ with $\lVert\boldsymbol{\delta}\rVert_{\infty}\le0.05$
+        that raises the loss most according to the linearization, namely
+        $\boldsymbol{\delta}=0.05\operatorname{sign}(\nabla_{\mathbf{x}}L)$. Compute the loss at
+        $\mathbf{x}+\boldsymbol{\delta}$ and compare it with the linear prediction
+        $L+\nabla_{\mathbf{x}}L^{\top}\boldsymbol{\delta}$.
+
+  \item Without running a program, predict what happens if all of $\mathbf{b}_{1}$ is initialized
+        to $+10$ while $\mathbf{W}_{1}$ stays small and random, using the saturation table; then
+        if $\mathbf{b}_{1}=-10$. Check your prediction by running the second lab block after
+        changing one line.
+\end{enumerate}
+\end{latihan}
+
+Hints for the three hardest items. Item 2: write $\mathbf{W}=\mathbf{W}_{2}\mathbf{W}_{1}$ and
+$\mathbf{b}=\mathbf{W}_{2}\mathbf{b}_{1}+\mathbf{b}_{2}$, then compare with the definition of a
+linear threshold. Item 7: compute the number of regions for $k=1,2,3$ (they are $2,4,7$), then look for the
+pattern $1+k+k(k-1)/2$. Item 9: the second lab block uses ReLU, so $\mathbf{b}_{1}=+10$ saturates nothing; what
+saturates is $\mathbf{b}_{1}=-10$, when every unit is dead and its derivative zero. In the
+third block, which uses the sigmoid, $z\approx10$ makes the derivative of the hidden layer
+about $4.5\times10^{-5}$, so the gradient to $\mathbf{W}_{1}$ shrinks proportionally, while
+$\mathbf{b}_{1}$ still receives the full gradient.
+
+\begin{untukpeneliti}
+What is really proved in this chapter: the impossibility of linear separation for XOR; the bound
+$\lfloor1/\gamma^{2}\rfloor$ on the perceptron, with a complete proof; the derivative of the
+sigmoid and the bound $\tfrac14$; the equality $\partial L/\partial z=a-y$ for sigmoid with
+cross-entropy, and $\mathbf{p}-\mathbf{y}$ for softmax, both with proofs; the adjoint recursion as
+the chain rule; and the proposition on initialization symmetry. What is borrowed without proof:
+the universal approximation theorem, with the original proofs in Cybenko (1989) and Hornik
+(1991), both using the representation theorem for continuous linear functionals. What is
+popularized beyond its proof: ``a network can approximate anything'' as a practical promise, when
+it is a statement about the density of functions, not about the reachability of parameters by
+optimization; and ``Adam is always better'', when the counterexample is in Reddi, Kale, and Kumar
+(2018).
+
+The primary readings that shaped this chapter: Nielsen sections 2.4 and 2.8 (the four
+backpropagation equations and why it is cheap) and section 3.1 (cross-entropy, softmax);
+Goodfellow et al. section 6.4.1 (universal approximation) and 6.5 (backpropagation). For
+initialization, Glorot and Bengio (2010) and He et al. (2015); for Adam, Kingma and Ba (2015).
+
+Limits of validity: all computations in this chapter are for one example on a network with one
+hidden layer, with the convention that the ReLU derivative is zero at the break point. There is no
+statement about generalization here; that is the content of Chapter 26. Open questions:
+why wide networks are easier to train than narrow ones at the same error, why a network with far
+more parameters than examples still generalizes, and whether there is an initialization that is
+optimal for any depth.
+\end{untukpeneliti}
+
+\peta{This chapter follows Nielsen, \emph{Neural Networks and Deep Learning}: sections 1.1
+(perceptron), 1.2 (sigmoid neuron), 1.5 (gradient descent), 2.1 to 2.5 (matrix notation, the two
+assumptions about the loss function, the Hadamard product, the four backpropagation equations
+with their proofs), 2.8 (why backpropagation is fast), 3.1 (cross-entropy, softmax), and 3.3
+(weight initialization). For the general formulation and for the side Nielsen does not prove,
+Goodfellow, Bengio, and Courville, \emph{Deep Learning} is used: section 6.2 (gradient-based
+learning, loss functions, and output units), 6.3 (hidden units and the choice of activation),
+6.4.1 (universal approximation and depth), 6.5 (backpropagation and computational graphs), 8.3
+(basic algorithms: SGD, momentum), 8.4 (parameter initialization strategies), and 8.5 (algorithms
+with adaptive learning rates, including Adam). For the gradient with respect to the input as a
+basis for attacks, see the discussion of FGSM in Chapter 27.}

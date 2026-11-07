@@ -1,0 +1,1072 @@
+\chapter{Infinite Series}
+
+A team trains a classifier on one million examples. The objective function is the sum of
+the per-example losses, and training stops automatically when the increase in the total
+falls below $10^{-7}$ per epoch. At the fortieth epoch the process stops by itself. The
+model remains bad: each new example contributes only about $10^{-6}$ to the total, so the
+total hardly moves, while that total itself is not necessarily heading toward a finite
+value.
+
+The suspicion can be tested with the simplest series. The sum
+$H_n = 1 + \tfrac{1}{2} + \cdots + \tfrac{1}{n}$ at $n=10^6$ equals
+$14.3927267229$. Adding another million terms raises it only to
+$15.0858736534$; the addition is $0.6931469306$, almost exactly $\ln 2 = 0.6931471806$.
+Each time the number of terms doubles, the harmonic series rises by about $\ln 2$, without
+bound: the estimate $\ln n + \gamma$ gives $H_{10^9} \approx 21.3004815$. A stopping rule
+based on ``the total has stopped moving'' therefore cannot tell convergence from
+divergence; what tells them apart is the rate at which the terms shrink.
+
+Chapter 4 already supplied limits, the Cauchy criterion, monotone convergence, and the
+limit superior. Series add no new idea, because a partial sum is merely a sequence. But
+partial sums rarely have a closed formula, and computing $s_{10^6}$ does not tell us
+whether $s_{10^7}$ is still moving. This chapter turns that question into one that can be
+answered by inspecting $a_n$ alone.
+
+\begin{untukanak}
+Imagine two jars of coins. In the first jar you save under a strange rule:
+one coin on the first day, half a coin on the second, a quarter on the third, and so on,
+always half of the day before. You save every day, never taking a day off, for as long as
+you like. How full is that jar after a hundred years? The answer is surprising: never more
+than two coins. Every addition does shrink, and the sum stops at a number you can name
+exactly.
+
+In the second jar the rule is different. The coin on the first day is large, then smaller,
+and smaller still. After a month the jar holds only a small heap. After a year it is a
+little thicker. You might conclude that this jar too will stop at some number, because the
+additions grow thinner. It does not. If you save long enough, the contents will pass any
+number you name, even though climbing by a single unit takes years. Two jars, two rules
+that look alike, two opposite fates.
+
+The question: without waiting for years, how do we know which jar stops and which does
+not? Is there a sign in the coins themselves, rather than in the final result? This
+chapter answers it, and the answer is used every day by people who write programs.
+\end{untukanak}
+
+\section{Series, partial sums, and series we can compute directly}
+\tingkat{basic}
+
+A series\index{series} is a sum that never finishes. Its definition therefore does not use
+the word ``sum'' directly, but rather the sequence of running totals\index{partial sums}.
+We read the result after some number of terms, then ask where that reading is heading.
+
+\begin{definisi}
+Given a sequence $(a_n)$ in $\mathbb{R}$. The $n$-th partial sum is
+\[
+  s_n = a_1 + a_2 + \cdots + a_n = \sum_{k=1}^{n} a_k .
+\]
+The symbol $\sum_{n=1}^{\infty} a_n$ is called a series, and that series \emph{converges}
+to $s$ when the sequence $(s_n)$ converges to $s$; in that case we write
+$\sum_{n=1}^{\infty} a_n = s$ and call $s$ the sum of the series. If $(s_n)$ diverges, the
+series is called \emph{divergent}.
+\end{definisi}
+
+\kamus{series}{deret}{a sum that never finishes, whose value is read from the running total after some number of terms.}
+
+Note that $s_n - s_{n-1} = a_n$. So a series and a sequence are the same object; only the
+question changes: for a sequence the formula for $s_n$ is known, for a series we hold only
+$a_n$.
+
+The Cauchy criterion from Chapter 4 can be translated directly, and its translation is the
+most basic tool in this chapter.
+
+\begin{teorema}[Cauchy criterion for series]
+$\sum a_n$ converges if and only if for every $\varepsilon > 0$ there is an integer $N$
+such that
+\[
+  m \ge n \ge N \quad \Longrightarrow \quad
+  \left| \sum_{k=n}^{m} a_k \right| < \varepsilon .
+\]
+\end{teorema}
+
+\noindent\textbf{Proof.} Since $\sum_{k=n}^{m} a_k = s_m - s_{n-1}$, the condition above is
+nothing but the Cauchy condition for the sequence $(s_n)$. By Chapter 4, a real sequence
+converges if and only if it is a Cauchy sequence.
+
+This criterion speaks about a cut-off tail of the series, not about a single term. Taking
+$m = n$ gives a necessary condition that is very cheap to check.
+
+\begin{akibat}[The $n$-th term test]
+If $\sum a_n$ converges, then $a_n \to 0$.
+\end{akibat}
+
+\noindent\textbf{Proof.} Take $m=n$ in the Cauchy criterion: for every $\varepsilon>0$
+there is $N$ such that $n \ge N$ implies $|a_n| < \varepsilon$. That is exactly the
+definition of $a_n \to 0$.
+
+This test only filters. It says that a term that does not tend to zero certainly wrecks
+convergence, and it says nothing about terms that do tend to zero. Two quick examples for
+the easy side: $\sum \frac{n}{n+1}$ diverges because $\frac{n}{n+1} \to 1$, and
+$\sum (-1)^n$ diverges because its terms do not tend to zero. The hard side is the harmonic
+series: $\frac{1}{n} \to 0$ but $\sum \frac{1}{n}$ diverges. We prove that in the second
+section.
+
+\begin{bacakeras}
+Two voices. Read them in turn, then swap roles.
+
+\textbf{Voice A:} I shrink. Every day I am smaller than yesterday.
+
+\textbf{Voice B:} Good. But shrinking does not yet mean stopping.
+
+\textbf{A:} I shrink by half. Half of half. Half again.
+
+\textbf{B:} Then you have a fence. Your sum will stop.
+
+\textbf{A:} I shrink, but only a little. One third. One quarter. One fifth.
+
+\textbf{B:} Careful. Thin does not mean used up.
+
+\textbf{A:} However small my additions, I keep adding.
+
+\textbf{B:} And however long it takes, your sum keeps rising.
+
+Repeat three times, faster each time: shrinking is the business of terms, stopping is the
+business of sums. Memorize: what decides is not the term that shrinks, but the remainder
+that never runs out.
+\end{bacakeras}
+
+The first series that can be computed directly is the geometric series\index{geometric
+series}. Each of its terms is obtained by multiplying the previous term by a fixed number.
+
+\begin{teorema}[Geometric series]
+For $|r| < 1$,
+\[
+  \sum_{k=0}^{\infty} r^k = \frac{1}{1-r},
+\]
+and for $|r| \ge 1$ the series diverges.
+\end{teorema}
+
+\noindent\textbf{Proof.} For $r \neq 1$ the identity
+\[
+  (1-r)\left(1 + r + \cdots + r^n\right) = 1 - r^{n+1},
+\]
+holds, so $s_n = \frac{1-r^{n+1}}{1-r}$. If $|r|<1$ then $r^{n+1} \to 0$ (Chapter 4,
+since $|r|^{n} \to 0$ for $0 \le |r| < 1$), hence $s_n \to \frac{1}{1-r}$. If
+$|r| \ge 1$ then $|r|^k \ge 1$ for all $k$, so $s_n$ cannot converge: for $r=1$ clearly
+$s_n = n+1$, and for $|r|\ge 1$ with $r\neq 1$ the term $r^k$ does not tend to zero.
+
+With $r = \tfrac{1}{2}$ we get $1 + \tfrac{1}{2} + \tfrac{1}{4} + \cdots = 2$, and with
+$r = -\tfrac{1}{2}$ we get $1 - \tfrac{1}{2} + \tfrac{1}{4} - \cdots = \tfrac{2}{3}$. The
+second is interesting: its terms alternate in sign and the sum is smaller than twice the
+first term, because opposite signs wipe each other out.
+
+The case $r=\tfrac{1}{2}$ has a picture that explains itself: cut the unit square in half,
+cut the remainder again, and keep going. Figure~\ref{fig:potong-geometri} shows the pieces
+$\tfrac12$, $\tfrac14$, $\tfrac18$ and the remainder $2^{-5} = 0.03125$ after five cuts,
+with used area $1 - 2^{-5} = 0.96875$. That remainder shrinks without vanishing; that is
+the geometric face of the sentence ``the sum stops''.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=6.0]
+  \draw[fill=layerteal!45,draw=ink] (0.5,0) rectangle (1,1);
+  \draw[fill=layerindigo!40,draw=ink] (0,0.5) rectangle (0.5,1);
+  \draw[fill=layerorange!50,draw=ink] (0.25,0) rectangle (0.5,0.5);
+  \draw[fill=layerjade!45,draw=ink] (0,0.25) rectangle (0.25,0.5);
+  \draw[fill=layerplum!40,draw=ink] (0.125,0) rectangle (0.25,0.25);
+  \draw[fill=white,draw=ink,densely dashed] (0,0) rectangle (0.125,0.25);
+  \draw[ink,thick] (0,0) rectangle (1,1);
+  \node[font=\small] at (0.75,0.5) {$\tfrac{1}{2}$};
+  \node[font=\small] at (0.25,0.75) {$\tfrac{1}{4}$};
+  \node[font=\small] at (0.375,0.25) {$\tfrac{1}{8}$};
+  \node[font=\small] at (0.125,0.375) {$\tfrac{1}{16}$};
+  \draw[ink,thin,-{Stealth}] (0.06,0.10) -- (-0.30,-0.05);
+  \node[font=\scriptsize,anchor=east] at (-0.30,-0.05) {remainder $\tfrac{1}{32}$};
+\end{tikzpicture}
+\caption{The geometric series of one half as pieces of the unit square. Pieces of size
+$\tfrac12$, $\tfrac14$, $\tfrac18$, $\tfrac1{16}$ are laid down in order, and the
+remainder still uncovered after four pieces is $\tfrac1{16}$; after five pieces the
+remainder is $2^{-5} = 0.03125$ and the used area $1 - 2^{-5} = 0.96875$. The remainder
+always shrinks, it never vanishes.}
+\label{fig:potong-geometri}
+\end{figure}
+
+\begin{tangan}
+Materials: one sheet of square paper, a pencil, a ruler.
+
+\begin{enumerate}
+\item Fold the paper in half, open it, shade one half. That is the first piece.
+\item Fold the unshaded part in half again, open it, shade half of it.
+\item Repeat three more times, always only on the part not yet shaded.
+\item Check the white part that remains: after five folds only one thirty-second of the
+      original paper is left.
+\end{enumerate}
+
+What you should see: every new shading is always half of the previous one, and the white
+part never vanishes, it only shrinks toward one corner. If the paper is thin enough to fold
+ten times, the white part is only $\tfrac{1}{1024} = 0.0009765625$; by the computation it
+tends to zero, so the shading finally covers the whole sheet. Now change the rule: shade
+$\tfrac12$ of the paper, then $\tfrac13$, then $\tfrac14$. The folds can no longer follow,
+and the paper runs out before the series stops.
+\end{tangan}
+
+The second family that can be computed directly is the telescoping series\index{telescoping
+series}, that is, a series whose terms can be written as the difference of two consecutive
+terms of another sequence, so that almost all subtractions cancel each other.
+
+\begin{contoh}
+For $n \ge 1$,
+\[
+  \frac{1}{n(n+1)} = \frac{1}{n} - \frac{1}{n+1}.
+\]
+Hence
+\[
+  s_N = \sum_{n=1}^{N} \left(\frac{1}{n} - \frac{1}{n+1}\right)
+      = 1 - \frac{1}{N+1},
+\]
+because all the intermediate terms cancel and only the first and last terms remain. So
+$\sum_{n=1}^{\infty} \frac{1}{n(n+1)} = 1$. At $N=100$ that formula gives
+$s_{100} = \tfrac{100}{101} = 0.9900990099$, and the remaining tail is
+$\tfrac{1}{101} = 0.0099009901$; the two add up to exactly $1$.
+\end{contoh}
+
+Notice that in the telescoping example we need no test at all. A closed formula for $s_N$
+gives the limit directly. This is what rarely happens. For almost every series, including
+the harmonic series and $\sum 1/n^2$, no such formula exists, and we must decide
+convergence without ever knowing the sum exactly.
+
+Before turning to the tests, we record that series behave linearly, just as limits of
+sequences do.
+
+\begin{proposisi}
+If $\sum a_n = A$ and $\sum b_n = B$ converge, then for every $c, d \in \mathbb{R}$ the
+series $\sum (c a_n + d b_n)$ converges with sum $cA + dB$. Adding or discarding finitely
+many terms does not change convergence, it only changes the sum.
+\end{proposisi}
+
+\noindent\textbf{Proof.} The partial sums of the combined series are
+$c s_n^{(a)} + d s_n^{(b)}$, and by the algebraic properties of limits in Chapter 4 that
+sequence converges to $cA + dB$. For the second statement, suppose terms are discarded
+starting at index $M$. The partial sums of the new series are $s_{N} - s_{M-1}$ for some
+$N$, that is, the difference of a convergent sequence and a constant, so the convergence is
+the same.
+
+As an application, $\sum_{n=1}^{\infty} \left(\frac{1}{2^n} + \frac{1}{n(n+1)}\right) = 1
++ 1 = 2$, because the first part is a geometric series with $r=\tfrac{1}{2}$ starting at
+$n=1$.
+
+\section{Series of nonnegative terms: comparison and the $p$-series}
+\tingkat{intermediate}
+
+When all terms are nonnegative, the partial sums can only rise or stay put. The question
+of convergence then becomes a far simpler one: do the partial sums stop below some fence?
+
+\begin{teorema}
+If $a_n \ge 0$ for all $n$, then $\sum a_n$ converges if and only if its sequence of
+partial sums is bounded.
+\end{teorema}
+
+\noindent\textbf{Proof.} With $a_n \ge 0$ we have $s_{n+1} = s_n + a_{n+1} \ge s_n$, so
+$(s_n)$ is nondecreasing. By the monotone convergence theorem in Chapter 4, a monotone
+sequence bounded above converges, and a monotone sequence not bounded above diverges to
+$+\infty$.
+
+This theorem looks simple, but this whole section is only a variation on it. All we need is
+a way to compare an unknown series with a known one, and the stock of known series is still
+thin: the geometric series.
+
+\begin{teorema}[Comparison test]
+Suppose $0 \le a_n \le c_n$ for $n \ge N_0$.
+\begin{enumerate}
+\item If $\sum c_n$ converges, then $\sum a_n$ converges.
+\item If $a_n \ge d_n \ge 0$ for $n \ge N_0$ and $\sum d_n$ diverges, then $\sum a_n$
+      diverges.
+\end{enumerate}
+\end{teorema}
+
+\noindent\textbf{Proof.} For (1), take $\varepsilon>0$. By the Cauchy criterion there is
+$N \ge N_0$ such that $m \ge n \ge N$ implies $\sum_{k=n}^{m} c_k < \varepsilon$. Since
+every term is nonnegative and $a_k \le c_k$,
+\[
+  \left| \sum_{k=n}^{m} a_k \right| = \sum_{k=n}^{m} a_k \le \sum_{k=n}^{m} c_k
+  < \varepsilon ,
+\]
+so $\sum a_n$ satisfies the Cauchy criterion. For (2), if $\sum a_n$ converged then by (1)
+and $d_n \le a_n$ the series $\sum d_n$ would converge as well, contradicting the
+hypothesis.
+
+The comparison test\index{comparison test} demands that we pick the right comparison. For
+terms in the form of rational fractions, the natural comparison is the largest term in the
+numerator divided by the largest term in the denominator. For instance
+$\frac{1}{n^2 + 3n} \le \frac{1}{n^2}$, so $\sum \frac{1}{n^2+3n}$ converges provided
+$\sum \frac{1}{n^2}$ converges. Hence the whole question moves to a single family of
+series.
+
+That family is the $p$-series\index{p-series}, and the tool for handling it is grouping the
+terms into blocks whose size is a power of two. This grouping idea is used repeatedly,
+including in the Cauchy condensation test\index{Cauchy condensation} below.
+
+\begin{lemma}[Cauchy condensation]
+Suppose $a_1 \ge a_2 \ge a_3 \ge \cdots \ge 0$. Then $\sum_{n=1}^{\infty} a_n$ converges
+if and only if $\sum_{k=0}^{\infty} 2^k a_{2^k}$ converges.
+\end{lemma}
+
+\noindent\textbf{Proof.} Since the terms are nonnegative, both series converge exactly when
+their partial sums are bounded (the first theorem of this section). We compare blocks. For
+$k \ge 0$, the block $a_{2^k+1} + \cdots + a_{2^{k+1}}$ contains $2^k$ terms, each no
+larger than $a_{2^k}$ and no smaller than $a_{2^{k+1}}$. Thus
+\[
+  \sum_{n=1}^{2^m} a_n \;\le\; a_1 + \sum_{k=0}^{m-1} 2^k a_{2^k},
+  \qquad
+  \sum_{n=1}^{2^m} a_n \;\ge\; \frac{1}{2}\sum_{k=1}^{m} 2^k a_{2^k}.
+\]
+The left inequality shows that the partial sums of $\sum a_n$ are bounded when
+$\sum 2^k a_{2^k}$ is bounded. The right inequality shows the converse, because the partial
+sums of $\sum 2^k a_{2^k}$ are bounded when $\sum a_n$ is bounded. Both directions are
+done.
+
+\begin{teorema}[The $p$-series]
+$\sum_{n=1}^{\infty} \frac{1}{n^p}$ converges if $p > 1$ and diverges if $p \le 1$.
+\end{teorema}
+
+\noindent\textbf{Proof.} For $p \le 0$ the term $\frac{1}{n^p} = n^{-p}$ does not tend to
+zero, so the series diverges by the $n$-th term test. For $p>0$ the sequence
+$a_n = n^{-p}$ decreases to zero, so the condensation lemma applies and
+\[
+  \sum_{k=0}^{\infty} 2^k a_{2^k}
+  = \sum_{k=0}^{\infty} 2^k \cdot 2^{-kp}
+  = \sum_{k=0}^{\infty} \left(2^{1-p}\right)^{k}.
+\]
+That is a geometric series with ratio $r = 2^{1-p}$. Since $p>1$ exactly when $1-p<0$,
+that is exactly when $r<1$, the geometric series theorem gives: convergence for $p>1$,
+divergence for $p \le 1$.
+
+The case $p=1$ is the harmonic series\index{harmonic series}, and its proof is now a single
+line: the geometric ratio is $2^{1-1} = 1$, so the condensed series $\sum 1$ diverges. We
+can read its fragility straight off the blocks: every block of size $2^k$ contributes at
+least $2^k \cdot \frac{1}{2^{k+1}} = \tfrac{1}{2}$. Hence
+\[
+  H_{2^m} \;\ge\; 1 + \frac{m}{2},
+\]
+so $H_n \to \infty$, but raising $H$ by one requires doubling $n$ many times over: the
+growth rate is logarithmic. This is why the number $14.39$ at the opening of this chapter
+looks like a bound although it is not.
+
+Figure~\ref{fig:batang-suku} puts the two kinds of terms side by side. The harmonic bars
+stay plump: the tenth term is still $0.1$, whereas the tenth geometric term is
+$2^{-10} = 0.0009765625$. Sum of the first ten terms: $H_{10} = 2.928968254$ against
+$1 - 2^{-10} = 0.9990234375$. The harmonic term is larger at every index, so the size of
+the term misleads; what decides is whether the shrinking leaves a finite tail.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.93\linewidth, height=6.0cm,
+  ybar, bar width=3.4pt,
+  xlabel={index $n$}, ylabel={size of term $a_n$},
+  xmin=0.3, xmax=10.7, ymin=0, ymax=1.12,
+  xtick={1,2,3,4,5,6,7,8,9,10},
+  scaled y ticks=false,
+  tick label style={font=\scriptsize},
+  label style={font=\small},
+  ymajorgrids, grid style={layergrey!20},
+  legend style={at={(0.98,0.96)},anchor=north east,draw=none,fill=none,
+                font=\scriptsize},
+]
+\addplot[fill=layerteal!85,draw=layerteal] coordinates {
+  (1,1) (2,0.5) (3,0.3333333) (4,0.25) (5,0.2)
+  (6,0.1666667) (7,0.1428571) (8,0.125) (9,0.1111111) (10,0.1)};
+\addlegendentry{harmonic $1/n$}
+\addplot[fill=layerorange!85,draw=layerorange] coordinates {
+  (1,0.5) (2,0.25) (3,0.125) (4,0.0625) (5,0.03125)
+  (6,0.015625) (7,0.0078125) (8,0.0039063) (9,0.0019531) (10,0.0009766)};
+\addlegendentry{geometric $2^{-n}$}
+\end{axis}
+\end{tikzpicture}
+\caption{Bars of the harmonic terms $1/n$ and the geometric terms $2^{-n}$ for
+$n=1,\ldots,10$. The harmonic bars are taller at every index and the tenth term is still
+$0.1$, whereas the tenth geometric term is $2^{-10} = 0.0009765625$. Sum of the first ten
+terms: $H_{10} = 2.928968254$ against $1 - 2^{-10} = 0.9990234375$.}
+\label{fig:batang-suku}
+\end{figure}
+
+\kamus{harmonic series}{deret harmonik}{a pile that keeps growing although each addition is thinner than the last, so the total height climbs very slowly without bound.}
+
+The $p$-series is not the final boundary. With the same condensation, Rudin shows that
+$\sum \frac{1}{n(\log n)^p}$ converges for $p>1$ and diverges for $p<1$, and that adding
+one more logarithm shifts the boundary. Those series differ very little yet lie on opposite
+sides: there is no tidy boundary line, only tests that hold on a particular class.
+
+\begin{tantangan}
+Take $k(n)$ the integer with $2^{k-1} \le n < 2^k$, then set $a_n = \frac{1}{k(n)}$. So
+$a_1 = 1$, $a_2 = a_3 = \tfrac12$, $a_4 = \cdots = a_7 = \tfrac13$, and so on. Show that
+$a_n \to 0$ but $\sum a_n$ diverges, then explain why the ratio test gives limit superior
+$1$ here and is therefore useless.
+
+\textbf{Hint 1.} Do not add the terms one by one. Add one block, and first count how many
+terms that block contains.
+
+\textbf{Hint 2.} The $k$-th block contains $2^{k-1}$ terms, all of them equal to
+$\frac{1}{k}$, so its contribution is $\frac{2^{k-1}}{k}$. The first ten blocks already
+add up to $118.653968$.
+
+If you are stuck, go back to the section on series of nonnegative terms, where blocks of
+power-of-two size are used in the Cauchy condensation lemma.
+\end{tantangan}
+
+\begin{untukanak}
+Try to imagine stacking coins on a table. The first coin is thick. The second is half as
+thick. The third a third, the fourth a quarter, and so on: the millionth coin is very thin,
+as thin as one millionth of the first. If you stack a million coins, the height of the
+stack is about fourteen times the first coin, not a million times. It looks as though the
+stack will stop growing, because the next coin adds almost nothing.
+
+Now the question that trips up many people: how many coins does it take for the stack to
+reach twenty times the first coin? The answer is about two hundred and seventy-two million
+coins. For twenty-one times, one needs about nine billion coins. Each level demands many
+times more coins, but no level is impossible. The pile never stops, it only slows down.
+
+This is why computer programs are easily fooled. If you stop stacking after a million
+coins, the stack looks as though it no longer moves, when in fact it is not finished. In
+this chapter we will know why slow does not mean stopped, and how to tell the difference
+before spending the time to stack.
+\end{untukanak}
+
+\section{The ratio test and the root test}
+\tingkat{intermediate}
+
+The comparison test demands that we already have a comparison series. For terms containing
+factorials or powers of $n$, such a comparison is hard to guess, but the comparison between
+consecutive terms is easy to compute. The idea: if every term is at most $\beta$ times the
+previous one with $\beta<1$, the series shrinks at least as fast as a geometric series, so
+it converges.
+
+\begin{teorema}[Ratio test]
+Suppose $a_n \neq 0$ for all sufficiently large $n$.
+\begin{enumerate}
+\item If $\limsup_{n\to\infty} \left| \frac{a_{n+1}}{a_n} \right| < 1$, then
+      $\sum a_n$ converges, and in fact converges absolutely.
+\item If there is $n_0$ such that $\left| \frac{a_{n+1}}{a_n} \right| \ge 1$ for all
+      $n \ge n_0$, then $\sum a_n$ diverges.
+\end{enumerate}
+\end{teorema}
+
+\noindent\textbf{Proof.} For (1), write $L = \limsup |a_{n+1}/a_n|$ and choose $\beta$ with
+$L < \beta < 1$. By the properties of the limit superior in Chapter 4, only finitely many
+$n$ satisfy $|a_{n+1}/a_n| > \beta$; so there is $N$ such that $n \ge N$ implies
+$|a_{n+1}| \le \beta |a_n|$. By induction,
+\[
+  |a_{N+k}| \le \beta^{k} |a_N| \qquad (k \ge 0).
+\]
+The series $\sum \beta^k |a_N|$ converges because $0<\beta<1$, so by the comparison test
+$\sum |a_n|$ converges, and by the absolute convergence theorem in the fifth section of
+this chapter, absolute convergence implies convergence.
+
+For (2), the condition $|a_{n+1}| \ge |a_n|$ for $n \ge n_0$ makes $(|a_n|)$ nondecreasing
+and nonnegative, so it cannot tend to zero. Hence $a_n$ does not tend to zero, and the
+$n$-th term test rules out convergence.
+
+\kamus{ratio test}{uji rasio}{measures whether each term shrinks by at least a fixed fraction of the previous one, so that the series shrinks like a geometric series.}
+\index{ratio test}
+
+The bound $1$ in the ratio test is a blind spot. For $1/n$ the ratio is
+$\frac{n}{n+1} \to 1$ and the series diverges; for $1/n^2$ the ratio is
+$\left(\frac{n}{n+1}\right)^2 \to 1$ and the series converges. So a ratio tending to $1$
+gives no information; shrinking rates that differ greatly can produce the same ratio.
+
+The next two series show the ratio test working in opposite directions. For
+$a_n = \frac{n!}{10^n}$ we have $\frac{a_{n+1}}{a_n} = \frac{n+1}{10}$, which tends to
+$+\infty$; the series diverges. For $a_n = \frac{10^n}{n!}$ we have
+$\frac{a_{n+1}}{a_n} = \frac{10}{n+1}$, which tends to $0$; the series converges. The sum
+of the second series is exactly $e^{10} = 22026.4657948$, whereas the sum of its first $20$
+terms is only $21950.3788494$.
+
+The root test\index{root test} uses a different quantity: the $n$-th root of the $n$-th
+term. Intuitively it measures the ``average geometric ratio'' of all the terms, not the
+ratio between two consecutive terms.
+
+\begin{teorema}[Root test]
+\begin{enumerate}
+\item If $\limsup_{n\to\infty} \sqrt[n]{|a_n|} < 1$, then $\sum a_n$ converges, and in
+      fact converges absolutely.
+\item If $\limsup_{n\to\infty} \sqrt[n]{|a_n|} > 1$, then $\sum a_n$ diverges.
+\end{enumerate}
+\end{teorema}
+
+\noindent\textbf{Proof.} For (1), choose $\beta$ with
+$\limsup \sqrt[n]{|a_n|} < \beta < 1$. Only finitely many $n$ satisfy
+$\sqrt[n]{|a_n|} > \beta$, so there is $N$ such that $|a_n| \le \beta^n$ for $n \ge N$. The
+comparison test with the geometric series $\sum \beta^n$ closes this case.
+
+For (2), if the limit superior is larger than $1$, then $\sqrt[n]{|a_n|} > 1$, that is
+$|a_n| > 1$, for infinitely many $n$. Those terms do not tend to zero, so the series
+diverges by the $n$-th term test.
+
+The root test is stronger than the ratio test. Let $a_n = 2^{-n}$ for even $n$ and
+$a_n = 3^{-n}$ for odd $n$. Then $\sqrt[n]{a_n}$ equals $\tfrac{1}{2}$ or $\tfrac{1}{3}$,
+so its limit superior is $\tfrac{1}{2}$ and the root test declares the series convergent.
+The ratio swings: at $n=100$, $\frac{a_{101}}{a_{100}}$ equals about
+$3.05 \times 10^{17}$, with limit superior $+\infty$ and limit inferior $0$. The ratio test
+concludes nothing exactly when the terms swing on different scales.
+
+The ratio test stays popular because factorials and powers of $n$ cancel in the ratio,
+whereas the $n$-th root of a factorial demands Stirling's approximation. Order of use: the
+$n$-th term test, comparison with a $p$-series or a geometric series, then the ratio test;
+the root test is used when the ratio swings or gives $1$.
+
+Now the tests pile up, and the order of checking becomes a skill of its own.
+
+\begin{resep}
+\begin{enumerate}
+\item Check $a_n \to 0$. If not, the series diverges; done.
+\item Recognize the shape: factorials call for the ratio test, powers of $n$ call for the
+      root test, rational fractions call for comparison with a $p$-series.
+\item If the test you chose gives the bound $1$, conclude nothing. Move to comparison or
+      condensation.
+\item If the signs alternate and $|a_n|$ decreases to zero, use Leibniz and report the
+      error bound $b_{N+1}$.
+\end{enumerate}
+
+Warning on order: do not swap step 1 with step 2. The ratio test on a series whose terms do
+not tend to zero can give the bound $1$ and mislead, whereas the $n$-th term test settles
+it with no computation.
+\end{resep}
+
+\section{Alternating series and the Leibniz test}
+\tingkat{intermediate}
+
+Up to here all series have nonnegative terms, and there convergence means the partial sums
+stop rising. Once the signs alternate, the partial sums can rise and fall, and cancellation
+between signs can produce convergence that the size of the terms does not guarantee.
+
+\begin{teorema}[Leibniz test]
+Suppose $(b_n)$ is a nonnegative nonincreasing sequence, that is
+$b_1 \ge b_2 \ge \cdots \ge 0$, and $b_n \to 0$. Then
+$\sum_{n=1}^{\infty} (-1)^{n+1} b_n$ converges.
+\end{teorema}
+
+\noindent\textbf{Proof.} Write $s_N$ for the $N$-th partial sum. Consider the partial sums
+with even index and with odd index separately. Since
+\[
+  s_{2m+2} - s_{2m} = b_{2m+1} - b_{2m+2} \ge 0,
+\]
+the sequence $(s_{2m})$ is nondecreasing. Since
+\[
+  s_{2m+1} - s_{2m-1} = -b_{2m} + b_{2m+1} \le 0,
+\]
+the sequence $(s_{2m-1})$ is nonincreasing. Besides, $s_{2m} \le s_{2m-1}$ and
+$s_{2m-1} - s_{2m} = b_{2m} \to 0$. So $(s_{2m})$ is nondecreasing and bounded above by
+$s_1 = b_1$, hence converges to some $s$; $(s_{2m-1})$ is nonincreasing and bounded below
+by $s_2$, hence converges to some $t$; and $s - t = \lim (s_{2m} - s_{2m-1}) = 0$. Both
+subsequences tend to the same value, and since the even and odd subsequences together cover
+all indices, the whole sequence $(s_N)$ converges to that $s$.
+
+The Leibniz test\index{Leibniz test} gives more than convergence: an error bound that can
+be used without knowing the true sum, and that is what makes alternating series useful for
+computing constants.
+
+\begin{teorema}[Leibniz error bound]
+Under the hypotheses of the Leibniz test and with $s = \sum (-1)^{n+1} b_n$,
+\[
+  \left| s - s_N \right| \le b_{N+1}.
+\]
+Sharper: $s$ lies between $s_N$ and $s_{N+1}$, so the sign of the error $s - s_N$ is the
+sign of the first discarded term, namely $(-1)^{N+2}$.
+\end{teorema}
+
+\noindent\textbf{Proof.} From the earlier proof, $(s_{2m})$ rises toward $s$ and
+$(s_{2m-1})$ falls toward $s$. So for every $N$, the number $s$ lies between $s_N$ and
+$s_{N+1}$. Since $|s_{N+1} - s_N| = b_{N+1}$, the distance from $s$ to $s_N$ does not
+exceed $b_{N+1}$, and the direction of the shift is set by the sign of
+$s_{N+1} - s_N = (-1)^{N+2} b_{N+1}$.
+
+The classic example is the alternating harmonic series,
+\[
+  1 - \frac{1}{2} + \frac{1}{3} - \frac{1}{4} + \cdots = \ln 2 .
+\]
+The equality with $\ln 2$ is proved via the Taylor series for $\ln(1+x)$ in Chapter 14;
+here we only use its convergence, which the Leibniz test guarantees because
+$b_n = \frac{1}{n}$ decreases to zero. The number $\ln 2$ appears again, now as the sum of
+a convergent series; the difference $H_{2n} - H_n \to \ln 2$ is another version of the same
+computation.
+
+Figure~\ref{fig:tangga-leibniz} draws the partial sums of that series as two staircases:
+the odd ones descend from $s_1 = 1$, the even ones ascend from $s_2 = 0.5$, and both
+bracket $\ln 2 = 0.6931471806$. At $n = 10$ and $n = 11$ the bracket is
+$0.6456349206 < \ln 2 < 0.7365440115$, of width $b_{11} = \tfrac{1}{11} = 0.0909090909$,
+exactly as the error bound theorem promises.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.93\linewidth, height=6.2cm,
+  xlabel={number of terms $n$}, ylabel={partial sum $s_n$},
+  xmin=0.4, xmax=15.0, ymin=0.45, ymax=1.06,
+  xtick={1,2,3,4,5,6,7,8,9,10,11,12,13,14},
+  tick label style={font=\scriptsize},
+  label style={font=\small},
+  ymajorgrids, grid style={layergrey!20},
+  legend style={at={(0.98,0.04)},anchor=south east,draw=layergrey!40,fill=white,
+                fill opacity=0.9,text opacity=1,font=\scriptsize},
+]
+\addplot[color=layerindigo,mark=*,mark size=1.6pt,thick] coordinates {
+  (1,1.0) (3,0.8333333) (5,0.7833333) (7,0.7595238)
+  (9,0.7456349) (11,0.7365440) (13,0.7301338)};
+\addlegendentry{$n$ odd, descending}
+\addplot[color=layerteal,mark=square*,mark size=1.6pt,thick] coordinates {
+  (2,0.5) (4,0.5833333) (6,0.6166667) (8,0.6345238)
+  (10,0.6456349) (12,0.6532107) (14,0.6587052)};
+\addlegendentry{$n$ even, ascending}
+\draw[dashed,accent,thick] (axis cs:0.4,0.6931472) -- (axis cs:15.0,0.6931472);
+\node[font=\scriptsize,text=accent,fill=white,inner sep=1pt]
+  at (axis cs:6.4,0.668) {$\ln 2 = 0.6931471806$};
+\end{axis}
+\end{tikzpicture}
+\caption{Partial sums of the alternating harmonic series. The odd subsequence descends,
+the even subsequence ascends, and both bracket the limit line $\ln 2 = 0.6931471806$.
+At $n = 10$ and $n = 11$: $s_{10} = 0.6456349206$ and $s_{11} = 0.7365440115$, of width
+$b_{11} = \tfrac{1}{11} = 0.0909090909$.}
+\label{fig:tangga-leibniz}
+\end{figure}
+
+The Leibniz bound is useful and is often estimated too optimistically. With $1000$ terms,
+the partial sum is $0.7851481635$ whereas $\pi/4 = 0.7853981634$; the actual error is
+$2.5000 \times 10^{-4}$, the promised bound
+$b_{1001} = \tfrac{1}{2001} = 4.9975 \times 10^{-4}$. The bound is correct but twice the
+real error, because the actual error is about $\tfrac{1}{4N}$ whereas the bound is
+$\tfrac{1}{2N}$. For an error below $10^{-6}$ we need $N \ge 500000$, and at that $N$ the
+error is $5.0000 \times 10^{-7}$.
+
+\section{Absolute convergence, grouping, and rearrangement}
+\tingkat{advanced}
+
+Series that converge because their signs cancel are far more fragile than series that
+converge because their terms shrink fast enough. That fragility has a name, and this
+chapter owes one explanation of it.
+
+\begin{definisi}
+The series $\sum a_n$ \emph{converges absolutely} if $\sum |a_n|$ converges. If
+$\sum a_n$ converges but $\sum |a_n|$ diverges, the series is called
+\emph{conditionally convergent}\index{conditional convergence}.
+\end{definisi}
+
+\kamus{absolute convergence}{konvergensi mutlak}{a series that still converges after all its signs are forced positive, so it does not depend on cancellation.}
+\index{absolute convergence}
+
+\begin{teorema}
+If $\sum a_n$ converges absolutely, then $\sum a_n$ converges and
+$\left| \sum a_n \right| \le \sum |a_n|$.
+\end{teorema}
+
+\noindent\textbf{Proof.} For every $n \le m$ we have
+$\left| \sum_{k=n}^{m} a_k \right| \le \sum_{k=n}^{m} |a_k|$. Since $\sum |a_n|$
+converges, the rightmost expression can be made smaller than $\varepsilon$ by the Cauchy
+criterion, so $\sum a_n$ satisfies the Cauchy criterion as well. The absolute value
+inequality for the sum is obtained by taking limits in
+$\left| s_n \right| \le \sum_{k=1}^{n} |a_k|$.
+
+The converse does not hold: the alternating harmonic series converges conditionally,
+because $\sum \frac{1}{n}$ diverges. For such series, the order of summation begins to
+matter. Before going there, we first look at an operation that is safe, namely
+grouping\index{grouping}.
+
+\begin{proposisi}[Grouping]
+Suppose $\sum a_n$ converges to $s$, and $n_1 < n_2 < n_3 < \cdots$ is a sequence of
+indices. Then the series whose terms are
+\[
+  A_k = a_{n_{k-1}+1} + a_{n_{k-1}+2} + \cdots + a_{n_k}
+\]
+(with $n_0 = 0$) also converges to $s$. The converse fails: a convergent grouping does not
+guarantee that the original series converges.
+\end{proposisi}
+
+\noindent\textbf{Proof.} The partial sums of the grouped series are
+$S_K = A_1 + \cdots + A_K = s_{n_K}$, that is, a subsequence of $(s_n)$. A subsequence of a
+convergent sequence tends to the same limit (Chapter 4), so $S_K \to s$.
+
+For the converse, take $1 - 1 + 1 - 1 + \cdots$. This series diverges because its terms do
+not tend to zero, but grouping in pairs gives $(1-1) + (1-1) + \cdots = 0 + 0 + \cdots$,
+which converges to $0$.
+
+That counterexample matters in practice: parentheses may be inserted into a series already
+known to converge, but they may not be used to prove it.
+
+Now we change the order, not merely the grouping: a rearrangement renumbers the same terms
+so that each term appears exactly once, but at a different position.
+
+\begin{definisi}
+Let $\sigma$ be a bijection from the set of positive integers to itself. The series
+$\sum a_{\sigma(n)}$ is called a \emph{rearrangement} of $\sum a_n$.
+\end{definisi}
+
+\kamus{rearrangement}{susunan ulang}{swapping the order in which goods arrive without changing the goods, so the running total can differ even though the warehouse contents are the same.}
+\index{rearrangement}
+
+For an absolutely convergent series, rearrangement is harmless.
+
+\begin{teorema}
+If $\sum a_n$ converges absolutely, then every rearrangement of it converges, and all of
+them tend to the same sum.
+\end{teorema}
+
+\noindent\textbf{Proof.} Write $s = \sum a_n$ and let $\sum a_{\sigma(n)}$ be a
+rearrangement with partial sums $s'_N$. Take $\varepsilon > 0$. By the Cauchy criterion
+there is $N_0$ such that $m \ge n \ge N_0$ implies $\sum_{k=n}^{m} |a_k| < \varepsilon$; in
+particular $\sum_{k=N_0}^{\infty} |a_k| \le \varepsilon$.
+
+Choose $P$ so that the numbers $1, 2, \ldots, N_0-1$ all appear among
+$\sigma(1), \ldots, \sigma(P)$. For $N > P$, the terms $a_1, \ldots, a_{N_0-1}$ cancel each
+other in the difference $s_N - s'_N$ (both contain those terms), so all that remains are
+terms with index $k \ge N_0$. Hence
+\[
+  \left| s_N - s'_N \right| \;\le\; \sum_{k \ge N_0} |a_k| \;\le\; \varepsilon
+  \qquad (N > P).
+\]
+Since $s_N \to s$ and $\left| s'_N - s \right| \le \left| s'_N - s_N \right| +
+\left| s_N - s \right|$, we get $s'_N \to s$.
+
+For series that converge only conditionally, that conclusion collapses completely. The next
+theorem is stated without proof; the proof is long and technical, and can be read in Rudin,
+in the chapter on sequences and series of numbers, the section ``Rearrangements''.
+
+\begin{teorema}[Riemann rearrangement theorem, statement]
+Suppose $\sum a_n$ converges but does not converge absolutely, and suppose $\alpha \le
+\beta$ are two real numbers (possibly $\pm\infty$). Then there is a rearrangement
+$\sum a_{\sigma(n)}$ whose partial sums have limit inferior $\alpha$ and limit superior
+$\beta$. In particular, for every $c \in \mathbb{R}$ there is a rearrangement that
+converges to $c$, and there is a rearrangement that diverges.
+\end{teorema}
+
+The idea of the proof is this. If $\sum a_n$ converges conditionally, the series of its
+positive terms and the series of absolute values of its negative terms both diverge. We
+rearrange by rule: add positive terms until we pass $\beta$, then negative terms until we
+drop below $\alpha$, then repeat. Because both series diverge, that step can always be
+carried out, and because $a_n \to 0$, the overshoot past the boundary gets smaller. The
+result oscillates with limit inferior $\alpha$ and limit superior $\beta$. The complete
+construction is in Rudin, Theorem 3.54.
+
+The best-known case is the alternating harmonic series rearranged in the pattern two
+positive terms then one negative term,
+\[
+  1 + \frac{1}{3} - \frac{1}{2} + \frac{1}{5} + \frac{1}{7} - \frac{1}{4} + \cdots
+\]
+This series converges, but not to $\ln 2$: its sum is $\tfrac{3}{2}\ln 2 = 1.0397207708$,
+and the computation is in the next section. Changing the order changes the answer even
+though the terms are exactly the same. Addition of real numbers is not commutative without
+conditions, and that is a concrete warning for anyone who sums fractions on a computer.
+
+This also explains why the tests in the second and third sections require nonnegative terms.
+When the signs alternate, shrinking is not enough: the shrinking must be fast enough to beat
+the cancellation.
+
+\begin{untukanak}
+Imagine two piles of cards: green marked ``in'', red marked ``out'', each with a number.
+You move the cards one at a time, and the balance on the screen changes: green adds, red
+subtracts. If you change the order of the moves, does the final balance change?
+
+If the greens and the reds are both large so that they cancel each other, the order
+matters. Moving the greens first makes the balance spike before it falls; moving the reds
+first makes the balance go negative for a while. The final balance can differ too.
+
+There is one safe situation: if the total of all the numbers, ignoring color, stays bounded,
+the order has no effect. That is absolute convergence. In this chapter we will know why, and
+why a computer can give different answers for sums that look the same.
+\end{untukanak}
+
+\section{Worked examples}
+\tingkat{intermediate}
+
+This section works through three computations that form the backbone of the chapter. All the
+numbers are checked with Python in the lab section; here the intermediate steps are written
+so that they can be repeated with paper and pencil.
+
+\medskip\noindent\textbf{1. The harmonic series at one million terms}
+
+We want $H_{10^6}$ without adding a million terms. The tool is the asymptotic form
+\[
+  H_n = \ln n + \gamma + \frac{1}{2n} - \frac{1}{12n^2} + O\left(\frac{1}{n^4}\right),
+\]
+where $\gamma = 0.5772156649$ is the Euler--Mascheroni constant. For $n = 10^6$:
+\[
+  \ln 10^6 = 13.8155105580, \qquad \ln 10^6 + \gamma = 14.3927262229 .
+\]
+The first correction term $\frac{1}{2n} = 5 \times 10^{-7}$ gives $14.3927267229$, and the
+second correction $-\frac{1}{12n^2} = -8.33 \times 10^{-14}$ is far below the precision we
+need. So
+\[
+  H_{10^6} = 14.3927267228657\ldots
+\]
+Direct summation with \texttt{math.fsum} gives $14.392726722865724$, in agreement to
+$10^{-15}$.
+
+More important is how many terms are needed to reach a given bound. From
+$H_n \approx \ln n + \gamma$ we get $n \approx e^{H - \gamma}$. For $H = 20$:
+\[
+  n \approx e^{20 - 0.5772156649} = e^{19.4227843351} = 2.724006 \times 10^{8}.
+\]
+A direct search gives $n = 272400600$ as the first index with $H_n > 20$, and $H$ at that
+point is $20.0000000016$. For $H = 21$ one needs about $7.4 \times 10^8$ terms; the estimate
+at $n = 10^9$ gives $21.3004815$. Each added unit demands multiplying $n$ by
+$e \approx 2.718$.
+
+\medskip\noindent\textbf{2. The sum $\sum 1/n^2$ and $\pi^2/6$}
+
+With $N = 10^6$ terms, direct summation gives
+\[
+  s_{10^6} = 1.6449330668487263, \qquad \frac{\pi^2}{6} = 1.6449340668482264 .
+\]
+The difference is $9.9999950 \times 10^{-7}$, very close to $\frac{1}{N} = 10^{-6}$; that
+makes sense because the tail $\sum_{n>N} n^{-2}$ is about $\frac{1}{N}$. The next order
+correction is $-\frac{1}{2N^2} = -5 \times 10^{-13}$, so
+\[
+  s_{10^6} + \frac{1}{N} - \frac{1}{2N^2} = 1.6449340668482262,
+\]
+which matches $\pi^2/6$ to $2 \times 10^{-16}$, the precision limit of 64-bit fractions. One
+million terms plus one correction already gives machine accuracy.
+
+\medskip\noindent\textbf{3. Rearranging the alternating harmonic series}
+
+Take the pattern two positive terms and one negative: in the $k$-th block we add
+$\frac{1}{4k-3} + \frac{1}{4k-1} - \frac{1}{2k}$. After $K$ blocks, all the positive terms
+with denominator $1, 3, \ldots, 4K-1$ have been used, and the negative terms with
+denominator $2, 4, \ldots, 2K$ have been used as well. So
+\[
+  S_K = \sum_{j=1}^{2K} \frac{1}{2j-1} - \sum_{j=1}^{K} \frac{1}{2j}
+      = \left( H_{4K} - \frac{1}{2}H_{2K} \right) - \frac{1}{2}H_K .
+\]
+With $H_m \approx \ln m + \gamma$,
+\[
+  S_K \approx \left(\ln 4K - \tfrac{1}{2}\ln 2K\right) - \tfrac{1}{2}\ln K
+  = \ln \frac{4K}{\sqrt{2K}\sqrt{K}} = \ln\left(2\sqrt{2}\right) = \tfrac{3}{2}\ln 2 .
+\]
+Every term $\gamma$ cancels, and the result does not contain $K$. So
+$S_K \to 1.0397207708$, not $\ln 2 = 0.6931471806$. At $K = 10^6$ blocks the numerical
+value is $1.0397205208$, an error of $2.5 \times 10^{-7}$ against $\tfrac{3}{2}\ln 2$,
+consistent with order $\frac{1}{4K}$ as for the Leibniz series.
+
+\kertas{Numerical summary. $H_{10^6} = 14.3927267229$ and
+$\ln 10^6 + \gamma = 14.3927262229$, the difference is $\frac{1}{2n} = 5 \times 10^{-7}$.
+$H_n > 20$ is first reached at $n = 272400600$, close to $e^{20-\gamma} = 2.724006 \times
+10^8$. The Leibniz series with $1000$ terms gives an error of $2.5000 \times 10^{-4}$
+against $\pi/4$, with bound $\frac{1}{2001} = 4.9975 \times 10^{-4}$. The sum
+$\sum 1/n^2$ up to $10^6$ terms falls short of $\pi^2/6$ by $9.9999950 \times 10^{-7}$; one
+Euler--Maclaurin correction closes it to machine precision. The rearrangement two positive
+one negative tends to $\frac{3}{2}\ln 2 = 1.0397207708$, not $\ln 2$.}
+
+\section{Computational lab}
+\tingkat{advanced}
+
+The following code runs as is on Python 3.14.4 with NumPy 2.5.2. The first part tests the
+accuracy of the harmonic sum and of its asymptotic estimate.
+
+\begin{lab}
+\begin{verbatim}
+import math
+import numpy as np
+
+n = 10**6
+a = 1.0 / np.arange(1, n + 1)
+vals = a.tolist()
+naive = 0.0
+for x in vals:
+    naive += x
+
+print("np.sum   ", repr(float(np.sum(a))))
+print("for-loop ", repr(naive))
+print("fsum     ", repr(math.fsum(vals)))
+small = a.astype(np.float32)
+print("float32  ", repr(float(np.sum(small, dtype=np.float32))))
+g = 0.5772156649015328606
+print("ln n + g ", repr(math.log(n) + g))
+print("1/(2n)   ", 1 / (2 * n))
+\end{verbatim}
+\end{lab}
+
+The output obtained:
+\begin{verbatim}
+np.sum    14.392726722865726
+for-loop  14.392726722864989
+fsum      14.392726722865724
+float32   14.392724990844727
+ln n + g  14.392726222865807
+1/(2n)    5e-07
+\end{verbatim}
+
+The first four results should be the same, and three of them differ in the last digit:
+rounding error. Adding a million numbers of size $10^{-6}$ into an accumulator of size $14$
+throws away low bits. \texttt{float32} loses $1.7 \times 10^{-6}$, larger than the
+correction $\frac{1}{12n^2}$ we want to measure; when the error we are after is smaller
+than the error of the summation itself, the result means nothing.
+
+The second part checks three numbers from the previous section.
+
+\begin{lab}
+\begin{verbatim}
+import math
+import numpy as np
+
+pi4 = math.pi / 4
+s = 0.0
+for k in range(1000):
+    s += (-1)**k / (2*k + 1)
+print("Leibniz 1000 terms", repr(s))
+print("error", repr(pi4 - s))
+print("bound 1/2001", repr(1/2001))
+
+N = 10**6
+m = np.arange(1, N + 1, dtype=np.float64)
+S = float(np.sum(1.0 / m**2))
+print("sum 1/n^2", repr(S))
+print("pi^2/6", repr(math.pi**2/6))
+print("corrected", repr(S + 1/N - 1/(2*N**2)))
+
+S = 0.0
+for k in range(1, 10**6 + 1):
+    S += 1.0/(4*k-3) + 1.0/(4*k-1) - 1.0/(2*k)
+print("rearrangement", repr(S))
+print("1.5 ln 2", repr(1.5*math.log(2)))
+\end{verbatim}
+\end{lab}
+
+Its output:
+\begin{verbatim}
+Leibniz 1000 terms 0.7851481634599485
+error 0.00024999993749974525
+bound 1/2001 0.0004997501249375312
+sum 1/n^2 1.6449330668487263
+pi^2/6 1.6449340668482264
+corrected 1.6449340668482262
+rearrangement 1.0397205208399414
+1.5 ln 2 1.0397207708399179
+\end{verbatim}
+
+Three things need to be read from that output. First, the Leibniz error
+$2.5000 \times 10^{-4}$ is exactly half the bound $4.9975 \times 10^{-4}$; that is no
+accident, because the remainder of a monotone alternating series approaches half of the
+first discarded term. Second, the Euler--Maclaurin correction closes the gap to
+$2 \times 10^{-16}$, one rounding unit at magnitude $1.64$. Third, the rearrangement gives
+$1.0397205$, not $0.6931472$, and its error against $\tfrac{3}{2}\ln 2$ is only
+$2.5 \times 10^{-7}$.
+
+\begin{untukdosen}
+The teaching order I recommend: start from the epoch problem in the opening, then the
+definition of partial sums and the two series that can be computed (geometric,
+telescoping). The tests come in as a sequence of checks, not a list to memorize: the
+$n$-th term, comparison, ratio, root. The $p$-series follows after condensation, which
+explains why the harmonic series diverges and why it does so slowly.
+
+Two misconceptions appear most often. First, students conclude convergence from
+$a_n \to 0$; the harmonic series is the cure, and it is best shown with a table
+$H_{10} = 2.9290$, $H_{100} = 5.1874$, and $H_{1000} = 7.4855$ so that the slowness is
+visible. Second, students take ``convergent series'' to mean ``partial sums stop changing'',
+when the change per term can be far below machine precision while the series diverges. This
+is the right place to mention rounding error.
+
+A class activity that works: split the class into groups, give each group four unnamed
+series, and the only task is to decide convergence or divergence together with the test,
+in ten minutes. The chosen series must include one trap with ratio $=1$. Discuss groups that
+use different tests and are both right. Students are ready to move on when they can explain
+why $\sum 1/n^2$ converges while $\sum 1/n$ does not, using only block grouping.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+\item A series is a sequence of partial sums; converging means that sequence converges.
+\item For nonnegative terms, convergence is equivalent to bounded partial sums. From this
+      come the comparison test, condensation, and the classification of $p$-series:
+      convergent exactly when $p>1$.
+\item The ratio test and the root test measure the speed of shrinking relative to a
+      geometric series. Both are blind at the bound $1$, and the root test is stronger than
+      the ratio test.
+\item The Leibniz test gives convergence for alternating series that decrease to zero,
+      along with an error bound $b_{N+1}$ whose sign is known.
+\item Absolute convergence is immune to grouping and rearrangement. Conditional
+      convergence is not: a Riemann rearrangement can turn the sum into any number, or make
+      it diverge.
+\item The harmonic series diverges logarithmically: $H_{10^6} \approx 14.39$ and it takes
+      $272$ million terms to reach $20$. A stopping rule based on ``the total no longer
+      changes'' cannot be trusted.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+\item Compute $s_{20}$ for the geometric series $\sum_{k=0}^{\infty}
+      \left(\frac{3}{5}\right)^k$, then compare it with the true sum. What is the error,
+      and what error bound can you promise from the formula $\frac{r^{21}}{1-r}$?
+
+\item Prove that $\sum_{n=1}^{\infty} \frac{1}{n(n+2)} = \frac{3}{4}$ by splitting the
+      term into partial fractions and showing that the series telescopes.
+
+\item Prove: if $a_n \ge 0$ and $\sum a_n$ converges, then $\sum a_n^2$ converges. Show by
+      example that the converse is false.
+
+\item Evaluate this claim: true, false, or not yet enough evidence. ``Because
+      $\frac{1}{n} \to 0$ and every term is smaller than the terms of the geometric series
+      with ratio $\frac{1}{2}$ for $n$ sufficiently large, the harmonic series converges.''
+      State exactly where the reasoning breaks.
+
+\item Decide convergence or divergence, naming the test used:
+      (a) $\sum \frac{n^2}{2^n}$, (b) $\sum \frac{2^n}{n^2}$,
+      (c) $\sum \frac{n!}{n^n}$, (d) $\sum \frac{1}{n^{1/3}}$.
+
+\item Compute the sum $\sum_{n=1}^{10^6} \frac{1}{n^2}$ with NumPy, then estimate the tail
+      with $\frac{1}{N} - \frac{1}{2N^2}$ and compare the result with $\pi^2/6$. How many
+      digits after the decimal point are correct before the correction, and after it?
+
+\item The series $\sum \frac{(-1)^{n+1}}{\sqrt{n}}$ converges. Determine the smallest $N$
+      such that the Leibniz bound guarantees an error below $10^{-3}$, then compute the
+      actual error at that $N$ with Python. Is the bound loose or sharp?
+
+\item Prove that if $\sum a_n$ converges absolutely and $(b_n)$ is bounded, then
+      $\sum a_n b_n$ converges absolutely.
+
+\item Rearrange the alternating harmonic series in the pattern three positive terms and one
+      negative. Guess the sum with the method of the worked examples section, then check it
+      numerically. Is the result still a multiple of $\ln 2$?
+
+\item Prove that if $\sum a_n$ converges conditionally, then the series of its positive
+      terms diverges and the series of absolute values of its negative terms diverges as
+      well. Explain why this fact is the fuel of the Riemann rearrangement theorem.
+\end{enumerate}
+
+\noindent\emph{Hints for the three hardest items.} Item 7: the Leibniz bound uses the
+first discarded term, so solve $\frac{1}{\sqrt{N+1}} < 10^{-3}$ and check whether that
+inequality is sharp enough. Item 9: after $K$ blocks, the positive terms are used up to
+denominator $6K-1$, the negative ones up to $\frac{1}{2K}$; write the partial sums in terms
+of $H_{6K}$, $H_{3K}$, and $H_{K}$, then take the limit. Item 10: write
+$p_n = \max(a_n, 0)$ and $q_n = \max(-a_n, 0)$; then $a_n = p_n - q_n$ and
+$|a_n| = p_n + q_n$, so convergence of one of those series says something about
+$\sum |a_n|$.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is really proved in this chapter are the statements with complete proofs: the Cauchy
+criterion for series, the comparison test, Cauchy condensation, the classification of
+$p$-series, the ratio test and the root test in limit superior form, the Leibniz test
+together with its error bound, and the closure of absolutely convergent series under
+rearrangement. I quote the Riemann rearrangement statement without proof. The primary
+source is Rudin, \emph{Principles of Mathematical Analysis}, chapter ``Numerical Sequences
+and Series'': Theorems 3.22--3.23, 3.25, 3.27--3.28, 3.33--3.34, 3.42--3.43, 3.45--3.46,
+and 3.54--3.55. Abbott, \emph{Understanding Analysis}, chapter ``Sequences and Series'',
+discusses the same material with emphasis on rearrangement in the opening section of that
+chapter.
+
+What is often popularized beyond what is proved is the idea of a threshold between
+convergent and divergent series. Rudin shows that no such threshold exists: two series that
+differ very little can lie on opposite sides, and the procedure can be continued without
+end.
+
+An open question: how reliable is a convergence decision when $a_n$ is available only as a
+noisy estimate, such as the sum of losses in machine learning? For such series there is not
+yet a tidy theory.
+
+Limits of validity: the whole chapter treats series of real numbers. In other normed spaces
+the definition is the same but the tests differ; series of functions require uniform
+convergence (Chapter 14). All numbers come from NumPy 2.5.2, 64-bit arithmetic.
+\end{untukpeneliti}
+
+\peta{Chapter 5 in Rudin, \emph{Principles of Mathematical Analysis}, chapter ``Numerical
+Sequences and Series'': series and partial sums (3.21--3.24), series of nonnegative terms
+and comparison (3.25--3.29), the root and ratio tests (3.33--3.37), absolute convergence and
+rearrangement (3.45--3.55). In Abbott, \emph{Understanding Analysis}, chapter ``Sequences
+and Series'': rearrangement in the opening section of that chapter. This chapter does not
+reuse the prose of Chapter 4; from there it refers only to the definition of a limit, the
+Cauchy criterion, and monotone convergence.}

@@ -1,0 +1,1143 @@
+\chapter{Random Variables and Distributions}
+
+A messaging service receives an average of three requests per second at peak hours.
+That number is printed on the dashboard, and it does not answer the pressing question: how
+often does a single second hold eight requests or more, so that the queue overflows? Two systems can have exactly the same average and behave
+very differently: one almost never overflows, the other several times a day.
+The average alone is not enough, and not because the counting is insufficiently careful.
+
+Chapter 17 gave us a language for events: the probability of one outcome, the probability of a union,
+conditional probability. That language stops working as soon as what we measure is a number.
+``The number of requests in one second'' is not one event but a family of
+infinitely many events, one for each possible value. For
+counts, the probability of each value can still be added up one by one. For a quantity that
+is continuous, that way collapses: a waiting time can be $0.317$ seconds or
+$0.3170001$ seconds, and there is no way to state ``the probability of exactly $0.317$ seconds''
+without assigning weight zero to every value.
+
+So two things are needed: a way to move probability onto the number line, and a way
+to replace summation by integration when the values are continuous.
+Once both exist, the average, the spread, and the shape of the tail can be computed.
+
+\begin{untukanak}
+Imagine a bakery. Every hour, the seller writes down how many loaves were
+sold: sometimes 3, sometimes 11, sometimes none at all. Those records are
+whole numbers, and cannot take the value one half. If we want to know the probability
+of selling exactly 7 loaves, we can compute it: count how many hours sold 7 loaves,
+divide by the number of hours recorded. All the probabilities can be added one by one,
+because the options are few and can be listed.
+
+Now weigh one loaf on a digital scale. The result is not a whole number:
+250.3 grams, or 249.8 grams. However many decimal places we take, there is always
+another possibility closer still. Hence the question ``what is the probability that the weight is
+exactly 250.0000 grams'' is useless, whereas ``what is the probability that the weight lies between 249
+and 251 grams'' is very useful. Probability here belongs not to a single point but to
+an interval.
+
+In this chapter we will learn why those two ways differ, and why both can still
+give a sensible average.
+\end{untukanak}
+
+\section{From Outcomes to Numbers}
+\tingkat{basic}
+
+A measuring instrument does not record events; it records numbers. The bridge is a function
+that takes each outcome of the experiment and assigns one real number. The name
+``random variable'' is misleading: it is not a variable, and it is not random. The randomness
+comes from the probability on the outcome space, whereas the function is ordinary.
+
+\begin{definisi}[Random variable]\index{random variable}
+Let $\Omega$ be the outcome space and $\mathcal{F}$ a collection of events. The mapping
+$X:\Omega\to\mathbb{R}$ is called a \emph{random variable} if for every $x\in\mathbb{R}$
+the set
+\[
+\{X\le x\}=\{\omega\in\Omega : X(\omega)\le x\}
+\]
+is an event, that is, a member of $\mathcal{F}$.
+\end{definisi}
+
+That last condition guarantees that $P(X\le x)$ has a meaning. For almost every function that
+appears in practice it holds automatically, and it fails only for set indicators that
+are not measurable.
+
+As an example, toss three fair coins and let $X$ be the number of heads that appear.
+Its values are $0,1,2,3$ with probabilities $1/8,3/8,3/8,1/8$. Note that $X$ maps
+eight outcomes onto four numbers, so several outcomes share the same value. That is
+why the probability of a value is the probability of a union of events.
+
+We need one tool that answers ``how far have the values moved already'' for all
+thresholds at once, because the threshold is chosen by the reader, not by the author of the book.
+
+\begin{definisi}[Cumulative distribution function]\index{cumulative distribution function}
+The cumulative distribution function of a random variable $X$ is
+$F_X(x)=P(X\le x)$ for $x\in\mathbb{R}$.
+\end{definisi}
+
+\begin{proposisi}[Properties of the distribution function]
+For every random variable $X$ the following hold:
+\begin{enumerate}
+  \item $F_X$ is nondecreasing: if $a\le b$ then $F_X(a)\le F_X(b)$;
+  \item $\lim_{x\to-\infty}F_X(x)=0$ and $\lim_{x\to+\infty}F_X(x)=1$;
+  \item $F_X$ is right-continuous, that is, $F_X(x)=F_X(x^+)$ for every $x$;
+  \item $P(a<X\le b)=F_X(b)-F_X(a)$ for every $a<b$.
+\end{enumerate}
+\end{proposisi}
+
+\begin{proof}
+For (1), the event $\{X\le a\}$ is contained in $\{X\le b\}$ when $a\le b$, and
+probability is monotone with respect to inclusion.
+
+For (2), let $A_n=\{X\le -n\}$. These events are decreasing, and
+$\bigcap_n A_n=\varnothing$ because every outcome yields a finite value. Continuity of
+probability from above, which follows from countable additivity, gives $F_X(-n)\to0$. The
+opposite direction uses $B_n=\{X\le n\}$, which increase to $\Omega$, so that
+$F_X(n)\to1$.
+
+For (3), take a decreasing sequence $y_n\downarrow x$ and $C_n=\{X\le y_n\}$. Then
+$\bigcap_n C_n=\{X\le x\}$, hence $F_X(y_n)\to F_X(x)$ by continuity from above.
+Since the sequence is arbitrary, the right-hand limit equals the value at $x$.
+
+For (4), the event $\{X\le b\}$ splits into $\{X\le a\}$ and $\{a<X\le b\}$,
+so that $F_X(b)=F_X(a)+P(a<X\le b)$.
+\end{proof}
+
+For two tosses of a fair coin with $X$ the number of heads,
+\[
+F_X(x)=\begin{cases}
+0, & x<0,\\
+1/4, & 0\le x<1,\\
+3/4, & 1\le x<2,\\
+1, & x\ge 2.
+\end{cases}
+\]
+This function is defined on the whole number line, even though $X$ takes only the values $0,1,2$.
+That is why $F_X(1.4)=3/4$: the question is not ``is $X$ equal to $1.4$'',
+but ``is $X$ at most $1.4$''. Every jump of the graph is the probability
+mass at a single value. Figure~\ref{fig:tangga-cdf} draws that staircase: three horizontal
+steps, three vertical jumps, and the height of each jump equals the probability
+mass at the point of the jump.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth,x=1.75cm,y=4.2cm]
+  \foreach \y/\lab in {0.25/{1/4},0.75/{3/4},1/{1}}{
+    \draw[layergrey!35,dashed] (-1.35,\y) -- (3.55,\y);
+    \node[left,font=\scriptsize] at (0,\y) {$\lab$};
+  }
+  \draw[->,layergrey] (-1.35,0) -- (3.6,0) node[below] {$x$};
+  \draw[->,layergrey] (0,-0.1) -- (0,1.18) node[left] {$F_X(x)$};
+  \draw[very thick,layerindigo] (-1.25,0) -- (0,0);
+  \draw[very thick,layerindigo] (0,0.25) -- (1,0.25);
+  \draw[very thick,layerindigo] (1,0.75) -- (2,0.75);
+  \draw[very thick,layerindigo] (2,1) -- (3.5,1);
+  \draw[very thick,layerplum] (0,0) -- (0,0.25);
+  \draw[very thick,layerplum] (1,0.25) -- (1,0.75);
+  \draw[very thick,layerplum] (2,0.75) -- (2,1);
+  \fill[layerindigo] (0,0.25) circle (1.8pt);
+  \fill[layerindigo] (1,0.75) circle (1.8pt);
+  \fill[layerindigo] (2,1) circle (1.8pt);
+  \draw[layerindigo,fill=white,thick] (1,0.25) circle (1.8pt);
+  \draw[layerindigo,fill=white,thick] (2,0.75) circle (1.8pt);
+  \node[below,font=\scriptsize] at (0,-0.02) {$0$};
+  \node[below,font=\scriptsize] at (1,-0.02) {$1$};
+  \node[below,font=\scriptsize] at (2,-0.02) {$2$};
+  \node[right,font=\scriptsize,text=layerplum] at (1.06,0.5) {jump $1/2$};
+  \node[right,font=\scriptsize,text=layerplum] at (0.06,0.12) {jump $1/4$};
+\end{tikzpicture}
+\caption{The cumulative distribution function of the number of heads in two tosses of a coin. The graph is
+a flat staircase between the possible values, then jumps exactly at those values. The jumps of
+$1/4$ at $x=0$, $1/2$ at $x=1$, and $1/4$ at $x=2$ are the probability masses $p_X(0)$,
+$p_X(1)$, and $p_X(2)$.
+The filled dot at the left end of every step marks that $F_X$ is right-continuous, so that
+$F_X(1)=3/4$ and not $1/4$.}
+\label{fig:tangga-cdf}
+\end{figure}
+
+\kamus{random variable}{variabel acak}{a function that attaches one number to each
+outcome of the experiment, like a clerk who records one number for every event}
+
+\kamus{cumulative distribution function}{fungsi distribusi kumulatif}{a rising
+staircase: its height at the point $x$ states how much probability has already
+accumulated up to that threshold}
+
+\section{Mass Functions and Density Functions}
+\tingkat{basic}
+
+There are two ways of weighting the values of a random variable. For a variable whose values can
+be listed, the weight attaches to points; for one whose values fill an interval, the weight attaches
+to length. The most common mistake in this topic is to use the first way to
+read the outcome of the second.
+
+\begin{definisi}[Discrete variables and probability mass function]\index{probability mass function}
+$X$ is called \emph{discrete} if its set of values is countable, say
+$\{x_1,x_2,\dots\}$. The \emph{probability mass function} of $X$ is $p_X(x)=P(X=x)$.
+This function satisfies $p_X(x)\ge0$, $p_X(x)\le1$, and $\sum_i p_X(x_i)=1$, as well as
+$F_X(x)=\sum_{x_i\le x}p_X(x_i)$.
+\end{definisi}
+
+For $X$ binomial with $n=2$ and $p=1/2$, the probability mass is $1/4,1/2,1/4$ at
+$x=0,1,2$ and zero elsewhere. Probability mass is never greater than one,
+because it is a probability after all.
+
+\begin{definisi}[Continuous variables and probability density function]\index{density function}
+$X$ is called \emph{continuous} if there exists a function $f_X\ge0$ such that
+\[
+P(a\le X\le b)=\int_a^b f_X(x)\,dx
+\]
+for every $a\le b$, with $\int_{-\infty}^{\infty}f_X(x)\,dx=1$. The function $f_X$
+is called the \emph{probability density function}.
+\end{definisi}
+
+Density is not probability, and the difference is not a matter of terminology. Take $X$ with
+density $f_X(x)=5$ on $[0,1/5]$ and zero outside it. Then $f_X(0.1)=5$, a number
+that is impossible for a probability, whereas
+$P(X\le0.1)=\int_0^{0.1}5\,dx=0.5$. Density may also be unbounded:
+$f_X(x)=\tfrac23x^{-1/3}$ on $(0,1)$ integrates to one even though it blows up near zero.
+The units differ: probability per unit of length, just as population density is people
+per square kilometer. Figure~\ref{fig:batang-dan-kurva} puts
+the two ways side by side: the bars on the left are added by height, the triangle on the
+right by area, and both total one.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth]
+  \begin{scope}[x=1.05cm,y=5.4cm]
+    \draw[->,layergrey] (0,0) -- (5.4,0) node[right] {$x$};
+    \draw[->,layergrey] (0,0) -- (0,0.62) node[left] {$p_X(x)$};
+    \foreach \x/\p in {1/0.1,2/0.2,3/0.3,4/0.4}{
+      \fill[layerorange!40] (\x-0.3,0) rectangle (\x+0.3,\p);
+      \draw[layerbrown,thick] (\x-0.3,0) rectangle (\x+0.3,\p);
+      \node[below,font=\scriptsize] at (\x,0) {$\x$};
+    }
+    \node[font=\scriptsize,text=layerbrown,align=left,anchor=west] at (0.45,0.44)
+      {four bars,\\ total height $=1$};
+  \end{scope}
+  \begin{scope}[xshift=7.7cm,x=1.05cm,y=5.4cm]
+    \draw[->,layergrey] (0,0) -- (5.4,0) node[right] {$x$};
+    \draw[->,layergrey] (0,0) -- (0,0.62) node[left] {$f_X(x)$};
+    \fill[layerteal!25] (0.4,0) -- (2.4,0.5) -- (4.4,0) -- cycle;
+    \draw[layerteal,thick] (0.4,0) -- (2.4,0.5) -- (4.4,0) -- cycle;
+    \draw[layergrey,dashed] (2.4,0) -- (2.4,0.5);
+    \node[above,font=\scriptsize] at (2.4,0.5) {$0.5$};
+    \node[below,font=\scriptsize] at (0.4,0) {$0$};
+    \node[below,font=\scriptsize] at (4.4,0) {$4$};
+    \node[font=\scriptsize,text=layerteal,align=center] at (2.4,0.14)
+      {area $=\tfrac12\cdot4\cdot0.5=1$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Two ways of weighting that both total one. Left: four bars
+of height $0.1$, $0.2$, $0.3$, $0.4$ at the values $1,2,3,4$, added by
+height. Right: a triangle-shaped density with peak $0.5$ on $[0,4]$,
+added by area, and $\tfrac12\cdot4\cdot0.5=1$. The height $0.5$ in the right-hand panel
+is not a probability of anything; what has probability is the area of the slice beneath it.}
+\label{fig:batang-dan-kurva}
+\end{figure}
+
+\begin{bacakeras}
+Read aloud in pairs, one person taking the Height voice and one the Weight voice. Start
+slowly, then speed up.
+
+Height: I am the height of the curve. I tower at one point, and everyone points at me.
+Weight: I am the weight under the curve. I pile up along the interval, and everyone weighs me.
+Height: My number may be five. May be ten. May be unbounded.
+Weight: My number never exceeds one, because I am the whole of probability.
+Height: Without me, you do not know where the most frequent value lies.
+Weight: Without me, you do not know whether that peak contains anything.
+Together: Height points to the place. Weight weighs the content.
+
+Repeat together three times, more slowly each time: probability is weight, not height.
+\end{bacakeras}
+
+\begin{teorema}\index{density}
+If $X$ is continuous with density $f_X$, then $F_X(x)=\int_{-\infty}^{x}f_X(t)\,dt$,
+and $f_X(x)=F_X'(x)$ at every point $x$ where $F_X$ is differentiable.
+\end{teorema}
+
+\begin{proof}
+The first equation is the definition of density with $a=-\infty$ and $b=x$. The second
+equation is the first part of the fundamental theorem of calculus: the derivative of the accumulation
+function equals $f_X$ at every point where $f_X$ is continuous.
+\end{proof}
+
+The question that most often causes confusion: if $X$ is continuous then
+$P(X=x)=0$ for every $x$, because $\int_x^x f_X=0$. Does that mean that the event $X=x$
+is impossible? No. The set $\{\omega:X(\omega)=x\}$ still exists and can still contain
+outcomes; what is zero is its probability, not its existence.
+
+The difficulty appears when we try to add up all the points. The interval $[0,1]$ is an uncountable
+union of points of probability zero, yet $P(0\le X\le1)=1$. There is no
+contradiction: the third axiom of Chapter 17 guarantees additivity only for
+\emph{countable} unions, and the integral measures length, it does not count points.
+
+There is a practical layer. NumPy's built-in generator forms values
+as multiples of $2^{-53}$, so there are only $2^{53}$ possible outputs on $[0,1)$, and
+the probability that one particular value appears in $10^7$ draws is about
+$10^7/2^{53}=1.1\times10^{-9}$. On a computer ``probability zero'' is really
+$2^{-53}\approx1.1\times10^{-16}$; the zero we write is the idealization.
+
+\begin{contoh}
+Let $X$ be uniform on $(0,1)$, with $f_X(x)=1$ for $0<x<1$. Then
+\[
+P(0.49<X<0.51)=\int_{0.49}^{0.51}1\,dx=0.02,
+\qquad P(X=0.5)=0 .
+\]
+The density around $0.5$ is as large as the density around $0.01$; what distinguishes them
+is only the length of the interval. That is why the right question for a continuous variable
+is always an interval.
+\end{contoh}
+
+\begin{tangan}
+Materials: a tape measure, scissors, card stock, and ten blank cards.
+
+Measure the heights of ten friends to the nearest centimeter, then write one height on each
+card. Make five boxes on the floor from strips of card stock five centimeters wide:
+$150$--$154$, $155$--$159$, up to $170$--$174$. Put each card in the box that
+matches, stacking them upward. What we must see: those stacks have a shape, and the number of
+cards in all the boxes is still ten.
+
+Cut the card stock again into boxes ten centimeters wide, arrange the cards again,
+and see what changes. The stacks become almost half as high, but not a single card
+is lost. The width of the box changes the height of the stack; the number of cards does not
+change. That is the difference between height and weight, and that is why a density must be multiplied
+by the width of the interval before it may be called a probability.
+\end{tangan}
+
+\begin{untukanak}
+Imagine a football field full of people. We want to know where the people are
+most numerous. We cannot answer that by asking ``how many people are exactly at
+this point''. The answer is always zero, because a point has no area. What can
+be answered is ``how many people are there per square meter''. That number is called density,
+and it differs from place to place: dense at the entrance, sparse in the corner of the field.
+
+High density does not mean that there are many people at one point there. High
+density means that around that place, within a small region, people are packed together. If we
+multiply the density by the area of the region, only then does the number of people come out. The same
+holds for probability: density times the length of the interval gives probability, and density
+itself is not probability.
+
+This is why two curves of very different shape can give the same total,
+namely one. What matters is not the height of the curve at one point, but the area beneath it.
+In this chapter we will learn why a question about points must be replaced by a question
+about intervals.
+\end{untukanak}
+
+\section{Expectation and Variance}
+\tingkat{intermediate}
+
+If the whole distribution has to be compressed into a single number, the number chosen
+is its balance point: the location of the center of mass when probability is treated as weight.
+
+\begin{definisi}[Expectation]\index{expectation}
+The expectation of a random variable $X$ is
+\[
+\mathbb{E}[X]=\sum_i x_i\,p_X(x_i)
+\qquad\text{or}\qquad
+\mathbb{E}[X]=\int_{-\infty}^{\infty}x\,f_X(x)\,dx,
+\]
+depending on whether $X$ is discrete or continuous. The expectation exists only if
+$\mathbb{E}[|X|]<\infty$; otherwise the expectation of $X$ is said not to exist.
+\end{definisi}
+
+That absolute-value condition is not excessive caution. For the Cauchy distribution with
+density $f(x)=1/(\pi(1+x^2))$, $\int|x|f(x)dx$ diverges, so that $\mathbb{E}[X]$
+does not exist even though the distribution is symmetric about zero; the sample mean does not
+concentrate anywhere, however much data we add. Chapter 19 uses this example
+as a boundary of the law of large numbers.
+
+As short computations, for $X$ Bernoulli with $P(X=1)=p$,
+$\mathbb{E}[X]=0\cdot(1-p)+1\cdot p=p$. For $X$ uniform on $(0,1)$,
+$\mathbb{E}[X]=\int_0^1x\,dx=1/2$.
+
+What is often needed is not the expectation of $X$ but the expectation of a function of $X$, for example
+$\mathbb{E}[X^2]$. The direct route is to find the density of $X^2$ first, then
+integrate. There is a much shorter route.
+
+\begin{teorema}[Expectation of a function of a random variable]
+For a function $r$ and a random variable $X$,
+\[
+\mathbb{E}[r(X)]=\sum_i r(x_i)\,p_X(x_i)
+\qquad\text{or}\qquad
+\mathbb{E}[r(X)]=\int_{-\infty}^{\infty}r(x)\,f_X(x)\,dx .
+\]
+\end{teorema}
+
+\begin{proof}
+For the discrete case, group the values according to $y=r(x)$:
+\[
+\sum_i r(x_i)p_X(x_i)=\sum_y y\sum_{i:\,r(x_i)=y}p_X(x_i)=\sum_y y\,P(r(X)=y),
+\]
+and the last expression is the definition of $\mathbb{E}[r(X)]$ because $r(X)$ is discrete with
+probability mass $P(r(X)=y)$. For the continuous case, the proof is the change-of-variables
+formula for integrals in Chapter 15; the same grouping applies with integrals
+replacing sums.
+\end{proof}
+
+\begin{proposisi}[Linearity of expectation]
+For random variables $X,Y$ and constants $a,b$,
+$\mathbb{E}[aX+bY]=a\,\mathbb{E}[X]+b\,\mathbb{E}[Y]$.
+\end{proposisi}
+
+\begin{proof}
+For the discrete case with joint mass $p(x,y)$,
+\[
+\mathbb{E}[aX+bY]=\sum_{x,y}(ax+by)p(x,y)
+=a\sum_x x\sum_y p(x,y)+b\sum_y y\sum_x p(x,y)=a\,\mathbb{E}[X]+b\,\mathbb{E}[Y].
+\]
+The continuous case is identical with integrals replacing sums.
+\end{proof}
+
+What is not used here is independence: linearity holds for any variables,
+including strongly dependent ones. Hence it is safe for sums of indicators, but it may not
+be used for products: $\mathbb{E}[XY]=\mathbb{E}[X]\mathbb{E}[Y]$ requires
+independence.
+
+Expectation gives the center, but it does not give the width; the most widely used measure of width
+is the average squared distance to the center.
+
+\begin{definisi}[Variance]\index{variance}
+The variance of $X$ with $\mu=\mathbb{E}[X]$ is
+$\operatorname{Var}(X)=\mathbb{E}\bigl[(X-\mu)^2\bigr]$, and its standard deviation is
+$\sigma_X=\sqrt{\operatorname{Var}(X)}$.
+\end{definisi}
+
+\begin{proposisi}
+If the variance exists, then $\operatorname{Var}(X)=\mathbb{E}[X^2]-\mu^2$ and
+$\operatorname{Var}(aX+b)=a^2\operatorname{Var}(X)$.
+\end{proposisi}
+
+\begin{proof}
+Expand the square and use linearity:
+\[
+\mathbb{E}[(X-\mu)^2]=\mathbb{E}[X^2]-2\mu\,\mathbb{E}[X]+\mu^2
+=\mathbb{E}[X^2]-\mu^2 .
+\]
+For the second property, $\mathbb{E}[aX+b]=a\mu+b$, so that
+$\operatorname{Var}(aX+b)=\mathbb{E}[(aX+b-a\mu-b)^2]=a^2\mathbb{E}[(X-\mu)^2]$.
+\end{proof}
+
+For $X$ Bernoulli, $\mathbb{E}[X^2]=p$ because $X^2=X$ for the values $0$ and $1$,
+so that $\operatorname{Var}(X)=p-p^2=p(1-p)$. For $X$ uniform on $(0,1)$,
+$\mathbb{E}[X^2]=1/3$, so that $\operatorname{Var}(X)=1/3-1/4=1/12\approx0.083333$.
+Variance has squared units, whereas the standard deviation has the same units as $X$. One
+costly warning: $\mathbb{E}[X^2]\ne\mathbb{E}[X]^2$, and the difference is precisely
+the variance; for the uniform variable above, $0.25$ against $0.333333$.
+
+\begin{resep}
+Materials: a table of values $x_i$ and probabilities $p_X(x_i)$.
+\begin{enumerate}
+  \item Add up all the $p_X(x_i)$. If the result is not one, the table is not yet valid.
+  \item Multiply each $x_i$ by $p_X(x_i)$, then add: that is $\mathbb{E}[X]$.
+  \item Square each $x_i$ first, multiply by $p_X(x_i)$, then add:
+        that is $\mathbb{E}[X^2]$.
+  \item Subtract the square of the result of step 2 from the result of step 3, namely
+        $\operatorname{Var}(X)=\mathbb{E}[X^2]-(\mathbb{E}[X])^2$; its square root
+        is the standard deviation.
+\end{enumerate}
+Example: for $x=0,1,2,3$ with $p=0.1;\,0.2;\,0.3;\,0.4$, step 2 gives
+$2$, step 3 gives $5$, and step 4 gives $1$.
+
+Warning about the order: square $x_i$ before multiplying by the probability, and subtract
+$\mu^2$ after $\mathbb{E}[X^2]$ has been fully added up. Swapping that order produces
+a number that measures no width at all.
+\end{resep}
+
+\kamus{expectation}{harapan}{the balance point of a loaded ruler: one number that
+marks where the values pile up}
+
+\kamus{variance}{variansi}{a measure of how far typical values stray from the balance
+point, computed from squared distances so that plus and minus signs do not cancel each other}
+
+\section{Four Discrete Distributions}
+\tingkat{intermediate}
+
+Four families of discrete distributions suffice for most practical work: one
+binary trial, the number of binary trials, the waiting time until the first success, and
+rare events in a time interval.
+
+\paragraph{Bernoulli.} $X$ Bernoulli with parameter $p\in[0,1]$ takes the value $1$ with
+probability $p$ and $0$ with probability $1-p$, so that $p_X(x)=p^x(1-p)^{1-x}$ for
+$x\in\{0,1\}$. From those two points, $\mathbb{E}[X]=p$ and
+$\operatorname{Var}(X)=p(1-p)$; the variance is largest at $p=1/2$, namely $1/4$, exactly
+when the two possibilities are balanced.
+
+\paragraph{Binomial.} If $n$ independent Bernoulli trials with success probability $p$
+are run, the number of successes $X$ is binomial with
+\[
+p_X(k)=\binom{n}{k}p^k(1-p)^{n-k},\qquad k=0,1,\dots,n .
+\]
+Its mean and variance are derived most easily by splitting $X$ into indicators,
+not from that formula.
+
+\begin{teorema}\index{binomial distribution}
+If $X$ is binomial with parameters $n$ and $p$, then
+$\mathbb{E}[X]=np$ and $\operatorname{Var}(X)=np(1-p)$.
+\end{teorema}
+
+\begin{proof}
+Write $X=\sum_{i=1}^{n}X_i$ with $X_i=1$ if trial $i$ succeeds and $0$ if it
+fails. Each $X_i$ is Bernoulli with parameter $p$, hence $\mathbb{E}[X_i]=p$ and
+$\operatorname{Var}(X_i)=p(1-p)$. Linearity gives
+$\mathbb{E}[X]=\sum_i\mathbb{E}[X_i]=np$ without using independence at all.
+
+For the variance, independence is needed for the first time. Because the trials are independent, the pairs
+$X_i,X_j$ with $i\ne j$ are independent too, so that
+$\operatorname{Cov}(X_i,X_j)=p^2-p^2=0$. Hence
+\[
+\operatorname{Var}(X)=\sum_{i=1}^{n}\operatorname{Var}(X_i)
++2\sum_{i<j}\operatorname{Cov}(X_i,X_j)=np(1-p).
+\]
+\end{proof}
+
+The variance formula is more fragile than the mean formula: the former requires independence,
+the latter does not. For $n=20$ and $p=0.35$, $\mathbb{E}[X]=7$ and
+$\operatorname{Var}(X)=4.55=91/20$, with standard deviation $2.133073$; the mass
+around the center is $p_X(7)=0.184401$, $p_X(10)=0.068614$, $p_X(12)=0.013564$.
+The tail is small but not zero: $P(X\ge12)=0.019579$ and $P(X\le4)=0.118197$, so the
+rule ``reject a box if it contains twelve defects or more'' rejects about two percent of
+boxes.
+
+\paragraph{Geometric.} If independent Bernoulli trials are repeated until the first success,
+the number of trials needed is $X$ geometric with
+$p_X(k)=p(1-p)^{k-1}$ for $k=1,2,\dots$ Its total mass is one because of the geometric series:
+$\sum_{k\ge1}p(1-p)^{k-1}=p/(1-(1-p))=1$. With $q=1-p$,
+\[
+\sum_{k\ge1}kq^{k-1}=\frac{d}{dq}\frac{1}{1-q}=\frac{1}{(1-q)^2}=\frac{1}{p^2},
+\]
+so that $\mathbb{E}[X]=p\cdot p^{-2}=1/p$ and, in a similar way,
+$\operatorname{Var}(X)=(1-p)/p^2$ from $\mathbb{E}[X^2]=(2-p)/p^2$. For $p=0.2$:
+$\mathbb{E}[X]=5$, $\operatorname{Var}(X)=20$, $P(X=5)=0.081920$ and
+$P(X>10)=0.10737418$; a simulation of $10^5$ draws gives mean $4.99176$ with
+standard error $0.01414$.
+
+\paragraph{Poisson.} For $X$ Poisson with parameter $\lambda>0$,
+\[
+p_X(k)=e^{-\lambda}\frac{\lambda^k}{k!},\qquad k=0,1,2,\dots
+\]
+Its total mass is one because of the exponential series:
+$e^{-\lambda}\sum_k\lambda^k/k!=1$. Its mean and variance are equal, and both
+come out of a single trick. Because $k/k!=1/(k-1)!$,
+\[
+\mathbb{E}[X]=\sum_{k\ge1}k\,e^{-\lambda}\frac{\lambda^k}{k!}
+=\lambda e^{-\lambda}\sum_{k\ge1}\frac{\lambda^{k-1}}{(k-1)!}=\lambda .
+\]
+Writing $k(k-1)/k!=1/(k-2)!$ gives $\mathbb{E}[X(X-1)]=\lambda^2$, hence
+$\operatorname{Var}(X)=\lambda$. One parameter governs the center and the width at once, and that
+restricts the Poisson: data whose variance far exceeds their mean (called
+\emph{overdispersion}) do not fit the Poisson model.
+
+For $\lambda=3$: $p_X(0)=0.049787$, $p_X(3)=0.224042$,
+$P(X\ge8)=0.011905$. That last number answers the queueing question from the opening of the chapter:
+with three requests per second, about $1.2$ percent of seconds contain eight
+requests or more.
+
+The Poisson is the limit of the binomial when $n$ is large, $p$ is small, and $np\to\lambda$. For
+$n=1000$ and $p=0.003$, the binomial gives $P(0)=0.049563083$ whereas the Poisson
+gives $e^{-3}=0.049787068$, a relative difference of $-4.5\times10^{-3}$. The error is small but
+not zero and its sign changes with $k$; the Poisson is used as an approximation, not as an
+identity.
+
+\section{Three Continuous Distributions}
+\tingkat{intermediate}
+
+\paragraph{Uniform.} $X$ is uniform on $(a,b)$ if its density is $1/(b-a)$ inside
+that interval and zero outside. Its distribution function rises linearly from $0$ to $1$, and
+\[
+\mathbb{E}[X]=\frac{a+b}{2},\qquad
+\operatorname{Var}(X)=\frac{(b-a)^2}{12}.
+\]
+The factor $12$ comes from $\int_a^b(x-\tfrac{a+b}{2})^2\frac{dx}{b-a}=(b-a)^2/12$; for
+$(0,1)$ the result is $1/12\approx0.083333$, the same as the computation through
+$\mathbb{E}[X^2]$ in the previous section.
+
+\paragraph{Exponential.} $X$ exponential with parameter $\beta>0$ has
+density $f_X(x)=\beta^{-1}e^{-x/\beta}$ for $x>0$, with
+$F_X(x)=1-e^{-x/\beta}$, $\mathbb{E}[X]=\beta$, and $\operatorname{Var}(X)=\beta^2$.
+The parameter $\beta$ is the mean waiting time. The property that distinguishes it from every
+other continuous distribution is the absence of memory.
+
+\begin{proposisi}[Memoryless]\index{exponential distribution}
+For $s,t\ge0$, $P(X>s+t\mid X>s)=P(X>t)$.
+\end{proposisi}
+
+\begin{proof}
+$P(X>u)=e^{-u/\beta}$, so that
+\[
+P(X>s+t\mid X>s)=\frac{P(X>s+t)}{P(X>s)}
+=\frac{e^{-(s+t)/\beta}}{e^{-s/\beta}}=e^{-t/\beta}=P(X>t).
+\]
+\end{proof}
+
+A component that has already lasted five years is no more likely to last one more year
+than a new component: sensible for a process without aging, absurd for a lamp that wears out.
+For $\beta=2$, $P(X>3)=0.22313016$ and a simulation of $10^5$ draws
+gives $0.22237$;
+conditional on $X>2$, the empirical probability of $X>5$ is $0.22028$ against the theoretical
+$0.22313$. The exponential is the continuous twin of the geometric: if arrivals follow a
+Poisson process with rate $\lambda$, the gaps between arrivals are exponential with
+$\beta=1/\lambda$.
+
+\paragraph{Normal.} $X$ normal with parameters $\mu$ and $\sigma^2>0$ has
+density
+\[
+f_X(x)=\frac{1}{\sigma\sqrt{2\pi}}
+\exp\!\left(-\frac{(x-\mu)^2}{2\sigma^2}\right),\qquad x\in\mathbb{R}.
+\]
+The constant in front is not a choice: it is the only value that makes the area under the
+curve equal to one. That the area is one is proved with polar coordinates in Chapter 15:
+write $I^2$ as the double integral of $e^{-(x^2+y^2)/2}$, change to polar, and obtain
+$I^2=2\pi$.
+
+\begin{proposisi}
+If $X\sim N(\mu,\sigma^2)$, then $Z=(X-\mu)/\sigma\sim N(0,1)$.
+\end{proposisi}
+
+\begin{proof}
+$F_Z(z)=P(X\le\mu+\sigma z)=F_X(\mu+\sigma z)$. Differentiate with respect to $z$ by the chain
+rule: $f_Z(z)=\sigma f_X(\mu+\sigma z)=\varphi(z)$, the standard normal density.
+\end{proof}
+
+The function $\Phi(z)=P(Z\le z)$ has no elementary form; it is computed numerically or
+read from a table. Three numbers worth memorizing: $P(|Z|\le1)=0.682689492137$,
+$P(|Z|\le2)=0.954499736104$, $P(|Z|\le3)=0.997300203937$. For a probability that is not
+symmetric, subtract two values of $\Phi$: $P(1<Z<2)=0.135905122$. Its quantile,
+$\Phi^{-1}(0.975)=1.959964$, appears in every 95 percent confidence interval in
+Chapter 20.
+
+The normal is not a more correct distribution than the others. It matters for two
+different reasons: many natural quantities approach it, and the sum of many independent variables
+tends to approach it whatever their original shape. The second reason is the central limit
+theorem, proved in Chapter 19.
+
+\kamus{normal distribution}{distribusi normal}{the symmetric bell curve: almost
+all values pile up near the center, and the tails thin out very quickly}
+
+\kamus{exponential distribution}{distribusi eksponensial}{waiting time in a process
+without aging: one that has waited a long time is no closer to the next event}
+
+\section{Joint Distributions, Covariance, and Correlation}
+\tingkat{advanced}
+
+Two separate distributions do not store information about whether the two quantities
+tend to rise together. The tool for that is the joint distribution.
+
+\begin{contoh}
+Let $X,Y\in\{0,1\}$ with joint mass $P(0,0)=0.1$, $P(0,1)=0.2$,
+$P(1,0)=0.3$, $P(1,1)=0.4$. Adding up rows and columns gives the marginals
+$P(X=1)=0.7$ and $P(Y=1)=0.6$. If $X$ and $Y$ were independent, the mass at $(1,1)$
+would have to be $0.42$, whereas the actual value is $0.4$; so the two are not independent,
+even though the difference is small.
+\end{contoh}
+
+In the continuous case, the joint distribution is described by the joint density
+$f_{X,Y}\ge0$ with $\iint f_{X,Y}=1$, and the marginals are obtained by
+integrating one variable out: $f_X(x)=\int f_{X,Y}(x,y)\,dy$. Independence means
+$f_{X,Y}(x,y)=f_X(x)f_Y(y)$ for all $x,y$.
+
+\begin{definisi}[Covariance and correlation]\index{covariance}\index{correlation}
+With $\mu_X=\mathbb{E}[X]$ and $\mu_Y=\mathbb{E}[Y]$,
+\[
+\operatorname{Cov}(X,Y)=\mathbb{E}\bigl[(X-\mu_X)(Y-\mu_Y)\bigr],
+\qquad
+\rho(X,Y)=\frac{\operatorname{Cov}(X,Y)}{\sigma_X\sigma_Y}.
+\]
+\end{definisi}
+
+Positive covariance means the two variables tend to deviate in the same direction;
+negative means in opposite directions. Correlation is the unitless version of covariance.
+
+\begin{proposisi}
+$\operatorname{Cov}(X,Y)=\mathbb{E}[XY]-\mathbb{E}[X]\mathbb{E}[Y]$ and
+$-1\le\rho(X,Y)\le1$.
+\end{proposisi}
+
+\begin{proof}
+Expand the product and use linearity. For the bound on correlation, consider the inner product
+$\langle U,V\rangle=\mathbb{E}[UV]$ on centered variables; the Cauchy-Schwarz
+inequality of Chapter 10 gives
+$|\langle U,V\rangle|^2\le\langle U,U\rangle\langle V,V\rangle$, namely
+$\operatorname{Cov}(X,Y)^2\le\sigma_X^2\sigma_Y^2$.
+\end{proof}
+
+\begin{teorema}
+$\operatorname{Var}(X+Y)=\operatorname{Var}(X)+\operatorname{Var}(Y)
++2\operatorname{Cov}(X,Y)$.
+\end{teorema}
+
+\begin{proof}
+Write $X+Y-\mu_X-\mu_Y=(X-\mu_X)+(Y-\mu_Y)$, square it, and then use linearity on
+the three terms that appear; the cross term is exactly twice the covariance.
+\end{proof}
+
+Back to the table above: $\mathbb{E}[X]=7/10$, $\mathbb{E}[Y]=3/5$,
+$\mathbb{E}[XY]=2/5$, so that $\operatorname{Cov}(X,Y)=-1/50=-0.02$. With
+$\operatorname{Var}(X)=21/100$ and $\operatorname{Var}(Y)=6/25$, the correlation is
+$-0.089087$ and $\operatorname{Var}(X+Y)=0.41$.
+
+Zero covariance is often mistaken for independence, whereas the implication runs only one way:
+independence implies zero covariance, not the reverse. Take $X$ taking the values $-1,0,1$ with
+equal probability and $Y=X^2$; then $\mathbb{E}[X]=0$ and
+$\mathbb{E}[XY]=\mathbb{E}[X^3]=0$, so that the correlation is zero, even though $Y$ is determined
+completely by $X$. Covariance captures only dependence in the form of a straight line.
+
+\kamus{covariance}{kovarians}{a measure of whether two quantities tend to rise and fall
+together, computed from the product of their deviations}
+
+\section{Transformations of Random Variables}
+\tingkat{advanced}
+
+This work comes up again and again: prices converted to logarithms, lengths to areas, waiting times
+to rates. The question is always the same, namely how the distribution changes when
+$Y=r(X)$.
+
+In the discrete case the answer is simple: mass is moved from the old values to the new
+values. Let $P(X=-1)=1/4$, $P(X=0)=1/2$, $P(X=1)=1/4$, and $Y=X^2$. Then
+$P(Y=0)=1/2$ and $P(Y=1)=P(X=-1)+P(X=1)=1/2$; $Y$ has only two values, fewer
+than $X$, because $r(x)=x^2$ is not one-to-one.
+
+In the continuous case the mass is zero at every point, so what is moved is length,
+and length changes scale. Three standard steps answer everything: determine
+$A_y=\{x:r(x)\le y\}$, compute $F_Y(y)=\int_{A_y}f_X(x)\,dx$, then differentiate
+$f_Y=F_Y'$.
+
+\begin{teorema}[Monotone transformation]\index{transformation of random variables}
+If $r$ is strictly monotone and differentiable, with inverse $s=r^{-1}$, then
+\[
+f_Y(y)=f_X\bigl(s(y)\bigr)\left|\frac{ds(y)}{dy}\right| .
+\]
+\end{teorema}
+
+\begin{proof}
+Suppose $r$ is strictly increasing. Then $r(x)\le y$ is equivalent to $x\le s(y)$, so that
+$F_Y(y)=F_X(s(y))$, and the chain rule gives $f_Y(y)=f_X(s(y))s'(y)$ with
+$s'(y)>0$. If $r$ is strictly decreasing, the inequality reverses: $F_Y(y)=1-F_X(s(y))$, so that
+$f_Y(y)=-f_X(s(y))s'(y)=f_X(s(y))|s'(y)|$.
+\end{proof}
+
+The factor $|ds/dy|$ is local stretching: if $r$ stretches the scale, the density
+decreases, because the same probability is spread over a longer interval. In more than
+one dimension that factor becomes the Jacobian determinant, whose general form is in Chapter 15.
+Figure~\ref{fig:transformasi-sumbu} shows that stretching for $Y=X^2$: four
+intervals of equal length land on intervals that grow longer as $y$ approaches one,
+while the density of $Y$ rises near zero, where the intervals shorten.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize,>=Stealth]
+  \draw[->,layergrey] (-0.25,0) -- (7.3,0) node[right] {$x$};
+  \foreach \px/\lab in {0/0,1.75/0.25,3.5/0.5,5.25/0.75,7/1}{
+    \draw[layergrey] (\px,0.07) -- (\px,-0.07);
+    \node[above,font=\scriptsize] at (\px,0.07) {$\lab$};
+  }
+  \node[font=\scriptsize,text=layergrey,anchor=west] at (0.15,0.55)
+    {equal-length intervals};
+  \draw[->,layergrey] (-0.25,-2.6) -- (7.3,-2.6) node[right] {$y=x^2$};
+  \foreach \px/\lab/\anc in {0/0/east,0.44/0.0625/east,1.75/0.25/north,
+                             3.94/0.5625/west,7/1/west}{
+    \draw[layergrey] (\px,-2.53) -- (\px,-2.67);
+    \node[below,font=\scriptsize,anchor=\anc] at (\px,-2.67) {$\lab$};
+  }
+  \foreach \px/\py in {0/0,1.75/0.44,3.5/1.75,5.25/3.94,7/7}{
+    \draw[->,layerindigo] (\px,-0.05) -- (\py,-2.55);
+  }
+  \node[font=\scriptsize,text=layerindigo,align=center,anchor=west] at (1.0,-1.85)
+    {interval shortens,\\ density rises};
+  \node[font=\scriptsize,text=layerindigo,align=center,anchor=east] at (6.6,-1.85)
+    {interval lengthens,\\ density falls};
+  \begin{scope}[xshift=8.7cm,yshift=-2.6cm]
+    \draw[->,layergrey] (0,0) -- (5.4,0) node[right] {$y$};
+    \draw[->,layergrey] (0,0) -- (0,3.95) node[left] {$f_Y(y)$};
+    \draw[layerplum,very thick,domain=0.12:1,samples=100,smooth,variable=\t]
+      plot ({5.0*\t},{1.175/sqrt(\t)});
+    \draw[layerplum,dashed] (0,0) -- (0,3.8);
+    \node[below,font=\scriptsize,anchor=east] at (0,0) {$0$};
+    \node[below,font=\scriptsize] at (1.25,0) {$0.25$};
+    \node[below,font=\scriptsize,anchor=west] at (5.0,0) {$1$};
+    \draw[layergrey,dotted] (5.0,0) -- (5.0,1.175);
+    \node[font=\scriptsize,text=layerplum,anchor=west] at (0.25,3.45) {blows up near $0$};
+  \end{scope}
+\end{tikzpicture}
+\caption{The transformation $Y=X^2$ for $X$ uniform on $(0,1)$, drawn on two axes.
+The point $x=0.25$ lands at $y=0.0625$, $x=0.5$ at $y=0.25$, and $x=0.75$ at
+$y=0.5625$; an interval of length $0.25$ near zero shortens to $0.0625$, whereas the same interval
+near one lengthens to $0.4375$. The right-hand panel is the density
+$f_Y(y)=1/(2\sqrt{y})$: its value is $2$ at $y=0.0625$, $1$ at $y=0.25$, and $0.5$ at
+$y=1$. The density rises exactly where the interval shortens, so that the total area stays
+one.}
+\label{fig:transformasi-sumbu}
+\end{figure}
+
+If $r$ is not monotone, the theorem above does not apply directly, but the three standard
+steps still work with $A_y$ a union of intervals.
+
+\begin{contoh}
+Let $X$ be uniform on $(-1,3)$, so that $f_X(x)=1/4$ inside it, and $Y=X^2$
+taking values in $(0,9)$. For $0<y<1$ the set $A_y=[-\sqrt y,\sqrt y]$ lies entirely
+inside $(-1,3)$, so $F_Y(y)=\tfrac14\cdot2\sqrt y=\sqrt y/2$; for $1\le y<9$
+that set becomes $[-1,\sqrt y]$, so $F_Y(y)=(\sqrt y+1)/4$. Its derivative is
+\[
+f_Y(y)=\begin{cases}
+\dfrac{1}{4\sqrt y}, & 0<y<1,\\[4pt]
+\dfrac{1}{8\sqrt y}, & 1<y<9,\\[4pt]
+0, & \text{elsewhere}.
+\end{cases}
+\]
+The two branches add up to one, $\tfrac12$ and $\tfrac12$. The density of $Y$ blows up
+near zero: $x^2$ compresses the intervals there.
+\end{contoh}
+
+If $X$ is uniform on $(0,1)$ and $Y=X^2$, the result is tidier: $F_Y(y)=\sqrt y$ and
+$f_Y(y)=1/(2\sqrt y)$, which is checked numerically in the Lab. If $Y=-\ln X$, then
+$F_Y(y)=1-e^{-y}$, exponential with $\beta=1$: taking the logarithm of a uniform number
+produces an exponential waiting time, and the converse is what computers use.
+If $U$ is uniform and $F$ is the distribution function we want, then $F^{-1}(U)$
+has distribution $F$.
+
+\begin{tantangan}
+A set of lecture notes proposes the waiting-time density
+\[
+f(x)=\frac{1}{2\sqrt{x}},\qquad 0<x<4,
+\]
+on the grounds that it is ``positive, decreasing, and similar in shape to the example above''. From that density
+the author computes $P(X\le4)=1$ and then concludes that the distribution is already valid.
+
+Examine that claim. Determine the total area under $f$, repair the density in two different valid
+ways, and explain why the repair is not unique.
+
+Hint 1: what decides the matter is not the value of $f$ at a single point, but the whole region
+under its curve.
+
+Hint 2: compute $\int_0^4\tfrac12 x^{-1/2}\,dx$; the result is $2$, not $1$. For the
+total to be one, the constant in front must be halved to $1/4$, or the interval must be
+narrowed to $(0,1)$ with the constant unchanged.
+
+If you get stuck, go back to the section ``Mass Functions and Density Functions''.
+\end{tantangan}
+
+\begin{untukanak}
+Imagine a lamp on the floor and a ball between the lamp and the wall.
+The shadow of the ball on the wall is much larger than the ball, and the farther the ball is from
+the lamp, the larger the shadow. Nothing increases in amount: the paint on the ball
+stays the same, it is merely spread over a larger area.
+
+Now move the ball a little when it is already far from the lamp. Its shadow moves
+a long way. When the ball is still close to the lamp, the same movement shifts the shadow only
+a little. That is, one centimeter near the lamp becomes many centimeters on the wall,
+whereas one centimeter far from the lamp becomes very many centimeters.
+
+Changing a random variable works like that. Some regions are compressed and some
+are stretched, and the resulting density has to adjust so that the total
+stays one. If it does not adjust, probability will appear out of thin air or vanish
+somewhere.
+\end{untukanak}
+
+\section{A Worked Example}
+\tingkat{intermediate}
+
+A production line fills boxes containing 20 fuses. Each fuse is defective with
+probability $0.35$, independently of the others, and a box is rejected if it contains twelve defects or
+more.
+
+With $n=20$ and $p=0.35$, the rejection rule gives $P(X\ge12)=0.019579$ from
+the binomial tail, not from a normal approximation. Even the most likely value, $X=7$, has
+probability only $18.4$ percent, so that one box does not tell us much.
+
+A simulation of $10^5$ boxes with \texttt{default\_rng(20261024)} gives mean
+$7.005260$ and variance $4.552918$. The standard error of the mean is $0.006745$, so the
+deviation is $+0.78$ standard errors; the standard error of the variance is about $0.020348$, so the
+deviation is $+0.14$. Both are close, and that is to be expected: a simulation does not
+prove a formula, it only fails to refute it.
+
+The second check concerns the total probability mass of the Poisson distribution. The sum
+$e^{-\lambda}\lambda^k/k!$ up to a sufficiently large $K$ must equal one. It is computed
+in log space so that nothing overflows:
+
+\begin{center}\small
+\begin{tabular}{rrrr}
+\hline
+$\lambda$ & $K$ & sum & $1-\text{sum}$ \\
+\hline
+$0.5$ & 68 & $1.00000000000000000$ & $0$ \\
+$1$ & 73 & $1.00000000000000000$ & $0$ \\
+$3$ & 83 & $1.00000000000000022$ & $-2.2\times10^{-16}$ \\
+$10$ & 107 & $1.00000000000000311$ & $-3.1\times10^{-15}$ \\
+$50$ & 194 & $0.99999999999999778$ & $+2.2\times10^{-15}$ \\
+$100$ & 280 & $1.00000000000003886$ & $-3.9\times10^{-14}$ \\
+\hline
+\end{tabular}
+\end{center}
+
+The largest deviation appears at $\lambda=100$, namely $3.9\times10^{-14}$, about
+175 times the machine epsilon $2.2\times10^{-16}$. That is not a sign that the formula is wrong, but a
+sign that adding $281$ terms of very different sizes loses a few of the last
+digits; the first fourteen digits are still correct.
+
+The third check concerns the total of the normal density, because the constant
+$1/\sqrt{2\pi}$ is easily mistyped. Adaptive quadrature on $[-8,8]$ gives
+$0.99999999999999878$, so the shortfall is $1.22\times10^{-15}$. Theory
+predicts that shortfall as exactly the tail outside the interval, namely
+$2\Phi(-8)=1.24\times10^{-15}$. The two numbers agree to two significant figures: what
+is missing is indeed the tail, not an error in the constant. On the whole number line the result is
+$0.99999999999999978$ with a printed error estimate of $1.0\times10^{-8}$, a conservative
+estimate.
+
+The fourth check, the transformation: the density $1/(2\sqrt y)$ has integral
+$0.9999999999999992$, with a remainder of $8\times10^{-16}$ from the end at $0$ where the density
+blows up. The simulation gives $F_Y(0.09)=0.29944$, $F_Y(0.25)=0.50003$,
+$F_Y(0.49)=0.69944$, $F_Y(0.81)=0.90057$ against the theoretical $0.3$, $0.5$,
+$0.7$, $0.9$. The standard error of each number is about $0.00145$ at $p=0.3$ and
+$0.00095$ at $p=0.9$; all four deviations are below one standard error.
+
+\kertas{Check by hand. Compute $\binom{20}{7}0.35^7 0.65^{13}$ and
+compare it with $0.184401$; explain why $\sum_{k=0}^{20}p_X(k)=1$ follows from the
+binomial theorem, not from measurement. Finally: the sample mean $7.005260$
+differs from $7$ by $0.00526$. Is that a bug in the program? Answer with the
+standard error $0.006745$.}
+
+\section{Computational Lab}
+\tingkat{advanced}
+
+The following code is run with Python 3, NumPy 2.5.2, and SciPy 1.18.0. All the numbers
+in the table and in the preceding paragraphs come from this run; the seed is fixed at
+$20261024$, so that the results can be repeated.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from math import exp, lgamma, log, sqrt, pi
+from scipy import stats
+from scipy.integrate import quad
+
+rng = np.random.default_rng(20261024)
+R = 100_000
+
+# 1. binomial: exact formula vs Monte Carlo
+n, p = 20, 0.35
+mu, var = n * p, n * p * (1 - p)
+sd = sqrt(var)
+x = rng.binomial(n, p, size=R)
+se = sd / sqrt(R)
+print("Binomial n=20 p=0.35")
+print(f"  theory E={mu:.6f} Var={var:.6f} sd={sd:.6f}")
+print(f"  MC     mean={x.mean():.6f} Var={x.var(ddof=1):.6f}")
+print(f"  SE mean={se:.6f} z={(x.mean()-mu)/se:+.4f}")
+print(f"  SE Var  ={var*sqrt(2/(R-1)):.6f}")
+print(f"  P(X>=12)={stats.binom.sf(11, n, p):.6f}")
+
+# 2. Poisson pmf sum, computed in log space
+print("\nPoisson pmf sum, k=0..K")
+for lam in (0.5, 1.0, 3.0, 10.0, 50.0, 100.0):
+    K = int(lam + 12 * sqrt(lam) + 60)
+    s = sum(exp(-lam + k*log(lam) - lgamma(k+1)) for k in range(K+1))
+    print(f"  lam={lam:6.1f} K={K:4d} sum={s:.17f}"
+          f" 1-sum={1-s:+.2e}")
+
+# 3. total normal density must be 1
+phi = lambda t: exp(-t*t/2) / sqrt(2*pi)
+print("\nStandard normal density")
+print(f"  phi(0)={phi(0):.15f} 1/sqrt(2pi)={1/sqrt(2*pi):.15f}")
+print(f"  quad [-8,8]  ={quad(phi, -8, 8)[0]:.17f}")
+print(f"  remainder={1-quad(phi, -8, 8)[0]:.2e}"
+      f"  2*Phi(-8)={2*stats.norm.cdf(-8):.2e}")
+v, e = quad(phi, -np.inf, np.inf)
+print(f"  quad (-inf,inf)={v:.17f} reported error={e:.1e}")
+
+# 4. transformation X~Unif(0,1)
+u = rng.uniform(0, 1, R)
+y = u * u
+print("\nY=X^2, X~Unif(0,1)")
+print(f"  integral of f_Y={quad(lambda t: 1/(2*sqrt(t)), 0, 1)[0]:.16f}")
+for yy in (0.09, 0.25, 0.49, 0.81):
+    print(f"  F_Y({yy:.2f}) MC={np.mean(y<=yy):.5f} theory={sqrt(yy):.5f}")
+z = -np.log(u)
+print("Y=-ln(X), should be Exp(1)")
+print(f"  mean={z.mean():.5f} SE={1/sqrt(R):.5f}"
+      f" Var={z.var(ddof=1):.5f}")
+print(f"  P(Y>2) MC={np.mean(z>2):.5f} theory={exp(-2):.5f}")
+
+# 5. geometric and exponential
+g = rng.geometric(0.2, R)
+print("\nGeometric p=0.2: E=5 Var=20")
+print(f"  mean={g.mean():.5f} SE={sqrt(20/R):.5f}"
+      f" Var={g.var(ddof=1):.5f}")
+w = rng.exponential(2.0, R)
+print("Exponential beta=2: E=2 Var=4")
+print(f"  mean={w.mean():.5f} SE={2/sqrt(R):.5f}"
+      f" Var={w.var(ddof=1):.5f}")
+print(f"  P(X>3) MC={np.mean(w>3):.5f} theory={exp(-1.5):.5f}")
+print(f"  P(X>5|X>2) MC={np.mean(w[w>2]>5):.5f} theory={exp(-1.5):.5f}")
+\end{verbatim}
+\end{lab}
+
+The output obtained, as it stands:
+
+\begin{verbatim}
+Binomial n=20 p=0.35
+  theory E=7.000000 Var=4.550000 sd=2.133073
+  MC     mean=7.005260 Var=4.552918
+  SE mean=0.006745 z=+0.7798
+  SE Var  =0.020348
+  P(X>=12)=0.019579
+
+Poisson pmf sum, k=0..K
+  lam=   0.5 K=  68 sum=1.00000000000000000 1-sum=+0.00e+00
+  lam=   1.0 K=  73 sum=1.00000000000000000 1-sum=+0.00e+00
+  lam=   3.0 K=  83 sum=1.00000000000000022 1-sum=-2.22e-16
+  lam=  10.0 K= 107 sum=1.00000000000000311 1-sum=-3.11e-15
+  lam=  50.0 K= 194 sum=0.99999999999999778 1-sum=+2.22e-15
+  lam= 100.0 K= 280 sum=1.00000000000003886 1-sum=-3.89e-14
+
+Standard normal density
+  phi(0)=0.398942280401433 1/sqrt(2pi)=0.398942280401433
+  quad [-8,8]  =0.99999999999999878
+  remainder=1.22e-15  2*Phi(-8)=1.24e-15
+  quad (-inf,inf)=0.99999999999999978 reported error=1.0e-08
+
+Y=X^2, X~Unif(0,1)
+  integral of f_Y=0.9999999999999992
+  F_Y(0.09) MC=0.29944 theory=0.30000
+  F_Y(0.25) MC=0.50003 theory=0.50000
+  F_Y(0.49) MC=0.69944 theory=0.70000
+  F_Y(0.81) MC=0.90057 theory=0.90000
+Y=-ln(X), should be Exp(1)
+  mean=0.99811 SE=0.00316 Var=0.99623
+  P(Y>2) MC=0.13478 theory=0.13534
+
+Geometric p=0.2: E=5 Var=20
+  mean=4.99176 SE=0.01414 Var=19.92571
+Exponential beta=2: E=2 Var=4
+  mean=1.99895 SE=0.00632 Var=3.98400
+  P(X>3) MC=0.22237 theory=0.22313
+  P(X>5|X>2) MC=0.22028 theory=0.22313
+\end{verbatim}
+
+Four things can be read from that output. First, every sample mean deviates by less
+than one standard error: $z=+0.78$ for the binomial, whereas $0.99811$, $4.99176$,
+and $1.99895$ against $1$, $5$, and $2$ for the other three cases. A deviation
+of that size has to appear; if all of them were zero, something would be wrong.
+
+Second, the sample variances are slightly below the theoretical value in the long-tailed case,
+$19.92571$ against $20$, because a single very large draw dominates the sum
+of squares. Third, the error of the Poisson summation grows with $\lambda$, from zero to
+$10^{-14}$ as the number of terms increases from $74$ to $281$. Fourth, the resulting
+density integrates to one to $16$ digits, and $F_Y$ matches $\sqrt y$ at four test
+points; the second is more important, because an integral of one only checks the constant,
+whereas agreement at four points checks the shape of the function.
+
+That code does not prove a single theorem in this chapter; it checks that the formulas
+written down give the numbers stated. The proof of $\mathbb{E}[X]=np$ is in the indicator
+argument, the proof of $f_Y(y)=1/(2\sqrt y)$ in the computation of the distribution function;
+the output of a program is data, not an argument.
+
+\begin{untukdosen}
+The order I suggest: two systems with the same mean but different tails, then
+the definition of a random variable, then straight to the cumulative distribution function. Do one small
+table on the board, draw the staircase, ask for $F(1.4)$, and only after that the density.
+Resist the temptation to mention the integral before students see why summation
+is no longer enough.
+
+The two misconceptions that appear most often. First, $f_X(x)$ is read as a probability,
+so that a density of value $5$ feels impossible and $P(X=x)$ is taken to equal
+$f_X(x)$. Second, $P(X=x)=0$ is concluded to mean impossible, so that
+$P(0\le X\le1)=1$ becomes a paradox. The answer is countable additivity: an uncountable
+union is not added up.
+
+Sign of readiness to move on: students can explain the difference between mass and density without
+reading their notes, and can compute $\mathbb{E}[X^2]$ without finding the density of $X^2$.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+\item A random variable is a function from the outcome space to the real numbers, not a random
+      number. The distribution function $F_X(x)=P(X\le x)$ carries the whole information of the distribution:
+      nondecreasing, right-continuous, with limits $0$ and $1$.
+\item A mass function weights points and its values are at most one; a density function
+      weights length, may exceed one, and $P(X=x)=0$ at every point. Probability
+      zero is not impossibility, because only countable unions are added up.
+\item Expectation is the balance point and is linear without any condition of independence;
+      $\operatorname{Var}(X)=\mathbb{E}[X^2]-\mathbb{E}[X]^2$ is the mean squared
+      deviation.
+\item Binomial $\mathbb{E}=np$, $\operatorname{Var}=np(1-p)$, derived through
+      indicators; geometric $\mathbb{E}=1/p$, $\operatorname{Var}=(1-p)/p^2$; Poisson
+      $\mathbb{E}=\operatorname{Var}=\lambda$, the binomial limit for rare events.
+\item The normal is standardized to $N(0,1)$ and read through $\Phi$; the exponential is
+      memoryless, the continuous twin of the geometric.
+\item Covariance measures only linear dependence: zero does not mean independent, and a
+      monotone transformation changes the density by the factor $|ds/dy|$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Let $p_X(-2)=0.1$, $p_X(0)=0.4$, $p_X(3)=c$. Determine $c$, then
+        compute $\mathbb{E}[X]$, $\mathbb{E}[X^2]$, and $\operatorname{Var}(X)$.
+  \item Prove $P(a<X\le b)=F_X(b)-F_X(a)$, then explain why
+        $P(a\le X\le b)$ can differ from $P(a<X\le b)$ for a discrete variable and
+        why the two are equal for a continuous variable.
+  \item Assess this claim: ``because $P(X=x)=0$ for every $x$, the event $X=x$
+        is impossible.'' Name the part that is correct, the part that is wrong, and the role of countable
+        additivity.
+  \item Derive $\mathbb{E}[X^2]=(2-p)/p^2$ for the geometric by differentiating
+        $\sum k^2q^{k-1}$ twice, then conclude $\operatorname{Var}(X)$ and check
+        for $p=0.2$.
+  \item Let $X\sim N(3,4)$. Compute $P(X>1)$, $P(1<X<5)$, and the 0.2 quantile of
+        $X$; compare with \texttt{scipy.stats.norm}.
+  \item Compute $\sum_{k=0}^{40}e^{-2.5}2.5^k/k!$ and $P(X\ge8)$ for the Poisson
+        with $\lambda=2.5$, then compare with the binomial $n=1000$, $p=0.0025$;
+        explain the direction of the difference.
+  \item Prove that the exponential is memoryless, then explain why the geometric is also
+        memoryless and why the uniform on the integers is not.
+  \item For $X$ uniform on $(-1,3)$ and $Y=X^2$, derive $f_Y$, check
+        $\int f_Y=1$, then compute $\mathbb{E}[Y]$ through $f_Y$ and through
+        $\mathbb{E}[X^2]$.
+  \item Construct two variables whose covariance is zero but which are not independent. Compute
+        $\operatorname{Cov}$ and $\rho$ exactly, and exhibit a joint probability
+        that proves the dependence.
+  \item How many repetitions $R$ are needed for the standard error of the mean of a binomial with $n=20$, $p=0.35$
+        to be at most $0.005$? And for the standard error of the variance estimate to be at
+        most $0.02$?
+\end{enumerate}
+
+\noindent\textbf{Hints.} Item 3: separate the statement about probability from the
+statement about the existence of a set. Item 4: differentiate $\sum_{k\ge0}q^k=1/(1-q)$
+twice with respect to $q$, and remember that $\sum k^2q^{k-1}$ contains $\sum k(k-1)q^{k-1}$.
+Item 8: for $0<y<1$ the set $A_y$ has two branches, for $y\ge1$ only one.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is genuinely proved in this chapter: the properties of the distribution function together with their proofs,
+the relation of the density to the distribution function through the fundamental theorem of calculus, the formula for the
+expectation of a function of a random variable in the discrete case, linearity of expectation, the variance formula,
+the mean and variance of the binomial through indicators, the geometric and Poisson means through
+series, memorylessness of the exponential, and the monotone transformation formula.
+
+What is quoted, not proved: that a function satisfying the three properties of a distribution function
+always comes from some probability space (Wasserman, Theorem 2.8, whose direction uses the
+Caratheodory theorem), that the distribution function determines every probability (Wasserman,
+Theorem 2.7), the normalization of the normal through polar coordinates (Chapter 15), and the correlation
+bound through Cauchy-Schwarz (Chapter 10).
+
+Primary sources: Wasserman, \emph{All of Statistics}, Sections 2.1--2.4 (including Lemma
+2.15 and the warning that a density may exceed one) and 2.11 (Example 2.47 for
+$Y=X^2$ on $U(-1,3)$), as well as 3.1--3.4. Blitzstein and Hwang, \emph{Introduction to
+Probability}, Chapters 3--5 (LOTUS in 4.5, Poisson in 4.7, exponential in 5.5) and 7.3
+for covariance.
+
+Limits of validity: the density is not unique, so every statement about $f_X$
+is a statement about the same class of functions almost everywhere; the Jacobian formula
+requires monotonicity and differentiability; the Cauchy expectation does not exist, so every
+``mean'' of very heavy-tailed data must be suspected first. Open question: how well a density can be estimated
+from data without assuming a shape, and whether the tails of real distributions are thin enough to
+justify the use of variance.
+\end{untukpeneliti}
+
+\peta{Chapter 18 follows Wasserman, \emph{All of Statistics}, Chapter 2 (2.1--2.4, Lemma 2.15,
+and 2.11 for transformation) and Chapter 3 (3.1--3.4). In Blitzstein and Hwang,
+\emph{Introduction to Probability}, Chapter 3 (3.6--3.7), Chapter 4 (4.2, 4.5, 4.7), Chapter 5
+(5.1--5.5), and 7.3. The integrals used are the Riemann integrals of Chapter 13; change of
+variables in more than one dimension is in Chapter 15.}

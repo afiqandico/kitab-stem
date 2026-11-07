@@ -1,0 +1,1018 @@
+% The full chapter title is too wide for the running head, so the header mark is
+% shortened once (see \judulpendek in preamble-en.tex). The chapter page and the
+% table of contents keep the complete title. The macro must come *before* \chapter:
+% \chaptermark consumes it, so placing it after leaks the short title to the next chapter.
+\judulpendek{The Limits of Attack}
+\chapter{The Limits of Attack: Obfuscated Gradients and NIDS Evasion}
+
+A group of students added one line of rounding to the model input, then reported that their own
+attack failed completely: the success rate fell from seventeen percent to zero point zero two
+percent. That number went into the executive summary, then into the slides, then into the abstract.
+Two weeks later an examiner asked for one thing: prove that the gradient the attacker used still
+points in the right direction. It did not. Rounding is flat almost everywhere, so its derivative is
+zero, so the attacker takes a zero step, so the attack that failed is really an attack that never
+happened. When the examiner replaced the derivative with a reasonable approximation, the success
+rate returned to seventeen percent within minutes.
+
+This chapter is about that mistake. The first mistake is simple: rounding erases the gradient, and
+erasing the gradient means blinding the attacker, not making the model strong. The second mistake is
+more interesting: there are times when obfuscating the gradient really does raise the cost of
+attack, so part of that robustness is real. Telling the two apart demands experiment, not rhetoric.
+
+The second half of the chapter carries the same problem to a much noisier place: network intrusion
+detection systems, or NIDS. There packets must still arrive, protocols must remain valid, decisions
+are made in milliseconds, and the model is retrained every day. All of that makes an evasion attack
+that is beautiful on paper impractical in the field. But ``impractical'' is not ``impossible''.
+
+\section{Gradients that vanish, and the sense of safety born from them}
+\tingkat{basic}
+
+Chapter 29 taught two attacks that rest on one object: the gradient of the loss with respect to the
+input. The one-step attack takes the direction of the sign of the gradient and steps by
+$\varepsilon$,
+
+\begin{equation}
+x' = x + \varepsilon\,\operatorname{sign}\bigl(\nabla_x L(x,y)\bigr),
+\end{equation}
+
+whereas the many-step attack repeats a small step and projects the result back onto the
+$\ell_\infty$ ball of radius $\varepsilon$,
+
+\begin{equation}
+x_{t+1} = \Pi_{B(x,\varepsilon)}\Bigl(x_t - \alpha\,\operatorname{sign}
+\bigl(\nabla_x L(x_t,y)\bigr)\Bigr).
+\end{equation}
+
+Both work for one reason that already appeared in the chapter on linearization: for a small
+perturbation the loss can be approximated by a linear function, so the direction that raises the loss
+fastest is the direction of the gradient. If that gradient is correct, the attack works at the cost
+of one backward pass. If that gradient is wrong, the attacker goes blind. Those two sentences are not
+equivalent to ``if the gradient is wrong, the model is safe''. A blind attacker can still guess, and
+a guess without a gradient, for example random noise on packets, can still succeed in some cases.
+What is lost is only the cheapest road, not every road.
+
+\index{obfuscated gradient}
+The term \emph{obfuscated gradient} names the situation in which the gradient an attacker sees does
+not give enough information about the direction that actually raises the loss, not because the model
+is strong, but because of the way the model is wrapped. Athalye, Carlini, Wagner and colleagues gave
+this symptom a sharper name: a false sense of security. In their review of nine defenses from a
+machine learning conference, seven depended on an obfuscated gradient; six were broken completely and
+one partially, at an attack cost roughly the same as an ordinary attack.
+
+\begin{untukanak}
+Imagine a teacher who does not want her students to cheat, so she seals the notebook shut with duct
+tape. The honest student does have trouble. But the creative student does not stop: he notices that
+the answer to question one is always larger than the answer to question two, then guesses the whole
+sheet from that pattern. The tape does not erase the answers; it only blocks one road to them.
+
+A model that rounds its input works like that tape. The numbers that enter the model are cut to a
+fixed multiple, for instance two decimal places, so that small changes are invisible altogether. A
+program that tries to find the ``raise it a little at a time'' direction will find that nothing
+changes, then give up and report that the model is immune. That report is wrong, and not because the
+program is stupid. The program simply asked in a way that does not fit.
+
+Now the part that matters most to remember. The same model can still be wrong if the numbers are
+changed enough to cross a cut boundary. So the right question is not ``does a small attack succeed'',
+but ``how large a change is needed''. This chapter teaches how to ask that question, and how to
+recognize a report that never asks it.
+\end{untukanak}
+
+Why does rounding erase the gradient? Because rounding is a step function. Take
+$q>0$ and define $Q_q(t)=q\,\mathrm{round}(t/q)$, the nearest multiple of $q$. On
+the interval $kq-q/2 \le t < kq+q/2$ this function is constant at $kq$, so its derivative is zero
+inside the interval and undefined at the boundary points. The set of boundary points has measure
+zero, so for any smooth function $f$, the composition $f\circ Q_q$ has zero gradient almost
+everywhere.
+
+\begin{proposisi}
+Let $Q_q\colon\mathbb{R}^d\to\mathbb{R}^d$ act coordinate by coordinate as above, and let
+$f\colon\mathbb{R}^d\to\mathbb{R}$ be continuously differentiable. Then
+$\nabla (f\circ Q_q)(x)=0$ for almost every $x\in\mathbb{R}^d$.
+\end{proposisi}
+
+\begin{proof}
+Partition $\mathbb{R}^d$ into half-open boxes of side $q$, bounded by the
+hyperplanes $x_j=k_jq\pm q/2$. In the interior of every box, $Q_q$ is
+constant, so $f\circ Q_q$ is also constant and its gradient is zero. The complement of the union of
+all those interiors is the union of the boundary hyperplanes, which has measure zero. So the
+gradient is zero almost everywhere.
+\end{proof}
+
+\begin{akibat}
+A one-step attack that uses the exact gradient of $f\circ Q_q$ produces
+$x'=x$ for every $\varepsilon>0$. The measurable success rate is therefore
+exactly zero, and the reported ``accuracy under attack'' is precisely the clean accuracy.
+\end{akibat}
+
+This corollary is the heart of the whole chapter. The statement is not about the strength of the
+model; it is about the arithmetic of the attacker, and the zero in the results table does not measure
+robustness, but the absence of a step. If the ``accuracy under attack'' column is identical to the
+clean accuracy down to two decimal places, you are not looking at a defense that worked, but at an
+attacker that stopped.
+
+\begin{bacakeras}
+Two voices. The first carries a map, the second carries a flashlight.
+
+--- Look. I have made the map I drew blurry. Every uphill road I erased, there are no arrows, no
+numbers.
+--- Then the mountain is gone.
+--- No. The mountain is still there.
+--- So what is gone is only the picture?
+--- What is gone is only the picture.
+--- Someone who can smell the soil can still climb.
+--- Still can.
+--- Someone who throws a pebble and listens to the echo can also still climb.
+--- Also still can.
+--- So your map is not a wall.
+--- Your map is not a wall. Your map is only a map that refuses to answer.
+
+Repeat the last line three times, slower and slower: a map that refuses to answer is not a wall. Not
+a wall. Not a wall.
+\end{bacakeras}
+
+Athalye and colleagues divided the mechanism into three families. The first family, shattered
+gradients, appears when part of the model is non-differentiable or differentiable but useless, such
+as rounding, median filtering, and compression. The second family, stochastic gradients, appears when
+the model randomizes something on every call, so that the gradient of one call does not hold for the
+next. The third family, vanishing or exploding gradients, appears when the defense suppresses the
+gradient during training, so that the gradient becomes too small or too large to use for a step.
+
+All three share one feature: they make the measurement look better without making the model better,
+and because the measurement is usually the only evidence that is reported, this error spreads fast.
+This chapter does not say that all such defenses are useless; some raise the cost of attack, and that
+cost is real. What is wrong is concluding robustness from a broken measurement.
+
+\section{Seven ways to obfuscate the gradient}
+\tingkat{intermediate}
+
+The table below summarizes the seven techniques that appear most often, their mechanism family, and
+the symptom that ought to make you suspicious. The numbers in the last column are not a diagnosis,
+but a trigger for a question.
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.6cm}p{4.6cm}p{2.1cm}p{6.4cm}@{}}
+\hline
+No & Technique & Family & Visible symptom \\
+\hline
+1 & Input or output quantization & shattered & zero gradient; attack accuracy equals clean accuracy \\
+2 & Non-differentiable preprocessing: median, blur, compression & shattered & zero gradient, or spikes with no pattern \\
+3 & Sample filtering and rejection & shattered & discrete decisions; no gradient \\
+4 & Random transforms: resize, pad, shift & stochastic & a different gradient on every call \\
+5 & Random classifiers and random ensembles & stochastic & one sample points the wrong way \\
+6 & Gradient suppressed during training & vanishing & small gradient despite a large loss \\
+7 & Multi-step optimization defenses & vanishing & exploding gradient; attack does not converge \\
+\hline
+\end{tabular}
+\end{center}
+
+\index{quantization}
+The first technique, quantization, has already been proved above, and its effect is exact: not
+approximately zero, but zero. The second technique works the same way but more dirtily. Median
+filtering replaces every value with the median of its neighborhood, so the function stays flat in
+most places, but the boundaries between its pieces are no longer evenly spaced. Compression such as
+JPEG discards high-frequency components; the derivative exists but is unstable, and a finite
+difference gradient can change sign when the step is shifted. The symptom is characteristic: the
+gradient is not zero, but large-scale garbage.
+
+The third technique is the crudest form of obfuscation. The model refuses to answer for inputs it
+considers strange, for example those whose distance to the data center is too large, then returns the
+label ``unknown''. For the attacker this is not a bad gradient but no gradient at all: the function
+is an indicator function, whose derivative is zero everywhere except on the decision surface. A
+defense of this kind also rejects legitimate new data, and legitimate data is the reason the system
+was installed.
+
+The fourth and fifth techniques are the stochastic family. In the fourth, the input is randomly
+transformed before it enters the model: the image is enlarged, shifted by one pixel, or some of its
+features are dropped. In the fifth, what is randomized is the model: one ensemble is chosen at random
+on every call, or the prediction is taken from the average of many models. In both, the gradient of
+one call is the gradient of one realization, whereas what the attacker faces is the distribution of
+realizations. A bad gradient sample is not due to bias but to variance: the sign of a direction that
+keeps changing is not a good direction.
+
+\index{random filtering}
+The sixth technique attacks from the inside. Training deliberately makes the
+gradient small around the data points, for example by penalizing the gradient norm or
+by using saturating activations, so that the loss surface is very flat around the examples
+and steep elsewhere. An attacker that steps by $\varepsilon$ in a flat region
+goes nowhere, and the gradient really is small, but not because the model is right.
+The seventh technique is its relative: the input is first cleaned by a multi-step
+optimization procedure before being classified, and the gradient of that pipeline easily
+explodes.
+
+Figure~\ref{fig:permukaan} shows the shape of the surface that quantization
+produces on two coordinates. Every flat plateau there is one step. Inside
+one plateau, the loss does not change at all, so an attacker that takes a small
+step stops where it is --- the three short arrows in that figure. An attacker that is allowed
+to step far enough can cross to the next plateau, and the dashed arrow
+shows that crossing.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.80\linewidth, height=7.2cm,
+  view={52}{24},
+  xlabel={$u$}, ylabel={$v$}, zlabel={$L$},
+  domain=-0.35:0.35, y domain=-0.35:0.35,
+  samples=27, samples y=27,
+  zmin=0, zmax=0.52,
+  tick label style={font=\scriptsize},
+  label style={font=\small},
+  colormap={peta}{color=(layerteal!10) color=(layerteal!60)},
+  colorbar=false, axis line style={layergrey}, tick style={layergrey},
+]
+\addplot3[surf, shader=faceted, faceted color=layergrey!40, line width=0.15pt]
+  {0.1*round(10*((x-0.15)^2+(y-0.10)^2))};
+\draw[-latex, accent, line width=1pt] (axis cs:0.02,0.02,0) -- (axis cs:0.10,0.06,0);
+\draw[-latex, accent, line width=1pt] (axis cs:0.02,0.02,0) -- (axis cs:-0.02,0.08,0);
+\draw[-latex, accent, line width=1pt] (axis cs:0.02,0.02,0) -- (axis cs:0.04,-0.05,0);
+\node[circle, fill=accent, inner sep=1.5pt] at (axis cs:0.02,0.02,0) {};
+\draw[-latex, layerteal, line width=1.2pt, dashed]
+  (axis cs:0.02,0.02,0) -- (axis cs:0.30,0.30,0.10);
+\node[font=\footnotesize, accent, anchor=north west] at (axis cs:0.09,0.05,0)
+  {$\nabla L=0$};
+\node[font=\footnotesize, layerteal, anchor=south west] at (axis cs:0.28,0.28,0.12)
+  {BPDA};
+\end{axis}
+\end{tikzpicture}
+\caption{A loss surface made flat by quantization:
+$L(u,v)=\frac{1}{10}\operatorname{round}(10\,s)$ with
+$s=(u-0.15)^2+(v-0.10)^2$.
+Every plateau of height $0.1$ is one step: inside it $\nabla L=0$,
+so the three short arrows from the red point do not change the height at all.
+The dashed arrow crosses to the next step, and only an attacker willing to step
+as far as the distance between boundaries reaches it.}
+\label{fig:permukaan}
+\end{figure}
+
+\begin{tangan}
+Materials: one long ruler, one coin, one friend, one table.
+
+Prop up one end of the ruler with a book so that its surface is tilted, then place the coin
+in the middle. Close your eyes and hold the coin with one finger. Your friend taps the
+table slowly, irregularly, and your task is to guess in which direction the ruler rises
+--- only from the vibration that reaches your finger.
+
+Repeat ten times and record right or wrong. Then ask your friend to tap harder,
+and repeat ten times. Then ask him to stop tapping altogether, and repeat again.
+
+What you should see: harder tapping does not make your guesses right. Tapping that stops
+makes your guesses pure guesses, about half right, no better than tossing
+a coin. The vibration tells you that something is moving; it does not tell you the direction.
+That is the difference between a bad gradient and a gradient that does not exist.
+\end{tangan}
+
+Those seven techniques produce seven symptoms. The first five are the list of Athalye and
+colleagues; the last two we add from the same typology.
+
+\begin{enumerate}
+  \item \textbf{The attack is unbounded.} The report allows a perturbation of any size,
+        then concludes robustness from an attack that ignores the bound.
+  \item \textbf{The attack uses a single random sample.} Against a defense that randomizes,
+        the attacker draws one realization then reports its failure. What is measured is
+        one throw of the die, not the probability of winning.
+  \item \textbf{The attack is only one step.} A one-step attack is easily stopped by
+        an uneven loss surface, and the robustness it implies disappears
+        as soon as the step is repeated.
+  \item \textbf{Increasing the distortion does not increase success.} If the budget is enlarged
+        but the success does not move, what is broken is usually the gradient.
+  \item \textbf{The gradient is reported as zero or NaN.} This is the most naked symptom: a gradient
+        that is entirely zero on a non-constant model signals a non-differentiable
+        piece, not a flat surface.
+  \item \textbf{Accuracy under attack equals clean accuracy.} Our addition.
+        Equality down to several decimal places at several different $\varepsilon$
+        is the mark of an attack that does not move.
+  \item \textbf{There is no adaptive attack.} Our addition. The defense is tested only
+        with attacks designed before that defense existed, so it has not been tested
+        by an attacker who knows that he is being tested.
+\end{enumerate}
+
+\kamus{obfuscated gradient}{gradien dikaburkan}{the gradient given to the attacker
+does not point in the right direction, usually because there is a non-differentiable or
+random piece inside the pipeline, not because the model is strong}
+
+\kamus{quantization}{kuantisasi}{replacing every value with the nearest multiple of
+a fixed distance; the result is a step function whose derivative is zero almost everywhere}
+
+\kamus{adaptive attack}{serangan adaptif}{an attack designed with knowledge of
+the defense being tested, including knowing that its gradient may be broken}
+
+That list of symptoms is useful for rejecting weak claims but not for accepting strong ones: a defense
+can pass all seven and still be fragile, and conversely it can trigger one symptom and still raise the
+cost of attack.
+
+
+\section{Breaking through: BPDA, EOT, and reparameterization}
+\tingkat{advanced}
+
+If the gradient that is available is wrong, the attacker has three options. Replace the wrong
+gradient with the gradient of a function that approximates it; average the gradient over the
+randomness that makes it change; or move the work to another space, where the defense obfuscates
+nothing. All three have names, and all three work for different reasons.
+
+\index{bpda}
+The first option is called \emph{backward pass differentiable approximation}, abbreviated
+BPDA. The idea is as simple as it sounds: on the forward pass use the actual function,
+including the rounding or the filtering; on the backward pass skip that piece as if
+it were the identity. If the wrapped model is $h(x)=f\bigl(g(x)\bigr)$,
+the attacker uses
+
+\begin{equation}
+\widehat{\nabla}_x h(x) \;=\; \nabla f\bigl(g(x)\bigr),
+\end{equation}
+
+that is, the gradient of $f$ evaluated at the point after wrapping, not the gradient of the
+composition. For rounding, this means the attacker stops asking ``what is the derivative of
+rounding'' and starts asking ``if the numbers are already rounded, in which direction does $f$
+rise fastest''.
+
+Why is this approximation reasonable? Because the error is bounded by how far $g$
+shifts the point, not by how strange the shape of $g$ is.
+
+\begin{proposisi}
+Let $f$ be continuously differentiable with a Lipschitz gradient, that is,
+$\lVert \nabla f(u)-\nabla f(v)\rVert \le L\lVert u-v\rVert$ for all $u,v$, and
+let $g$ satisfy $\lVert g(x)-x\rVert\le\delta$. Then
+\begin{equation}
+\bigl\lVert \nabla f\bigl(g(x)\bigr)-\nabla f(x)\bigr\rVert \;\le\; L\,\delta .
+\end{equation}
+\end{proposisi}
+
+\begin{proof}
+Write $v=g(x)-x$ and use the mean value theorem in integral form,
+\begin{equation}
+\nabla f(x+v)-\nabla f(x) = \int_0^1 H_f(x+tv)\,v\,dt,
+\end{equation}
+with $H_f$ the Hessian matrix. Because the spectral norm of $H_f$ is bounded by $L$,
+\begin{equation}
+\bigl\lVert \nabla f(x+v)-\nabla f(x)\bigr\rVert
+\le \int_0^1 \lVert H_f(x+tv)\rVert\,\lVert v\rVert\,dt
+\le L\lVert v\rVert \le L\delta .
+\end{equation}
+\end{proof}
+
+This proposition explains when BPDA can be trusted. If rounding only shifts the
+input by $q/2$ and $f$ is smooth enough at that scale, the gradient error is small and
+the attack step still moves in the right direction. If $q$ is large so that the shift is
+comparable to the scale of the curvature of $f$, the bound $L\delta$ becomes large and nothing is
+guaranteed. This proposition does not say that $\widehat{\nabla}$ is the gradient of $h$; that
+gradient does not exist. It only says that the direction used is close to the correct direction for
+$f$ at the point that has already been wrapped.
+
+The second option is \emph{expectation over transformation}, abbreviated EOT. Against
+a stochastic defense, the attacker does not face one function but a distribution of functions.
+What makes sense to maximize is not the loss on one realization, but the expected
+loss over realizations,
+
+\begin{equation}
+\overline{L}(x) \;=\; \mathbb{E}_{T\sim\mathcal{T}}\; L\bigl(f_T(x),y\bigr),
+\end{equation}
+
+with $T$ denoting the randomness the defense uses, for example a feature mask or a
+transformation parameter.
+
+\index{eot}
+\begin{lemma}
+If $\mathcal{T}$ is finite and $\nabla_x L\bigl(f_T(x),y\bigr)$ is uniformly bounded
+in $T$, then
+\begin{equation}
+\nabla_x \overline{L}(x) \;=\; \mathbb{E}_{T}\;\nabla_x L\bigl(f_T(x),y\bigr).
+\end{equation}
+Moreover, the average of $m$ independent samples,
+$\frac{1}{m}\sum_{i=1}^{m}\nabla_x L\bigl(f_{T_i}(x),y\bigr)$, is an unbiased estimator
+whose variance shrinks proportionally to $1/m$.
+\end{lemma}
+
+\begin{proof}
+Because $\mathcal{T}$ is finite, the expectation is a finite sum, and the derivative may
+enter the sum because the derivative is a linear operator. The sample average has the
+same expectation as each of its terms, so it is unbiased, and its variance is the variance
+of one term divided by $m$ because the samples are independent.
+\end{proof}
+
+This lemma answers an objection that comes up often: if the defense is random, is not any
+attack just luck? No, as long as the attacker may call the model
+repeatedly. Randomness raises the cost, because the attacker needs $m$ calls per step,
+but it does not change the direction being pursued; what changes is only the precision of the
+estimate. This is the first example of a pattern that recurs throughout the chapter: a defense that
+raises the cost is real, whereas one that only makes measurement harder is illusory.
+
+The third option is reparameterization. Instead of attacking $x$, the attacker attacks
+the variable that produces $x$ through a transformation that is not obfuscated. If
+the defense wraps the model with a function $g$ that has an inverse, the attacker works in the
+space $z$ with $x=g^{-1}(z)$ and optimizes $z$. This is useful when $g$ is a
+rotation or another linear transformation that does not destroy information, and it is not
+useful when $g$ destroys information: no $z$ can recover numbers
+that have already been thrown away.
+
+In practice, the three options are used together, plus two habits. First: start
+from several random initial points inside the $\varepsilon$ ball, because a loss surface that
+is not convex makes a single initial point easy to trap. Second: do not stop at one
+value of $\varepsilon$. Robustness measured at a single budget is robustness that is not
+measured.
+
+\begin{resep}
+Four steps for testing a defense claim, in this order.
+\begin{enumerate}
+  \item \textbf{Write the budget first.} Fix $\varepsilon$ or the byte limit,
+        the number of queries, and the time. These numbers must not change after the first
+        result comes out.
+  \item \textbf{Attack by transfer, without queries.} Train a substitute model on the data
+        you have, build adversarial examples there, then send them to the victim model.
+        This step measures whether the defense merely blocks one model.
+  \item \textbf{Spend the remaining queries adaptively.} Only now use BPDA or
+        EOT on the victim, and record the queries per step, not just the final result.
+  \item \textbf{Report both.} Transfer success, adaptive success, and the cost of each,
+        always together with clean accuracy.
+\end{enumerate}
+A warning about order: step 2 must be finished before step 3. If you measure
+transfer after seeing the adaptive results, you already know which examples succeed,
+and your transfer numbers leak from the future.
+\end{resep}
+
+\kamus{BPDA}{backward pass differentiable approximation}{a technique that replaces the gradient
+of a non-differentiable piece with the gradient of the function at the point after that piece,
+as if the piece were the identity}
+
+\kamus{EOT}{expectation over transformation}{an attack that maximizes the expected
+loss over the randomness of the defense, usually by averaging gradients over several
+realizations}
+
+\begin{untukdosen}
+This part is usually taught in the wrong order, namely the definition of BPDA first.
+A better order is the reverse: show a model whose accuracy does not move at all
+under attack, ask the students to guess why, then show that its gradient is
+zero. Almost all of them will guess ``the model is strong'', and the silence that follows is a
+teaching moment in itself.
+
+Two mistakes need to be anticipated. First, concluding that BPDA ``removes''
+the defense; what is true is that BPDA restores access to an approximately correct direction, and
+its usefulness depends on how large $\delta$ is relative to the scale of the model curvature.
+Second, concluding that stochastic defenses are useless because EOT exists; what is true is that
+a stochastic defense raises the per-step cost linearly in $m$, so that the defense changes the
+attacker's budget, not the direction of the attack. The exercises at the end of the chapter
+force students to compute that cost, not merely name it.
+\end{untukdosen}
+
+\section{Worked example: one point on a toy model}
+\tingkat{intermediate}
+
+\begin{untukanak}
+A shopkeeper has an odd habit: every price is rounded to the nearest rupiah
+before it is recorded. If a customer quietly shifts a price by one cent,
+the shopkeeper's record does not change at all. That customer can conclude that there is no
+point in shifting prices, then stop trying. The conclusion is wrong, but
+the reasoning is sensible: what he measured really did not move.
+
+Now imagine another customer. She does not ask whether the record changes because of a one-cent
+shift; she asks in which direction the record rises fastest, then shifts the
+price far enough that the rounding changes. The shopkeeper's record changes, and
+she succeeds without breaking any rule. What separates the two is not cleverness,
+but the question that was asked.
+
+A model that uses rounding works like that shopkeeper. A program that only tries
+small shifts will stop and report that the model is safe; a program that understands
+rounding will step further. So when you read a report that a model
+cannot be defeated, ask first: did the attacker stop because it lost, or because it
+only tried one way?
+\end{untukanak}
+
+Before trusting the table, let us compute one point by hand. The model is made as
+simple as possible: eight features with all weights equal to one, so the score is the
+sum of the eight features. The data come from two normal distributions centered at $-0.5$ and
+$+0.5$, with clean accuracy around $92$ percent. The defense is rounding to
+multiples of $q=0.05$ on every feature, plus random filtering with drop probability $r$
+that multiplies the rest by $1/(1-r)$. The attacker budget is $\varepsilon=0.25$ in the
+$\ell_\infty$ norm.
+
+Take one example that is correctly labeled $+1$,
+
+\begin{equation}
+x_0 = (0.30;\ 0.20;\ 0.15;\ 0.10;\ 0.05;\ 0.00;\ -0.10;\ -0.08).
+\end{equation}
+
+The sum is $0.62$, so the model answers $+1$ with a thin margin. After
+rounding, the vector that enters the classifier is
+$(0.30;0.20;0.15;0.10;0.05;0.00;-0.10;-0.10)$ and the score is $0.60$.
+Note that one coordinate shifts from $-0.08$ to $-0.10$: that is the work of
+rounding.
+
+Now compare two attackers. The naive attacker computes the derivative of the actual
+function, that is, the derivative of the composition that contains the rounding. Because rounding
+is flat around $x_0$, the derivative is zero in all eight coordinates, so its step is
+$x_0 + \varepsilon\cdot 0 = x_0$. The score stays $0.60$ and the label stays $+1$.
+That attacker's report will read: attack failed, robust accuracy one hundred
+percent of clean accuracy.
+
+The second attacker uses BPDA. It does not ask about the derivative of rounding; it
+evaluates the gradient of the classifier at the point that has already been rounded, that is, the
+vector $(1,1,\dots,1)$, then steps against the label direction by $\varepsilon$ in each
+coordinate,
+
+\begin{equation}
+x_1 = x_0 - 0.25\cdot(1,1,\dots,1)
+= (0.05;\ -0.05;\ -0.10;\ -0.15;\ -0.20;\ -0.25;\ -0.35;\ -0.33).
+\end{equation}
+
+After rounding, that vector becomes
+\[
+(0.05;\ -0.05;\ -0.10;\ -0.15;\ -0.20;\ -0.25;\ -0.35;\ -0.35)
+\]
+with score $-1.40$. The label flips to $-1$. One step, the cost of one
+gradient computation, and the model that was just reported immune turns out to be wrong with a margin
+that is not thin.
+
+This example shows something sharper than ``BPDA works''. The second attacker
+does not use information that the first does not have: both know the
+architecture, the weights, and $q$. What differs is one decision, namely whether to respect the
+non-differentiable piece or skip over it. So the ``robustness'' reported by the first attacker
+is not a property of the model, but a property of that attacker's notation.
+
+\begin{contoh}
+On the same model, with $q=0.05$, $r=0.5$, and a fixed seed, a finite
+difference gradient with step $h=10^{-5}$ is zero in $15\,998$ of $16\,000$ entries;
+the two remaining entries are exactly $q/h=5\,000$, because their points happen to sit at a step
+boundary. The median finite difference gradient norm is zero, whereas the norm of the
+BPDA gradient for one mask that keeps four features is $4$. But the direction of a single
+mask is still far from the direction of the weights, with a cosine between $0.35$ and $0.94$ over
+$200$ masks. The average gradient over $200$ masks gives a vector of norm $2.738$ and
+cosine $0.9982$ with respect to the weight vector.
+\end{contoh}
+
+Those numbers illustrate three things. First, a shattered gradient is not merely small; it can
+also be large and wrong, and two entries that spike will dominate every step
+so that the naive attack fails in a way that looks random. Second, BPDA restores the direction
+almost perfectly: cosine $0.9982$ means an angle of about three degrees. Third,
+the norm of the BPDA gradient for a single mask, namely $4$, differs from its expected norm, $2.738$;
+that difference in scale does not hurt an attack that uses the sign, but it does hurt one that uses
+the magnitude of the gradient, and that is why EOT is still needed.
+
+\kertas{Recompute the example above without looking at the text. Sum $x_0$, round to
+multiples of $0.05$, then sum again; check that the result is $0.60$. Subtract
+$0.25$ from each coordinate, round again, sum, and check that the result is
+$-1.40$. After that, answer: what is the smallest value of $q$ that makes this one-step BPDA
+attack fail to flip the label, and why does that value depend on the initial margin
+$0.60$ and not on $\varepsilon$ alone?}
+
+\section{Computational lab: accuracy at every level of obfuscation}
+\tingkat{advanced}
+
+\begin{figure}[!htb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.86\linewidth, height=5.6cm,
+  xlabel={budget $\varepsilon$ in the $\ell_\infty$ norm},
+  ylabel={attack success (\%)},
+  xmin=0.03, xmax=0.37, ymin=-0.6, ymax=30,
+  xtick={0.05,0.10,0.15,0.20,0.25,0.30,0.35},
+  xticklabels={0.05,0.10,0.15,0.20,0.25,0.30,0.35},
+  ytick={0,5,10,15,20,25,30},
+  tick label style={font=\footnotesize},
+  label style={font=\small},
+  legend style={font=\scriptsize, at={(0.02,0.98)}, anchor=north west,
+                draw=layergrey!35, fill=white, fill opacity=0.92, text opacity=1},
+  grid=major, grid style={layergrey!15},
+  axis line style={layergrey},
+]
+\addplot[color=layerindigo, mark=*, mark size=1.5pt, line width=1pt]
+  coordinates {(0.05,2.38) (0.10,5.27) (0.15,8.66) (0.20,12.84)
+               (0.25,17.40) (0.30,22.32) (0.35,27.71)};
+\addlegendentry{no rounding, BPDA attacker}
+\addplot[color=accent, mark=square*, mark size=1.4pt, line width=1pt, dashed]
+  coordinates {(0.05,2.34) (0.10,5.33) (0.15,8.72) (0.20,12.92)
+               (0.25,17.48) (0.30,22.46) (0.35,27.79)};
+\addlegendentry{rounding $q=0.05$, BPDA attacker}
+\addplot[color=layergrey, mark=triangle*, mark size=1.6pt, line width=0.9pt,
+         dotted]
+  coordinates {(0.05,0.00) (0.10,0.01) (0.15,0.01) (0.20,0.01)
+               (0.25,0.01) (0.30,0.02) (0.35,0.02)};
+\addlegendentry{rounding $q=0.05$, naive attacker}
+\end{axis}
+\end{tikzpicture}
+\caption{Attack success against $\varepsilon$ on the eight-feature toy model,
+$2\,000$ examples, average of five seeds. At $\varepsilon=0.25$ the three curves give
+$17.40$, $17.48$, and $0.01$ percent; at $\varepsilon=0.35$ they give
+$27.71$, $27.79$, and $0.02$ percent. The first two curves coincide within the
+seed-to-seed deviation, which is $0.35$ to $1.08$ percentage points.}
+\label{fig:kurva-epsilon}
+\end{figure}
+
+Now we repeat that experiment on two thousand examples, five seeds, and several levels of
+obfuscation, with \texttt{numpy} alone. What matters is not the code itself,
+but one decision inside it: the function \texttt{fgsm} computes the gradient by finite
+differences on the function that has already been wrapped, whereas \texttt{pgd} uses the gradient
+of the classifier at the point after wrapping. The results, swept over seven values of
+$\varepsilon$, are in Figure~\ref{fig:kurva-epsilon}.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+D, N, EPS = 8, 2000, 0.25
+W = np.ones(D)
+
+def data(rng, n, mu=0.5):
+    y = 2 * rng.integers(0, 2, n) - 1
+    return rng.normal(mu * y[:, None], 1.0, (n, D)), y
+
+def quant(x, q):
+    return x if q == 0 else np.round(x / q) * q
+
+def mask(shape, r, rng):
+    if r == 0:
+        return np.ones(shape)
+    return (rng.random(shape) >= r) / (1 - r)
+
+def logit(x, q, m):
+    return (quant(x, q) * m) @ W
+
+def fgsm(X, y, q, r, rng):
+    m, h = mask(X.shape, r, rng), 1e-5
+    G = np.zeros_like(X)
+    for j in range(D):
+        e = np.zeros(D)
+        e[j] = h
+        G[:, j] = (logit(X + e, q, m) - logit(X - e, q, m)) / (2 * h)
+    return X - EPS * y[:, None] * np.sign(G)
+
+def pgd(X, y, q, r, rng, m_eot=1, steps=40):
+    Xa, a = X.copy(), EPS / 8
+    for _ in range(steps):
+        G = sum(W * mask(X.shape, r, rng) for _ in range(m_eot))
+        Xa = np.clip(Xa - a * y[:, None] * np.sign(G / m_eot),
+                     X - EPS, X + EPS)
+    return Xa
+
+def run(seed, q, r):
+    rng = np.random.default_rng(seed)
+    X, y = data(rng, N)
+    def pred(Z):
+        return np.sign(logit(Z, q, mask(Z.shape, r, rng)))
+    ok = pred(X) == y
+    def succ(Z):
+        return 100 * np.mean(pred(Z)[ok] != y[ok])
+    return (100 * ok.mean(), succ(fgsm(X, y, q, r, rng)),
+            succ(pgd(X, y, q, r, rng)), succ(pgd(X, y, q, r, rng, 20)))
+
+print("  q     r    clean  naive   bpda1   eot")
+for q, r in ((0.00, 0.0), (0.01, 0.0), (0.05, 0.0),
+             (0.05, 0.5), (0.20, 0.0)):
+    M = np.array([run(s, q, r) for s in (1, 2, 3, 4, 5)]).mean(0)
+    print("%5.2f %5.2f  %6.2f  %5.2f  %5.2f  %5.2f"
+          % (q, r, M[0], M[1], M[2], M[3]))
+\end{verbatim}
+
+The output of that program, as it stands:
+
+\begin{verbatim}
+  q     r    clean  naive   bpda1   eot
+ 0.00  0.00   92.02  17.40  17.40  17.40
+ 0.01  0.00   92.00   0.02  17.40  17.40
+ 0.05  0.00   91.97   0.01  17.48  17.48
+ 0.05  0.50   82.87  12.16  25.48  25.67
+ 0.20  0.00   91.77   0.00  17.65  17.65
+\end{verbatim}
+\end{lab}
+
+Read that table line by line. The first line is the baseline without obfuscation:
+clean accuracy $92.02$ percent, one-step attack success $17.40$ percent.
+That number is small because $\varepsilon=0.25$ really is small compared with the spread of the
+data, not because the attack is weak.
+
+The second line is the heart of this chapter. With $q=0.01$, clean accuracy barely changes,
+$92.00$ percent, but the naive success falls from $17.40$ to $0.02$ percent,
+about $870$ times smaller. The attacker that uses BPDA gets $17.40$ percent,
+exactly the baseline. That defense changes nothing that an attacker who computes correctly can
+observe; it only changes what an attacker who computes incorrectly sees.
+
+The third line repeats the same thing at $q=0.05$: naive $0.01$ percent, BPDA
+$17.48$ percent, clean accuracy $91.97$ percent. Raising $q$ fivefold does not
+change the BPDA success, but it makes the naive report look better. That is the
+fourth symptom from the list in section two, in numerical form.
+
+The fourth line adds random filtering with $r=0.5$, and two things happen at once.
+Clean accuracy falls from $91.97$ to $82.87$ percent, because discarding half the features and
+multiplying the rest by two raises the variance of the score. BPDA success rises to $25.48$
+percent, above the baseline, not because the defense is worse but because the examples
+that are still correct after obfuscation have a smaller margin.
+
+The fifth line shows that coarse quantization does not save the model. With
+$q=0.20$, comparable to $\varepsilon$, BPDA success is $17.65$ percent, slightly
+above the baseline: a point that sits near a step boundary needs only a small push to
+cross.
+
+The variance across seeds is small but not zero: at $q=0.05$ with $r=0$ the standard deviation is
+about $0.6$ percentage points, and on the line with random filtering about $1.4$ points. The standard
+error of a single proportion at $2\,000$ examples and a rate of $0.17$ is about $0.8$ points, so
+both numbers are consistent with ordinary sampling.
+
+There are four things this experiment does not measure. First, the model is linear, so the BPDA
+gradient is almost perfect and the cosine $0.9982$ is too good for a real model. Second, the
+attacker knows $q$ and $r$. Third, only one value of $\varepsilon$ was tested.
+Fourth, there is no search over attack hyperparameters. All of that makes the numbers above
+a lower bound on attack success, not an upper bound.
+
+
+The third shortcoming can be closed, and the result is in Figure~\ref{fig:kurva-epsilon}.
+The same program is run at seven values of $\varepsilon$ from $0.05$ to
+$0.35$, five seeds, without random filtering. The curve of the model without rounding and the curve
+of the model with rounding $q=0.05$ almost coincide: at $\varepsilon=0.25$ the two
+give $17.40$ and $17.48$ percent, and at $\varepsilon=0.35$ the two give
+$27.71$ and $27.79$ percent. The curve of the naive attacker stays below $0.02$ percent
+across that whole range. This defense therefore does not shift the curve and does not
+break it; it merely adds a third curve that is flat.
+
+
+\section{Case study: NIDS, and why evasion remains impractical}
+\tingkat{advanced}
+
+Up to here we have been dealing with feature vectors that may be changed at will. A network
+intrusion detection system, or NIDS, is a different world.
+\index{nids}
+A NIDS reads a packet stream, extracts features such as flow duration,
+packet count, byte count, TCP flags, and inter-arrival times, then decides
+whether that flow is an attack. The decision must be made fast, often in milliseconds, for
+thousands of flows per second.
+
+Figure~\ref{fig:rantai} puts that chain on one line. What matters is not
+the boxes, but the red mark between flow reconstruction and feature extraction.
+That is where the attacker works: he does not touch the model, he touches the packets, and the
+packets are what determine the feature values that enter the model. Everything to the right of that
+mark sees only the consequence; everything to the left is a cause that he can control, within the
+protocol limits discussed below.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize,
+  tahap/.style={draw=layergrey!70, fill=layergrey!6, rounded corners=1.5pt,
+    align=center, inner sep=3pt, minimum height=1.1cm, text width=1.95cm},
+  panah/.style={-latex, layergrey, line width=0.8pt}]
+\node[tahap] (n1) at (0,0) {packets\\on the wire};
+\node[tahap] (n2) at (2.50,0) {flow\\reconstruction};
+\node[tahap] (n3) at (5.00,0) {feature\\extraction};
+\node[tahap] (n4) at (7.50,0) {feature\\scaling};
+\node[tahap] (n5) at (10.00,0) {NIDS\\model};
+\node[tahap] (n6) at (12.50,0) {decision\\threshold};
+\draw[panah] (n1) -- (n2);
+\draw[panah] (n2) -- (n3);
+\draw[panah] (n3) -- (n4);
+\draw[panah] (n4) -- (n5);
+\draw[panah] (n5) -- (n6);
+\node[circle, fill=accent, inner sep=2pt] (sisip) at (3.75,0) {};
+\draw[accent, line width=0.8pt] (sisip) -- ++(0,0.62);
+\node[accent, anchor=south, font=\scriptsize] at (3.75,0.66)
+  {insertion point: packet timing and size};
+\node[layergrey, anchor=north, font=\scriptsize, align=center] at (12.5,-0.62)
+  {alert or block};
+\draw[-latex, layergrey, line width=0.6pt] (n6.south) -- (12.5,-0.5);
+\end{tikzpicture}
+\caption{The NIDS processing chain, from the wire to the decision. The red mark is one
+insertion point that an attacker can use: features such as packet count, byte count, and
+inter-arrival times are all determined to the left of that mark, whereas the model on
+the right only reads the consequence. A defense that adds obfuscation to the right of the mark
+does not touch the cause, and that is the limit discussed in this section.}
+\label{fig:rantai}
+\end{figure}
+
+\kamus{NIDS}{network intrusion detection system}{a system that monitors network
+traffic and decides whether a packet flow is an attack}
+
+\kamus{problem space}{ruang masalah}{the space of real objects that an attacker may change,
+for example packets and timing, as distinct from the feature space in which the model works}
+
+The first difficulty is the distance between the two spaces. An attack is usually formulated in
+feature space, whereas the attacker sends packets: every feature change must be translated
+into a packet change that is still valid under the protocol and still carries out its malicious
+function, and that translation does not always exist. Some features cannot even be changed
+by the sender, because the packet and byte counts in the reverse direction are determined by the
+receiving system.
+
+The second difficulty is the correlation between features. Duration is tied to packet count and
+inter-arrival times, and TCP flags are tied to the transport protocol, so an
+attacker cannot raise the duration while lowering both inter-arrival times;
+discrete features such as protocol number and packet length add further constraints.
+
+The third difficulty is time. An attack that requires ten thousand queries means real
+traffic that passes and is logged, and a trace is the first thing an analyst looks at.
+A real cost is a real defense; the absence of a gradient is not.
+
+Numbers from the literature make that distance concrete. On the CSE-CIC-IDS2018 data with fifty
+filtered features, three models were trained and tested on twenty percent of the data, then
+attacked with FGSM, PGD, and BIM. Before the attack all three were almost perfect: accuracy
+$0.997$ for ANN, $0.998$ for SVM, and $0.997$ for CNN. On the day of the attack,
+with full knowledge, FGSM dropped ANN to $0.756$ with F1 $0.677$, CNN to
+$0.842$ with F1 $0.863$, and SVM to $0.150$ with F1 $0.000$. PGD was slightly
+stronger on CNN, $0.584$ with F1 $0.689$, and BIM gave $0.688$ with F1
+$0.751$.
+
+Those numbers look like a victory for the attacker, and on a static model they are;
+but the same experiment continues with a model retrained every day.
+With knowledge of a model that is one day old, SVM returns to $0.998$, ANN to
+$0.938$, and CNN to $0.957$ with F1 $0.959$, and on the second day the numbers are between
+$0.966$ and $0.998$. That retraining does not use adversarial examples, so
+the recovery is not the result of an adversarial defense but a consequence of the fact that the
+gradient computed on yesterday's model no longer points in the right direction.
+
+This is the NIDS version of the whole chapter: deliberate gradient obfuscation is fragile, because
+an attacker can break it with BPDA, whereas obfuscation that comes from model change lasts longer,
+since the attacker must update his knowledge, and updating knowledge means gaining access, and
+access leaves a trace. The difference is not in the technique, but in who pays the cost.
+
+\index{transferability}
+The authors of that review built an attack tree and a taxonomy of practicality problems, then
+concluded that only three paths are viable. The first path is blind perturbation:
+adding random bytes to UDP packets, or to TCP packets with the PSH flag, while
+recomputing the checksum so that the protocol stays valid. This path needs no knowledge of the
+model and no queries, so it is immune to retraining, but it has no
+direction. The second path is querying through a side channel, which demands continuous network
+access and depends on indicators that change with network load and
+hardware. The third path is a substitute model trained on data captured from one's own
+botnet, which works through transferability but demands training data that is still
+fresh.
+
+All three paths are real, and the authors stress that the distance between research and
+practice is wide and that the threat model assumptions in many papers are too generous
+to the attacker.
+
+\index{evasion}
+The authors' own work, which we will call a working note and not a published
+result, moves on the other side of the same problem. On one network flow dataset,
+a model reaches F1 $0.967037$ from $46\,558$ out of $48\,145$ test examples.
+The question is not ``does the attack succeed'', but ``how many features must be
+changed for an example to cross the decision boundary while remaining valid under
+the protocol''. With a mixed-integer linear program, the answer depends sharply
+on the number of features that may be changed: at seven features, not one of fifty
+examples could be moved across; at twenty features, thirty-three of fifty could.
+The ratio of distance to the boundary between successful and control examples is about $3.28$
+for the linear model and $2.13$ for the neural network.
+
+\index{rule of three}
+Two more numbers show the caution involved. Of twenty thousand candidates tested for
+protocol consistency, none passed; with the rule of three, the upper bound at $95$ percent
+for that rate is about $0.019$ percent. On the model with an enlarged safety margin,
+the condition takes the form $\varepsilon+40\delta$ with
+$\delta=1.245\times10^{-7}$, so that the effective budget is $0.150004981$ and not
+$0.15$.
+
+The limits of that working note must be stated together with its results. It uses one dataset,
+fifty test examples, and two model families. It verifies the absence of an attack that
+meets the conditions, not the discovery of an attack. The number $0$ out of $20\,000$ is a statement
+about the candidate generator that was used, not about all possible packets, and
+the result says nothing about dynamic NIDSs.
+
+Now the conclusion that must be stated clearly. The toy model in section five does not
+prove anything about real NIDSs; it shows that rounding that erases the
+gradient produces a misleading report, and that the mechanism can be broken
+at a reasonable cost. It does not measure the cost of an attack in packet space. What can be carried
+away from this chapter is a habit: every time a defense reports zero success,
+ask about its gradient, then ask who pays the cost.
+
+\begin{tantangan}
+A paper reports a defense that lowers attack success from $96$
+percent to $3$ percent, with clean accuracy that does not change at all. Their attacker
+uses one-step FGSM, $\varepsilon=8/255$, the exact gradient, one initial point,
+and one seed. The question is: is that robustness real, and what is the cheapest experiment
+that most quickly shows that the $3$ percent figure is an artifact?
+
+First hint: look at what is not being paid for. A defense that genuinely
+raises the cost almost always pays something, either accuracy, or latency, or
+a number of parameters.
+
+Second hint: if the gradient is computed through a non-differentiable piece, the
+$3$ percent figure is not attack success, but the residue of examples that happen to lie
+near the decision boundary. Repeat with forty-step PGD, BPDA, and three initial points;
+then sweep $\varepsilon$ and report the curve.
+
+If you get stuck, go back to section three.
+\end{tantangan}
+
+\begin{untukpeneliti}
+Three things in this section are often misquoted. First, the categories shattered, stochastic, and
+vanishing are the taxonomy of the obfuscated gradients paper; the list of seven techniques in
+section two is our pedagogical decomposition. In that paper there are three categories, nine
+defenses tested, seven of which depend on an obfuscated gradient, and
+six broken completely plus one broken partially.
+
+Second, BPDA is not a general solution. The error bound $L\delta$ holds only when $f$ is smooth
+and $\delta$ is small relative to the scale of the curvature; for rounding with $q$ comparable to
+$\varepsilon$ that guarantee is empty. Conversely, EOT is not a cure for an attack that points in
+the wrong direction: averaging wrong directions still produces a wrong direction.
+
+Third, the NIDS results we quote come from feature-space experiments with full
+knowledge and daily retraining, not from packet-space attacks that were actually run. They
+support a narrow claim: retraining restores accuracy against attacks that use
+the gradient of an old model. They do not support the claim that NIDSs are immune to an attacker who
+may change packets.
+\end{untukpeneliti}
+
+\section{A checklist before writing that an attack succeeded}
+\tingkat{basic}
+
+This section is a summary that can be used directly. Every item is a question
+that must be answerable before a claim about an attack or a defense enters the
+abstract.
+
+\begin{enumerate}
+  \item \textbf{The threat model is written in full.} What does the attacker know: architecture,
+        weights, training data, probabilities, or only labels? How many queries may he
+        make, and for how long?
+  \item \textbf{The attack is bounded by a reasonable budget.} State $\varepsilon$
+        and its norm, or the byte and packet limits if the work is in problem space. An attack
+        without a bound measures something that nobody faces.
+  \item \textbf{The attack is adaptive.}
+        \index{adaptive attack}
+        The attacker must know the defense being tested, including the possibility that
+        its gradient is broken. A defense tested only by attacks from an earlier
+        paper has not been tested.
+  \item \textbf{The gradient is inspected before it is trusted.} Report the gradient norm, the fraction
+        of entries that are zero, and their correlation with the correct direction. A zero gradient on a
+        non-constant model is a finding, not a result.
+  \item \textbf{Success is reported together with clean accuracy.} A defense that
+        lowers clean accuracy from $92$ to $60$ percent must not be compared
+        directly with one that keeps $92$ percent.
+  \item \textbf{Several seeds, with mean and deviation.} One seed is one
+        throw of the die; a difference between two lines that is smaller than their
+        deviation is not a difference.
+  \item \textbf{A curve, not a single point.} Sweep the value of $\varepsilon$, the number of steps,
+        the number of EOT samples, and the number of queries. A good defense shifts the curve;
+        an illusory one shifts a single point.
+  \item \textbf{The attacker's compute budget is stated:} how many times the model is called,
+        how many hours, how many GPUs? An attack that succeeds after a million queries is not
+        the same attack as one that succeeds after a hundred.
+  \item \textbf{Code and weights are available.} A claim that cannot be repeated cannot be
+        checked. If release is impossible, the procedure and hyperparameters must be detailed
+        enough to reconstruct.
+  \item \textbf{Negative results are reported as negative results.} A defense that fails
+        is information; a report that succeeds because its attack was stopped before
+        time is an expensive mistake.
+\end{enumerate}
+
+\kamus{rule of three}{aturan tiga}{if no event occurs in $n$ independent trials,
+the upper bound at $95$ percent for the probability of that event is about $3/n$}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item An obfuscated gradient blinds the attacker, it does not make the model strong.
+        The seven techniques produce the same symptom: the measurement looks better
+        without anything getting better.
+  \item For a step function such as rounding, the gradient of the composition is zero at almost every
+        point, so a one-step attack produces $x'=x$ and ``accuracy under
+        attack'' is precisely the clean accuracy.
+  \item BPDA replaces the gradient of a non-differentiable piece with the gradient of the
+        classifier at the point after the piece. Its error is bounded by $L\delta$: it makes
+        sense when the shift is small relative to the scale of the curvature, and it gives no guarantee
+        when it is not.
+  \item EOT maximizes the expected loss over the randomness of the defense; the average of $m$
+        samples is unbiased with variance proportional to $1/m$. Randomness raises the per-step
+        cost, it does not change the direction.
+  \item On the eight-feature toy model with $\varepsilon=0.25$, rounding
+        $q=0.01$ drops naive success from $17.40$ to $0.02$ percent,
+        whereas BPDA stays at $17.40$ percent; $q=0.20$ does not hold BPDA back either.
+  \item On NIDS, FGSM drops SVM accuracy from $0.998$ to $0.150$, but
+        daily retraining restores it to $0.998$. The durable defenses there
+        come from the cost of access and protocol constraints, not from gradient obfuscation.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item A paper writes: ``Our defense lowers attack success from
+        $98$ to $0$ percent at $\varepsilon=8/255$.'' State three checks
+        before accepting that sentence, and what to expect from each check if
+        the defense only obfuscates the gradient.
+  \item Derive the BPDA error bound for $f(x)=w\cdot x+b$, show that the error is zero, then
+        explain why that result does not carry over to a two-layer model with ReLU activations.
+  \item On the toy model of section four, determine the smallest value of $q$ that makes one
+        BPDA step fail to flip the label of $x_0$, express it as a function of the initial margin and
+        $\varepsilon$, then check it with the program.
+  \item You have $1\,000$ queries. The defense randomizes a feature mask with $r=0.5$ and
+        refuses to answer if more than half the features are dropped. Compute how many PGD steps
+        you can run with $m=20$ and with $m=1$, then explain what you gain and what you pay.
+  \item Repeat the experiment of section five with a two-layer model with ReLU activations. Report
+        clean accuracy, naive success, and BPDA success for three values of $q$,
+        then explain why the cosine is no longer close to one.
+  \item A NIDS reads fifty features, seven of which are binary flags and three
+        protocol numbers. Compute how many features an attacker can actually change, state
+        your assumptions, and compare with a $32\times32$ image that has $3\,072$ values.
+  \item Explain why daily retraining restores accuracy against attacks that use
+        gradients but not against blind perturbation. Connect this with the EOT lemma and
+        the definition of an adaptive attack.
+  \item Design an experiment that separates two hypotheses: (a) the defense raises the cost of
+        attack, (b) the defense only corrupts the measurement. State the metrics, the number of seeds,
+        the shape of the curve, and what results would make you accept (a).
+\end{enumerate}
+\end{latihan}
+
+\peta{Chapter 30 of Athalye et al., \emph{Obfuscated Gradients Give a False Sense of
+Security} (2018): section 3 for the three families of obfuscated gradients, section 4 for
+BPDA and adaptive attacks, section 6 for the checklist. In Madry et al., \emph{Towards
+Deep Learning Models Resistant to Adversarial Attacks} (2018): section 3 for PGD and
+random initial points. In elShehaby and Matrawy, \emph{Evasion Adversarial Attacks Remain
+Impractical Against ML-based Network Intrusion Detection Systems}, for the attack tree,
+the practicality taxonomy, and the retraining experiment. In Chapter 20 of this book for the rule of
+three, and in Chapter 27 for FGSM and PGD.}

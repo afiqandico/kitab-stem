@@ -1,0 +1,98 @@
+\appendix
+\renewcommand{\appendixname}{Lampiran}
+\chapter{Tabel Notasi}
+\label{app:notasi}
+
+Notasi berikut berlaku di seluruh buku. Bila sebuah bab memakai simbol yang tidak
+tercantum di sini, simbol itu diperkenalkan di tempat pemakaiannya. Angka di ujung
+setiap butir menunjuk bab yang memakainya.
+
+\section*{Himpunan, logika, dan bilangan (Bab 1--5, 22)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$\mathbb{N}$, $\mathbb{Z}$, $\mathbb{Q}$, $\mathbb{R}$, $\mathbb{C}$]
+        bilangan asli, bulat, rasional, real, dan kompleks.
+  \item[$\forall$, $\exists$, $\neg$] untuk semua, ada, dan bukan.
+  \item[$\Rightarrow$, $\Leftrightarrow$] berakibat, dan jika dan hanya jika.
+  \item[$\in$, $\notin$, $\subseteq$, $\cup$, $\cap$, $\setminus$] keanggotaan,
+        bukan anggota, himpunan bagian, gabungan, irisan, selisih (Bab 2).
+  \item[$\mathcal{P}(S)$, $|S|$, $S\times T$] himpunan kuasa, kardinalitas,
+        hasilkali kartesius (Bab 2).
+  \item[$\sup S$, $\inf S$] batas atas terkecil dan batas bawah terbesar (Bab 3).
+  \item[$a_n\to a$] barisan $(a_n)$ konvergen ke $a$ (Bab 4).
+  \item[$\sum_{n=1}^{\infty} a_n$] deret dan jumlahnya (Bab 5).
+  \item[$\mathrm{fl}(x)$, $\mathrm{ulp}$] hasil pembulatan bilangan real dan satuan
+        terkecil yang dapat diwakili (Bab 22).
+\end{description}
+
+\section*{Aljabar linear (Bab 6--10)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$\mathbf{x}$, $\mathbf{x}^{\top}$, $\|\mathbf{x}\|$] vektor kolom,
+        transpos, dan norma Euklides.
+  \item[$\operatorname{span} S$, $\dim V$] rentang himpunan vektor dan dimensi
+        ruang vektor.
+  \item[$\mathcal{L}(V,W)$] ruang semua transformasi linear dari $V$ ke $W$ (Bab 7).
+  \item[$\ker T$, $\operatorname{im} T$] inti dan jangkauan transformasi (Bab 7).
+  \item[$\det A$, $\operatorname{tr} A$, $A^{-1}$] determinan, jejak, dan invers
+        matriks (Bab 8).
+  \item[$\lambda$, $\mathbf{v}$] nilai eigen dan vektor eigen (Bab 9).
+  \item[$\sigma_i$, $A=U\Sigma V^{\top}$] nilai singular dan dekomposisi nilai
+        singular (Bab 10).
+  \item[$A^{+}$, $\kappa(A)$] pseudoinvers dan bilangan kondisi (Bab 10, 20).
+\end{description}
+
+\section*{Analisis dan kalkulus (Bab 11--16)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$\varepsilon$, $\delta$] bilangan positif kecil dalam definisi limit,
+        kekontinuan, dan kekontinuan seragam.
+  \item[$f'(x)$, $\nabla f$] turunan biasa dan gradien.
+  \item[$J_f$, $H_f$] matriks Jacobian dan Hessian (Bab 12).
+  \item[$\int_a^b f$] integral Riemann pada $[a,b]$ (Bab 13).
+  \item[$\sum_{\mathcal{P}} M_i \Delta x_i$] jumlah atas untuk partisi
+        $\mathcal{P}$ (Bab 13).
+  \item[$f_n \rightrightarrows f$] barisan fungsi konvergen seragam (Bab 14).
+  \item[$\dfrac{\partial(x,y)}{\partial(u,v)}$] determinan Jacobian perubahan
+        variabel (Bab 15).
+  \item[$x'=f(t,x)$, $\dot{x}=F(x)$] persamaan diferensial biasa dan sistem
+        otonom, dengan $'$ dan $\dot{\ }$ sama-sama menyatakan turunan terhadap
+        waktu (Bab 16).
+  \item[$\varphi_t(x_0)$] aliran: keadaan pada waktu $t$ bila mulai dari $x_0$
+        (Bab 16).
+  \item[$x^{*}$, $J_F(x^{*})$] titik setimbang dan matriks Jacobian di titik itu;
+        tanda bagian real nilai eigennya menentukan kestabilan (Bab 16).
+\end{description}
+
+\section*{Peluang dan statistika (Bab 17--21, 26)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$P(A)$, $P(A\mid B)$] peluang kejadian $A$ dan peluang bersyarat.
+  \item[{$\mathbb{E}[X]$, $\operatorname{Var}X$}] harapan dan variansi.
+  \item[$\operatorname{Cov}(X,Y)$] kovarians dua variabel acak (Bab 18).
+  \item[$\bar{X}_n$, $\mathrm{se}$] rata-rata sampel dan galat bakunya.
+  \item[$\mathrm{CI}_{1-\alpha}$] interval kepercayaan dengan tingkat
+        $1-\alpha$ (Bab 20).
+  \item[$\mathrm{TP}$, $\mathrm{FP}$, $\mathrm{FN}$, $\mathrm{TN}$] empat sel
+        matriks konfusi (Bab 27).
+  \item[$\hat{\beta}$, $\hat{y}=X\hat{\beta}$] koefisien regresi kuadrat
+        terkecil dan nilai yang diprediksi (Bab 21).
+  \item[$e_i=y_i-\hat{y}_i$, $R^2$] residu dan proporsi variansi yang dijelaskan
+        model (Bab 21).
+  \item[$\mathrm{se}(\hat{\beta}_j)$, $\mathrm{VIF}_j$] galat baku koefisien dan
+        faktor pembengkakan variansi (Bab 21).
+\end{description}
+
+\section*{Optimasi, pembelajaran mesin, dan verifikasi (Bab 23--30)}
+\begin{description}[style=nextline,itemsep=0.25em]
+  \item[$\min f_0(x)$ dengan $f_i(x)\le 0$] bentuk baku masalah optimasi (Bab 23).
+  \item[$L(x,\lambda,\nu)$] Lagrangian; $\lambda,\nu$ pengali (Bab 23).
+  \item[$c^{\top}x$, $Ax\le b$, $x\in\mathbb{Z}^n$] bentuk LP dan program integer
+        (Bab 24).
+  \item[$\sigma(\cdot)$, $\mathrm{softmax}$] fungsi aktivasi dan normalisasi
+        eksponensial (Bab 25).
+  \item[$\nabla_{\mathbf{x}}\ell$] gradien fungsi kerugian terhadap masukan;
+        bahan bakar serangan (Bab 25, 29).
+  \item[$L_2$, $L_1$, $\lambda_{\text{reg}}$] jenis regularisasi dan kekuatannya
+        (Bab 26).
+  \item[$\|\delta\|_{\infty}\le\varepsilon$] batas gangguan pada serangan
+        adversarial (Bab 29, 30).
+  \item[$\vdash$, \texttt{by}, \texttt{sorry}] keterbuktian, pembuka blok taktik,
+        dan bukti yang ditangguhkan di Lean~4 (Bab 28).
+\end{description}

@@ -1,0 +1,1096 @@
+\chapter{Peluang dan Peluang Bersyarat}
+
+Sebuah klinik memasang iklan uji saring untuk penyakit yang jarang: hanya satu dari
+seribu orang di daerah itu mengidapnya. Ujinya memang bagus. Dari setiap seratus orang
+sakit, sembilan puluh sembilan memberi hasil positif. Dari setiap seratus orang sehat,
+hanya satu yang salah dituduh positif. Iklan menuliskan kedua angka itu sebagai
+``ketepatan 99 persen''.
+
+Sekarang hasil positif itu ada di tangan kita. Berapa peluang kita benar-benar sakit?
+Pada populasi $100{,}000$ orang, sekitar $100$ mengidap penyakit itu dan $99$ di
+antaranya positif. Sisanya, $99{,}900$ orang sehat, menyumbang $999$ positif palsu.
+Jadi ada $1{,}098$ hasil positif dan hanya $99$ yang benar: $99/1{,}098=11/122$,
+yaitu $0.0902$. Sekitar satu dari sebelas, bukan sembilan puluh sembilan dari seratus.
+
+Kedua angka itu benar dan keduanya menjawab pertanyaan yang berbeda. Iklan memberi
+peluang hasil positif bila orangnya sakit. Pasien ingin tahu peluang orangnya sakit
+bila hasilnya positif. Menukar dua arah itu bukan kesalahan aritmetika; itu kesalahan
+menamai besaran, dan akibatnya sering sepuluh kali lipat.
+
+Bab 2 sudah memberi bahasa untuk kejadian: gabungan, irisan, komplemen. Bab 5 memberi
+cara menjumlahkan tak hingga banyak suku. Keduanya belum cukup, karena himpunan tidak
+membawa bobot: $A\cup B$ tetap himpunan yang sama, entah $A$ hampir pasti terjadi atau
+hampir pasti tidak. Yang dibutuhkan tiga hal: fungsi bobot dengan aturan yang tidak boleh
+dilanggar, cara mencacah bobot, dan aturan memperbarui bobot ketika informasi baru masuk.
+Bab ini menyusun ketiganya, lalu memeriksanya dengan simulasi berbenih tetap.
+
+\begin{untukanak}
+Bayangkan penjaga gerbang sekolah memeriksa tas dengan alat yang berbunyi. Alat itu
+bagus: dari seratus tas yang benar-benar membawa barang terlarang, sembilan puluh
+sembilan membuatnya berbunyi. Tetapi alat itu juga berbunyi untuk satu dari seratus
+tas yang isinya biasa saja. Sekarang misalkan di sekolah itu hanya satu dari seribu
+tas yang benar-benar membawa barang terlarang.
+
+Pertanyaannya sederhana dan mengejutkan. Kalau alat berbunyi, apakah tas itu pasti
+berbahaya? Ternyata tidak. Tas berbahaya memang jarang, sedangkan tas biasa sangat
+banyak, sehingga bunyi palsu dari tas biasa jauh lebih banyak daripada bunyi benar.
+Penjaga yang hanya melihat lampu merah akan menahan banyak anak yang tidak bersalah.
+
+Pertanyaan yang membuat penasaran: berapa bagian dari semua bunyi itu yang benar?
+Jawabannya dapat dihitung tanpa menebak, asalkan kita tahu berapa banyak tas dari
+masing-masing jenis. Di bab ini kita akan tahu mengapa bunyi alat yang ``sembilan puluh
+sembilan persen akurat'' bisa berubah menjadi tuduhan yang salah dalam sembilan dari
+sepuluh kasus, dan mengapa arah pertanyaannya menentukan jawabannya.
+\end{untukanak}
+
+\section{Aksioma peluang dan akibatnya}
+\tingkat{dasar}
+
+Sebelum satu angka pun dihitung, kita harus menyepakati benda apa yang diberi bobot.
+Kalimat sehari-harinya: peluang adalah bobot yang kita taruh pada setiap kemungkinan,
+dengan aturan bahwa total bobot seluruh kemungkinan adalah satu, dan bobot tidak pernah
+negatif. Aturan itu tidak menjelaskan arti filosofis peluang; ia menetapkan aritmetika yang
+harus dipatuhi setiap perhitungan.
+
+\kamus{peluang}{probability}{bobot pada setiap kemungkinan, dengan total bobot seluruh
+kemungkinan sama dengan satu}
+
+\index{peluang}
+\index{ruang sampel}
+
+\begin{definisi}[Ruang peluang]
+Misalkan $\Omega$ adalah himpunan hasil, $\mathcal{F}$ kumpulan kejadian, yaitu
+himpunan bagian $\Omega$ yang memuat $\Omega$ dan tertutup terhadap komplemen serta
+gabungan terbilang, dan $P\colon\mathcal{F}\to\mathbb{R}$. Fungsi $P$ disebut
+\emph{peluang} bila
+\begin{enumerate}
+  \item $P(A)\ge 0$ untuk setiap $A\in\mathcal{F}$;
+  \item $P(\Omega)=1$;
+  \item bila $A_{1},A_{2},\dots$ saling lepas, maka
+        $P\bigl(\bigcup_{i\ge 1}A_{i}\bigr)=\sum_{i\ge 1}P(A_{i})$.
+\end{enumerate}
+\end{definisi}
+
+Aksioma ketiga, aditif terbilang, membedakan teori peluang modern dari perhitungan
+untung-untungan abad ketujuh belas. Tanpanya, deret peluang seperti
+$\sum_{n\ge 1}2^{-n}=1$ tidak punya dasar, padahal deret itulah yang muncul ketika kita
+bertanya pada lemparan ke berapa keberhasilan pertama terjadi. Aksioma ini juga yang
+membuat peluang dapat dipakai pada limit, persoalan Bab 4 dan Bab 5.
+
+Tiga akibat langsung berikut dipakai terus-menerus, jadi layak dibuktikan sekali.
+
+\begin{proposisi}[Akibat aksioma]
+\index{aksioma peluang}
+Untuk kejadian $A$ dan $B$ dalam ruang peluang berlaku
+$P(A^{c})=1-P(A)$, $P(\varnothing)=0$, dan bila $A\subseteq B$ maka
+$P(A)\le P(B)$. Selain itu
+$P(A\cup B)=P(A)+P(B)-P(A\cap B)$.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Karena $A$ dan $A^{c}$ saling lepas dan gabungannya $\Omega$, aksioma kedua dan ketiga
+memberi $1=P(\Omega)=P(A)+P(A^{c})$. Untuk yang kedua, ambil $A=\varnothing$ pada hasil
+pertama. Untuk yang ketiga, tulis $B$ sebagai gabungan saling lepas $A$ dan
+$B\setminus A$; maka $P(B)=P(A)+P(B\setminus A)\ge P(A)$ karena peluang tidak negatif.
+Untuk yang terakhir, pecah $A\cup B$ menjadi tiga bagian saling lepas $A\setminus B$,
+$A\cap B$, dan $B\setminus A$. Dengan cara yang sama $A$ dan $B$ masing-masing terpecah
+menjadi dua bagian, sehingga
+\[
+P(A\cup B)=P(A\setminus B)+P(A\cap B)+P(B\setminus A)
+=P(A)+P(B)-P(A\cap B).\qedhere
+\]
+\end{proof}
+
+Sifat terakhir itu, inklusi--eksklusi, adalah alasan mengapa ``atau'' tidak boleh
+dijumlahkan begitu saja. Contohnya, di satu kelas $30$ mahasiswa, $18$ menyukai kopi
+dan $12$ menyukai teh, serta $8$ menyukai keduanya. Maka peluang seorang mahasiswa yang
+dipilih acak menyukai kopi atau teh adalah
+\[
+\frac{18+12-8}{30}=\frac{22}{30}=0.7333,
+\]
+bukan $30/30=1$ seperti yang diberikan penjumlahan naif $18+12=30$. Delapan orang
+dihitung dua kali, dan inklusi--eksklusi menguranginya sekali.
+
+Untuk tiga kejadian, rumusnya memperpanjang dengan tanda berganti:
+\[
+P(A\cup B\cup C)=P(A)+P(B)+P(C)-P(A\cap B)-P(A\cap C)-P(B\cap C)+P(A\cap B\cap C).
+\]
+Buktinya menerapkan versi dua kejadian dua kali, dan itu latihan pertama bab ini. Pola
+tandanya bukan hiasan: bagian yang terlalu banyak dikurangi harus ditambahkan kembali.
+
+Satu peringatan untuk Bab 18. Pada ruang berhingga yang setiap hasilnya berpeluang
+positif, $P(A)=0$ berarti $A$ kosong; pada ruang kontinu tidak, sebab satu titik dapat
+berpeluang nol tanpa mustahil. Bab ini bekerja di ruang berhingga.
+
+\begin{contoh}
+Dua dadu dilempar. Berapa peluang jumlah matanya $8$ atau kedua matanya sama? Dengan
+$36$ hasil yang setara, kejadian pertama memuat $5$ hasil, kejadian kedua memuat $6$,
+dan irisannya satu hasil, yaitu $(4,4)$. Jadi peluangnya
+$(5+6-1)/36=10/36=0.2778$. Tanpa mengurangkan irisan, jawabannya $11/36=0.3056$, terlalu
+besar sebesar $1/36$.
+\end{contoh}
+
+\section{Pencacahan dan peluang yang setara}
+\tingkat{menengah}
+
+Bila semua hasil sama mungkin, peluang sebuah kejadian tinggal nisbah banyak hasil yang
+menguntungkan terhadap banyak hasil seluruhnya. Kalimat sehari-harinya: membagi jumlah
+cara yang kita inginkan dengan jumlah cara yang ada. Definisi ini bukan hukum alam; ia
+sebuah asumsi tentang simetri, dan asumsi itu harus diperiksa, bukan diandaikan.
+
+\index{pencacahan}
+\index{kombinasi}
+
+\kamus{kombinasi}{combination}{pilihan beberapa benda tanpa memperhatikan urutannya,
+seperti mengambil lima kartu dari satu tumpukan}
+
+\begin{proposisi}[Aturan perkalian dan pencacahan]
+\index{aturan perkalian}
+Bila $|A|=m$ dan $|B|=n$, maka $|A\times B|=mn$. Banyak barisan panjang $k$ dari $n$
+benda berbeda tanpa pengulangan adalah $n!/(n-k)!$, dan banyak himpunan bagian
+berukuran $k$ adalah
+\[
+\binom{n}{k}=\frac{n!}{k!\,(n-k)!}.
+\]
+Khususnya $\sum_{k=0}^{n}\binom{n}{k}=2^{n}$.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Untuk hasilkali, setiap pasangan $(a,b)$ ditentukan oleh satu pilihan dari $m$ dan satu
+pilihan dari $n$. Untuk barisan, ada $n$ pilihan untuk tempat pertama, $n-1$ untuk
+tempat kedua, dan seterusnya sampai $n-k+1$. Untuk himpunan bagian, setiap himpunan
+berukuran $k$ dapat diurutkan dengan $k!$ cara, sehingga banyak barisan dibagi $k!$
+memberi banyak himpunan. Identitas terakhir menghitung semua himpunan bagian dengan dua
+cara: menjumlahkan menurut ukuran, atau memilih masuk atau tidak untuk setiap benda.
+\end{proof}
+
+Pencacahan yang rapi sering menyingkat perhitungan panjang. Tangan penuh dalam poker,
+tiga kartu seperingkat ditambah sepasang kartu seperingkat lain, memberi contoh bagus:
+pilih peringkat trio ($13$ cara), pilih tiga dari empat jenisnya ($\binom{4}{3}=4$),
+pilih peringkat pasangan ($12$ cara), pilih dua dari empat jenisnya ($\binom{4}{2}=6$).
+Jumlahnya $13\cdot 4\cdot 12\cdot 6=3{,}744$ dari $\binom{52}{5}=2{,}598{,}960$ tangan,
+sehingga peluangnya $0.001441$, yaitu satu dari $694.2$ tangan. Dalam $694$ tangan,
+banyaknya tangan penuh yang diharapkan $0.9998$, jadi kita menunggu sekitar tujuh ratus
+tangan untuk melihat yang pertama.
+
+Pencacahan juga menjelaskan kejadian yang terasa ajaib. Ambil masalah ulang tahun:
+$k$ orang di satu ruangan, setiap hari lahir setara di antara $365$ hari, dan hari
+lahir antarorang saling bebas. Peluang tidak ada dua orang berbagi hari lahir adalah
+\[
+P(\text{tidak ada pasangan})=\frac{365\cdot 364\cdots (365-k+1)}{365^{k}},
+\]
+sehingga peluang ada pasangan adalah pelengkapnya.
+
+\index{paradoks ulang tahun}
+
+\begin{center}
+\small
+\begin{tabular}{rrr}
+\hline
+$k$ & $P(\text{tidak ada pasangan})$ & $P(\text{ada pasangan})$ \\
+\hline
+$10$ & $0.8831$ & $0.1169$ \\
+$23$ & $0.4927$ & $0.5073$ \\
+$41$ & $0.0968$ & $0.9032$ \\
+$50$ & $0.0296$ & $0.9704$ \\
+$57$ & $0.0099$ & $0.9901$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Pada $k=23$ peluangnya melewati setengah, dan pada $k=50$ sudah $0.9704$. Sumber
+kebingungannya satuan yang salah: yang bertabrakan bukan orang, melainkan pasangan orang,
+dan $23$ orang membentuk $\binom{23}{2}=253$ pasangan. Setiap pasangan cocok dengan
+peluang $1/365$, sehingga banyak pasangan yang diharapkan $253/365=0.69315$. Bila
+tabrakan dianggap jarang dan saling bebas, peluang tidak ada tabrakan mendekati
+$e^{-0.69315}=0.5000$, berselisih $0.0073$ dari nilai eksak $0.4927$. Pendekatan itu
+bukan bukti; ia menjelaskan mengapa ambangnya jatuh di sekitar dua puluh tiga.
+
+Pencacahan di atas mengandaikan setiap hari lahir setara. Pada populasi nyata
+ketidaksetaraan itu justru menaikkan peluang tabrakan; asumsi simetri di sini adalah
+pendekatan yang perlu diperiksa.
+
+Pencacahan tidak dapat menjawab pertanyaan klinik tadi. Hasil ``sakit'' dan ``sehat''
+tidak sama mungkin: nisbahnya satu berbanding sembilan ratus sembilan puluh sembilan.
+Yang dibutuhkan bukan cara menghitung hasil, melainkan cara memakai informasi bahwa
+seseorang sudah dinyatakan positif. Itulah peluang bersyarat.
+
+\section{Peluang bersyarat dan aturan perkalian}
+\tingkat{menengah}
+
+Informasi baru mempersempit dunia. Kalau kita tahu $B$ terjadi, dunia yang relevan bukan
+lagi $\Omega$ melainkan $B$, dan semua bobot harus dibaca ulang di dalam dunia yang lebih
+sempit itu. Kalimat sehari-harinya: peluang bersyarat adalah peluang yang dihitung ulang
+setelah sebagian kemungkinan dicoret.
+
+\kamus{peluang bersyarat}{conditional probability}{peluang yang dihitung ulang setelah
+kita tahu sebagian kemungkinan sudah tidak berlaku}
+
+\index{peluang bersyarat}
+
+\begin{definisi}[Peluang bersyarat]
+Bila $A$ dan $B$ kejadian dengan $P(B)>0$, peluang $A$ dengan syarat $B$ adalah
+\[
+P(A\mid B)=\frac{P(A\cap B)}{P(B)}.
+\]
+\end{definisi}
+
+Pembagian dengan $P(B)$ adalah pilihan yang membuat peluang bersyarat berjumlah satu di
+atas $B$. Bila kita juga menuntut $P(B\mid B)=1$ dan nisbah antar-kejadian di dalam $B$
+tidak berubah, pembagian itulah satu-satunya pilihan; karena itu definisi ini bukan
+konvensi sembarangan.
+
+Penyempitan itu dapat dilihat langsung pada tabel silang. Gambar~\ref{fig:silang}
+menyusun populasi klinik menjadi empat sel. Sebelum ada hasil, penyebutnya
+seluruh $100{,}000$ orang dan $P(S)=100/100{,}000=0.001$. Setelah hasil positif
+diketahui, yang masih dihitung hanya kolom $+$ yang berisi $1{,}098$ orang, dan
+$P(S\mid+)=99/1{,}098=0.0902$. Orangnya tidak berubah; yang berubah hanya himpunan yang
+masih boleh dihitung.
+
+    \begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small, x=1cm, y=1cm]
+  \fill[accent!10] (1.95,1.05) rectangle (3.25,-1.1);
+  \draw[layergrey, thick] (1.9,1.05)--(7.3,1.05);
+  \draw[layergrey] (1.9,0.35)--(7.3,0.35);
+  \draw[layergrey] (1.9,-0.35)--(7.3,-0.35);
+  \draw[layergrey, thick] (1.9,-1.1)--(7.3,-1.1);
+  \node[anchor=east] at (1.75,1.4) {hasil uji};
+  \node at (2.6,1.4) {$+$};
+  \node at (4.3,1.4) {$-$};
+  \node at (6.5,1.4) {jumlah};
+  \node[anchor=east] at (1.75,0.7) {sakit $S$};
+  \node at (2.6,0.7) {99};
+  \node at (4.3,0.7) {1};
+  \node at (6.5,0.7) {100};
+  \node[anchor=east] at (1.75,0) {sehat $S^{c}$};
+  \node at (2.6,0) {999};
+  \node at (4.3,0) {98\,901};
+  \node at (6.5,0) {99\,900};
+  \node[anchor=east] at (1.75,-0.7) {jumlah};
+  \node at (2.6,-0.7) {1\,098};
+  \node at (4.3,-0.7) {98\,902};
+  \node at (6.5,-0.7) {100\,000};
+  \draw[->, accent, thick] (2.6,-1.65)--(2.6,-1.15);
+  \node[anchor=north, align=center, text width=10.4cm, font=\footnotesize] at (4.6,-1.95)
+    {setelah $+$ diketahui, hanya kolom ini yang dihitung:
+     $99/1{,}098=11/122=0.0902$};
+\end{tikzpicture}
+\caption{Tabel silang uji saring pada $100{,}000$ orang. Baris adalah keadaan
+sebenarnya, kolom adalah hasil uji. Setelah hasil positif diketahui, ruang sampel
+menyempit dari seluruh tabel ke kolom $+$ yang berisi $1{,}098$ orang, dan $99$
+di antaranya benar-benar sakit.}
+\label{fig:silang}
+\end{figure}    
+
+\begin{proposisi}[Peluang bersyarat adalah peluang]
+\index{peluang bersyarat}
+Untuk $B$ tetap dengan $P(B)>0$, fungsi $A\mapsto P(A\mid B)$ memenuhi ketiga aksioma
+peluang pada $\mathcal{F}$.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Ketidaknegatifan berasal dari $P(A\cap B)\ge 0$. Norma berasal dari $P(\Omega\mid B)=1$,
+sebab $P(B)/P(B)=1$. Untuk aditivitas, bila $A_{1},A_{2},\dots$ saling lepas
+maka $A_{i}\cap B$ juga saling lepas, sehingga
+\[
+P\Bigl(\bigcup_{i}A_{i}\mid B\Bigr)
+=\frac{P\bigl(\bigcup_{i}(A_{i}\cap B)\bigr)}{P(B)}
+=\frac{\sum_{i}P(A_{i}\cap B)}{P(B)}
+=\sum_{i}P(A_{i}\mid B).\qedhere
+\]
+\end{proof}
+
+Karena itu semua akibat aksioma berlaku untuk peluang bersyarat: komplemen, monotonisitas,
+dan inklusi--eksklusi tetap sah bila setiap $P$ diganti $P(\cdot\mid B)$. Yang tidak
+berlaku adalah menukar arah syaratnya.
+
+Dari definisi langsung lahir aturan perkalian
+\[
+P(A\cap B)=P(A\mid B)\,P(B)=P(B\mid A)\,P(A),
+\]
+yang memperpanjang menjadi
+$P(A_{1}\cap\cdots\cap A_{n})=P(A_{1})P(A_{2}\mid A_{1})\cdots
+P(A_{n}\mid A_{1}\cap\cdots\cap A_{n-1})$. Aturan ini membaca percobaan bertahap
+sebagai perkalian peluang di setiap tahap.
+
+Satu tumpukan kartu $52$ memberi contoh arah yang mudah tertukar. Misalkan $A$ kejadian
+kartu pertama hati dan $B$ kejadian kartu kedua merah. Maka
+\[
+P(A\cap B)=\frac{13\cdot 25}{52\cdot 51}=\frac{25}{204},
+\]
+sehingga
+\[
+P(A\mid B)=\frac{25/204}{1/2}=\frac{25}{102}=0.2451,
+\qquad
+P(B\mid A)=\frac{25/204}{1/4}=\frac{25}{51}=0.4902 .
+\]
+Dua angka yang berbeda dua kali lipat, dari data yang sama. Kesalahannya bukan pada
+aritmetika, melainkan pada penempatan kejadian di kiri dan kanan garis tegak.
+
+\begin{bacakeras}
+Dua suara. Yang pertama belum tahu, yang kedua sudah tahu. Bacakan bergantian.
+
+Suara pertama: ``Duniaku seluas lapangan. Semua pintu mungkin. Aku menebak dengan mata
+tertutup.''
+
+Suara kedua: ``Duniaku satu kamar. Satu pintu sudah terbuka, dan aku hanya menghitung
+yang ada di dalamnya.''
+
+Suara pertama: ``Kalau aku tahu sesuatu, apakah peluangku berubah?''
+
+Suara kedua: ``Bukan peluangmu yang berubah. Dunia yang kamu hitung yang berubah. Dunia
+mengecil setelah kita tahu sesuatu: bobot yang tadinya tersebar sekarang berkumpul di
+tempat yang masih mungkin. Penyebutnya menyempit, dan angka yang keluar terdengar baru
+walaupun aritmetikanya tidak pernah berubah sejak awal.''
+
+Suara pertama: ``Jadi yang bergerak penyebutnya?''
+
+Suara kedua: ``Yang bergerak penyebutnya, dan yang tinggal dihitung ulang adalah sisa
+yang masih boleh ikut.''
+
+Ulangi bersama, tiga kali, makin pelan: ``Dunia mengecil, bukan peluangnya yang
+berkhianat. Yang berubah hanya yang masih boleh dihitung.''
+\end{bacakeras}
+
+Alat kedua memecah populasi menjadi beberapa kelompok yang tidak bertumpuk. Bila
+$B_{1},\dots,B_{k}$ saling lepas dan gabungannya $\Omega$, maka
+\[
+P(A)=\sum_{i=1}^{k}P(A\mid B_{i})\,P(B_{i}).
+\]
+
+\begin{proposisi}[Hukum peluang total]
+\index{peluang total}
+Bila $B_{1},\dots,B_{k}$ saling lepas, gabungannya $\Omega$, dan setiap $P(B_{i})>0$,
+maka $P(A)=\sum_{i}P(A\mid B_{i})P(B_{i})$ untuk setiap kejadian $A$.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Kejadian $A\cap B_{1},\dots,A\cap B_{k}$ saling lepas dan gabungannya $A$. Jadi
+$P(A)=\sum_{i}P(A\cap B_{i})$, dan setiap suku ditulis ulang dengan aturan perkalian
+sebagai $P(A\mid B_{i})P(B_{i})$.
+\end{proof}
+
+Hukum ini tampak seperti formalitas sampai ia dipakai pada contoh klinik: ia yang
+mengubah dua angka iklan menjadi satu angka yang berguna, dan itulah isi bagian
+berikutnya.
+
+Sebelum itu, satu contoh bahwa kalimat Indonesia dan kejadian matematis tidak selalu
+sepadan. Sebuah keluarga punya dua anak, setiap anak laki-laki atau perempuan dengan
+peluang sama, dan jenis kelamin keduanya saling bebas. Bila kita tahu \emph{paling sedikit
+satu} anak laki-laki, peluang keduanya laki-laki $1/3=0.3333$: dari empat susunan setara
+tersisa tiga, dan hanya satu yang cocok. Bila yang kita tahu \emph{anak yang lebih tua}
+laki-laki, peluangnya $1/2=0.5$. Dua kalimat yang mirip memberi jawaban berbeda, sebab
+yang pertama mengecualikan satu susunan dan yang kedua dua.
+
+\section{Aturan Bayes dan tafsir hasil uji}
+\tingkat{menengah}
+
+Aturan Bayes membalik arah syarat: dari peluang hasil bila sakit, ia menghitung peluang
+sakit bila hasil. Kalimat sehari-harinya: dari semua cara sebuah hasil dapat muncul,
+berapa bagian yang lewat jalan yang kita tanyakan.
+
+\index{aturan bayes}
+\index{kelaziman}
+
+\begin{teorema}[Aturan Bayes]
+Bila $B_{1},\dots,B_{k}$ saling lepas dengan gabungan $\Omega$ dan $P(B_{i})>0$, maka
+untuk setiap kejadian $A$ dengan $P(A)>0$,
+\[
+P(B_{j}\mid A)=\frac{P(A\mid B_{j})\,P(B_{j})}
+{\sum_{i=1}^{k}P(A\mid B_{i})\,P(B_{i})}.
+\]
+\end{teorema}
+
+\begin{proof}[Bukti]
+Menurut definisi, $P(B_{j}\mid A)=P(A\cap B_{j})/P(A)$. Pembilangnya adalah
+$P(A\mid B_{j})P(B_{j})$ menurut aturan perkalian, dan penyebutnya $P(A)$ menurut hukum
+peluang total. Jadi rumus itu tidak memuat asumsi baru; ia definisi peluang bersyarat
+yang ditulis dua kali dengan arah berbeda.
+\end{proof}
+
+Karena itu tidak ada ``metode Bayes'' yang berdiri di atas aksioma; yang ada adalah
+pembukuan. Pembilang adalah jalur yang kita tanyakan, penyebut adalah jumlah semua jalur
+yang menghasilkan hasil yang sama.
+
+\begin{resep}
+\begin{enumerate}
+  \item Namai dulu dua hal: hipotesis $H$ yang ditanyakan dan bukti $E$ yang sudah
+        terlihat. Tulis pertanyaannya sebagai $P(H\mid E)$, bukan $P(E\mid H)$.
+  \item Tulis pembilang sebagai satu jalur saja: $P(E\mid H)\,P(H)$. Itu bobot dunia
+        tempat $H$ benar.
+  \item Tulis penyebut sebagai jumlah semua jalur yang menghasilkan $E$, termasuk jalur
+        lewat $H^{c}$: $P(E\mid H)P(H)+P(E\mid H^{c})P(H^{c})$.
+  \item Bagi, lalu periksa akal: hasilnya antara $0$ dan $1$, dan lebih kecil daripada
+        $P(E\mid H)$ bila $H$ jarang.
+\end{enumerate}
+Peringatan urutan: pembilang dan penyebut sama-sama memakai $P(E\mid\cdot)$. Menulis
+$P(\cdot\mid E)$ di penyebut adalah kesalahan yang paling sering terjadi, dan besarnya
+angka tidak memberi tahu bahwa arahnya sudah tertukar.
+\end{resep}
+
+Pohon pada Gambar~\ref{fig:pohon} menuliskan seluruh jalan menuju hasil positif. Setiap
+daun adalah darab peluang di cabangnya, dan dua daun bertanda $+$ berjumlah
+$P(+)=0.01098$. Pembilang Bayes hanyalah daun pertama, sedangkan penyebutnya jumlah
+kedua daun itu.
+
+    \begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small, every node/.style={inner sep=2pt}]
+  \node (r) at (0,0) {awal};
+  \node (s) at (2.2,1.7) {$S$};
+  \node (sc) at (2.2,-1.7) {$S^{c}$};
+  \node (sp) at (4.6,2.5) {$+$};
+  \node (sm) at (4.6,0.9) {$-$};
+  \node (scp) at (4.6,-0.9) {$+$};
+  \node (scm) at (4.6,-2.5) {$-$};
+  \draw[->] (r)--(s) node[midway, above left=-2pt] {$0.001$};
+  \draw[->] (r)--(sc) node[midway, below left=-2pt] {$0.999$};
+  \draw[->, accent, thick] (s)--(sp) node[midway, above left=-2pt] {$0.99$};
+  \draw[->, layergrey] (s)--(sm) node[midway, below left=-2pt] {$0.01$};
+  \draw[->, accent, thick] (sc)--(scp) node[midway, above left=-2pt] {$0.01$};
+  \draw[->, layergrey] (sc)--(scm) node[midway, below left=-2pt] {$0.99$};
+  \node[anchor=west, font=\footnotesize] at (5.0,2.5) {$0.001\cdot 0.99=0.00099$};
+  \node[anchor=west, font=\footnotesize] at (5.0,0.9) {$0.001\cdot 0.01=0.00001$};
+  \node[anchor=west, font=\footnotesize] at (5.0,-0.9) {$0.999\cdot 0.01=0.00999$};
+  \node[anchor=west, font=\footnotesize] at (5.0,-2.5) {$0.999\cdot 0.99=0.98901$};
+  \node[anchor=north, align=center, text width=10.6cm, font=\footnotesize] at (4.4,-3.0)
+    {$P(+)=0.00099+0.00999=0.01098$, \quad $P(S\mid+)=0.00099/0.01098=0.0902$};
+\end{tikzpicture}
+\caption{Pohon dua tahap uji saring. Cabang pertama memisahkan sakit dari sehat,
+cabang kedua memisahkan hasil positif dari negatif; darab di tiap daun adalah peluang
+jalur itu, dan dua daun positif berjumlah $P(+)=0.01098$.}
+\label{fig:pohon}
+\end{figure}    
+
+Kembali ke klinik. Tulis $S$ untuk kejadian sakit dan $+$ untuk hasil positif. Dari
+iklan dan kelaziman penyakit kita punya $P(S)=0.001$, $P(+\mid S)=0.99$, dan
+$P(+\mid S^{c})=0.01$. Hukum peluang total memberi
+\[
+P(+)=0.99\cdot 0.001+0.01\cdot 0.999=0.00099+0.00999=0.01098,
+\]
+sehingga
+\[
+P(S\mid +)=\frac{0.00099}{0.01098}=\frac{11}{122}=0.0902 .
+\]
+Suku positif palsu, $0.00999$, sepuluh kali lebih besar daripada suku deteksi benar,
+$0.00099$; nisbahnya $999/99=10.09$. Bukan karena ujinya buruk: orang sehat $999$ kali
+lebih banyak, $99{,}900$ berbanding $100$.
+
+Perubahan kelaziman mengubah jawaban jauh lebih kuat daripada perubahan mutu uji.
+Dengan sensitivitas dan spesifisitas tetap $0.99$, tabel berikut menunjukkan
+$P(S\mid +)$ untuk beberapa kelaziman.
+
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\hline
+$P(S)$ & $P(S\mid +)$ & $1/P(S\mid +)$ & tafsiran \\
+\hline
+$0.0001$ & $0.0098$ & $102.0$ & satu dari seratus dua \\
+$0.001$ & $0.0902$ & $11.09$ & satu dari sebelas \\
+$0.010$ & $0.5000$ & $2.00$ & satu dari dua \\
+$0.100$ & $0.9167$ & $1.09$ & sebelas dari dua belas \\
+\hline
+\end{tabular}
+\end{center}
+
+Pada kelaziman $1$ persen, uji yang sama memberi $P(S\mid+)=1/2$ tepat, bukan $0.99$.
+Pada kelaziman $10$ persen, $P(S\mid+)=11/12=0.9167$. Angka-angka ini menjelaskan
+kebijakan kesehatan yang sering dikritik: uji saring massal untuk penyakit langka
+menghasilkan banyak positif palsu, dan karena itu hasil positif biasanya diikuti uji
+kedua, bukan pengobatan.
+
+Uji kedua memakai aturan yang sama, dengan prior yang sudah diperbarui. Bila uji kedua
+bebas dari yang pertama dan bermutu sama, maka
+\[
+P(S\mid +,+)=\frac{0.99\cdot (11/122)}{0.99\cdot (11/122)+0.01\cdot (111/122)}
+=\frac{10.89}{10.89+1.11}=\frac{363}{400}=0.9075 .
+\]
+Perhatikan bahwa $0.9075$ bukan $0.99$ dan bukan $0.9999$. Dua uji positif menaikkan
+peluang dari $0.0902$ ke $0.9075$, hampir sepuluh kali, tetapi belum memberi kepastian.
+Yang berubah hanya kelaziman di dalam kelompok yang sudah positif; mutu uji tetap. Dengan
+mutu $0.99$ ini, posterior melampaui $0.99$ hanya bila kelaziman awal sudah melewati
+$1/2$.
+
+Satu hal teknis: $P(S\mid+)=0.0902$ berlaku untuk populasi berkelaziman $1/1000$, bukan
+untuk pasien yang datang dengan gejala. Gejala mengubah kelaziman lebih dahulu, dan
+itulah sebabnya dokter menanyakan riwayat sebelum menafsirkan hasil laboratorium.
+
+Contoh terakhir bagian ini melepaskan Bayes dari uji klinik. Tiga kantong berisi sepuluh
+kelereng: kantong $A$ satu merah, $B$ lima merah, $C$ sembilan merah. Kita memilih
+kantong secara acak, mengambil satu kelereng, dan yang keluar merah. Sebelum pengambilan
+ketiga kantong berpeluang $1/3$; sesudahnya $0.0667$, $0.3333$, dan $0.6$, seperti
+Gambar~\ref{fig:bayes-batang}. Tidak ada bobot yang hilang; bobot hanya berpindah ke
+kantong yang lebih mudah memberi bukti itu.
+
+    \begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small, x=1cm, y=1cm]
+  \draw[->, layergrey] (0,0)--(7.4,0);
+  \draw[->, layergrey] (0,0)--(0,4.3);
+  \foreach \y/\lab in {0/0, 1.2/0.2, 2.4/0.4, 3.6/0.6} {
+    \draw[layergrey] (0,\y)--(-0.08,\y);
+    \node[anchor=east, font=\footnotesize] at (-0.12,\y) {\lab};
+  }
+  \fill[layerindigo] (0.65,0) rectangle (1.20,2.0);
+  \fill[layerteal] (1.40,0) rectangle (1.95,2.0);
+  \fill[accent] (2.15,0) rectangle (2.70,2.0);
+  \fill[layerindigo] (4.35,0) rectangle (4.90,0.4);
+  \fill[layerteal] (5.10,0) rectangle (5.65,2.0);
+  \fill[accent] (5.85,0) rectangle (6.40,3.6);
+  \draw[dashed, layergrey] (0,2.0)--(6.9,2.0);
+  \node[font=\footnotesize, anchor=south] at (0.92,2.02) {$1/3$};
+  \node[font=\footnotesize, anchor=south] at (1.67,2.02) {$1/3$};
+  \node[font=\footnotesize, anchor=south] at (2.42,2.02) {$1/3$};
+  \node[font=\footnotesize, anchor=south] at (4.62,0.44) {$0.0667$};
+  \node[font=\footnotesize, anchor=south] at (5.37,2.02) {$0.3333$};
+  \node[font=\footnotesize, anchor=south] at (6.12,3.62) {$0.6$};
+  \node[font=\footnotesize, anchor=north] at (0.92,-0.08) {$A$};
+  \node[font=\footnotesize, anchor=north] at (1.67,-0.08) {$B$};
+  \node[font=\footnotesize, anchor=north] at (2.42,-0.08) {$C$};
+  \node[font=\footnotesize, anchor=north] at (4.62,-0.08) {$A$};
+  \node[font=\footnotesize, anchor=north] at (5.37,-0.08) {$B$};
+  \node[font=\footnotesize, anchor=north] at (6.12,-0.08) {$C$};
+  \node[font=\footnotesize] at (1.67,-0.85) {sebelum};
+  \node[font=\footnotesize] at (5.37,-0.85) {sesudah};
+\end{tikzpicture}
+\caption{Pembaruan Bayes pada tiga kantong. Sebelum ada bukti ketiga kantong berbagi
+bobot $1/3$; setelah satu kelereng merah terlihat, bobot berpindah menjadi $0.0667$,
+$0.3333$, dan $0.6$. Kantong yang paling mudah menghasilkan bukti itu naik paling
+tinggi.}
+\label{fig:bayes-batang}
+\end{figure}    
+
+\section{Independensi, dan mengapa saling lepas bukan independen}
+\tingkat{lanjut}
+
+Dua kejadian disebut saling lepas bila keduanya tidak dapat terjadi bersamaan. Dua
+kejadian disebut independen bila mengetahui yang satu tidak mengubah peluang yang lain.
+Kedua kalimat itu kedengarannya serupa, dan menukarnya adalah kekeliruan paling mahal
+di bab ini. Kalimat sehari-harinya: saling lepas berarti tidak pernah bersama;
+independen berarti tidak saling memberi kabar.
+
+\kamus{independen}{independent}{kejadian yang tidak saling memberi kabar: mengetahui
+satu tidak mengubah peluang yang lain}
+
+\begin{untukanak}
+Ada dua hal yang sering tertukar, dan bedanya dapat dilihat tanpa angka. Di satu
+sekolah, dua siswa tidak pernah masuk kelas bersamaan: yang satu belajar pagi, yang satu
+belajar siang. Kalau kita tahu Andi sudah masuk, kita tahu Budi belum masuk. Mereka tidak
+pernah bersama, dan justru karena itu kabar tentang yang satu memberi kabar tentang yang
+lain.
+
+Sekarang dua siswa lain. Keduanya masuk kelas yang sama, tetapi duduk berjauhan dan
+mengerjakan ujian yang berbeda. Nilai mereka tidak saling memberi kabar: tahu nilai Sari
+tidak menolong kita menebak nilai Tono.
+
+Kelompok pertama disebut tidak pernah bersama. Kelompok kedua disebut tidak saling
+memberi kabar. Keduanya kedengaran seperti ``tidak ada hubungan'', padahal yang pertama
+justru hubungan yang paling kuat: kabar tentang yang satu menentukan yang lain. Di bab
+ini kita akan tahu mengapa dua hal yang tidak pernah bersama tidak mungkin saling memberi
+kabar, dan mengapa menukar keduanya membuat hitungan meleset bukan sedikit.
+\end{untukanak}
+
+\index{independensi}
+\index{kejadian saling lepas}
+
+\begin{definisi}[Independensi dua kejadian]
+Kejadian $A$ dan $B$ \emph{independen} bila
+\[
+P(A\cap B)=P(A)\,P(B).
+\]
+\end{definisi}
+
+Definisi ini simetris, dan bila $P(B)>0$ ia setara dengan $P(A\mid B)=P(A)$. Perhatikan
+bahwa definisi itu tidak menyebut sebab akibat: dua kejadian dapat independen tanpa satu
+menyebabkan yang lain, dan dapat bergantung tanpa satu menyebabkan yang lain.
+
+\begin{proposisi}[Saling lepas bukan independen]
+\index{kejadian saling lepas}
+Bila $A$ dan $B$ saling lepas dan $P(A)>0$ serta $P(B)>0$, maka $A$ dan $B$ tidak
+independen. Lebih tepatnya $P(A\cap B)=0<P(A)P(B)$, dan $P(A\mid B)=0<P(A)$.
+\end{proposisi}
+
+\begin{proof}[Bukti]
+Saling lepas berarti $A\cap B=\varnothing$, sehingga $P(A\cap B)=P(\varnothing)=0$.
+Karena $P(A)P(B)>0$, kesamaan definisi independensi gagal. Untuk pernyataan bersyarat,
+$P(A\mid B)=0/P(B)=0$, yang lebih kecil daripada $P(A)>0$.
+\end{proof}
+
+Kekeliruannya bergerak dua arah, dan kedua arah itu dapat dihitung.
+
+Ambil satu dadu dan dua pasang kejadian dengan marginal sama tetapi hubungan berbeda.
+Pasangan pertama: $A=\{1,2\}$ dan $B=\{3,4\}$, saling lepas, dengan $P(A)=P(B)=1/3$.
+Pasangan kedua: $C=\{1,2,3\}$ dan $D=\{1,4\}$, dengan $P(C)=1/2$ dan $P(D)=1/3$. Untuk
+pasangan pertama,
+\[
+P(A)P(B)=\frac{1}{9}=0.1111,\qquad P(A\cap B)=0,\qquad P(A\mid B)=0,
+\]
+jadi selisih definisi independensi $0.1111$ dan selisih peluang bersyaratnya $0.3333$,
+sebab $P(A)=1/3$. Untuk pasangan kedua,
+\[
+P(C)P(D)=\frac{1}{6}=0.1667=P(C\cap D),\qquad P(C\mid D)=\frac{1}{2}=P(C),
+\]
+jadi kedua selisihnya nol.
+
+Yang penting bukan angka $1/6$ itu, melainkan bahwa dua pasangan dapat bermarginal sama
+dengan hubungan berlawanan total. Pasangan $E=\{1,2,3\}$ dan $F=\{4,6\}$ juga bermarginal
+$1/2$ dan $1/3$ tetapi saling lepas. Marginal tidak menentukan hubungan; hanya irisan
+yang menentukannya, sehingga setiap klaim independensi adalah klaim tambahan tentang
+dunia.
+
+Untuk tiga kejadian, independensi berpasangan tidak cukup. Kejadian $A,B,C$ disebut
+saling independen bila $P(A\cap B)=P(A)P(B)$, $P(A\cap C)=P(A)P(C)$,
+$P(B\cap C)=P(B)P(C)$, dan $P(A\cap B\cap C)=P(A)P(B)P(C)$.
+
+\begin{contoh}[Berpasangan tetapi tidak saling independen]
+\index{independensi berpasangan}
+Dua koin dilempar. Misalkan $A$ koin pertama gambar, $B$ koin kedua gambar, dan $C$
+kedua koin sama; masing-masing berpeluang $1/2$. Setiap
+pasangan beririsan satu hasil, jadi $P(A\cap B)=P(A\cap C)=P(B\cap C)=1/4$, yang sama
+dengan $1/2\cdot 1/2$. Tetapi $A\cap B\cap C$ terjadi hanya bila keduanya gambar,
+sehingga peluangnya $1/4$, sedangkan $P(A)P(B)P(C)=1/8$. Jadi ketiganya berpasangan
+independen dan tidak saling independen; selisihnya $0.125$.
+\end{contoh}
+
+Peringatan terakhir: independensi tidak bertahan di bawah pengkondisian. Bila $A$ dan
+$B$ independen berpeluang $1/2$, maka dengan syarat $A\cup B$, $P(A\mid A\cup B)=2/3$
+sedangkan $P(A\cap B\mid A\cup B)=1/3\neq 4/9$. Menggabungkan dua kejadian independen
+lalu mengkondisikan pada gabungannya justru menciptakan ketergantungan, sehingga kalimat
+``$A$ dan $B$ independen'' selalu relatif terhadap ruang peluang yang dipakai.
+
+\begin{tangan}
+Bahan: dua belas kartu, enam pasang berperingkat sama (As sampai enam), setiap pasangan
+satu merah dan satu hitam.
+
+Langkah pertama, buat pasangan. Susun dua belas kartu terbuka dalam dua baris; letakkan
+setiap pasangan seperingkat bersebelahan, merah di kiri, hitam di kanan. Periksa dengan
+mata: peringkat tidak memberi kabar tentang warna, sebab setiap peringkat punya merah
+dan hitam. Dua sifat itu tidak saling memberi kabar.
+
+Langkah kedua, saring. Kocok, tutup semua, lalu buka satu kartu: misalnya empat hati.
+Beri satu petunjuk, ``pasangan kartu ini berwarna hitam'', lalu sisihkan semua kartu
+merah yang masih tertutup. Dari sebelas kartu tertutup, tinggal enam yang hitam.
+
+Yang harus kaulihat: penyebutnya berubah dari sebelas menjadi enam, sedangkan kartunya
+tidak berubah sama sekali. Peluang menebak pasangannya naik dari satu per sebelas menjadi
+satu per enam. Dua sifat yang tadi tidak saling memberi kabar sekarang saling memberi
+kabar, dan itu yang dilakukan satu petunjuk.
+\end{tangan}
+
+\section{Dua paradoks yang menuntut hitungan}
+\tingkat{lanjut}
+
+Paradoks dalam peluang hampir selalu tabrakan antara intuisi dan definisi, dan
+tabrakan itu hanya selesai bila dihitung. Dua contoh berikut menunjukkan hal berbeda:
+jawaban bergantung pada aturan main, dan pada satuan yang dihitung.
+
+\index{monty hall}
+
+Monty Hall. Tiga pintu tertutup; satu berisi mobil, dua berisi kambing. Kita memilih
+satu pintu. Pembawa acara, yang tahu isi semua pintu, membuka satu pintu lain yang
+berisi kambing, lalu menawarkan kesempatan berpindah ke pintu yang masih tertutup.
+Apakah berpindah menaikkan peluang?
+
+Hitung dengan hukum peluang total terhadap tiga kemungkinan letak mobil, masing-masing
+berpeluang $1/3$, dan andaikan kita mula-mula memilih pintu $1$. Bila mobil di pintu
+$1$, berpindah kalah. Bila mobil di pintu $2$, pembawa acara wajib membuka pintu $3$,
+sehingga berpindah menang. Bila mobil di pintu $3$, ia membuka pintu $2$, dan berpindah
+menang. Jadi berpindah menang pada dua dari tiga kemungkinan:
+\[
+P(\text{menang dengan berpindah})=\frac{2}{3},\qquad
+P(\text{menang tanpa berpindah})=\frac{1}{3}.
+\]
+Selisihnya $1/3$, bukan nol.
+
+Argumen ``dua pintu tersisa, jadi $1/2$'' keliru karena mengabaikan bahwa pembawa acara
+tidak memilih pintu secara bebas. Ia dilarang membuka pintu berisi mobil dan dilarang
+membuka pintu pilihan kita, sehingga tindakannya membawa informasi tentang pintu yang
+tidak ia buka.
+
+Informasi itu hilang bila aturannya berubah. Andaikan pembawa acara membuka satu dari
+dua pintu lain secara acak, tanpa melihat isinya, dan permainan dibatalkan bila mobil
+terlihat. Dengan syarat permainan berjalan sampai tawaran,
+\[
+P(\text{mobil di pintu }1\mid \text{kambing terlihat})
+=\frac{1/3}{1/3+1/6+1/6}=\frac{1}{2},
+\]
+sebab bila mobil di pintu $2$ atau $3$, ia hanya punya peluang $1/2$ menampilkan kambing.
+Pada aturan itu berpindah tidak menolong: ``peluang berpindah $2/3$'' bukan sifat pintu,
+melainkan sifat protokol.
+
+\index{paradoks ulang tahun}
+
+Ulang tahun. Bagian sebelumnya sudah menghitung $0.5073$ untuk $23$ orang dan $0.9704$
+untuk $50$ orang. Paradoksnya bukan pada angkanya, melainkan pada satuan: kita
+membandingkannya dengan peluang satu orang tertentu cocok dengan kita, padahal yang
+dihitung $253$ pasangan sekaligus. Kesalahan yang sama muncul pada tabel hash dan uji
+kecocokan DNA.
+
+Kekeliruan jaksa adalah kesalahan arah yang sama pada perkara pidana. Misalkan peluang
+sebuah ciri muncul secara kebetulan satu per satu juta, dan ciri itu ditemukan pada
+tersangka yang diambil dari basis data sejuta orang tanpa bukti lain. Maka
+$P(\text{cocok}\mid\text{tidak bersalah})=10^{-6}$, tetapi
+\[
+P(\text{bersalah}\mid\text{cocok})
+=\frac{10^{-6}\cdot 1}{10^{-6}\cdot 1+(1-10^{-6})\cdot 10^{-6}}=0.5000003,
+\]
+yaitu praktis setengah, bukan hampir pasti. Dua bilangan $10^{-6}$ itu besaran berbeda:
+yang pertama peluang ciri secara kebetulan, yang kedua kelaziman tersangka di dalam basis
+data. Menukarnya adalah wajah lain dari kekeliruan yang sama, kali ini di ruang
+pengadilan.
+
+\begin{tantangan}
+Tiga kartu di atas meja. Kartu pertama merah di kedua sisinya, kartu kedua hitam di kedua
+sisinya, kartu ketiga merah di satu sisi dan hitam di sisi lain. Kita mengocok ketiganya
+tertutup, mengambil satu, dan meletakkannya di meja. Sisi yang terlihat merah. Berapa
+peluang sisi di baliknya juga merah?
+
+Hampir semua orang menjawab setengah: katanya tinggal dua kartu yang punya sisi merah,
+jadi dua kemungkinan. Jawaban yang benar bukan setengah.
+
+Petunjuk 1: jangan menghitung kartu, hitung sisi. Ada berapa sisi merah seluruhnya, dan
+berapa di antaranya bersebelahan dengan sisi merah?
+
+Petunjuk 2: sisi merah yang terlihat dapat berasal dari tiga sisi merah yang berbeda,
+dan dua di antaranya berada pada kartu merah-merah.
+
+Kalau mentok, kembali ke bagian peluang bersyarat dan tulis ulang ruang sampelnya sebagai
+enam sisi, bukan tiga kartu.
+\end{tantangan}
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Tiga hitungan berikut dikerjakan dengan pecahan eksak, supaya tidak ada pembulatan yang
+menyembunyikan langkah. Semuanya sudah diperiksa dengan Python, dan angka yang muncul
+adalah angka yang sama dengan yang dipakai di bagian sebelumnya.
+
+Pertama, Bayes dua langkah. Dengan $P(S)=1/1000$, $P(+\mid S)=99/100$, dan
+$P(+\mid S^{c})=1/100$, hukum peluang total memberi
+\[
+P(+)=\frac{99}{100}\cdot\frac{1}{1000}+\frac{1}{100}\cdot\frac{999}{1000}
+=\frac{99+999}{100{,}000}=\frac{1098}{100{,}000}.
+\]
+Pembilangnya dua kelompok terpisah: $99$ orang sakit yang terdeteksi dan $999$ orang
+sehat yang salah dituduh. Maka
+\[
+P(S\mid +)=\frac{99/100{,}000}{1098/100{,}000}=\frac{99}{1098}=\frac{11}{122}=0.090164 .
+\]
+Uji kedua bermutu sama memakai $11/122$ sebagai kelaziman baru dan memberi $0.9075$,
+sama seperti hitungan di bagian sebelumnya. Penyebutnya $1200$, bukan angka berjuta-juta:
+faktor $1/122$ muncul di kedua suku dan saling menghapus, tanda bahwa yang berubah hanya
+kelaziman, bukan mutu uji.
+
+Kedua, saling lepas versus independen, dengan marginal yang disamakan.
+
+\begin{center}
+\small
+\begin{tabular}{lrrrr}
+\hline
+pasangan & $P(\text{pertama})$ & $P(\text{kedua})$ & $P(\text{irisan})$ & $P(\text{pertama}\mid\text{kedua})$ \\
+\hline
+$C=\{1,2,3\}$, $D=\{1,4\}$ & $0.5$ & $0.3333$ & $0.1667$ & $0.5$ \\
+$E=\{1,2,3\}$, $F=\{4,6\}$ & $0.5$ & $0.3333$ & $0$ & $0$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Pada baris pertama $P(C)P(D)=1/6=0.1667$ sama dengan irisan, jadi selisihnya $0$. Pada
+baris kedua $P(E)P(F)=1/6$ sedangkan irisannya $0$, jadi selisihnya $0.1667$; peluang
+bersyaratnya $0$ sedangkan $P(E)=0.5$. Siapa pun yang menyangka ``tidak bisa terjadi
+bersama'' berarti ``tidak saling memengaruhi'' akan melaporkan $0.1667$ di tempat yang
+seharusnya $0$.
+
+Ketiga, Monty Hall dengan protokol yang dinyatakan. Bila pembawa acara selalu membuka
+pintu kambing, peluang menang dengan berpindah $2/3=0.6667$ dan tanpa berpindah
+$1/3=0.3333$. Bila ia membuka secara acak dan permainan dibatalkan ketika mobil
+terlihat, permainan berjalan dengan peluang $2/3$, dan dengan syarat itu kedua strategi
+bernilai $1/2=0.5$. Dua protokol, satu himpunan pintu, dua jawaban.
+
+\kertas{Untuk uji dengan kelaziman $1/2000$, sensitivitas $0.95$, dan spesifisitas
+$0.90$, hitung $P(S\mid+)$ dengan tabel $100{,}000$ orang seperti di atas, lalu hitung
+lagi dengan spesifisitas $0.99$. Tulis kedua jawaban sebagai pecahan dan sebagai desimal
+empat angka, dan jelaskan bagian mana yang berubah paling banyak: pembilang atau
+penyebut. Setelah itu hitung $P(S\mid +,+)$ untuk uji kedua yang bermutu sama, dan
+periksa apakah hasilnya masih di bawah $0.95$.}
+
+\section{Lab komputasi: Monte Carlo sebagai alat verifikasi}
+\tingkat{lanjut}
+
+Semua angka di bab ini diturunkan, bukan diukur. Simulasi tidak menggantikan penurunan,
+tetapi ia menangkap kesalahan yang paling sering terjadi: arah syarat yang tertukar,
+penyebut yang keliru, dan asumsi independensi yang dipakai tanpa dasar. Bangkitkan
+percobaan yang sama banyak kali, hitung nisbah keberhasilan, lalu bandingkan dengan nilai
+eksak. Menurut hukum bilangan besar (Bab 19), nisbah itu menuju peluang sebenarnya; yang
+tersisa hanya seberapa cepat, diukur oleh galat baku $\sqrt{p(1-p)/m}$ dengan $m$ banyak
+percobaan yang menghasilkan kejadian itu.
+
+\index{monte carlo}
+\index{galat baku}
+
+Benih tetap dipakai supaya keluarannya dapat diperiksa ulang kata demi kata. Benih tetap
+tidak membuat hasilnya lebih benar; ia hanya membuatnya dapat diulang.
+
+\begin{lab}
+    \begin{verbatim}
+import numpy as np
+
+rng = np.random.default_rng(20261024)
+
+print("== 1. uji diagnostik: prevalensi 0,1%, sens 99%, spek 99% ==")
+n = 1_000_000
+sakit = rng.random(n) < 0.001
+positif = np.where(sakit, rng.random(n) < 0.99, rng.random(n) < 0.01)
+m = int(positif.sum())
+ppv = sakit[positif].mean()
+galat = np.sqrt(ppv * (1 - ppv) / m)
+eksak = 0.99 * 0.001 / (0.99 * 0.001 + 0.01 * 0.999)
+print("sakit=%d  positif=%d  benar_positif=%d"
+      % (sakit.sum(), m, int((sakit & positif).sum())))
+print("PPV empiris=%.6f  eksak=%.6f  galat baku=%.6f  z=%.3f"
+      % (ppv, eksak, galat, (ppv - eksak) / galat))
+
+print("== 2. Monty Hall, 10^5 permainan ==")
+N = 100_000
+mobil = rng.integers(0, 3, N)
+pilih = rng.integers(0, 3, N)
+buka = np.where(pilih == mobil,
+                (pilih + 1 + rng.integers(0, 2, N)) % 3,
+                3 - pilih - mobil)
+ganti = 3 - pilih - buka
+menang_tetap = float((pilih == mobil).mean())
+menang_ganti = float((ganti == mobil).mean())
+se_ganti = np.sqrt(menang_ganti * (1 - menang_ganti) / N)
+print("menang tanpa ganti=%.4f  menang ganti=%.4f  galat baku=%.5f"
+      % (menang_tetap, menang_ganti, se_ganti))
+print("eksak 1/3=%.6f  2/3=%.6f" % (1/3, 2/3))
+
+print("== 3. pembawa acara membuka pintu secara acak ==")
+buka_acak = (pilih + 1 + rng.integers(0, 2, N)) % 3
+sah = buka_acak != mobil
+ganti_acak = 3 - pilih - buka_acak
+print("permainan sah=%d dari %d (%.4f)" % (sah.sum(), N, sah.mean()))
+print("menang ganti (sah)=%.4f  tanpa ganti (sah)=%.4f"
+      % (float((ganti_acak[sah] == mobil[sah]).mean()),
+         float((pilih[sah] == mobil[sah]).mean())))
+
+print("== 4. peluang ulang tahun, 20.000 kamar ==")
+for k in (23, 50):
+    hari = rng.integers(0, 365, size=(20000, k))
+    hari.sort(axis=1)
+    ada = (np.diff(hari, axis=1) == 0).any(axis=1)
+    q = 1.0
+    for i in range(k):
+        q *= (365 - i) / 365
+    f = float(ada.mean())
+    se = np.sqrt(f * (1 - f) / 20000)
+    print("k=%2d  empiris=%.4f  eksak=%.4f  galat baku=%.5f  z=%+.2f"
+          % (k, f, 1 - q, se, (f - (1 - q)) / se))
+
+print("== 5. saling lepas versus independen, 10^6 lemparan dadu ==")
+N = 1_000_000
+dadu = rng.integers(1, 7, N)
+A = np.isin(dadu, [1, 2])
+B = np.isin(dadu, [3, 4])
+C = np.isin(dadu, [1, 2, 3])
+D = np.isin(dadu, [1, 4])
+print("lepas:  P(A)=%.4f P(B)=%.4f P(AnB)=%.4f P(A|B)=%.4f selisih=%.4f"
+      % (A.mean(), B.mean(), (A & B).mean(), (A & B).sum() / B.sum(),
+         A.mean() * B.mean() - (A & B).sum() / B.sum()))
+print("bebas:  P(C)=%.4f P(D)=%.4f P(CnD)=%.4f P(C|D)=%.4f selisih=%.4f"
+      % (C.mean(), D.mean(), (C & D).mean(), (C & D).sum() / D.sum(),
+         abs(C.mean() - (C & D).sum() / D.sum())))
+print("eksak lepas: 1/3, 1/3, 0, 0, 1/9=%.6f" % (1 / 9))
+print("eksak bebas: 1/2, 1/3, 1/6, 1/2, 0")
+\end{verbatim}    
+\end{lab}
+
+Keluaran sesungguhnya, apa adanya:
+
+    \begin{verbatim}
+== 1. uji diagnostik: prevalensi 0,1%, sens 99%, spek 99% ==
+sakit=963  positif=11094  benar_positif=952
+PPV empiris=0.085812  eksak=0.090164  galat baku=0.002659  z=-1.637
+== 2. Monty Hall, 10^5 permainan ==
+menang tanpa ganti=0.3325  menang ganti=0.6675  galat baku=0.00149
+eksak 1/3=0.333333  2/3=0.666667
+== 3. pembawa acara membuka pintu secara acak ==
+permainan sah=66472 dari 100000 (0.6647)
+menang ganti (sah)=0.4998  tanpa ganti (sah)=0.5002
+== 4. peluang ulang tahun, 20.000 kamar ==
+k=23  empiris=0.5019  eksak=0.5073  galat baku=0.00354  z=-1.54
+k=50  empiris=0.9701  eksak=0.9704  galat baku=0.00120  z=-0.19
+== 5. saling lepas versus independen, 10^6 lemparan dadu ==
+lepas:  P(A)=0.3333 P(B)=0.3335 P(AnB)=0.0000 P(A|B)=0.0000 selisih=0.1112
+bebas:  P(C)=0.5001 P(D)=0.3334 P(CnD)=0.1667 P(C|D)=0.5000 selisih=0.0001
+eksak lepas: 1/3, 1/3, 0, 0, 1/9=0.111111
+eksak bebas: 1/2, 1/3, 1/6, 1/2, 0
+\end{verbatim}    
+
+Empat hal perlu dibaca dari keluaran itu, dan dua di antaranya justru menunjukkan batas
+simulasi.
+
+Pertama, baris pertama bagian 1 menyebut $963$ orang sakit dari sejuta, sedangkan
+harapannya $1{,}000$ dengan simpangan baku $\sqrt{10^{6}(0.001)(0.999)}=31.6$. Jadi
+$963$ berada $1.17$ simpangan baku di bawah harapan: ayunan wajar, bukan kelalaian
+program. Harapan hasil positif menjadi $963\cdot 0.99+999{,}037\cdot 0.01=10{,}943.7$,
+dan yang teramati $11{,}094$ berjarak $1.4$ simpangan baku. Peluang bersyarat empiris
+$0.0858$ berbeda dari eksak $0.0902$ sebesar $0.0044$, yaitu $1.64$ galat baku. Selisih
+itu jauh lebih kecil daripada jarak $0.09$ ke $1$, sehingga tafsirnya tidak berubah.
+
+Kedua, Monty Hall memberi $0.6675$ dan $0.3325$ dengan galat baku $0.0015$, sedangkan
+selisih yang diharapkan antarstrategi $1/3$. Kesepakatan sampai tiga angka itu bukan
+kebetulan; bentuk verifikasi yang paling berguna memang bukan memastikan angka ketiga,
+melainkan memastikan selisih yang kita klaim ada dan bertanda benar.
+
+Ketiga, bagian 3 dan 5 menunjukkan bahwa protokol dan hubungan antar-kejadian masuk ke
+angka. Pembawa acara yang membuka pintu secara acak hanya membiarkan $66{,}472$ dari
+$100{,}000$ permainan berjalan sampai tawaran, dan di antaranya berpindah menang
+$0.4998$ sedangkan bertahan $0.5002$; selisih $0.0004$ itu seperempat galat baku.
+Pasangan saling lepas memberi $P(A)P(B)-P(A\cap B)=0.1112$, cocok dengan $1/9$ sampai
+tiga angka, sedangkan pasangan independen memberi $0.0001$, yaitu nol dalam ayunan acak.
+Angka $0.1112$ adalah besar kesalahan orang yang menyangka dua kejadian saling lepas
+pasti independen.
+
+Yang tidak dibuktikan program: tidak satu pun dari kelima bagian itu membuktikan rumus.
+Program hanya memeriksa rumus yang sudah dibuktikan, dengan sampel jauh lebih besar
+daripada jangkauan tangan; Bab 19 menjelaskan mengapa itu sah.
+
+\begin{untukdosen}
+Urutan mengajar yang saya sarankan: mulai dari tabel $100{,}000$ orang, bukan dari
+aksioma. Suruh mahasiswa mengisi empat sel: sakit dan positif, sakit dan negatif, sehat
+dan positif, sehat dan negatif. Angka $99$, $1$, $999$, dan $98{,}901$ muncul sendiri,
+dan dari situ $99/1{,}098$ menjadi kesimpulan kelas, bukan hasil ceramah. Sesudah itu
+aksioma, akibatnya, pencacahan, peluang bersyarat, Bayes, lalu independensi. Monty Hall
+paling baik ditaruh paling akhir, setelah mahasiswa mampu menuliskan protokol pembawa
+acara sebagai kejadian bersyarat.
+
+Dua miskonsepsi yang paling sering muncul. Pertama, ``saling lepas berarti independen''.
+Gejalanya terlihat di aritmetika: mahasiswa menjumlahkan peluang dua kejadian yang
+seharusnya dikalikan, atau sebaliknya, lalu tidak dapat menjelaskan mengapa hasilnya
+melebihi satu. Kedua, ``sensitivitas sama dengan peluang sakit bila hasil positif''.
+Gejalanya adalah jawaban $0.99$ untuk soal klinik, tanpa memakai kelaziman yang sudah
+diberikan di soal.
+
+Aktivitas papan tulis yang berhasil: dua mahasiswa memerankan pembawa acara dengan
+protokol tertulis berbeda, satu selalu membuka pintu kambing dan satu membuka acak; kelas
+mencatat dua puluh permainan lalu membandingkannya dengan $2/3$ dan $1/2$. Mahasiswa siap
+lanjut bila dapat menyebut satu contoh dua kejadian independen dan satu contoh saling
+lepas dengan marginal sama, serta menghitung peluang bersyarat dari tabel dua arah tanpa
+membalik arah.
+\end{untukdosen}
+
+\section{Ringkasan}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Peluang adalah fungsi pada kejadian yang tidak negatif, bernilai satu pada
+        seluruh ruang, dan aditif terbilang pada kejadian saling lepas; komplemen,
+        monotonisitas, dan inklusi--eksklusi diturunkan dari situ.
+  \item Bila hasil sama mungkin, peluang adalah nisbah pencacahan, dengan aturan
+        perkalian dan $\binom{n}{k}$; asumsi kesetaraan itu harus diperiksa.
+  \item Peluang bersyarat $P(A\mid B)=P(A\cap B)/P(B)$ menghitung ulang di dalam $B$
+        dan memenuhi ketiga aksioma; aturan perkalian dan hukum peluang total adalah
+        akibatnya.
+  \item Aturan Bayes bukan asumsi baru, melainkan definisi yang dibaca dua arah.
+        Kelaziman menentukan jawaban lebih kuat daripada mutu uji: dengan sensitivitas
+        dan spesifisitas $0.99$, kelaziman $0.1$ persen memberi $P(S\mid+)=0.0902$.
+  \item Saling lepas dan independen berbeda; bila kedua peluang positif, kejadian
+        saling lepas tidak mungkin independen, dan hanya irisan yang menentukan
+        hubungan.
+  \item Jawaban paradoks bergantung pada protokol dan satuan hitung: Monty Hall $2/3$
+        pada protokol tetap dan $1/2$ pada protokol acak; ulang tahun $0.5073$ untuk
+        $23$ orang karena yang dihitung $253$ pasangan. Simulasi berbenih tetap
+        memeriksa, bukan membuktikan.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Buktikan rumus inklusi--eksklusi untuk tiga kejadian dengan menerapkan versi
+        dua kejadian pada $A\cup B$ dan $C$. Tunjukkan pada langkah mana suku
+        $P(A\cap B\cap C)$ muncul, dan mengapa tandanya positif.
+  \item Nilai klaim ini: ``Karena $P(A\mid B)=0$, $A$ dan $B$ saling lepas.'' Benar,
+        salah, atau belum cukup bukti? Beri contoh dengan $P(A\mid B)=0$ tetapi
+        $A\cap B\neq\varnothing$, atau jelaskan mengapa itu tidak mungkin.
+  \item Sebuah uji berkelaziman $2$ persen, sensitivitas $0.95$, spesifisitas $0.90$.
+        Hitung $P(S\mid+)$ dari tabel $10{,}000$ orang, lalu ulangi dengan
+        spesifisitas $0.99$; nyatakan keduanya sebagai pecahan.
+  \item Buktikan bahwa bila $A$ dan $B$ independen, maka $A$ dan $B^{c}$ juga
+        independen. Gunakan $P(A)=P(A\cap B)+P(A\cap B^{c})$ dan jelaskan mengapa
+        hasil yang sama berlaku untuk $A^{c}$ dan $B^{c}$.
+  \item Hitung peluang ada pasangan hari lahir sama untuk $30$ orang, bandingkan
+        dengan $1-e^{-\binom{30}{2}/365}$, lalu jelaskan sumber selisihnya.
+  \item Buktikan hukum peluang total untuk $k=2$ langsung dari aksioma, tanpa memakai
+        hukum untuk $k$ umum: tulis $A=(A\cap B)\cup(A\cap B^{c})$ dan periksa
+        kesalinglepasannya.
+  \item Empat pintu, satu mobil, tiga kambing. Pembawa acara yang tahu isi membuka dua
+        pintu kambing di antara tiga pintu lain dan menawarkan perpindahan ke satu pintu
+        tersisa. Hitung peluang menang bila berpindah, lalu periksa dengan simulasi
+        $10^{4}$ permainan.
+  \item Nilai klaim ini: ``Dua uji bebas bersensitivitas dan spesifisitas $0.99$
+        memberi kepastian $0.9999$ bila keduanya positif, asalkan kelazimannya $0.1$
+        persen.'' Hitung angka yang benar dan sebutkan asumsinya.
+  \item Apakah independensi berpasangan untuk tiga kejadian cukup untuk menyimpulkan
+        $P(A\cap B\cap C)=P(A)P(B)P(C)$? Bantah dengan contoh dari dua lemparan koin,
+        dan hitung kedua nilainya.
+\end{enumerate}
+
+Petunjuk untuk tiga butir tersulit. Butir 2: pada ruang berhingga yang setiap hasilnya
+berpeluang positif, $P(A\mid B)=0$ memaksa $A\cap B=\varnothing$, jadi pada lemparan dadu
+klaim itu benar; contoh penyangkal harus datang dari ruang kontinu, misalnya
+$A=\{1/2\}$ dan $B=(0,1)$ dengan peluang seragam, tempat $P(A)=0$ walaupun $A$ berisi
+titik. Butir 7: mula-mula mobil di pintu pilihan berpeluang $1/4$; bila tidak, satu-satunya
+pintu yang tidak dibuka pembawa acara pasti berisi mobil, jadi peluang berpindah $3/4$.
+Butir 9: ambil $A$ koin pertama gambar, $B$ koin kedua gambar, dan $C$ kedua koin sama;
+ketiga pasangan memberi $1/4$ sedangkan irisannya $1/4$, bukan $1/8$.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini: ketiga aksioma beserta akibatnya; aturan Bayes
+sebagai teorema yang diturunkan dari definisi peluang bersyarat; kemustahilan dua
+kejadian saling lepas berpeluang positif untuk juga independen; dan ketergantungan
+jawaban Monty Hall pada protokol, yang analisisnya dirumuskan tegas oleh Morgan,
+Chaganty, Dahiya, dan Doviak, \emph{The American Statistician} 1991, pada artikel
+``Let's Make a Deal: The Player's Dilemma''. Yang populer tetapi tidak terbukti di sini
+adalah klaim bahwa format frekuensi alami memperbaiki penalaran kelaziman pada manusia;
+itu klaim empiris tentang pembaca, bukan teorema, dan buktinya ada di literatur
+psikologi pengambilan keputusan.
+\end{untukpeneliti}
+
+Sumber primer: Blitzstein dan Hwang, \emph{Introduction to Probability}, Bab 1 (Why
+probability, Naive definition of probability, How to count, Story proofs, Non-naive
+definition of probability) dan Bab 2 (The importance of thinking conditionally,
+Definition and intuition, Bayes' rule and the law of total probability, Conditional
+probabilities are probabilities, Independence of events, Coherency of Bayes' rule);
+serta Wasserman, \emph{All of Statistics}, Bab 1 bagian Probability untuk perumusan
+aksioma dan Bab 2 bagian Independent Events.
+
+Batas keberlakuan: seluruh bab bekerja pada ruang berhingga yang setiap hasilnya
+berpeluang positif, tempat $P(A)=0$ setara dengan $A=\varnothing$. Pada ruang tak
+tercacah, pengkondisian pada kejadian berpeluang nol tidak didefinisikan oleh rumus
+nisbah dan memerlukan distribusi bersyarat reguler; paradoks Borel menunjukkan jawabannya
+dapat bergantung pada cara mengambil limit. Independensi juga tidak stabil: ia dapat
+hilang atau muncul di bawah pengkondisian, dan pada model grafis muncul sebagai bias
+seleksi.
+
+Pertanyaan terbuka: seberapa jauh kelaziman harus diketahui sebelum aturan Bayes dipakai
+secara jujur, dan apa yang dapat dikatakan bila kelaziman hanya diketahui dari sampel
+kecil. Jawaban formalnya inferensi Bayesian dengan prior, yang membawa persoalan
+pemilihan prior; jawaban frekuentisnya uji hipotesis di Bab 20, yang tidak memakai prior
+tetapi menjawab pertanyaan berbeda. Bab ini tidak memilih salah satu.
+
+\peta{Bab 17 pada Blitzstein dan Hwang, \emph{Introduction to Probability}: Bab 1
+(Probability and counting, termasuk How to count dan contoh masalah ulang tahun) untuk
+aksioma, pencacahan, dan peluang kombinatorial; Bab 2 (Conditional probability, Bayes'
+rule and the law of total probability, Independence of events) untuk peluang bersyarat,
+Bayes, dan independensi. Pada Wasserman, \emph{All of Statistics}: Bab 1 bagian
+Probability dan Bab 2 bagian Independent Events. Himpunan dan komplemen dipakai dari
+Bab 2 buku ini; deret yang mendasari aditif terbilang dari Bab 5; hukum bilangan besar
+yang menopang simulasi dibuktikan di Bab 18. Variabel acak di Bab 17 memindahkan bobot
+dari kejadian ke bilangan, sedangkan uji hipotesis di Bab 19 memakai aturan Bayes dan hukum
+peluang total untuk pertanyaan berbeda.}

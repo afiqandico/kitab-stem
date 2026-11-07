@@ -1,0 +1,1355 @@
+\chapter[Integral Lipat dan Teorema Lapangan Vektor]{Integral Lipat, Perubahan Variabel, dan Teorema Lapangan Vektor}
+
+Sebuah pelat pendingin berbentuk cakram berjari-jari satu meter. Tebalnya
+seragam, tetapi kerapatannya menurun dari pusat: $e^{-(x^{2}+y^{2})}$ kilogram
+per meter persegi. Massanya adalah jumlah kerapatan di seluruh cakram: pustaka numerik memberi
+$1.9858653038$ kilogram setelah $11907$ evaluasi fungsi.
+
+Rekan kita menulis versi lain dari perhitungan yang sama. Ia pindah ke
+koordinat polar, menuliskan
+\[
+\int_{0}^{2\pi}\!\!\int_{0}^{1} e^{-r^{2}}\,dr\,d\theta ,
+\]
+dan mendapat $4.6924344183$ kilogram. Programnya berjalan tanpa peringatan.
+Angka itu $2.36$ kali lebih besar daripada yang pertama, dan tidak satu pun
+program memperingatkan. Kesalahannya satu huruf: faktor $r$ hilang, sehingga luas
+tiap petak kecil dihitung terlalu besar.
+
+Kerusakan sekelas itu muncul juga di sisi lain bab ini. Hitung kerja
+$F(x,y)=(-y,x)/(x^{2}+y^{2})$ mengelilingi lingkaran satuan: hasilnya
+$6.2831853072$, padahal curl medan itu nol di setiap titik tempat ia
+terdefinisi. Kalau curl nol berarti kerja tertutup nol, salah satu hitungan
+itu bohong. Yang bohong bukan hitungannya, melainkan syarat yang tidak
+diperiksa: medan itu tidak terdefinisi di titik asal, dan titik asal ada di
+dalam lingkaran.
+
+Bab 13 membangun integral pada selang, dan Bab 12 memberi Jacobian sebagai
+matriks turunan. Keduanya belum cukup: belum ada cara menjumlahkan pada daerah
+berdimensi lebih dari satu, aturan tentang apa yang terjadi pada luas petak
+ketika koordinat diganti, dan arti tanda pada batas. Bab ini mengisi
+ketiganya, lalu menunjukkan bahwa Green, Gauss, dan Stokes sebenarnya satu
+pernyataan.
+
+\begin{untukanak}
+Bayangkan penjahit dengan pola baju di atas kertas berpetak. Polanya persegi
+dan rapi; kain yang akan dipotong melengkung mengikuti badan. Kalau pola persegi
+itu ditempelkan begitu saja, bajunya sempit di satu sisi dan longgar di sisi
+lain, walaupun jumlah petaknya tetap sama.
+
+Penjahit berpengalaman melakukan hal lain: setiap petak kecil akan meregang
+atau mengkerut dengan perbandingan tertentu saat dipindahkan ke kain. Petak di
+dekat pinggang meregang sedikit; petak di dekat bahu mengkerut. Ia mencatat
+perbandingan itu, mengalikan luas petak dengannya, baru menjumlahkan.
+
+Pekerjaan yang sama muncul pada bentuk lengkung: banyak benda, luas, atau berat.
+Kalau perbandingan regangan lupa dicatat, jumlahnya tetap bilangan rapi, dan
+justru karena rapi ia sulit dicurigai. Di bab ini kita akan tahu mengapa
+perbandingan itu harus ada, dan bagaimana menghitungnya untuk bentuk bulat.
+\end{untukanak}
+
+\section{Dari persegi panjang ke daerah umum}
+\tingkat{dasar}
+
+Kita mulai dari benda paling sederhana: sebuah persegi panjang, dan sebuah
+bilangan yang hendak dijumlahkan di seluruh permukaannya. Caranya sama dengan
+Bab 13, hanya potongannya sekarang berbentuk petak, bukan potongan garis.
+
+\begin{definisi}[Integral lipat dua]\index{integral lipat dua}
+Misalkan $R=[a,b]\times[c,d]$ sebuah persegi panjang tertutup. Sebuah
+\emph{partisi} $\mathcal{P}$ dari $R$ adalah pembagian $[a,b]$ menjadi
+selang-selang dan $[c,d]$ menjadi selang-selang; hasilnya adalah $mn$ persegi
+panjang kecil $R_{ij}$. \emph{Mesh} partisi adalah diagonal terpanjang di
+antara petak-petak itu, dan ditulis $\|\mathcal{P}\|$.
+
+Untuk $f$ terbatas pada $R$, tulis $M_{ij}=\sup_{R_{ij}}f$ dan
+$m_{ij}=\inf_{R_{ij}}f$, lalu
+\[
+U(\mathcal{P},f)=\sum_{i,j}M_{ij}\,\mathrm{luas}(R_{ij}),
+\qquad
+L(\mathcal{P},f)=\sum_{i,j}m_{ij}\,\mathrm{luas}(R_{ij}).
+\]
+Fungsi $f$ disebut \emph{terintegralkan} pada $R$ bila supremum semua $L$ sama
+dengan infimum semua $U$; nilai bersama itu adalah $\iint_{R}f\,dA$.
+\end{definisi}
+
+Definisi ini tidak menyebut urutan pengintegralan. Bila $f$ kontinu, jumlah
+atas dan jumlah bawah bertemu karena beda terbesar $f$ pada satu petak
+mengecil bersama mesh: pada himpunan kompak, fungsi kontinu kontinu seragam
+(Bab 11).
+
+Pertanyaan berikutnya praktis. Menjumlahkan pada petak berarti menghitung
+sesuatu berdimensi dua, sedangkan tangan kita hanya bisa menghitung integral satu
+variabel. Jembatannya: memotong menurut satu arah lebih dulu, lalu menjumlahkan
+hasil potongan itu.
+
+\begin{teorema}[Fubini]\index{teorema Fubini}
+Jika $f$ kontinu pada $R=[a,b]\times[c,d]$, maka
+\[
+\iint_{R} f\,dA=\int_{a}^{b}\!\!\int_{c}^{d} f(x,y)\,dy\,dx
+=\int_{c}^{d}\!\!\int_{a}^{b} f(x,y)\,dx\,dy .
+\]
+\end{teorema}
+
+\begin{proof}
+Bukti penuh menuntut pencocokan jumlah atas-bawah dua dimensi dengan integral
+satu dimensi secara seragam, dan ada di Spivak, bab \emph{Integration},
+Teorema 3-10. Gagasannya begini.
+
+Untuk $f\ge 0$, integral lipat dua adalah volume benda di bawah grafik $f$.
+Iris benda itu dengan bidang $x$ tetap. Irisannya berupa daerah di bawah kurva
+$y\mapsto f(x,y)$, sehingga luasnya
+\[
+A(x)=\int_{c}^{d}f(x,y)\,dy .
+\]
+Volume benda adalah integral dari luas irisan itu:
+\[
+\iint_{R}f\,dA=\int_{a}^{b}A(x)\,dx=\int_{a}^{b}\!\!\int_{c}^{d}f(x,y)\,dy\,dx .
+\]
+Karena $f$ kontinu pada himpunan kompak, $A$ kontinu. Untuk $f$ bertanda apa
+pun, pisahkan $f=f^{+}-f^{-}$; arah sebaliknya diberikan oleh irisan $y$
+tetap.
+\end{proof}
+
+Yang penting dari teorema ini bukan rumusnya, melainkan izinnya: urutan boleh
+ditukar. Izin itu gugur pada fungsi yang tidak terintegralkan, dan itu dibahas
+nanti.
+
+Benda yang diiris dalam bukti itu tampak pada Gambar~\ref{fig:kolom-tipis}:
+tiap kolom menyumbang $f(x,y)\,\Delta A$.
+
+\begin{bacakeras}
+--- Berapa isi gunungan pasir ini?
+--- Jumlahkan kolom-kolom tipisnya. Berdiri di sisi utara, iris gunungan menjadi
+jalur, ukur tiap jalur, lalu jumlahkan.
+--- Berapa hasilnya?
+--- Delapan belas ember.
+--- Sekarang berdiri di sisi timur, iris dengan arah lain, ukur, jumlahkan.
+--- Berapa hasilnya?
+--- Delapan belas ember juga.
+--- Jalur utara-selatan dan jalur timur-barat tidak satu pun sama. Mengapa
+hasilnya sama?
+--- Karena gunungannya satu. Kita tidak menjumlahkan dua gunungan; kita mengiris
+benda yang sama dengan dua pisau berbeda arah.
+--- Jadi arah iris boleh ditukar?
+--- Selama bendanya terukur. Kalau gunungannya berlubang di tengah, dua arah itu
+masih sama; yang gagal nanti lubangnya, bukan urutannya.
+
+Ulangi sekali, dengan suara biasa: arah iris berganti, isi tetap.
+\end{bacakeras}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.55,font=\small]
+  \fill[layergrey!10] (0,0) -- (6.1,0) -- (7.1,0.90) -- (1.0,0.90) -- cycle;
+  \draw[layergrey,thick] (0,0) -- (6.1,0) -- (7.1,0.90) -- (1.0,0.90) -- cycle;
+  \fill[layerteal!12] (0.91,0.82) rectangle (1.43,1.38);
+  \draw[layerteal!70,line width=0.4pt] (0.91,0.82) rectangle (1.43,1.38);
+  \fill[layerteal!30] (0.91,1.38) -- (1.08,1.47) -- (1.60,1.47) -- (1.43,1.38) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (0.91,1.38) -- (1.08,1.47) -- (1.60,1.47);
+  \fill[layerteal!12] (1.67,0.82) rectangle (2.19,1.60);
+  \draw[layerteal!70,line width=0.4pt] (1.67,0.82) rectangle (2.19,1.60);
+  \fill[layerteal!30] (1.67,1.60) -- (1.83,1.69) -- (2.35,1.69) -- (2.19,1.60) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (1.67,1.60) -- (1.83,1.69) -- (2.35,1.69);
+  \fill[layerteal!12] (2.42,0.82) rectangle (2.93,1.97);
+  \draw[layerteal!70,line width=0.4pt] (2.42,0.82) rectangle (2.93,1.97);
+  \fill[layerteal!30] (2.42,1.97) -- (2.58,2.06) -- (3.10,2.06) -- (2.93,1.97) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (2.42,1.97) -- (2.58,2.06) -- (3.10,2.06);
+  \fill[layerteal!12] (3.17,0.82) rectangle (3.68,2.30);
+  \draw[layerteal!70,line width=0.4pt] (3.17,0.82) rectangle (3.68,2.30);
+  \fill[layerteal!30] (3.17,2.30) -- (3.33,2.39) -- (3.85,2.39) -- (3.68,2.30) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (3.17,2.30) -- (3.33,2.39) -- (3.85,2.39);
+  \fill[layerteal!12] (3.92,0.82) rectangle (4.43,2.32);
+  \draw[layerteal!70,line width=0.4pt] (3.92,0.82) rectangle (4.43,2.32);
+  \fill[layerteal!30] (3.92,2.32) -- (4.08,2.41) -- (4.60,2.41) -- (4.43,2.32) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (3.92,2.32) -- (4.08,2.41) -- (4.60,2.41);
+  \fill[layerteal!12] (4.67,0.82) rectangle (5.18,2.00);
+  \draw[layerteal!70,line width=0.4pt] (4.67,0.82) rectangle (5.18,2.00);
+  \fill[layerteal!30] (4.67,2.00) -- (4.83,2.09) -- (5.35,2.09) -- (5.18,2.00) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (4.67,2.00) -- (4.83,2.09) -- (5.35,2.09);
+  \fill[layerteal!12] (5.42,0.82) rectangle (5.93,1.62);
+  \draw[layerteal!70,line width=0.4pt] (5.42,0.82) rectangle (5.93,1.62);
+  \fill[layerteal!30] (5.42,1.62) -- (5.58,1.71) -- (6.10,1.71) -- (5.93,1.62) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (5.42,1.62) -- (5.58,1.71) -- (6.10,1.71);
+  \fill[layerteal!12] (6.17,0.82) rectangle (6.68,1.39);
+  \draw[layerteal!70,line width=0.4pt] (6.17,0.82) rectangle (6.68,1.39);
+  \fill[layerteal!30] (6.17,1.39) -- (6.33,1.48) -- (6.85,1.48) -- (6.68,1.39) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (6.17,1.39) -- (6.33,1.48) -- (6.85,1.48);
+  \fill[layerteal!12] (0.59,0.50) rectangle (1.11,1.07);
+  \draw[layerteal!70,line width=0.4pt] (0.59,0.50) rectangle (1.11,1.07);
+  \fill[layerteal!30] (0.59,1.07) -- (0.76,1.16) -- (1.28,1.16) -- (1.11,1.07) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (0.59,1.07) -- (0.76,1.16) -- (1.28,1.16);
+  \fill[layerteal!12] (1.34,0.50) rectangle (1.86,1.33);
+  \draw[layerteal!70,line width=0.4pt] (1.34,0.50) rectangle (1.86,1.33);
+  \fill[layerteal!30] (1.34,1.33) -- (1.51,1.42) -- (2.03,1.42) -- (1.86,1.33) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (1.34,1.33) -- (1.51,1.42) -- (2.03,1.42);
+  \fill[layerteal!12] (2.09,0.50) rectangle (2.61,1.75);
+  \draw[layerteal!70,line width=0.4pt] (2.09,0.50) rectangle (2.61,1.75);
+  \fill[layerteal!30] (2.09,1.75) -- (2.26,1.84) -- (2.78,1.84) -- (2.61,1.75) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (2.09,1.75) -- (2.26,1.84) -- (2.78,1.84);
+  \fill[layerteal!12] (2.84,0.50) rectangle (3.36,2.14);
+  \draw[layerteal!70,line width=0.4pt] (2.84,0.50) rectangle (3.36,2.14);
+  \fill[layerteal!30] (2.84,2.14) -- (3.01,2.23) -- (3.53,2.23) -- (3.36,2.14) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (2.84,2.14) -- (3.01,2.23) -- (3.53,2.23);
+  \fill[layerteal!12] (3.59,0.50) rectangle (4.11,2.15);
+  \draw[layerteal!70,line width=0.4pt] (3.59,0.50) rectangle (4.11,2.15);
+  \fill[layerteal!30] (3.59,2.15) -- (3.76,2.24) -- (4.28,2.24) -- (4.11,2.15) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (3.59,2.15) -- (3.76,2.24) -- (4.28,2.24);
+  \fill[layerteal!12] (4.34,0.50) rectangle (4.86,1.79);
+  \draw[layerteal!70,line width=0.4pt] (4.34,0.50) rectangle (4.86,1.79);
+  \fill[layerteal!30] (4.34,1.79) -- (4.51,1.88) -- (5.03,1.88) -- (4.86,1.79) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (4.34,1.79) -- (4.51,1.88) -- (5.03,1.88);
+  \fill[layerteal!12] (5.09,0.50) rectangle (5.61,1.35);
+  \draw[layerteal!70,line width=0.4pt] (5.09,0.50) rectangle (5.61,1.35);
+  \fill[layerteal!30] (5.09,1.35) -- (5.26,1.44) -- (5.78,1.44) -- (5.61,1.35) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (5.09,1.35) -- (5.26,1.44) -- (5.78,1.44);
+  \fill[layerteal!12] (5.84,0.50) rectangle (6.36,1.08);
+  \draw[layerteal!70,line width=0.4pt] (5.84,0.50) rectangle (6.36,1.08);
+  \fill[layerteal!30] (5.84,1.08) -- (6.01,1.17) -- (6.53,1.17) -- (6.36,1.08) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (5.84,1.08) -- (6.01,1.17) -- (6.53,1.17);
+  \fill[layerteal!12] (0.26,0.17) rectangle (0.78,0.73);
+  \draw[layerteal!70,line width=0.4pt] (0.26,0.17) rectangle (0.78,0.73);
+  \fill[layerteal!30] (0.26,0.73) -- (0.43,0.82) -- (0.95,0.82) -- (0.78,0.73) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (0.26,0.73) -- (0.43,0.82) -- (0.95,0.82);
+  \fill[layerteal!12] (1.02,0.17) rectangle (1.54,0.95);
+  \draw[layerteal!70,line width=0.4pt] (1.02,0.17) rectangle (1.54,0.95);
+  \fill[layerteal!30] (1.02,0.95) -- (1.19,1.04) -- (1.71,1.04) -- (1.54,0.95) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (1.02,0.95) -- (1.19,1.04) -- (1.71,1.04);
+  \fill[layerteal!12] (1.76,0.17) rectangle (2.29,1.32);
+  \draw[layerteal!70,line width=0.4pt] (1.76,0.17) rectangle (2.29,1.32);
+  \fill[layerteal!30] (1.76,1.32) -- (1.93,1.41) -- (2.46,1.41) -- (2.29,1.32) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (1.76,1.32) -- (1.93,1.41) -- (2.46,1.41);
+  \fill[layerteal!12] (2.51,0.17) rectangle (3.04,1.65);
+  \draw[layerteal!70,line width=0.4pt] (2.51,0.17) rectangle (3.04,1.65);
+  \fill[layerteal!30] (2.51,1.65) -- (2.69,1.74) -- (3.21,1.74) -- (3.04,1.65) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (2.51,1.65) -- (2.69,1.74) -- (3.21,1.74);
+  \fill[layerteal!12] (3.26,0.17) rectangle (3.79,1.67);
+  \draw[layerteal!70,line width=0.4pt] (3.26,0.17) rectangle (3.79,1.67);
+  \fill[layerteal!30] (3.26,1.67) -- (3.44,1.76) -- (3.96,1.76) -- (3.79,1.67) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (3.26,1.67) -- (3.44,1.76) -- (3.96,1.76);
+  \fill[layerteal!12] (4.01,0.17) rectangle (4.53,1.35);
+  \draw[layerteal!70,line width=0.4pt] (4.01,0.17) rectangle (4.53,1.35);
+  \fill[layerteal!30] (4.01,1.35) -- (4.18,1.44) -- (4.70,1.44) -- (4.53,1.35) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (4.01,1.35) -- (4.18,1.44) -- (4.70,1.44);
+  \fill[layerteal!12] (4.76,0.17) rectangle (5.28,0.97);
+  \draw[layerteal!70,line width=0.4pt] (4.76,0.17) rectangle (5.28,0.97);
+  \fill[layerteal!30] (4.76,0.97) -- (4.93,1.06) -- (5.45,1.06) -- (5.28,0.97) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (4.76,0.97) -- (4.93,1.06) -- (5.45,1.06);
+  \fill[layerteal!12] (5.51,0.17) rectangle (6.03,0.74);
+  \draw[layerteal!70,line width=0.4pt] (5.51,0.17) rectangle (6.03,0.74);
+  \fill[layerteal!30] (5.51,0.74) -- (5.68,0.83) -- (6.20,0.83) -- (6.03,0.74) -- cycle;
+  \draw[layerteal!70,line width=0.4pt] (5.51,0.74) -- (5.68,0.83) -- (6.20,0.83);
+  \fill[accent!42] (2.69,0.17) rectangle (2.86,1.65);
+  \draw[accent,line width=1pt] (2.69,0.17) rectangle (2.86,1.65);
+  \fill[accent!55] (2.69,1.65) -- (2.78,1.70) -- (2.96,1.70) -- (2.86,1.65) -- cycle;
+  \draw[accent,line width=1pt] (2.69,1.65) -- (2.78,1.70) -- (2.96,1.70);
+  \draw[accent,densely dashed] (2.86,0.16) -- (3.42,-0.26);
+  \node[accent,anchor=north west,align=left]
+    at (3.50,-0.30) {satu kolom tipis: alas $\Delta A$,\\ tinggi $f(x,y)$, isi $\approx f(x,y)\,\Delta A$};
+  \node[layergrey,anchor=north west] at (-0.05,-0.08) {alas $R$};
+  \node[layergrey,anchor=north] at (5.95,-0.02) {$x$};
+  \node[layergrey,anchor=west] at (7.15,0.55) {$y$};
+\end{tikzpicture}
+\caption{Benda di bawah grafik $f$ di atas persegi panjang $R$, dipotong menjadi
+kolom-kolom tipis. Setiap kolom hampir berupa balok dengan alas $\Delta A$ dan tinggi
+$f(x,y)$, sehingga isinya $f(x,y)\,\Delta A$; menjumlahkan seluruh kolom memberi
+$\iint_R f\,dA$. Kolom yang ditandai merah adalah satu suku dalam jumlah itu.
+Mengiris dari arah $x$ maupun dari arah $y$ menghasilkan kolom yang berbeda, tetapi
+jumlah isinya sama.}
+\label{fig:kolom-tipis}
+\end{figure}
+
+Daerah yang muncul di soal jarang berupa persegi panjang. Kita menanganinya
+dengan satu langkah tambahan: perluas fungsinya dengan nol di luar daerah.
+
+\begin{lemma}[Daerah di antara dua grafik]\index{daerah bertipe I}
+Misalkan $g_{1},g_{2}\colon[a,b]\to\mathbb{R}$ kontinu dengan $g_{1}\le
+g_{2}$, dan
+\[
+D=\{(x,y): a\le x\le b,\ g_{1}(x)\le y\le g_{2}(x)\}.
+\]
+Jika $f$ kontinu pada $D$, maka
+\[
+\iint_{D}f\,dA=\int_{a}^{b}\!\!\int_{g_{1}(x)}^{g_{2}(x)}f(x,y)\,dy\,dx .
+\]
+\end{lemma}
+
+\begin{proof}
+Ambil persegi panjang $R$ yang memuat $D$, dan perluas $f$ dengan nilai $0$ di
+$R\setminus D$. Batas $D$ dapat ditutup oleh berhingga persegi panjang dengan
+luas total kurang dari $\varepsilon$: pada grafik, kekontinuan seragam pada
+selang kompak memberi partisi yang goyangan $g$ kecil di tiap potongan.
+Himpunan yang dapat ditutup begitu tidak mengubah nilai integral, sehingga
+\[
+\iint_{D}f\,dA=\iint_{R} f\cdot\mathbf{1}_{D}\,dA .
+\]
+Menurut Fubini, integral kanan dihitung dengan mengintegralkan $x$ lebih dulu;
+untuk $x$ tetap, integran $\mathbf{1}_{D}f$ bernilai $f$ hanya pada
+$g_{1}(x)\le y\le g_{2}(x)$.
+\end{proof}
+
+Daerah bertipe I cukup untuk hampir semua soal di bab ini; batas yang memotong
+garis tegak lebih dari dua kali dipecah lalu dijumlahkan. Cakram paling penting:
+di Cartesius ia menuntut dua potongan, di polar cukup satu.
+
+\begin{untukanak}
+Sekarang ambil sebuah ruangan tertutup dengan beberapa tungku di dalamnya.
+Setiap tungku mengeluarkan panas. Pertanyaannya: berapa panas yang keluar dari
+ruangan itu setiap detik, dijumlahkan dari seluruh dinding, lantai, dan atap?
+
+Cara pertama menghitungnya sulit: berkeliling ke setiap dinding, mengukur aliran
+panas di tiap titik, lalu menjumlahkan. Cara kedua jauh lebih mudah: hitung
+berapa panas yang dihasilkan semua tungku di dalam. Kalau tidak ada panas yang
+hilang lewat celah lain, kedua angka harus sama: jumlah di dalam sama dengan
+jumlah yang menembus kulit.
+
+Kalimat itu terdengar terlalu bagus untuk benar. Kesamaan itu hanya berlaku
+kalau kulit ruangan benar-benar tertutup dan arah "keluar" ditentukan dengan tegas. Kalau ada satu lubang
+kecil yang tidak dihitung, atau kalau kita salah menandai mana sisi luar dan
+mana sisi dalam, angkanya meleset walaupun semua penjumlahan kita benar.
+
+Di bab ini kita akan tahu mengapa jumlah di dalam bisa dibaca dari kulitnya,
+untuk bentuk lengkung apa pun, dan bagaimana satu lubang kecil dapat merusak
+seluruh kesimpulan.
+\end{untukanak}
+
+\section{Perubahan variabel dan determinan Jacobian}
+\tingkat{menengah}
+
+Mengganti koordinat berarti mengganti petak: petak persegi di bidang $(u,v)$
+menjadi petak melengkung di bidang $(x,y)$, dan luasnya berubah. Kita butuh
+satu bilangan di tiap titik.
+
+\begin{definisi}[Perubahan variabel]
+\index{perubahan variabel}\index{Jacobian} Misalkan $D^{*}$ daerah terbuka di
+$\mathbb{R}^{2}$ dan $T\colon D^{*}\to\mathbb{R}^{2}$,
+$T(u,v)=(x(u,v),y(u,v))$, fungsi dengan turunan parsial kontinu. $T$ disebut
+\emph{perubahan variabel} yang sah bila $T$ satu-satu pada bagian dalam
+$D^{*}$ dan determinan Jacobiannya
+\[
+\det J_{T}(u,v)=\frac{\partial x}{\partial u}\frac{\partial y}{\partial v}
+-\frac{\partial x}{\partial v}\frac{\partial y}{\partial u}
+\]
+tidak nol di sana. Matriks $J_{T}$ sendiri sudah kita kenal di Bab 12.
+\end{definisi}
+
+Kalimat sehari-harinya: ia angka yang memberi tahu berapa kali sebuah petak
+kecil membesar ketika dipindahkan oleh $T$. Nilai $3$ berarti petak menjadi tiga kali lebih luas, $1/2$ berarti menyusut
+setengah, dan nol berarti petak gepeng menjadi garis dan informasinya hilang.
+
+Gambar~\ref{fig:juring-jacobian} memperlihatkan satu petak dan bayangannya:
+luas $0.04$ menjadi $0.064$, dan angka $1.6$ itu adalah $|{\det J}|$ di tengah
+petak.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize]
+  \begin{scope}[x=1.9cm,y=1.9cm]
+    \fill[layergrey!7] (1,0) rectangle (2.4,1.2);
+    \draw[layergrey!40,very thin] (1,0) grid[xstep=0.2,ystep=0.2] (2.4,1.2);
+    \draw[->,ink] (0.88,0) -- (2.62,0) node[right] {$u$};
+    \draw[->,ink] (1,-0.08) -- (1,1.42) node[above] {$v$};
+    \fill[layerindigo!30] (1.5,0.6) rectangle (1.7,0.8);
+    \draw[layerindigo,thick] (1.5,0.6) rectangle (1.7,0.8);
+    \node[layerindigo!85!black,anchor=north,align=center,fill=white,inner sep=1.2pt]
+      at (1.60,0.55) {petak $0.2\times0.2$\\ luas $0.04$};
+    \node[layergrey,anchor=north] at (1.7,-0.10) {bidang $(u,v)$};
+  \end{scope}
+  \draw[-{Latex[length=2.4mm]},ink,thick] (4.62,1.14) -- (5.85,1.14);
+  \node[ink,above] at (5.23,1.18) {$T$};
+  \node[ink,below,font=\scriptsize] at (5.23,1.06) {$\times\,1.6$};
+  \begin{scope}[xshift=5.9cm,x=1.9cm,y=1.9cm]
+    \foreach \r in {1,1.2,1.4,1.6,1.8,2,2.2,2.4}{
+      \draw[layergrey!40,very thin] (\r,0) arc (0:69:\r);}
+    \foreach \a in {0,11.5,23,34.5,46,57.5,69}{
+      \draw[layergrey!40,very thin] (0,0) -- (\a:2.4);}
+    \draw[->,ink] (-0.08,0) -- (2.62,0) node[right] {$x$};
+    \draw[->,ink] (0,-0.08) -- (0,2.52) node[above] {$y$};
+    \fill[accent!30] (34.4:1.5) arc (34.4:45.8:1.5) -- (45.8:1.7)
+      arc (45.8:34.4:1.7) -- cycle;
+    \draw[accent,thick] (34.4:1.5) arc (34.4:45.8:1.5) -- (45.8:1.7)
+      arc (45.8:34.4:1.7) -- cycle;
+    \node[accent,anchor=west,align=left] at (1.62,1.42)
+      {juring melengkung\\ luas $0.064=1.6\times0.04$};
+    \node[layergrey,anchor=north] at (1.6,-0.10) {bidang $(x,y)$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Satu petak kecil di bidang $(u,v)$ dan bayangannya di bidang $(x,y)$ di bawah
+$T(u,v)=(u\cos v,\;u\sin v)$. Petak $0.2\times0.2$ berluas $0.04$ menjadi juring dengan
+luas $0.064$, yaitu $1.6$ kali lipat, persis nilai $|{\det J}|=u$ di tengah petak
+($u=1.6$). Perhatikan bahwa sisinya ikut melengkung: yang berubah bukan hanya ukuran,
+melainkan juga bentuk, dan satu angka di tiap titik cukup untuk mencatat perubahannya.}
+\label{fig:juring-jacobian}
+\end{figure}
+
+\begin{tangan}
+Ambil kertas persegi $12$ cm kali $12$ cm, penggaris, pensil, gunting, dan
+selotip. Gambar petak $1$ cm di seluruh kertas; ada $144$ petak. Potong kertas
+menjadi dua belas jalur tegak, masing-masing $1$ cm kali $12$ cm. Pada setiap
+jalur, tandai titik $3$ cm ke kanan di tepi atas, tarik garis dari sudut kiri
+bawah ke titik itu, lalu potong sepanjang garis. Setiap jalur kini dua potongan
+miring. Susun semua potongan menjadi satu jajar genjang yang rapat, lalu
+rekatkan.
+
+Lihat yang terjadi: bingkai luarnya $15$ cm kali $12$ cm, lebih lebar $3$ cm
+daripada kertas asal, tetapi jajar genjang di dalamnya tetap berukuran alas
+$12$ cm dan tinggi $12$ cm. Ukur keduanya dengan penggaris, tegak lurus, bukan
+sepanjang sisi miring: hasilnya $144$ cm persegi, sama dengan luas kertas
+sebelum dipotong. Kalau angkamu lain, yang salah hampir pasti tinggi.
+\end{tangan}
+
+\begin{teorema}[Perubahan variabel pada integral lipat dua]
+\index{teorema perubahan variabel} Misalkan $T$ perubahan variabel yang sah
+dari $D^{*}$ ke $D=T(D^{*})$, dan $f$ kontinu pada $D$. Maka
+\[
+\iint_{D}f(x,y)\,dx\,dy
+=\iint_{D^{*}} f\bigl(T(u,v)\bigr)\,\bigl|\det J_{T}(u,v)\bigr|\,du\,dv .
+\]
+\end{teorema}
+
+\begin{proof}
+Kita buktikan gagasannya; bukti penuh ada di Spivak, bab \emph{Integration},
+bagian perubahan variabel, dan di Rudin, bab \emph{Integration of Differential
+Forms}.
+
+Partisi $D^{*}$ menjadi petak kecil. Pada petak di sekitar $(u_{0},v_{0})$,
+peta $T$ hampir linear: $T(u_{0}+h,v_{0}+k)\approx
+T(u_{0},v_{0})+J_{T}(u_{0},v_{0})(h,k)$. Petak itu dipetakan menjadi jajar
+genjang bersisi $h\,\partial T/\partial u$ dan $k\,\partial T/\partial v$,
+yang luasnya dihitung dengan determinan (Bab 7):
+\[
+\mathrm{luas}
+=\Bigl|h\,k\,\det\Bigl(\frac{\partial T}{\partial u},
+\frac{\partial T}{\partial v}\Bigr)\Bigr|
+=|h\,k|\,|\det J_{T}(u_{0},v_{0})| .
+\]
+Setiap petak menyumbang $f(T(u_{0},v_{0}))$ kali luas asalnya kali
+$|\det J_{T}|$, dan jumlahnya adalah jumlah Riemann untuk integral di ruas
+kanan; karena turunan $T$ kontinu pada himpunan kompak, galat aproksimasi linear
+mengecil seragam bersama mesh.
+\end{proof}
+
+Nilai mutlak pada determinan bukan hiasan: determinan bisa negatif, luas tidak.
+Tanda negatifnya menyimpan arah; pada integral lipat dua arah itu dibuang, tetapi
+pada integral garis dan permukaan nanti tanda itu menentukan jawaban.
+
+Sekarang determinan untuk dua sistem koordinat yang paling sering dipakai,
+mulai dari polar.
+
+\begin{proposisi}[Koordinat polar]\index{koordinat polar}
+Dengan $x=r\cos\theta$, $y=r\sin\theta$, $r>0$, berlaku
+\[
+\det J=\begin{vmatrix}\cos\theta & -r\sin\theta\\ \sin\theta & r\cos\theta
+\end{vmatrix}=r\cos^{2}\theta+r\sin^{2}\theta=r ,
+\]
+sehingga
+$\iint_{D}f\,dx\,dy=\iint_{D^{*}}f(r\cos\theta,r\sin\theta)\,r\,dr\,d\theta$.
+\end{proposisi}
+
+Faktor $r$ itulah yang hilang pada program di pembukaan bab. Pada $r=1$
+nilainya $1$, tetapi pada $r=0.1$ nilainya $0.1$: petak di dekat pusat
+menyumbang sepuluh kali lebih kecil daripada dugaan yang mengabaikannya, dan
+kesalahan totalnya bisa lebih dari dua kali.
+
+\begin{proposisi}[Koordinat silinder dan bola]
+\index{koordinat silinder}\index{koordinat bola} Untuk koordinat silinder
+$x=r\cos\theta$, $y=r\sin\theta$, $z=z$, determinan Jacobiannya $r$. Untuk
+koordinat bola
+\[
+x=\rho\sin\varphi\cos\theta,\quad
+y=\rho\sin\varphi\sin\theta,\quad
+z=\rho\cos\varphi ,
+\]
+dengan $\rho\ge0$, $0\le\varphi\le\pi$, $0\le\theta<2\pi$, determinan
+Jacobiannya $\rho^{2}\sin\varphi$.
+\end{proposisi}
+
+\begin{proof}
+Untuk silinder, kolom ketiga $(0,0,1)$ membuat determinan tinggal determinan
+blok polar berukuran $2\times2$, yaitu $r$.
+
+Untuk bola, hitung determinan $3\times3$ lewat ekspansi kofaktor. Dengan
+$s_{\varphi}=\sin\varphi$, $c_{\varphi}=\cos\varphi$,
+$s_{\theta}=\sin\theta$, $c_{\theta}=\cos\theta$, matriksnya
+\[
+J=\begin{pmatrix}
+s_{\varphi}c_{\theta} & \rho c_{\varphi}c_{\theta} & -\rho s_{\varphi}s_{\theta}\\
+s_{\varphi}s_{\theta} & \rho c_{\varphi}s_{\theta} & \rho s_{\varphi}c_{\theta}\\
+c_{\varphi} & -\rho s_{\varphi} & 0
+\end{pmatrix}.
+\]
+Entri baris ketiga kolom ketiga nol, jadi ekspansi kolom ketiga menyisakan dua
+suku:
+\[
+\det J=\rho^{2}s_{\varphi}s_{\theta}^{2}+\rho^{2}s_{\varphi}c_{\theta}^{2}
+=\rho^{2}s_{\varphi}\bigl(s_{\theta}^{2}+c_{\theta}^{2}\bigr)=\rho^{2}s_{\varphi}.
+\]
+\end{proof}
+
+Faktor $\rho^{2}\sin\varphi$ nol di kutub $\varphi=0$ dan $\varphi=\pi$,
+karena di sana seluruh bola $\rho$ runtuh menjadi satu titik dan peta berhenti
+satu-satu; itu sebabnya kutub dikecualikan dari $D^{*}$. Ia paling besar di
+ekuator, tempat perubahan kecil $\varphi$ memindahkan titik paling jauh.
+
+\begin{resep}
+\begin{enumerate}
+\item Tulis $T$ eksplisit: $x=x(u,v)$, $y=y(u,v)$, dan periksa bahwa $T$
+  satu-satu pada bagian dalam $D^{*}$.
+\item Hitung empat turunan parsial, susun matriks $2\times2$, lalu hitung
+  $\det J(u,v)$. Simpan tandanya; nilai mutlak dipasang nanti.
+\item Terjemahkan batas: gambar $D$ di bidang $(x,y)$, tanyakan nilai $(u,v)$
+  mana yang mendarat di sana, lalu tulis $D^{*}$.
+\item Ganti seluruh $x,y$ pada $f$ dengan $x(u,v),y(u,v)$, kalikan
+  $|\det J(u,v)|$, lalu tutup dengan $du\,dv$ sesuai urutan batas.
+\end{enumerate}
+Peringatan urutan: langkah 2 dan 3 tidak boleh ditukar. Determinan harus sudah
+berbentuk $(u,v)$ sebelum batas dipasang. Kalau batas ditulis lebih dulu, faktor itu tertinggal dalam $x$ dan $y$ dan
+integralnya tidak dapat dihitung.
+\end{resep}
+
+\kamus{determinan Jacobian}{Jacobian determinant}{Angka yang mengatakan berapa kali petak kecil meregang ketika koordinat diganti.}
+
+\kamus{integral lipat dua}{double integral}{Menjumlahkan nilai pada petak kecil di sebuah permukaan, lalu mempersempitnya.}
+
+\kamus{orientasi}{orientation}{Kesepakatan tentang arah putar mana yang dihitung positif.}
+
+\section{Integral garis dan medan konservatif}
+\tingkat{menengah}
+
+Sekarang kita berhenti menjumlahkan pada permukaan dan mulai menjumlahkan
+sepanjang jalan. Bayangkan sebuah benda kecil diseret sepanjang lintasan
+melengkung oleh gaya yang arah dan besarnya berubah di setiap titik. Kerja
+gaya itu adalah jumlah komponen gaya searah jalan dikali potongan panjang
+jalan.
+
+\begin{definisi}[Integral garis]\index{integral garis}
+Misalkan $\gamma\colon[a,b]\to\mathbb{R}^{2}$ kurva dengan turunan kontinu
+sepotong-potong, dan $F=(P,Q)$ medan vektor kontinu pada lintasannya.
+\emph{Integral garis} $F$ sepanjang $\gamma$ adalah
+\[
+\int_{\gamma}F\cdot d\mathbf{r}
+=\int_{a}^{b}\Bigl(P(\gamma(t))\,\gamma_{1}'(t)
++Q(\gamma(t))\,\gamma_{2}'(t)\Bigr)\,dt .
+\]
+Bila $\gamma$ tertutup, artinya $\gamma(a)=\gamma(b)$, integral itu disebut
+\emph{sirkulasi} $F$ mengelilingi $\gamma$.
+\end{definisi}
+
+Rumus itu tidak memilih titik awal, hanya arah. Mengganti parameter dengan
+laju berbeda tidak mengubah nilainya, karena substitusi (Bab 13) menyerap
+faktor laju; membalik arah mengubah tanda. Jadi integral garis berorientasi,
+dan itu perbedaan pertamanya dengan integral lipat dua.
+
+Gambar~\ref{fig:sirkulasi} menunjukkan medan berputar seperti itu, dengan satu
+kurva tertutup untuk mengukur berapa banyak putaran yang tertangkap.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.45,font=\footnotesize]
+  \draw[->,layergrey] (-2.85,0) -- (2.85,0) node[right] {$x$};
+  \draw[->,layergrey] (0,-2.85) -- (0,2.85) node[above] {$y$};
+  \foreach \x in {-2.4,-1.6,-0.8,0,0.8,1.6,2.4}{
+    \foreach \y in {-2.4,-1.6,-0.8,0,0.8,1.6,2.4}{
+      \draw[-{Latex[length=1.2mm]},layerteal!75]
+        (\x,\y) -- ({\x-0.30*\y},{\y+0.30*\x});}}
+  \draw[accent,very thick] (0,0) circle (1.75);
+  \draw[-{Latex[length=2.8mm]},accent,very thick]
+    (1.126,-1.341) -- (1.340,-1.126);
+  \node[accent,anchor=north west,align=left] at (0.28,-1.86)
+    {kurva tertutup, arah positif};
+  \node[ink,align=center,fill=white,fill opacity=0.85,text opacity=1,inner sep=2pt] at (0,0.95)
+    {$\displaystyle\oint_{\gamma}F\cdot d\mathbf{r}=2\pi$};
+  \node[ink,font=\scriptsize,fill=white,fill opacity=0.85,text opacity=1,inner sep=1.5pt] at (0,0.42)
+    {sedangkan $\operatorname{curl}F=2$ di tiap titik};
+\end{tikzpicture}
+\caption{Medan $F(x,y)=(-y,x)$ dengan panah di setiap titik kisi. Panahnya berputar
+mengelilingi titik asal, dan besarnya bertambah sejauh titik itu dari pusat. Sirkulasi
+mengelilingi lingkaran berjari-jari $1$ adalah $2\pi$, sama dengan luas $\pi$ dikali
+$\operatorname{curl}F=2$: inilah Green untuk medan ini. Arah panah pada kurva adalah arah
+positif, berlawanan arah jarum jam.}
+\label{fig:sirkulasi}
+\end{figure}
+
+Kalau medan gaya berasal dari sebuah fungsi ketinggian, kerja hanya bergantung
+pada titik awal dan titik akhir. Ini versi kurva dari teorema dasar kalkulus,
+dan namanya mengikuti hal itu.
+
+\begin{teorema}[Teorema dasar untuk integral garis]
+\index{medan konservatif} Misalkan $f\colon U\to\mathbb{R}$ mempunyai turunan
+parsial kontinu pada himpunan terbuka $U\subseteq\mathbb{R}^{2}$, dan $\gamma$
+kurva dari $A$ ke $B$ di dalam $U$. Maka
+\[
+\int_{\gamma}\nabla f\cdot d\mathbf{r}=f(B)-f(A).
+\]
+\end{teorema}
+
+\begin{proof}
+Tulis $g(t)=f(\gamma(t))$. Menurut aturan rantai multivariabel (Bab 12),
+\[
+g'(t)=\nabla f(\gamma(t))\cdot\gamma'(t),
+\]
+asalkan $\gamma$ terdiferensialkan di $t$. Jadi integran pada integral garis
+adalah turunan $g$, dan teorema dasar kalkulus (Bab 13) memberi
+$\int_{a}^{b}g'(t)\,dt=g(b)-g(a)=f(B)-f(A)$. Untuk kurva yang hanya
+terdiferensialkan sepotong-potong, jumlahkan pada tiap potongan; suku di titik
+sambung saling menghapus.
+\end{proof}
+
+Medan berbentuk $\nabla f$ disebut \emph{konservatif}, dan $f$ potensialnya.
+Akibat langsung teoremanya: pada medan konservatif, sirkulasi mengelilingi
+lintasan tertutup selalu nol.
+
+Kebalikannya juga benar.
+
+\begin{teorema}[Kebalikan]
+Misalkan $F$ kontinu pada himpunan terbuka terhubung
+$U\subseteq\mathbb{R}^{2}$, dan integral garis $F$ tidak bergantung pada
+lintasan di dalam $U$. Maka $F=\nabla f$ untuk suatu $f$, yaitu
+\[
+f(\mathbf{x})=\int_{\mathbf{x}_{0}}^{\mathbf{x}}F\cdot d\mathbf{r},
+\]
+dengan $\mathbf{x}_{0}\in U$ tetap.
+\end{teorema}
+
+\begin{proof}
+Ambil $\mathbf{x}\in U$ dan $h$ kecil sehingga segmen dari $\mathbf{x}$ ke
+$\mathbf{x}+h\mathbf{e}_{1}$ tinggal di dalam $U$. Karena lintasan tidak
+penting, kita boleh menempuh jalan dari $\mathbf{x}_{0}$ ke $\mathbf{x}$ lalu
+menambah segmen pendek itu, sehingga
+\[
+f(\mathbf{x}+h\mathbf{e}_{1})-f(\mathbf{x})
+=\int_{0}^{1}F_{1}(\mathbf{x}+th\mathbf{e}_{1})\,h\,dt .
+\]
+Bagi dengan $h$ dan pakai kekontinuan: nilai rata-rata integran menuju
+$F_{1}(\mathbf{x})$ ketika $h\to0$, jadi $\partial f/\partial x_{1}=F_{1}$,
+dan argumen sama memberi $\partial f/\partial x_{2}=F_{2}$. Kedua turunan
+parsial itu kontinu, maka $F=\nabla f$.
+\end{proof}
+
+Kalau diberi $F$, bagaimana tahu ia konservatif tanpa mencari potensial? Di
+bidang ada uji cepat: $F=(P,Q)$ berpotensial hanya jika $\partial P/\partial
+y=\partial Q/\partial x$, sebab kedua ruas adalah turunan kedua $f$ dan Clairaut
+(Bab 12) menyamakannya. Arah sebaliknya menuntut domain tanpa lubang dan
+dibuktikan lewat Green nanti. Medan pembukaan bab tandingannya: curl-nya nol,
+tetapi ia bukan gradien apa pun.
+
+\begin{contoh}[Dua cara menghitung kerja]
+\index{potensial} Ambil $F(x,y)=(2xy,\ x^{2}+3y^{2})$ dan lintasan
+$\gamma(t)=(t,2t^{2})$ untuk $0\le t\le1$, dari $(0,0)$ ke $(1,2)$.
+
+Cara pertama, langsung. Di sini $dx=dt$ dan $dy=4t\,dt$, sehingga
+\[
+\int_{\gamma}F\cdot d\mathbf{r}
+=\int_{0}^{1}\Bigl(2t\cdot 2t^{2}+(t^{2}+12t^{4})\cdot 4t\Bigr)dt
+=\int_{0}^{1}\bigl(8t^{3}+48t^{5}\bigr)dt=2+8=10 .
+\]
+Cara kedua, lewat potensial. Periksa dulu bahwa $\partial P/\partial
+y=2x=\partial Q/\partial x$, lalu tebak $f(x,y)=x^{2}y+y^{3}$. Turunannya
+memang $\partial f/\partial x=2xy$ dan $\partial f/\partial y=x^{2}+3y^{2}$.
+Karena itu
+\[
+\int_{\gamma}F\cdot d\mathbf{r}=f(1,2)-f(0,0)=(2+8)-0=10 .
+\]
+Kedua cara memberi $10$; kuadratur adaptif berselisih $1.78\times10^{-15}$.
+\end{contoh}
+
+\section{Teorema Green}
+\tingkat{menengah}
+
+Gagasan di kotak tentang ruangan dan tungku sekarang menjadi teorema: apa yang
+terjadi di dalam sebuah daerah dapat dibaca dari tepinya.
+
+Sebelum itu, satu kesepakatan arah.
+
+\begin{definisi}[Orientasi positif]
+\index{orientasi positif} Kurva tertutup sederhana $\gamma$ berorientasi
+\emph{positif} bila daerah yang dibatasinya selalu berada di sebelah kiri
+ketika kita menelusurinya. Untuk lingkaran, arah positif adalah berlawanan
+arah jarum jam.
+\end{definisi}
+
+\begin{teorema}[Green]\index{teorema Green}
+Misalkan $D$ daerah tertutup terbatas di $\mathbb{R}^{2}$ yang batasnya
+$\partial D$ terdiri dari berhingga kurva tertutup sederhana yang mulus
+sepotong-potong dan berorientasi positif. Misalkan $P,Q$ mempunyai turunan
+parsial kontinu pada himpunan terbuka yang memuat $D$. Maka
+\[
+\oint_{\partial D}P\,dx+Q\,dy=\iint_{D}\Bigl(\frac{\partial Q}{\partial x}
+-\frac{\partial P}{\partial y}\Bigr)dA .
+\]
+\end{teorema}
+
+\begin{proof}
+Cukup dibuktikan untuk daerah bertipe I sekaligus bertipe II, karena daerah
+umum dipecah menjadi berhingga potongan semacam itu dan integralnya
+dijumlahkan; sisi potongan yang bersebelahan menempuh arah berlawanan sehingga
+saling menghapus.
+
+Andaikan $D$ bertipe I dengan $g_{1},g_{2}$ mulus. Pada sisi tegak $dx=0$,
+jadi sumbangannya nol dan
+\[
+\oint_{\partial D}P\,dx=\int_{a}^{b}P(x,g_{1}(x))\,dx+\int_{b}^{a}P(x,g_{2}(x))\,dx
+=\int_{a}^{b}\bigl[P(x,g_{1})-P(x,g_{2})\bigr]dx .
+\]
+Menurut teorema dasar kalkulus,
+$P(x,g_{1})-P(x,g_{2})=-\int_{g_{1}(x)}^{g_{2}(x)}\partial P/\partial y\,dy$,
+sehingga
+\[
+\oint_{\partial D}P\,dx=-\int_{a}^{b}\!\!\int_{g_{1}(x)}^{g_{2}(x)}
+\frac{\partial P}{\partial y}\,dy\,dx=-\iint_{D}\frac{\partial P}{\partial y}\,dA .
+\]
+Dengan cara yang sama pada $D$ bertipe II, tempat $dy=0$ pada sisi datar,
+$\oint_{\partial D}Q\,dy=\iint_{D}\partial Q/\partial x\,dA$.
+\end{proof}
+
+\begin{contoh}[Green pada persegi satuan]
+Ambil $P=x^{2}-y$, $Q=x+2y$, dan $D=[0,1]\times[0,1]$. Di sini $\partial
+Q/\partial x-\partial P/\partial y=1-(-1)=2$, sehingga ruas kanan Green adalah
+$2$ kali luas persegi, yaitu $2$.
+
+Ruas kiri kita hitung pada empat sisi, berlawanan arah jarum jam:
+\begin{align*}
+\text{bawah }(y=0,\,dy=0):&\quad \int_{0}^{1}x^{2}\,dx=\tfrac13 ,\\
+\text{kanan }(x=1,\,dx=0):&\quad \int_{0}^{1}(1+2y)\,dy=2 ,\\
+\text{atas }(y=1,\,dy=0):&\quad \int_{1}^{0}(x^{2}-1)\,dx=\tfrac23 ,\\
+\text{kiri }(x=0,\,dx=0):&\quad \int_{1}^{0}2y\,dy=-1 .
+\end{align*}
+Jumlahnya $\tfrac13+2+\tfrac23-1=2$, sama dengan ruas kanan. Kuadratur adaptif
+untuk keempat sisi memberi $2.000000000000000$, dan integral lipat duanya juga
+$2.000000000000000$.
+\end{contoh}
+
+Sekarang kesalahan tanda yang diminta. Ulangi hitungan yang sama searah jarum
+jam. Setiap sisi ditempuh terbalik, jadi setiap suku berganti tanda dan
+jumlahnya menjadi $-2$; ruas kanan Green tidak berubah karena daerahnya sama.
+Jawaban yang seharusnya $2$ menjadi $-2$: bukan meleset sedikit, melainkan salah
+tanda sepenuhnya, dengan selisih $4$ yang tidak dapat disalahkan pada
+pembulatan.
+
+Jadi orientasi bukan kesepakatan sopan: rumus Green hanya benar untuk satu
+arah putar, dan arah itu harus diperiksa sebelum menghitung.
+
+Dengan Green di tangan, arah sebaliknya dari uji curl di bagian sebelumnya
+dapat dibuktikan.
+
+\begin{akibat}[Uji curl di domain tanpa lubang]\index{uji curl}
+Misalkan $U\subseteq\mathbb{R}^{2}$ terbuka dan \emph{terhubung sederhana},
+artinya setiap kurva tertutup di $U$ dapat disusutkan ke satu titik di dalam
+$U$. Misalkan $P,Q$ mempunyai turunan parsial kontinu pada $U$ dan $\partial
+P/\partial y=\partial Q/\partial x$ di seluruh $U$. Maka $F=(P,Q)$ konservatif
+pada $U$.
+\end{akibat}
+
+\begin{proof}
+Ambil kurva tertutup sederhana $\gamma$ di $U$ dan daerah $D$ yang
+dibatasinya. Karena $U$ terhubung sederhana, $D$ tinggal di dalam $U$, jadi
+Green berlaku dan
+\begin{align*}
+\oint_{\gamma}P\,dx+Q\,dy
+&=\iint_{D}\Bigl(\frac{\partial Q}{\partial x}-\frac{\partial P}{\partial y}\Bigr)dA\\
+&=0 .
+\end{align*}
+Kurva tertutup yang memotong dirinya sendiri dipecah menjadi lengkung-lengkung
+sederhana, dan tiap potongan memberi nol. Semua sirkulasi nol, maka integral
+garis tidak bergantung lintasan, dan teorema kebalikan tadi memberi potensial.
+\end{proof}
+
+Syarat itu tidak bisa dibuang. Pada daerah berlubang, Green menuntut batas
+dalam ikut dihitung; di situlah medan pembukaan bab lolos dari uji curl.
+
+\section{Teorema Gauss dan Stokes}
+\tingkat{lanjut}
+
+Green berbicara tentang daerah di bidang dan tepinya. Di ruang berdimensi tiga
+ada dua versi, keduanya memakai divergensi dan curl dari Bab 12.
+
+\begin{definisi}[Divergensi dan curl]
+\index{divergensi}\index{curl} Untuk medan $F=(F_{1},F_{2},F_{3})$ dengan
+turunan parsial kontinu,
+\[
+\operatorname{div}F=\frac{\partial F_{1}}{\partial x}
++\frac{\partial F_{2}}{\partial y}+\frac{\partial F_{3}}{\partial z},
+\qquad
+\operatorname{curl}F=\Bigl(\frac{\partial F_{3}}{\partial y}
+-\frac{\partial F_{2}}{\partial z},\
+\frac{\partial F_{1}}{\partial z}-\frac{\partial F_{3}}{\partial x},\
+\frac{\partial F_{2}}{\partial x}-\frac{\partial F_{1}}{\partial y}\Bigr).
+\]
+\end{definisi}
+
+Divergensi mengukur berapa banyak medan lahir di sebuah titik: positif berarti
+sumber, negatif penyerap. Curl mengukur putaran medan di sekitar titik itu.
+
+\begin{teorema}[Gauss, atau teorema divergensi]\index{teorema Gauss}
+Misalkan $E\subseteq\mathbb{R}^{3}$ daerah tertutup terbatas yang batasnya
+$\partial E$ berupa permukaan mulus sepotong-potong, dan $\mathbf{n}$ vektor
+normal satuan yang menunjuk keluar. Jika $F$ mempunyai turunan parsial kontinu
+pada himpunan terbuka yang memuat $E$, maka
+\[
+\iiint_{E}\operatorname{div}F\,dV=\iint_{\partial E}F\cdot\mathbf{n}\,dA .
+\]
+\end{teorema}
+
+\begin{proof}
+Kita buktikan untuk kotak dulu.
+
+Ambil $E=[a,b]\times[c,d]\times[e,f]$. Untuk suku ketiga,
+\[
+\iiint_{E}\frac{\partial F_{3}}{\partial z}\,dV
+=\iint_{[a,b]\times[c,d]}\bigl[F_{3}(x,y,f)-F_{3}(x,y,e)\bigr]dx\,dy ,
+\]
+menurut Fubini dan teorema dasar kalkulus pada arah $z$. Ruas kanan itu tepat
+fluks lewat sisi atas (normal $+\mathbf{k}$) dan sisi bawah (normal
+$-\mathbf{k}$), karena di sana $\mathbf{n}\,dA=\pm\mathbf{k}\,dx\,dy$. Suku
+lain memberi fluks lewat dua pasang sisi lainnya.
+
+Untuk daerah umum, potong menjadi kotak-kotak kecil. Sisi dalam muncul dua kali
+dengan normal berlawanan dan saling menghapus, sehingga yang tersisa hanya sisi
+yang menyentuh batas luar; limit mesh menuju nol memberi pernyataan untuk batas
+lengkung. Bukti penuh ada di Spivak, Teorema 5-8.
+\end{proof}
+
+\begin{contoh}[Gauss pada bola satuan]
+Ambil $F(x,y,z)=(x^{3},y^{3},z^{3})$ dan $E$ bola satuan. Di sini
+$\operatorname{div}F=3(x^{2}+y^{2}+z^{2})=3\rho^{2}$, sehingga dengan
+determinan Jacobian bola
+\[
+\iiint_{E}3\rho^{2}\,dV=\int_{0}^{2\pi}\!\!\int_{0}^{\pi}\!\!\int_{0}^{1}
+3\rho^{4}\sin\varphi\,d\rho\,d\varphi\,d\theta
+=3\cdot2\pi\cdot2\cdot\frac15=\frac{12\pi}{5}.
+\]
+Ruas permukaan: pada bola satuan $\mathbf{n}=(x,y,z)$, jadi
+$F\cdot\mathbf{n}=x^{4}+y^{4}+z^{4}$ dan
+\[
+\iint_{\partial E}(x^{4}+y^{4}+z^{4})\,dA=3\iint_{\partial E}z^{4}\,dA
+=3\int_{0}^{2\pi}\!\!\int_{0}^{\pi}\cos^{4}\varphi\sin\varphi\,d\varphi\,d\theta
+=3\cdot2\pi\cdot\frac25=\frac{12\pi}{5},
+\]
+dengan faktor $3$ dari simetri. Nilainya $7.5398223686155$, dan kuadratur pada
+permukaan memberi angka yang sama sampai digit terakhir.
+\end{contoh}
+
+Teorema kedua berbicara tentang permukaan tidak tertutup yang batasnya kurva.
+Rumusnya memerlukan aturan tangan kanan.
+
+\begin{teorema}[Stokes]\index{teorema Stokes}
+Misalkan $S$ permukaan mulus sepotong-potong berorientasi dengan normal
+$\mathbf{n}$, dan $\partial S$ kurva batasnya dengan orientasi yang diberikan
+aturan tangan kanan. Jika $F$ mempunyai turunan parsial kontinu pada himpunan
+terbuka yang memuat $S$, maka
+\[
+\iint_{S}(\operatorname{curl}F)\cdot\mathbf{n}\,dA
+=\oint_{\partial S}F\cdot d\mathbf{r}.
+\]
+\end{teorema}
+
+\begin{proof}
+Parametrisasi $S$ oleh $\mathbf{r}(u,v)$ atas daerah $D$ di bidang $(u,v)$,
+dengan orientasi yang sesuai. Aturan rantai mengubah integrannya menjadi
+turunan komponen $F$ terhadap $u$ dan $v$, dan setelah disusun ulang integral
+permukaan itu menjadi
+\[
+\iint_{D}\Bigl(\frac{\partial \tilde{Q}}{\partial u}
+-\frac{\partial \tilde{P}}{\partial v}\Bigr)du\,dv ,
+\]
+untuk dua fungsi $\tilde{P},\tilde{Q}$ yang dibentuk dari $F$ dan
+$\mathbf{r}$. Itu tepat ruas kanan Green, jadi Green memberi integral garis
+pada $\partial D$, yang tidak lain integral garis $F$ pada $\partial S$.
+Aljabar penuhnya di Spivak, Teorema 5-9.
+\end{proof}
+
+Kalau $S$ datar di bidang $xy$, Stokes menjadi Green; kalau $S$ hanya sebuah
+selang, ia menjadi teorema dasar kalkulus.
+
+\begin{contoh}[Stokes pada belahan bola]
+Ambil $F=(z,x,y)$, yang curl-nya $(1,1,1)$, dan $S$ belahan atas bola satuan
+dengan normal keluar, sehingga batasnya lingkaran satuan di bidang $xy$
+berlawanan jarum jam.
+
+Ruas permukaan:
+\[
+\iint_{S}(1,1,1)\cdot\mathbf{n}\,dA=\iint_{S}(x+y+z)\,dA=\iint_{S}z\,dA
+=\int_{0}^{2\pi}\!\!\int_{0}^{\pi/2}\cos\varphi\sin\varphi\,d\varphi\,d\theta
+=2\pi\cdot\frac12=\pi ,
+\]
+karena suku $x$ dan $y$ saling menghapus oleh simetri belahan. Ruas batas, dengan
+$\mathbf{r}(t)=(\cos t,\sin t,0)$:
+\[
+\oint_{\partial S}F\cdot d\mathbf{r}=\int_{0}^{2\pi}\cos^{2}t\,dt=\pi .
+\]
+Keduanya $3.1415926535898$; kuadratur memberi angka yang sama pada kedua ruas.
+\end{contoh}
+
+Sekarang kesalahan tanda pada Stokes. Balik normal permukaan menjadi ke dalam:
+ruas permukaan menjadi $-\pi$, ruas batas tidak berubah selama arah putarnya
+tetap, dan kesamaan gagal dengan selisih $2\pi$. Aturan tangan kanan yang
+mengikat kedua ruas; membalik keduanya bersama memulihkan kesamaan.
+
+\section{Bentuk diferensial: satu kalimat untuk semua}
+\tingkat{lanjut}
+
+Kita sudah melihat tiga teorema dengan tiga wajah. Ada bahasa yang
+menuliskannya sebagai satu pernyataan, dan bahasanya bukan sekadar kerapian: ia
+menjelaskan mengapa tanda orientasi muncul di mana-mana.
+
+\begin{definisi}[Bentuk diferensial]
+\index{bentuk diferensial} Sebuah \emph{bentuk-$k$} pada himpunan terbuka
+$U\subseteq\mathbb{R}^{n}$ adalah jumlah suku berbentuk
+$a(x)\,dx_{i_{1}}\wedge\cdots\wedge dx_{i_{k}}$, dengan $a$ fungsi mulus.
+Perkalian baji $\wedge$ bersifat antisimetris:
+\[
+dx\wedge dy=-dy\wedge dx,\qquad dx\wedge dx=0 .
+\]
+Turunan luar $d$ bekerja pada koefisien dan menambah satu baji:
+\[
+d(a\,dx_{I})=da\wedge dx_{I},\qquad da=\sum_{j}\frac{\partial a}{\partial x_{j}}dx_{j}.
+\]
+\end{definisi}
+
+Kalimat sehari-harinya: bentuk diferensial adalah benda yang siap
+diintegralkan pada permukaan berdimensi tertentu, dan $d$ menaikkan dimensi satu
+tingkat. Antisimetri membuat membalik orientasi otomatis membalik tanda;
+kesulitan tanda sebelumnya tertanam di satu aturan itu.
+
+\begin{teorema}[Stokes umum]
+Misalkan $M$ manifold berorientasi berdimensi $k$ dengan batas, dan $\omega$
+bentuk-$(k-1)$ dengan koefisien mulus. Maka
+\[
+\int_{\partial M}\omega=\int_{M}d\omega ,
+\]
+dengan orientasi $\partial M$ yang diinduksi oleh orientasi $M$.
+\end{teorema}
+
+Bukti lengkapnya dilewati: Spivak, \emph{Integration on Chains}, Teorema 4-13
+untuk rantai, dan Teorema 5-5 pada \emph{Integration of Manifolds} untuk
+manifold; juga Rudin, bab \emph{Integration of Differential Forms}. Di sana
+Green, Gauss, dan Stokes klasik diturunkan sebagai kasus khusus.
+
+Terjemahannya di ruang berdimensi tiga:
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Bahasa bentuk & Medan vektor & Teorema \\
+\hline
+bentuk-0 $f$ & fungsi skalar & $df$ memberi gradien \\
+bentuk-1 $P\,dx+Q\,dy+R\,dz$ & $F=(P,Q,R)$ & $d\omega$ memberi $\operatorname{curl}F$ \\
+bentuk-2 $P\,dy\wedge dz+\cdots$ & $F=(P,Q,R)$ & $d\eta$ memberi $\operatorname{div}F$ \\
+$\int_{\partial M}\omega=\int_{M}d\omega$ & & Green, Gauss, Stokes, FTC \\
+\hline
+\end{tabular}
+\end{center}
+
+Satu akibat kecil: karena $d(d\omega)=0$, turunan luar dua kali selalu nol.
+Diterjemahkan, $\operatorname{curl}\nabla f=0$ dan
+$\operatorname{div}\operatorname{curl}F=0$. Pemeriksaan simbolik untuk fungsi
+dan medan umum memberi nol pada keenam komponen, jadi dua identitas yang tampak
+kebetulan itu satu pernyataan.
+
+\section{Kapan teorema ini gagal}
+\tingkat{lanjut}
+
+Semua teorema di bab ini kesamaan bersyarat. Bagian ini mengumpulkan empat
+cara kesamaan itu rusak, dengan angka.
+
+Kegagalan pertama adalah singularitas. Ambil $F(x,y)=(-y,x)/(x^{2}+y^{2})$
+pada bidang tanpa titik asal. Hitung curl-nya:
+\[
+\frac{\partial Q}{\partial x}-\frac{\partial P}{\partial y}
+=\frac{(x^{2}+y^{2})-2x^{2}}{(x^{2}+y^{2})^{2}}
++\frac{(x^{2}+y^{2})-2y^{2}}{(x^{2}+y^{2})^{2}}=0 .
+\]
+Beda hingga $h=10^{-5}$ di $(1,0)$ memberi $-2.01\times10^{-10}$, nol sampai
+galat pemotongan. Tetapi sirkulasi
+mengelilingi lingkaran satuan $2\pi=6.2831853072$, karena di sana
+$F\cdot\gamma'=1$ di setiap titik. Jadi curl nol tidak berarti sirkulasi nol.
+
+Yang dilanggar adalah syarat Green: $P$ dan $Q$ harus punya turunan parsial
+kontinu pada himpunan terbuka yang memuat $D$, sedangkan keduanya tidak
+terdefinisi di titik asal di dalam $D$, dan $D$ tidak terhubung sederhana. Pada cincin $1\le r\le2$ Green tetap berlaku dengan dua batas
+berlawanan arah, dan integralnya $2\pi-2\pi=0$; nol itu benar karena di sana
+medan berpotensial $\theta$, sudut polar.
+
+Kegagalan kedua adalah pertukaran urutan tanpa keterintegralan. Ambil
+\[
+f(x,y)=\frac{x^{2}-y^{2}}{(x^{2}+y^{2})^{2}}
+\]
+pada persegi $(0,1)\times(0,1)$. Untuk $y>0$ tetap,
+\[
+\int_{0}^{1}f(x,y)\,dx=\Bigl[-\frac{x}{x^{2}+y^{2}}\Bigr]_{x=0}^{x=1}
+=-\frac{1}{1+y^{2}},
+\]
+sehingga integral luar memberi $-\pi/4=-0.7853981634$; dengan urutan terbalik
+hasilnya $+\pi/4$. Kedua integral berulang ada tetapi berbeda, jadi menurut
+Fubini integral lipat duanya tidak ada. Di koordinat polar
+$f=\cos2\theta/r^{2}$, dan pada seperempat cakram satuan
+\[
+\iint|f|\,dA\ge\int_{0}^{\pi/2}|\cos2\theta|\,d\theta
+\int_{0}^{1}\frac{dr}{r}=\infty ,
+\]
+karena $\int_{0}^{1}dr/r$ menyimpang di $r=0$. Fubini tidak salah: syaratnya
+tidak dipenuhi.
+
+Kegagalan ketiga adalah batas yang tidak terurus. Gauss menuntut $E$ tertutup
+dan terbatas dengan batas mulus sepotong-potong. Pada himpunan tak terbatas,
+batasnya dapat lari ke tak hingga dan integral permukaannya berhenti berarti;
+Spivak menaruh hal ini sebagai latihan setelah Teorema 5-5, yang gagal tanpa
+kekompakan. Berhingga sudut masih aman, karena normalnya hanya melompat di
+berhingga titik; batas bergerigi tanpa akhir, misalnya garis pantai, tidak.
+
+Kegagalan keempat adalah permukaan yang tidak dapat diorientasikan. Pada pita
+Mobius, berjalan mengelilingi pita membawa normal kembali ke sisi yang
+berlawanan, sehingga $\mathbf{n}$ pada rumus Stokes tidak terdefinisi.
+Teoremanya bukan salah; pernyataannya belum lengkap untuk benda semacam itu.
+
+\begin{tantangan}
+Ambil $T(u,v)=(u^{2},v)$ pada $D^{*}=(-2,2)\times(0,1)$. Peta ini tampak
+melebarkan: titik $u=2$ mendarat di $x=4$, dan turunannya $2u$ tumbuh tanpa
+batas ketika $u$ menjauh dari nol. Hitung luas $T(D^{*})$ dari gambarnya, lalu
+hitung dengan rumus perubahan variabel. Kedua angka berbeda dengan faktor tepat
+$2$. Jelaskan mengapa, dan sebutkan garis tempat determinan Jacobiannya nol.
+
+Petunjuk 1: periksa apakah $T$ satu-satu. Ada dua nilai $u$ yang mendarat di
+$x=1$.
+
+Petunjuk 2: garis $u=0$ dilipat menjadi satu titik, sehingga tiap titik bayangan
+terhitung dua kali oleh integral; $|\det J|=|2u|$ tidak tahu bahwa lipatan itu
+hanya satu lembar.
+
+Kalau mentok, kembali ke Definisi perubahan variabel yang sah dan periksa syarat
+satu-satu.
+\end{tantangan}
+
+Satu peringatan penutup, yang tidak ada di buku teks. Kuadratur numerik tidak
+pernah memeriksa syarat. Ia memberi $6.2831853072$ dengan tujuh digit benar
+untuk medan yang melanggar syarat Green, dan tidak ada pesan galat. Bilangan yang rapi bukan bukti syaratnya dipenuhi; itu hanya bukti
+aritmetikanya berjalan.
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Sekarang tiga hitungan yang menjadi tulang bab ini. Ketiganya bisa diperiksa
+dengan Python, dan ketiganya pernah salah di tangan penulis sendiri.
+
+\textbf{Satu integral, dua sistem koordinat.}
+\nopagebreak[4]
+
+Hitung
+\[
+I=\iint_{D}e^{-(x^{2}+y^{2})}\,dA,\qquad D=\{(x,y):x^{2}+y^{2}\le1\}.
+\]
+Di koordinat polar, $D$ menjadi $0\le r\le1$, $0\le\theta\le2\pi$, dan
+$dA=r\,dr\,d\theta$. Integralnya terpisah menjadi dua faktor:
+\[
+I=\int_{0}^{2\pi}\!\!\int_{0}^{1}e^{-r^{2}}r\,dr\,d\theta
+=2\pi\cdot\Bigl[-\frac12e^{-r^{2}}\Bigr]_{0}^{1}
+=2\pi\cdot\frac{1-e^{-1}}{2}=\pi\bigl(1-e^{-1}\bigr).
+\]
+Nilainya $1.9858653038$. Antiturunan terhadap $r$ ada justru karena faktor
+$r$: tanpa faktor itu, antiturunannya melibatkan fungsi galat.
+
+Di koordinat Cartesius, daerahnya menuntut dua potongan:
+\[
+I=\int_{-1}^{1}\!\!\int_{-\sqrt{1-x^{2}}}^{\sqrt{1-x^{2}}}
+e^{-(x^{2}+y^{2})}\,dy\,dx .
+\]
+Integral dalam tidak punya antiturunan elementer, jadi kita harus memakai
+kuadratur. Hasil kedua bentuk, dengan toleransi yang sama:
+\begin{align*}
+\text{kartesius}&: 1.9858653037988705 \quad (11907\ \text{evaluasi}),\\
+\text{polar}&: 1.9858653037988712 \quad (441).
+\end{align*}
+Galatnya $8.9\times10^{-16}$ dan $2.2\times10^{-16}$; selisih ketelitiannya
+tidak penting, tetapi selisih biayanya $27$ kali.
+
+Aturan titik tengah pada grid Cartesius yang sama rata menurunkan galat lebih
+lambat: $1.141\times10^{-3}$ pada $50$ petak per sisi, dan
+$4.667\times10^{-5}$ pada $400$. Setiap kali jumlah petak digandakan, galatnya
+turun sekitar $2.9$ kali, bukan $4$ kali, karena tinggi kolom di dekat tepi
+berperilaku seperti $\sqrt{1-x^{2}}$ sehingga galatnya seorde $h^{3/2}$.
+
+\textbf{Volume bola dengan determinan Jacobian.}
+
+Volume bola berjari-jari $R$ adalah
+\[
+V=\int_{0}^{2\pi}\!\!\int_{0}^{\pi}\!\!\int_{0}^{R}
+\rho^{2}\sin\varphi\,d\rho\,d\varphi\,d\theta
+=2\pi\cdot2\cdot\frac{R^{3}}{3}=\frac{4\pi R^{3}}{3}.
+\]
+Untuk $R=1$ nilainya $4.1887902048$. Kuadratur tiga dimensi pada bola memberi
+\[
+4.188790204786397 \quad(\text{selisih }6.2\times10^{-15}),
+\]
+dan simulasi Monte Carlo dengan $10^{6}$ titik pada kubus $[-1,1]^{3}$ memberi
+$4.192824\pm0.004$.
+
+Bandingkan dengan menghapus determinan Jacobian. Tanpa faktor
+$\rho^{2}\sin\varphi$,
+\[
+\int_{0}^{2\pi}\!\!\int_{0}^{\pi}\!\!\int_{0}^{1}1\,d\rho\,d\varphi\,d\theta
+=2\pi^{2}=19.7392088022,
+\]
+yaitu $3\pi/2$ kali terlalu besar, dan hasilnya tetap bilangan yang tampak
+wajar untuk sebuah volume.
+
+
+
+Tabel berikut mengumpulkan semua angka di bab ini.
+
+\begin{center}
+{\small
+\begin{tabular}{llll}
+\hline
+Besaran & Eksak & Numerik & Galat \\
+\hline
+$\iint_{D}e^{-(x^{2}+y^{2})}dA$, polar & $1.985865$ & $1.985865$ & $2.2\times10^{-16}$ \\
+$\iint_{D}e^{-(x^{2}+y^{2})}dA$, Cartesius & $1.985865$ & $1.985865$ & $8.9\times10^{-16}$ \\
+
+$\int_{\gamma}F\cdot d\mathbf{r}$ & $10$ & $10.000000$ & $1.8\times10^{-15}$ \\
+$\oint_{\partial D}$ Green, persegi & $2$ & $2.000000$ & $<10^{-15}$ \\
+$\iint_{S}(\operatorname{curl}F)\cdot\mathbf{n}\,dA$ & $3.141593$ & $3.141593$ & $<10^{-13}$ \\
+\hline
+\end{tabular}}
+\end{center}
+
+\kertas{
+Uji sendiri dalam tiga langkah. (1) Hitung ulang $I$ dengan tangan memakai
+antiturunan $-\tfrac12e^{-r^{2}}$, lalu bandingkan dengan $1.9858653038$;
+selisih di digit terakhir adalah galat pembulatan, bukan galat rumus. (2)
+Jalankan \texttt{scipy.integrate.dblquad} pada kedua bentuk dan hitung berapa
+kali fungsinya dipanggil; angka $11907$ dan $441$ akan muncul kembali, dengan
+syarat toleransi keduanya sama. (3) Ganti $D$ menjadi cakram berjari-jari $2$
+dan periksa bahwa jawaban eksaknya menjadi $\pi(1-e^{-4})$, yaitu $3.0841$.
+Kalau langkah ketiga memberi angka lain, yang salah hampir pasti batas $r$,
+bukan rumusnya. }
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Kode berikut memeriksa lima hal sekaligus: biaya dua sistem koordinat, Green,
+Gauss, Stokes, dan medan bersingularitas. Angka di tabel sebelumnya berasal
+dari program ini.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from scipy import integrate
+
+# 1. Satu integral lipat dua, dua sistem koordinat
+def fc(y, x):
+    return np.exp(-(x*x + y*y))
+
+cnt = [0]
+def fc_count(y, x):
+    cnt[0] += 1
+    return fc(y, x)
+
+kart = integrate.dblquad(fc_count, -1, 1,
+                         lambda x: -np.sqrt(1-x*x),
+                         lambda x: np.sqrt(1-x*x),
+                         epsabs=1e-12, epsrel=1e-12)
+nkart = cnt[0]
+cnt[0] = 0
+
+def fp(r, th):
+    cnt[0] += 1
+    return np.exp(-r*r)*r
+
+pol = integrate.dblquad(fp, 0, 2*np.pi, 0, 1,
+                        epsabs=1e-12, epsrel=1e-12)
+nilai = np.pi*(1 - np.exp(-1))
+print("kartesius %.16f galat %.2e eval %d"
+      % (kart[0], abs(kart[0]-nilai), nkart))
+print("polar     %.16f galat %.2e eval %d"
+      % (pol[0], abs(pol[0]-nilai), cnt[0]))
+print("eksak     %.16f" % nilai)
+
+# 2. Green: (x^2-y)dx + (x+2y)dy pada persegi satuan
+P = lambda x, y: x*x - y
+Q = lambda x, y: x + 2*y
+tepi = [integrate.quad(lambda t: P(t, 0.0), 0, 1)[0],
+        integrate.quad(lambda t: Q(1.0, t), 0, 1)[0],
+        integrate.quad(lambda t: P(t, 1.0), 1, 0)[0],
+        integrate.quad(lambda t: Q(0.0, t), 1, 0)[0]]
+ganda = integrate.dblquad(lambda y, x: 2.0, 0, 1, 0, 1)[0]
+print("Green tepi %.15f  ganda %.15f" % (sum(tepi), ganda))
+
+# 3. Gauss: F=(x^3,y^3,z^3) pada bola satuan
+def fluks(phi, th):
+    sp, cp = np.sin(phi), np.cos(phi)
+    x, y, z = sp*np.cos(th), sp*np.sin(th), cp
+    return (x**4 + y**4 + z**4)*sp
+
+F = integrate.dblquad(fluks, 0, 2*np.pi, 0, np.pi,
+                      epsabs=1e-11, epsrel=1e-11)[0]
+print("Gauss fluks %.13f  12pi/5 %.13f" % (F, 12*np.pi/5))
+
+# 4. Stokes: F=(z,x,y) pada belahan atas bola satuan
+def curl_n(phi, th):
+    sp, cp = np.sin(phi), np.cos(phi)
+    x, y, z = sp*np.cos(th), sp*np.sin(th), cp
+    return (x + y + z)*sp
+
+S = integrate.dblquad(curl_n, 0, 2*np.pi, 0, np.pi/2)[0]
+L = integrate.quad(lambda t: np.cos(t)**2, 0, 2*np.pi)[0]
+print("Stokes permukaan %.13f  batas %.13f" % (S, L))
+
+# 5. Medan dengan singularitas: F=(-y,x)/(x^2+y^2)
+def lingkar(t):
+    x, y = np.cos(t), np.sin(t)
+    return (-y*(-np.sin(t)) + x*np.cos(t))/(x*x + y*y)
+
+def Pg(x, y): return -y/(x*x + y*y)
+def Qg(x, y): return x/(x*x + y*y)
+
+h = 1e-5
+curl_01 = ((Qg(1+h, 0) - Qg(1-h, 0))/(2*h)
+           - (Pg(1, h) - Pg(1, -h))/(2*h))
+C = integrate.quad(lingkar, 0, 2*np.pi)[0]
+print("lingkaran %.13f  2pi %.13f" % (C, 2*np.pi))
+print("curl(1,0) %.2e" % curl_01)
+\end{verbatim}
+\end{lab}
+
+Keluaran sebenarnya, apa adanya:
+
+\begin{verbatim}
+kartesius 1.9858653037988705 galat 8.88e-16 eval 11907
+polar     1.9858653037988712 galat 2.22e-16 eval 441
+eksak     1.9858653037988714
+Green tepi 2.000000000000000  ganda 2.000000000000000
+Gauss fluks 7.5398223686155  12pi/5 7.5398223686155
+Stokes permukaan 3.1415926535898  batas 3.1415926535898
+lingkaran 6.2831853071796  2pi 6.2831853071796
+curl(1,0) -2.01e-10
+\end{verbatim}
+
+Empat hal patut dibaca. Pertama, dua baris awal sama sampai digit ke-15 dengan
+biaya berbeda $27$ kali: koordinat yang tepat tidak mengubah jawaban, hanya
+harganya. Kedua, Green cocok sampai digit terakhir, tetapi itu
+hanya bukti implementasinya konsisten dengan rumusnya. Ketiga, Gauss dan Stokes
+dihitung dari sisi berbeda dan tetap bertemu; di situlah verifikasi punya gigi.
+Keempat, kuadratur memberi $6.2831853071796$ untuk medan yang melanggar syarat
+Green, tanpa satu pun pesan galat.
+
+\begin{untukdosen}
+Urutan mengajar yang saya pakai: kerapatan pelat dan program yang lupa faktor
+$r$, lalu Fubini, lalu determinan Jacobian sebagai luas petak yang meregang,
+lalu integral garis dan teorema dasarnya, baru Green. Green sebaiknya dibuktikan
+penuh untuk daerah bertipe I di papan, karena bukti itu hanya memakai dua alat
+yang sudah mereka punya. Gauss dan Stokes cukup dibuktikan untuk kotak dan
+permukaan berparameter.
+
+Dua miskonsepsi yang paling sering muncul. Pertama, mahasiswa menganggap
+$\partial P/\partial y=\partial Q/\partial x$ cukup untuk konservatif, karena
+mereka hanya menguji medan pada domain tanpa lubang. Medan
+$(-y,x)/(x^{2}+y^{2})$ harus muncul di papan, bukan di daftar bacaan. Kedua,
+mereka memperlakukan determinan Jacobian sebagai formalitas notasi dan menulis
+$r$ atau $\rho^{2}\sin\varphi$ sebagai hafalan tanpa memeriksa batas.
+Bandingkan $4\pi/3$ dengan $2\pi^{2}$; rasio $4.712$ kali itu lebih mengesankan
+daripada seratus kali peringatan.
+
+Satu aktivitas kelas: empat kelompok, masing-masing menghitung satu ruas dari
+Green, Gauss, dan Stokes untuk medan yang sama, lalu mencocokkan angka. Kelompok
+yang salah tanda ketahuan dalam lima menit, dan itu lebih baik daripada diberi
+tahu. Tanda kesiapan lanjut: mahasiswa mampu menjelaskan mengapa orientasi
+mengubah tanda tanpa melihat rumus.
+\end{untukdosen}
+
+\section{Ringkasan}
+\begin{ringkasan}
+\begin{itemize}
+\item Integral lipat dua didefinisikan lewat jumlah atas dan bawah pada petak;
+Fubini mengizinkan urutan pengintegralan ditukar bila fungsinya terintegralkan.
+\item Mengganti koordinat mengalikan luas petak dengan $|\det J|$; polar memberi
+$r$, bola memberi $\rho^{2}\sin\varphi$. Tanpa faktor itu hasilnya rapi tetapi
+salah.
+\item Pada medan konservatif, integral garis hanya bergantung pada titik ujung.
+\item Green, Gauss, dan Stokes menyatakan satu hal: integral turunan pada daerah
+sama dengan integral medan pada batasnya, dan orientasi menentukan tanda.
+\item Semua teorema itu bersyarat: singularitas, batas tak terurus, permukaan tak
+terorientasi, dan fungsi tak terintegralkan membuatnya gagal tanpa peringatan.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\begin{latihan}
+\begin{enumerate}
+\item Hitung $\iint_{D}(x^{2}+y^{2})\,dA$ pada cakram satuan dengan Cartesius dan polar, periksa dengan \texttt{dblquad}, dan sebutkan jumlah evaluasi tiap cara.
+
+\item Buktikan bahwa bila $T(u,v)=A(u,v)$ linear dan $\det A\ne0$, rumus
+perubahan variabel menjadi $|\det A|\iint_{D}f\circ T\,dA$.
+
+\item Ulangi contoh Green pada persegi dengan arah jarum jam: tunjukkan hasilnya
+$-2$ dan sebutkan sisi mana menyumbang tanda mana.
+
+\item Hitung volume elipsoid $x^{2}/a^{2}+y^{2}/b^{2}+z^{2}/c^{2}\le1$ dengan
+perubahan variabel $x=au$, $y=bv$, $z=cw$, lalu periksa rumusnya pada
+$a=b=c=1$.
+
+\item Nilai klaim ini: benar, salah, atau belum cukup bukti. ``Karena
+$\operatorname{curl}F=0$ di setiap titik tempat $F$ terdefinisi, medan
+$F=(-y,x)/(x^{2}+y^{2})$ konservatif pada
+$\mathbb{R}^{2}\setminus\{(0,0)\}$.'' Sertakan alasan dan satu angka
+pendukung.
+
+\item Buktikan bahwa integral garis tidak bergantung lintasan jika dan hanya jika
+sirkulasi setiap kurva tertutup nol, dengan memakai dua lintasan dari $A$ ke
+$B$ yang membentuk satu kurva tertutup.
+
+\item Hitung kedua ruas Stokes untuk $F=(-y,x,z)$ pada paraboloid
+$z=1-x^{2}-y^{2}$, $z\ge0$, dengan normal mengarah ke atas, lalu periksa
+dengan kuadratur.
+
+\item Hitung kedua ruas Gauss untuk $F=(x,y,z)/(x^{2}+y^{2}+z^{2})^{3/2}$ pada bola
+satuan. Jelaskan mengapa hasilnya tidak bertentangan dengan teorema, dan
+syarat mana yang dilanggar. (Petunjuk: hitung $\operatorname{div}F$ lebih dulu.)
+
+\item Tunjukkan bahwa determinan Jacobian koordinat bola nol pada $\varphi=0$ dan
+$\varphi=\pi$, lalu jelaskan mengapa peta itu tetap boleh dipakai pada
+$0<\varphi<\pi$. (Petunjuk: periksa di mana peta berhenti satu-satu.)
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini, dengan bukti yang ditulis: lemma daerah
+di antara dua grafik, teorema dasar untuk integral garis, kebalikannya lewat
+potensial integral, Green untuk daerah bertipe I dan II, akibat uji curl pada
+domain terhubung sederhana, dan sketsa bukti Gauss lewat kotak serta Stokes
+lewat parametrisasi. Yang saya kutip tanpa bukti: Fubini (Spivak, bab
+\emph{Integration}, Teorema 3-10), perubahan variabel penuh (Spivak bab yang
+sama; Rudin, bab \emph{Integration of Differential Forms}), Gauss (Spivak,
+Teorema 5-8), dan Stokes (Spivak, Teorema 5-9); Stokes umum adalah Teorema
+4-13 dan 5-5.
+
+Yang dipopulerkan secara berlebihan adalah ungkapan ``curl nol berarti
+konservatif''. Yang benar: curl nol berarti bentuk tertutup, dan bentuk tertutup
+eksak hanya bila grup kohomologi pertama domainnya nol. Untuk $\mathbb{R}^{3}$
+itu berlaku, untuk $\mathbb{R}^{2}\setminus\{0\}$ tidak, dan selisihnya
+diukur oleh integral pada lingkaran, yaitu $2\pi$ di sini.
+
+Pertanyaan terbuka yang sungguh terbuka bagi saya: dapatkah kuadratur memberi
+sertifikat bahwa syarat teoremanya dipenuhi, bukan hanya taksiran nilainya?
+Keluaran di lab menunjukkan bahwa jawaban numerik yang benar sampai lima belas
+digit dapat berasal dari medan yang melanggar syarat, tanpa tanda bahaya. Untuk
+medan yang hanya diketahui lewat sampel pada grid, tidak ada cara umum
+memastikan tidak ada singularitas di antara titik sampel.
+
+Batas keberlakuan: semua fungsi di sini bernilai real dan mulus
+sepotong-sepotong; semua angka dari Python 3.14.4, NumPy 2.5.2, SciPy 1.18.0
+dengan toleransi $10^{-12}$ kecuali disebut lain, dan permukaan bola
+diparametrisasi dengan $\mathbf{n}$ mengarah keluar.
+\end{untukpeneliti}
+
+\peta{Bab 15 pada Stewart, \emph{Calculus: Early Transcendentals}, bab ``Multiple Integrals'' (15.1--15.3 dan 15.6--15.9) dan bab ``Vector Calculus'' (16.2
+integral garis, 16.3 teorema dasar, 16.4 Green, 16.5 curl
+dan divergensi, 16.8 Stokes, 16.9 Gauss); pada Spivak, \emph{Calculus on
+Manifolds}, bab ``Integration'' (Fubini, Teorema 3-10, perubahan variabel),
+bab ``Integration on Chains'' dan bab ``Integration of Manifolds'' (Teorema
+5-5, 5-8, 5-9); pada Rudin, \emph{Principles of Mathematical Analysis}, bab
+``Functions of Several Variables'' dan ``Integration of Differential Forms''; pada Active Calculus, bab 11 dan 12 untuk urutan yang lebih bertahap.
+Basisnya bab \emph{Integral, Deret Fungsi, dan Pertukaran Limit} (bagian integral)
+dan bab \emph{Kekontinuan dan Turunan} (turunan parsial, Jacobian) pada edisi pertama
+buku ini. Bab ini memakai integral Riemann dan teorema dasar kalkulus
+dari Bab 13, kekontinuan seragam dan himpunan kompak dari Bab 11, determinan
+dari Bab 7, serta gradien dan matriks Jacobian dari Bab 12, semuanya dirujuk
+dan tidak diulang.}

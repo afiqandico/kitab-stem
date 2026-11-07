@@ -1,0 +1,1224 @@
+\chapter{Aritmetika Floating-Point dan Analisis Galat}
+
+Sebuah program menyelesaikan $x^{2}+10^{8}x+1=0$ dengan rumus kuadrat yang kita pakai
+sejak sekolah, $x=(-b\pm\sqrt{b^{2}-4ac})/(2a)$. Untuk $a=1$, $b=10^{8}$, $c=1$ ia
+melaporkan akar $-10^{8}$ dan $-7{,}450580596923828\times10^{-9}$. Akar pertama benar
+sampai digit terakhir. Akar kedua salah seperempat: nilai sebenarnya $-10^{-8}$, dan
+galat relatifnya $0{,}255$. Rumusnya tidak salah tulis. Mesinnya juga tidak rusak.
+Koefisiennya tepat, diskriminannya tepat, dan pengurangannya bahkan tepat menurut
+teorema yang akan kita buktikan di bawah.
+
+Yang runtuh adalah bentuk aljabarnya. Bilangan $b=10^{8}$ dan $\sqrt{b^{2}-4ac}$ berbeda
+hanya satu ulp, yaitu satu langkah terkecil yang masih bisa dibedakan mesin pada skala
+itu: selisihnya $1{,}49\times10^{-8}$, atau $1{,}5\times10^{-16}$ kali besar bilangannya
+sendiri. Selisih sekecil itu tidak berarti apa-apa selama kita memandang bilangan
+berukuran $10^{8}$. Begitu keduanya dikurangkan, hasilnya berukuran $10^{-8}$ dan
+selisih tadi menjadi seluruh jawabannya: yang tersisa hanyalah galat, bukan angka.
+
+Bab 4 dan Bab 5 membangun limit, kekontinuan, dan turunan di atas $\mathbb{R}$ yang
+setiap titiknya eksak. Bab 20 memakai rumus variansi dan akar kuadrat dengan anggapan
+yang sama. Komputer tidak bekerja di $\mathbb{R}$. Ia bekerja di himpunan berhingga
+bilangan yang punya aturan sendiri: setiap operasi dibulatkan, penjumlahan tidak
+asosiatif, dan dua cara aljabar yang setara bisa memberi jawaban berbeda jauh. Bab ini
+membangun cara membaca aturan itu, mengukur kerusakannya sebelum program dijalankan,
+dan memilih bentuk rumus yang tidak runtuh.
+
+\begin{untukanak}
+Bayangkan sebuah timbangan dapur digital yang layarnya hanya muat lima angka. Kita
+menimbang satu karung beras bersama wadahnya, lalu menimbang wadah kosongnya, lalu
+mengurangkan kedua angka itu untuk mendapat berat berasnya. Kalau wadah dan beras
+sama-sama beratnya sekitar dua puluh kilogram, layar hanya bisa menunjukkan angka
+sampai puluhan gram terdekat. Selisih dua angka besar yang hampir sama itu memang
+benar secara hitungan, tetapi angka terakhirnya sudah tidak berarti apa-apa. Beras
+yang sebenarnya delapan ratus gram bisa muncul sebagai tujuh ratus gram, atau bahkan
+angka yang tidak masuk akal.
+
+Ada masalah kedua yang lebih halus. Timbangan yang sama tidak bisa menimbang satu
+butir beras: jarumnya tidak bergerak sama sekali. Kalau kita menuang sejuta butir satu
+per satu, tidak ada satu pun butir yang tercatat, padahal sejuta butir itu berat.
+Mesin hitung bekerja persis seperti itu: ada bilangan yang terlalu kecil untuk
+mengubah apa pun, dan ada pengurangan yang membuang hampir semua angka.
+
+Pertanyaannya: kalau mesinnya memang begitu, bagaimana kita bisa tahu kapan jawabannya
+masih bisa dipercaya? Di bab ini kita akan tahu mengapa kesalahan itu bukan kejadian
+acak, melainkan sesuatu yang bisa dihitung batasnya sebelum satu baris program pun
+dijalankan.
+\end{untukanak}
+
+\section{Bilangan yang tidak punya wakil}
+\tingkat{dasar}
+
+Di antara $0$ dan $1$ ada tak berhingga banyak bilangan real. Di dalam komputer, semua
+bilangan disimpan dalam 32 atau 64 bit, jadi yang tersedia hanya berhingga banyak.
+Kompromi yang diambil sejak mesin pertama sampai standar IEEE-754 adalah notasi ilmiah
+biner dengan lebar bidang tetap: satu tanda, satu eksponen, satu mantissa.
+
+\kamus{sistem floating-point}{floating-point system}{Notasi ilmiah biner dengan jumlah
+digit tetap, seperti menulis $1{,}01\times2^{7}$ dengan tempat terbatas.}
+
+\begin{definisi}[Sistem bilangan floating-point]
+Misalkan $\beta=2$ basis, $p$ presisi, dan $e_{\min}\le e\le e_{\max}$ batas eksponen.
+Bilangan normal adalah
+\[
+  x=\pm\left(1.d_{1}d_{2}\dots d_{p-1}\right)_{2}\times2^{e},
+\]
+dengan $d_{i}\in\{0,1\}$. Bilangan subnormal memakai $e=e_{\min}$ dengan digit
+terdepan $0$.\index{subnormal}\index{aritmetika floating-point} Himpunan seluruh
+bilangan yang terwakili, ditambah nol, kedua tak hingga, dan NaN, kita sebut
+$\mathbb{F}$.
+\end{definisi}
+
+Digit terdepan selalu $1$ untuk bilangan normal, jadi digit itu tidak disimpan;
+itulah sebabnya bidang mantissa punya $p-1$ bit. Satu bit yang dihemat menggandakan
+presisi: 23 bit tersimpan memberi 24 bit
+signifikan.
+
+
+
+\begin{teorema}[Banyaknya bilangan mesin]
+Untuk setiap eksponen $e$, banyaknya bilangan normal dalam selang
+$\left[2^{e},2^{e+1}\right)$ adalah $2^{p-1}$. Himpunan $\mathbb{F}$ berhingga
+banyaknya, jadi terhitung.
+\end{teorema}
+
+\begin{proof}
+Pada selang itu setiap bilangan berbentuk $M\cdot2^{e-p+1}$ dengan $M$ bilangan bulat
+dan $2^{p-1}\le M<2^{p}$. Banyaknya $M$ semacam itu tepat $2^{p}$, dikurangi
+$2^{p-1}$, yaitu $2^{p-1}$. Ada berhingga banyak eksponen yang diizinkan, jadi
+$\mathbb{F}$ adalah gabungan berhingga himpunan berhingga.
+\end{proof}
+
+Untuk binary64, $2^{p-1}=2^{52}=4\,503\,599\,627\,370\,496$. Itu banyak, tetapi Bab 2
+sudah menunjukkan $\mathbb{R}$ tak terhitung. Jadi hampir setiap bilangan real tidak
+punya wakil: representasi selalu berarti pembulatan, dan pembulatan selalu berarti
+galat. Pertanyaannya bukan apakah ada galat, melainkan seberapa besar dan ke mana ia
+pergi.
+
+\begin{bacakeras}
+Dua suara, dibaca bergantian dengan teman. Ketuk meja setiap kali kata ``potongan''
+diucapkan.
+
+``Satu dibagi tiga, berapa?'' ``Nol koma tiga tiga tiga, terus, tanpa henti.''
+``Mesin menulisnya sampai habis?'' ``Tidak. Ia berhenti di tempat yang muat.''
+``Jadi yang disimpan apa?'' ``Potongan. Bukan nilainya, potongannya.''
+``Kalau potongannya dijumlahkan?'' ``Yang bertambah potongan, bukan nilai.''
+``Kalau potongannya dikurangkan?'' ``Angka depannya habis, yang tinggal debu.''
+
+Ulangi tiga baris tengah, makin cepat, dengan ketukan yang sama: potongan bukan nilai,
+potongan bukan nilai, potongan bukan nilai.
+
+Suara kedua menutup pelan: mesin tidak berdusta, ia hanya memotong. Yang keliru adalah
+kita kalau membaca potongan sebagai nilai.
+
+Baris yang harus diulang pembaca, sekali, dengan suara jelas: komputer menyimpan
+potongan, bukan nilai, jadi setiap hasil hitung harus diperiksa, bukan dipercaya.
+\end{bacakeras}
+
+Standar IEEE-754 menetapkan dua lebar yang dipakai di mana-mana. Tabel ini memuat
+seluruh angkanya; tidak ada yang perlu dihafal kecuali $p$ dan biasnya.
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+ & binary32 & binary64 \\
+\hline
+bit tanda / eksponen / mantissa & $1/8/23$ & $1/11/52$ \\
+presisi $p$ & $24$ & $53$ \\
+bias eksponen & $127$ & $1023$ \\
+$e_{\min},\ e_{\max}$ & $-126,\ 127$ & $-1022,\ 1023$ \\
+$\mathrm{eps}=2^{-p+1}$ & $1{,}1920929\times10^{-7}$ & $2{,}2204460\times10^{-16}$ \\
+$u=2^{-p}$ & $5{,}9604645\times10^{-8}$ & $1{,}1102230\times10^{-16}$ \\
+terkecil normal & $1{,}1754944\times10^{-38}$ & $2{,}2250739\times10^{-308}$ \\
+terkecil subnormal & $1{,}4012985\times10^{-45}$ & $4{,}9406565\times10^{-324}$ \\
+terbesar & $3{,}4028235\times10^{38}$ & $1{,}7976931\times10^{308}$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Eksponen disimpan dengan bias supaya tidak perlu tanda sendiri: nilai tersimpan $123$
+berarti eksponen sebenarnya $123-127=-4$. Trik ini membuat urutan bit dari nol sampai
+tak hingga positif naik monoton, sehingga dua bilangan positif dapat dibandingkan
+sebagai bilangan bulat.
+
+Mari bongkar tiga pola bit yang benar-benar dihasilkan Python. Pada binary32,
+$0{,}1$ tercetak sebagai \texttt{0 01111011 10011001100110011001101} dengan
+$e=123-127=-4$; $6$ menjadi \texttt{0 10000001 10000000000000000000000}, yaitu
+$1{,}5\times2^{2}$; dan $-12{,}375$ menjadi
+\texttt{1 10000010 10001100000000000000000}, yaitu $-1{,}546875\times2^{3}$.
+Dua kasus batas melengkapi gambarannya:
+
+\begin{center}
+\begin{tabular}{ll}
+\hline
+subnormal terkecil & \texttt{0 00000000 00000000000000000000001} \\
+terbesar & \texttt{0 11111110 11111111111111111111111} \\
+\hline
+\end{tabular}
+\end{center}
+
+Yang pertama bernilai $2^{-149}$: seluruh bit eksponennya nol dan hanya bit terakhir
+mantissa menyala. Yang kedua bernilai $3{,}4028235\times10^{38}$, dengan eksponen
+tersimpan $254$ dan mantissa penuh.
+
+Bentuk yang lebih mudah dibaca untuk binary64 disediakan oleh \texttt{float.hex()}. Hasilnya untuk beberapa bilangan:
+
+\begin{center}
+\begin{tabular}{ll}
+\hline
+$0{,}1$ & \texttt{0x1.999999999999ap-4} \\
+$6{,}0$ & \texttt{0x1.8000000000000p+2} \\
+$10^{-8}$ & \texttt{0x1.5798ee2308c3ap-27} \\
+$5\times10^{-324}$ & \texttt{0x0.0000000000001p-1022} \\
+\hline
+\end{tabular}
+\end{center}
+
+Bentuk itu memperlihatkan tiga hal. Digit di belakang titik heksadesimal selalu tiga
+belas, dan $13\times4=52$, yaitu lebar mantissa binary64. Digit terakhir $0{,}1$
+adalah \texttt{a}, yaitu $1010$, hasil pembulatan ke atas dari pola $1001$ yang
+berulang. Baris terakhir punya nol di depan titik: tanda bilangan subnormal.
+
+Nilai khusus melengkapi sistem ini: $\pm\infty$ untuk hasil yang melampaui
+$e_{\max}$, nol bertanda, bilangan subnormal di bawah $2^{e_{\min}}$, dan NaN
+(\emph{not a number}) untuk bentuk tak tentu seperti $0/0$. Satu sifat NaN layak
+diingat karena sering mengejutkan: ia tidak sama dengan dirinya sendiri, sehingga
+perbandingan \texttt{x == x} bernilai salah justru ketika $x$ adalah NaN.\index{NaN}
+
+\section{Satu-satunya jembatan: pembulatan}
+\tingkat{dasar}
+
+Tidak ada operasi lain yang menghubungkan $\mathbb{R}$ dengan $\mathbb{F}$ selain
+pembulatan. Karena itu seluruh analisis galat berdiri di atas satu pertanyaan: seberapa
+jauh bilangan mesin terdekat dari bilangan aslinya, dan bagaimana jarak itu berskala.
+
+IEEE-754 menetapkan aturan \emph{round to nearest, ties to even}: pilih bilangan mesin
+terdekat, dan bila dua kandidat sama jauhnya pilih yang digit terakhir mantissanya
+genap. Aturan kedua bukan kemewahan teoretis. Tanpa aturan itu, pembulatan pada titik
+seri selalu condong ke satu arah, dan galat sejuta operasi akan menumpuk ke arah yang
+sama, bukan saling meniadakan.
+
+Titik seri itu benar-benar muncul, dan kita bisa membuatnya dengan sengaja. Dalam
+binary64, jarak antara $1$ dan bilangan sesudahnya adalah $2^{-52}$. Maka
+$1+2^{-53}$ jatuh tepat di tengah, dan aturan genap memilih $1$ karena mantissanya
+berakhiran nol. Python memberi
+
+\begin{center}
+\texttt{1 + 2.0**-53 = 1.0}, sedangkan \texttt{1 + 3*2.0**-53 = 1.0000000000000004}.
+\end{center}
+
+Kasus pertama membulat ke bawah, kasus kedua ke atas, padahal keduanya sama-sama tepat
+setengah jalan. Yang membedakan hanya paritas digit terakhir. Inilah sebabnya
+$1+10^{-16}=1$ dalam binary64: bukan karena $10^{-16}$ diabaikan dengan sembarangan,
+tetapi karena tidak ada tempat untuk menyimpannya.
+
+\kamus{epsilon mesin}{machine epsilon}{Jarak antara $1$ dan bilangan mesin
+berikutnya: ukuran satu langkah di skala satu.}\index{epsilon mesin}
+
+Dua angka sering tertukar dan pertukarannya mengubah batas galat dengan faktor dua.
+Epsilon mesin $\mathrm{eps}=2^{-p+1}$ adalah jarak antara $1$ dan bilangan
+sesudahnya, yaitu $2^{-52}$ untuk binary64. Satuan pembulatan
+$u=2^{-p}=2^{-53}$ adalah setengah jarak itu, dan hanya $u$ yang muncul dalam batas
+galat. Python menyebut yang pertama \texttt{numpy.finfo(float).eps}; yang kedua harus
+kita hitung sendiri.
+
+Jarak antar bilangan tidak seragam. Di dekat $1$ jaraknya $2^{-52}$, di dekat
+$10^{10}$ jaraknya $1{,}9\times10^{-6}$. Yang seragam adalah jarak itu relatif
+terhadap besar bilangannya, dan itulah isi lemma berikut.
+
+\begin{lemma}[Ulp]
+Jika $2^{e}\le|x|<2^{e+1}$, maka jarak antara $x$ dan bilangan mesin berikutnya adalah
+$\operatorname{ulp}(x)=2^{e-p+1}$.
+\end{lemma}
+
+\begin{proof}
+Pada selang itu seluruh bilangan normal berbentuk $M\cdot2^{e-p+1}$ dengan $M$ bulat
+dan $2^{p-1}\le M<2^{p}$; banyaknya $M$ adalah $2^{p-1}$ dan selisih dua $M$
+berurutan adalah satu satuan $2^{e-p+1}$. Selang berikutnya memakai $e+1$ sehingga
+jaraknya berlipat dua, dan itulah satu-satunya titik tempat kerapatan berubah.
+\end{proof}
+
+\kamus{ulp}{unit in the last place}{Satu langkah terkecil yang bisa dibedakan mesin
+pada skala sebuah bilangan.}\index{ulp}
+
+Lemma itu menjelaskan dua hal sekaligus.
+$\operatorname{ulp}(1)=2^{-52}=2{,}220446049250313\times10^{-16}$, sedangkan
+$\operatorname{ulp}(10^{10})=2^{-52}\cdot2^{33}\approx1{,}9\times10^{-6}$. Jadi
+menambahkan $1$ kepada $10^{16}$ tidak mengubah apa pun dalam binary64, karena
+$\operatorname{ulp}(10^{16})=2$: memang tidak ada bilangan mesin di antara keduanya.
+
+Gambar~\ref{fig:titikmesin} memperlihatkan akibat lemma itu pada empat oktaf
+pertama: setiap oktaf memuat $2^{23}$ titik, tetapi lebarnya berlipat dua, sehingga
+jarak antar titik berlipat dua pula.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=2.1cm,y=1cm,every node/.style={font=\footnotesize}]
+  \draw[ink,thick,->] (-0.55,0) -- (4.30,0);
+  \draw[ink,thick,fill=white] (-0.42,0) circle (1.7pt);
+  \draw[ink,thick] (-0.48,-0.09) -- (-0.36,0.09);
+  \foreach \x in {0,0.125,...,0.875} {\draw[ink] (\x,0.055) -- (\x,-0.055);}
+  \foreach \x in {1,1.25,...,1.875} {\draw[ink] (\x,0.055) -- (\x,-0.055);}
+  \foreach \x in {2,2.5,...,3.0} {\draw[ink] (\x,0.055) -- (\x,-0.055);}
+  \foreach \x in {3,4} {\draw[ink] (\x,0.055) -- (\x,-0.055);}
+  \foreach \x/\lab in {0/{$2^{0}$},1/{$2^{1}$},2/{$2^{2}$},3/{$2^{3}$},4/{$2^{4}$}} {
+    \draw[ink,thick] (\x,0.14) -- (\x,-0.14);
+    \node[below=1pt] at (\x,-0.14) {\lab};
+  }
+  \draw[{Latex}-{Latex},accent] (0.125,-0.62) -- (0.25,-0.62) node[midway,below] {$d$};
+  \draw[{Latex}-{Latex},accent] (1.25,-0.62) -- (1.50,-0.62) node[midway,below] {$2d$};
+  \draw[{Latex}-{Latex},accent] (2.50,-0.62) -- (3.00,-0.62) node[midway,below] {$4d$};
+  \draw[{Latex}-{Latex},accent] (3.00,-0.62) -- (4.00,-0.62) node[midway,below] {$8d$};
+  \node[align=center,text width=3.0cm] at (1.95,0.92)
+    {tiap oktaf berisi $2^{23}$ titik, lebarnya dua kali oktaf sebelumnya};
+  \node[align=center,text width=3.0cm] at (0.40,-1.32)
+    {ke kiri menuju nol: jarak mengecil};
+\end{tikzpicture}
+\caption{Empat oktaf pertama bilangan mesin binary32. Setiap oktaf memuat $2^{23}$
+titik, tetapi lebarnya dua kali oktaf sebelumnya, jadi jarak antar titik berlipat dua:
+$d=2^{-23}$ pada $[1,2)$, $2d$ pada $[2,4)$, $4d$ pada $[4,8)$, dan $8d$ pada
+$[8,16)$. Titik di ekor tidak lebih sedikit, hanya lebih jarang; ke arah nol jaraknya
+mengecil sampai batas subnormal.}
+\label{fig:titikmesin}
+\end{figure}
+
+Ada satu kehalusan yang perlu disebut sebelum kita memakai ulp sebagai satuan galat.
+Galat pembulatan paling besar setengah ulp, tetapi bila dinyatakan sebagai galat
+relatif, angka itu bukan satu bilangan melainkan satu selang. Untuk $x$ yang tepat
+sama dengan pangkat dua, setengah ulp relatifnya $2^{-53}$; untuk $x$ yang hampir
+mencapai pangkat dua berikutnya, nilainya mendekati $2^{-54}$. Jadi galat relatif satu
+pembulatan bisa berayun dengan faktor dua. Goldberg menamai ayunan itu \emph{wobble}, dan
+karena itu batas $u$ selalu dipakai sebagai batas terburuk, bukan sebagai nilai khas.
+
+\begin{teorema}[Galat pembulatan relatif]
+Untuk setiap $x\in\mathbb{R}$ dalam jangkauan normal, pembulatan benar memenuhi
+$\operatorname{fl}(x)=x(1+\delta)$ dengan $|\delta|\le u=2^{-p}$.
+\end{teorema}
+
+\begin{proof}
+Ambil $2^{e}\le|x|<2^{e+1}$. Bilangan mesin terdekat berjarak paling jauh setengah
+ulp, yaitu $2^{e-p}$, sehingga
+$|\operatorname{fl}(x)-x|\le2^{e-p}=u\cdot2^{e}\le u|x|$. Membagi dengan $|x|$
+memberi $|\delta|\le u$, dan tanda $\delta$ mengikuti arah pembulatan.
+\end{proof}
+
+Bentuk $x(1+\delta)$ adalah awal dari segalanya: ia mengubah pertanyaan ``seberapa
+salah'' menjadi ``berapa banyak faktor $(1+\delta)$ yang menumpuk''. Operasi
+$+,-,\times,\div,\sqrt{\phantom{x}}$ dalam IEEE-754 wajib mengembalikan pembulatan
+benar dari hasil eksaknya, jadi setiap operasi menyumbang satu faktor
+semacam itu dan tidak lebih. Jaminan inilah yang membuat analisis galat mungkin.
+
+
+\section{Galat, bilangan kondisi, dan pembatalan}
+\tingkat{menengah}
+
+Sekarang kita punya satuan. Yang belum ada adalah ukuran seberapa besar galat sebuah
+perhitungan dibandingkan galat masukannya. Dua masalah bisa sama-sama menerima
+masukan yang salah $10^{-16}$ dan keluar dengan jawaban yang salah $10^{-16}$ atau
+$10^{-1}$, bergantung pada masalahnya sendiri.
+
+\kamus{bilangan kondisi}{condition number}{Pengali yang menunjukkan berapa kali galat
+masukan diperbesar oleh sebuah perhitungan.}\index{bilangan kondisi}
+
+\begin{definisi}[Galat absolut, relatif, dan ke belakang]
+Misalkan $\tilde{x}$ penghampiran bagi $x$. Galat absolutnya $|\tilde{x}-x|$, galat
+relatifnya $|\tilde{x}-x|/|x|$ untuk $x\neq0$. Jika $\tilde{x}$ adalah jawaban eksak
+bagi masalah dengan data $x+\Delta x$, maka $\|\Delta x\|/\|x\|$ disebut galat ke
+belakang, dan algoritma yang selalu memberi galat ke belakang kecil disebut
+\emph{stabil ke belakang}.\index{galat relatif}\index{stabil ke belakang}
+\end{definisi}
+
+Pembedaan terakhir paling berguna dalam praktik. Algoritma stabil ke belakang boleh
+salah jauh, asalkan jawabannya benar untuk masalah yang sedikit berbeda:
+kesalahannya milik masalah. Galat ke belakang yang besar adalah kesalahan penulis
+kode.
+
+Untuk fungsi satu peubah, pembesaran itu dihitung langsung dengan turunan: bilangan
+kondisi adalah kemiringan fungsi di titik itu, dikali besar titiknya, dibagi besar
+nilainya.
+
+\begin{teorema}[Bilangan kondisi]
+Misalkan $f$ terturunkan pada selang yang memuat $x$ dan $f(x)\neq0$. Bila
+$\tilde{x}=x(1+\delta)$ dengan $|\delta|\le u$, maka
+\[
+  \frac{|f(\tilde{x})-f(x)|}{|f(x)|}\;\le\;\kappa_{f}(x)\,u+O(u^{2}),
+  \qquad \kappa_{f}(x)=\frac{|x\,f'(x)|}{|f(x)|}.
+\]
+\end{teorema}
+
+\begin{proof}
+Menurut teorema nilai rata-rata, ada $\xi$ di antara $x$ dan $\tilde{x}$ dengan
+$f(\tilde{x})-f(x)=f'(\xi)(\tilde{x}-x)$. Karena $|\tilde{x}-x|\le u|x|$ dan $f'$
+kontinu di $x$, berlaku $|f'(\xi)|=|f'(x)|+O(u)$. Maka
+$|f(\tilde{x})-f(x)|\le u|x|\,|f'(x)|+O(u^{2}|x|)$. Membagi dengan $|f(x)|$ memberi
+ketaksamaan yang diklaim.
+\end{proof}
+
+Bilangan $\kappa_{f}$ tidak bergantung pada mesin, hanya pada masalahnya. Untuk
+$f(x)=\sqrt{x}$ ia bernilai $1/2$: akar kuadrat tidak pernah memperburuk galat relatif.
+Untuk $f(x)=\log x$ ia bernilai $1/|\log x|$, yang besar ketika $x$ dekat $1$ karena
+di situ $\log x$ hampir nol. Untuk $f(x)=x-c$ dengan $c$ konstanta besar, ia bernilai
+$|x|/|x-c|$, yang membesar tanpa batas ketika $x$ mendekati $c$. Pola terakhir itulah
+yang menjadi sumber seluruh persoalan bab ini.
+
+Pengurangan dua bilangan yang berdekatan adalah operasi paling berbahaya dalam
+aritmetika mesin, dan bahayanya sering salah alamat. Kesalahpahaman lazim berbunyi:
+pengurangan kehilangan digit, jadi operasi pengurangan itu sendiri tidak akurat. Yang
+benar lebih halus dan lebih menenteramkan: bila kedua bilangan berdekatan,
+pengurangannya justru eksak.
+
+\begin{teorema}[Sterbenz]
+Jika $a,b\in\mathbb{F}$ dan $b/2\le a\le2b$ dengan $b>0$, maka $a-b$ terwakili persis
+di $\mathbb{F}$.
+\end{teorema}
+
+\begin{proof}
+Misalkan $2^{e}\le b<2^{e+1}$. Setiap bilangan mesin pada selang itu kelipatan bulat
+$2^{e-p+1}$, jadi $a$ juga, sehingga $a-b$ kelipatan $2^{e-p+1}$. Dari
+$b/2\le a\le2b$ kita peroleh $0\le a-b\le b/2<2^{e}$. Kelipatan $2^{e-p+1}$ yang
+terletak di $[0,2^{e})$ berbentuk $M\cdot2^{e-p+1}$ dengan $0\le M<2^{p}$, dan
+semuanya terwakili dengan $p$ digit. Jadi hasilnya eksak.
+\end{proof}
+
+Jadi bila hasil pengurangan tampak buruk, yang buruk adalah masukannya. Angka yang
+``hilang'' sudah hilang sebelum pengurangan dilakukan: $a$ dan $b$ masing-masing hanya
+diketahui sampai galat relatif $u$, dan galat mutlak sebesar $u|a|$ itu tidak ikut
+menyusut ketika kedua bilangan saling meniadakan. Yang menyusut hanya besar hasilnya,
+sehingga galat relatifnya meledak.
+
+\begin{proposisi}[Bilangan kondisi pengurangan]
+Misalkan $x=a-b\neq0$ dan mesin bekerja dengan $\tilde{a}=a(1+\delta_{a})$,
+$\tilde{b}=b(1+\delta_{b})$, $|\delta_{a}|,|\delta_{b}|\le u$. Maka
+\[
+  \frac{|\operatorname{fl}(\tilde{a}-\tilde{b})-x|}{|x|}
+  \;\le\;\kappa\,u+u,
+  \qquad \kappa=\frac{|a|+|b|}{|a-b|}.
+\]
+\end{proposisi}
+
+\begin{proof}
+Karena $\operatorname{fl}(\tilde{a}-\tilde{b})$ adalah pembulatan benar dari
+$\tilde{a}-\tilde{b}$, galat tambahannya paling banyak $u|\tilde{a}-\tilde{b}|$.
+Selanjutnya
+$|\tilde{a}-\tilde{b}-(a-b)|\le|a||\delta_{a}|+|b||\delta_{b}|\le u(|a|+|b|)$,
+dan membagi dengan $|x|=|a-b|$ memberi $u\kappa$. Menjumlahkan kedua galat dengan
+ketaksamaan segitiga menyelesaikan bukti.
+\end{proof}
+
+Bilangan $\kappa$ tidak pernah lebih kecil dari satu dan membesar tanpa batas ketika
+$|a-b|$ mengecil. Untuk $a=12345{,}678$ dan $b=12345{,}671$ kita peroleh $a-b=0{,}007$
+dan $\kappa\approx3{,}53\times10^{6}$, sehingga galat relatif hasil bisa mencapai
+$3{,}9\times10^{-10}$ walaupun setiap masukan hanya menyimpang $10^{-16}$. Karena setiap
+faktor sepuluh dalam $\kappa$ menghapus satu digit signifikan,
+$\log_{10}\kappa\approx6{,}5$ berarti enam setengah dari enam belas digit mesin hilang,
+dan hasil $0{,}007$ hanya menyisakan sekitar sepuluh digit yang bisa dipercaya.
+
+Satu catatan yang menyelamatkan: aturan Sterbenz berlaku untuk selisih, bukan untuk
+penjumlahan. Untuk penjumlahan $a+b$ bilangan kondisi adalah
+$(|a|+|b|)/|a+b|$, yang mendekati satu ketika $a$ dan $b$ bertanda sama. Menjumlahkan
+bilangan besar tidak berbahaya. Mengurangkan dua bilangan besar yang hampir sama
+berbahaya, dan itulah satu-satunya kebiasaan yang perlu diwaspadai.
+
+\section{Pembatalan katastrofik: dua wajah}
+\tingkat{menengah}
+
+Kita sudah tahu mekanismenya. Sekarang kita beri namanya, karena dua jenis pembatalan
+yang mirip sering dianggap sama padahal akibatnya berbeda jauh.
+
+\begin{untukanak}
+Kalau kita ingin tahu tebal selembar kertas, penggaris biasa tidak akan menolong: satu
+lembar jauh lebih tipis daripada satu milimeter, jadi jarumnya seolah tidak bergerak.
+Caranya bukan mencari penggaris yang lebih teliti, melainkan mengubah apa yang diukur:
+tumpuk lima ratus lembar, ukur tebal tumpukannya, lalu bagi lima ratus. Hasilnya jauh
+lebih dapat dipercaya, walaupun penggarisnya tetap penggaris yang sama.
+
+Ternyata rumus juga bisa diperlakukan seperti itu. Ada rumus yang bekerja dengan
+mengurangkan dua angka besar yang hampir sama, dan itu sama saja dengan menimbang
+satu lembar kertas dengan penggaris. Ada rumus lain yang secara matematika sama
+persis, tetapi menyusun langkahnya supaya angka kecil diukur langsung, bukan dicari
+dari selisih. Hasilnya bisa berbeda jauh, padahal kertasnya tidak berubah.
+
+Pertanyaannya: kalau dua rumus yang sama-sama benar memberi jawaban berbeda, mana yang
+harus kita percaya? Di bab ini kita akan tahu mengapa rumus yang salah bukan yang
+hitungannya keliru, melainkan yang memilih langkah yang membuang keterangan, dan
+bagaimana mengenalinya sebelum program dijalankan.
+\end{untukanak}
+
+\kamus{pembatalan katastrofik}{catastrophic cancellation}{Hilangnya digit yang berarti
+ketika dua bilangan hampir sama dikurangkan, sehingga yang tersisa hanya galat.}
+\index{pembatalan katastrofik}
+
+\begin{definisi}[Pembatalan katastrofik dan jinak]
+Misalkan $x$ dan $y$ adalah bilangan mesin yang dihitung dari data sebelumnya.
+Pengurangan $x-y$ disebut \emph{pembatalan jinak} bila $x$ dan $y$ tepat, sehingga
+hasilnya eksak menurut teorema Sterbenz. Ia disebut \emph{pembatalan katastrofik} bila
+$x$ dan $y$ sendiri sudah membawa galat pembulatan, sehingga digit yang sama-sama
+mereka miliki ikut hilang dan yang tersisa didominasi galat itu.
+\end{definisi}
+
+Contoh jinak: $1{,}0000000000000002-1$ dalam binary64. Keduanya bilangan mesin,
+selisihnya $2^{-52}$ dan terwakili persis. Hasilnya kecil, tetapi tidak ada satu digit
+pun yang hilang: kita memang tahu kedua masukannya sampai bit terakhir.
+
+Contoh katastrofik adalah rumus kuadrat di awal bab. Di situ $b^{2}$ dan $4ac$
+masing-masing hasil perkalian, jadi keduanya dibulatkan. Untuk $a=1$, $b=10^{8}$,
+$c=1$ keduanya kebetulan tepat, dan justru kekhususan itulah yang membuat contoh ini
+layak diperiksa sampai bit: keruntuhannya bukan berasal dari perkalian, melainkan dari
+pembulatan akar kuadratnya. Python menghitung
+
+\begin{center}
+\begin{tabular}{ll}
+\hline
+diskriminan $b^{2}-4ac$ & \texttt{9999999999999996.0} \\
+$\sqrt{b^{2}-4ac}$ & \texttt{99999999.99999999} \\
+$b-\sqrt{b^{2}-4ac}$ & \texttt{1.4901161193847656e-08} \\
+$\operatorname{ulp}(b)$ & \texttt{1.4901161193847656e-08} \\
+\hline
+\end{tabular}
+\end{center}
+
+Nilai sebenarnya $b-\sqrt{b^{2}-4ac}$ adalah $2\times10^{-8}$, yaitu $1{,}34$ ulp.
+Yang terhitung tepat $1$ ulp, dan galat setengah ulp pada akar kuadrat sudah cukup
+untuk itu: akar kuadratnya benar sampai $0{,}46$ ulp pada skala $10^{8}$, tetapi
+selisih yang seharusnya $1{,}34$ ulp hanya bisa mendarat pada $1$ atau $2$ ulp, jadi
+informasinya tinggal satu pilihan biner. Hasil akhirnya $-7{,}45\times10^{-9}$, yaitu
+$-2^{-27}$, sedangkan akar sebenarnya $-10^{-8}$. Galat relatif $0{,}255$.
+
+Perhatikan pembagian tugasnya. Akar kuadrat bekerja dengan galat relatif
+$5\times10^{-17}$, jauh di bawah $u$. Masalahnya sendiri berkondisi baik: menggeser
+$b$ sebesar satu ulp hanya menggeser akar kecil sebesar satu ulp, jadi
+$\kappa\approx|b|/\sqrt{b^{2}-4ac}\approx1$. Yang buruk adalah \emph{bentuk} yang kita
+pilih: bilangan kondisi pengurangan pada langkah itu adalah
+\[
+  \kappa=\frac{|b|+\sqrt{b^{2}-4ac}}{\left|\sqrt{b^{2}-4ac}-|b|\right|}
+  =\frac{2\times10^{8}}{1{,}49\times10^{-8}}\approx1{,}34\times10^{16},
+\]
+sehingga $\kappa u\approx1{,}49$: batas galat relatifnya melewati satu, artinya tidak
+ada satu digit pun yang dijamin.
+
+Gambar~\ref{fig:katastrofik} memisahkan dua hal yang sering tercampur pada langkah itu:
+besar bilangannya, dan banyaknya digit yang masih berarti setelah pengurangan.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[every node/.style={font=\footnotesize}]
+  \draw[ink,thick,->] (1.2,3.20) -- (10.6,3.20);
+  \foreach \dec/\tk in {-9/{$10^{-9}$},-6/{$10^{-6}$},-3/{$10^{-3}$},0/{$10^{0}$},
+                        3/{$10^{3}$},6/{$10^{6}$},9/{$10^{9}$}} {
+    \draw[ink] ({1.4+(\dec+9)*0.5},3.26) -- ({1.4+(\dec+9)*0.5},3.14);
+    \node[below] at ({1.4+(\dec+9)*0.5},3.12) {\tk};
+  }
+  \fill[accent] ({1.4+17*0.5},3.20) circle (2.4pt);
+  \node[above=2pt] at ({1.4+17*0.5},3.24) {$b=10^{8}$};
+  \fill[layerteal] ({1.4+1.173*0.5},3.20) circle (2.4pt);
+  \node[above=2pt] at ({1.4+1.173*0.5},3.24) {$b-\sqrt{\Delta}$};
+  \draw[<->,thick,dashed,layergrey] ({1.4+1.173*0.5},3.72) -- ({1.4+17*0.5},3.72);
+  \node[above] at ({1.4+9.1*0.5},3.74) {enam belas orde besaran};
+  \foreach \i in {0,...,16} {
+    \fill[accent!28] ({1.4+\i*0.45},1.60) rectangle ++(0.45,0.40);
+    \draw[ink!45] ({1.4+\i*0.45},1.60) rectangle ++(0.45,0.40);
+  }
+  \foreach \i in {0,...,15} {
+    \fill[layergrey!16] ({1.4+\i*0.45},0.85) rectangle ++(0.45,0.40);
+    \draw[ink!45] ({1.4+\i*0.45},0.85) rectangle ++(0.45,0.40);
+  }
+  \fill[accent!70] ({1.4+16*0.45},0.85) rectangle ++(0.45,0.40);
+  \draw[ink!45] ({1.4+16*0.45},0.85) rectangle ++(0.45,0.40);
+  \node[left] at (1.35,1.80) {$b$};
+  \node[left] at (1.35,1.05) {$b-\sqrt{\Delta}$};
+  \draw[{Latex}-{Latex},layergrey] (1.40,0.62) -- ({1.4+16*0.45},0.62);
+  \node[below] at ({1.4+8*0.45},0.60) {enam belas digit sama, saling meniadakan};
+  \node[right] at ({1.4+17*0.45},1.05) {satu digit};
+\end{tikzpicture}
+\caption{Atas: $b$ dan $\sqrt{b^{2}-4ac}$ pada skala log, berjarak enam belas orde
+besaran dari selisihnya. Bawah: kotak adalah digit berarti, tujuh belas masuk dan enam
+belas di antaranya sama sehingga saling meniadakan. Yang tersisa satu digit, yaitu
+selisih $1{,}49\times10^{-8}$ itu sendiri; karena setengah ulp galat pada akar kuadrat
+cukup untuk menggeser digit terakhir, akar kecil keluar dengan galat relatif $0{,}255$.}
+\label{fig:katastrofik}
+\end{figure}
+
+Perbaikannya bukan menambah presisi, melainkan memilih akar yang dihitung lebih dulu.
+Hasil kali kedua akar adalah $c/a$, jadi setelah akar besar $r_{1}$ diketahui, akar
+kecil diperoleh dari pembagian, bukan dari pengurangan:
+\[
+  r_{1}=\frac{-b-\sqrt{b^{2}-4ac}}{2a},\qquad r_{2}=\frac{c}{a\,r_{1}}
+  =\frac{2c}{-b-\sqrt{b^{2}-4ac}}.
+\]
+Bentuk kedua tidak pernah mengurangkan dua bilangan berdekatan. Untuk contoh di atas
+ia memberi $-10^{-8}$ tepat, yaitu akar yang dibulatkan benar. Rumus yang sama dengan
+tanda diatur menurut tanda $b$ dipakai di hampir setiap pustaka yang menyelesaikan
+persamaan kuadrat, dan alasannya bukan kerapian melainkan kestabilan.
+
+Wajah kedua pembatalan katastrofik muncul di tempat yang tampaknya tidak berbahaya:
+selisih $1-\cos x$ untuk $x$ kecil. Untuk $x$ kecil,
+\[
+  \frac{1-\cos x}{x^{2}}\longrightarrow\frac{1}{2},
+\]
+karena $\cos x=1-x^{2}/2+x^{4}/24-\cdots$. Rumus itu benar, dan rumus itu juga yang
+paling wajar ditulis. Tetapi $\cos x$ disimpan dengan galat relatif $u$, dan karena
+$|\cos x|\le1$, galat mutlaknya sekitar $u$. Setelah dibagi $x^{2}$, galat itu menjadi
+galat relatif sekitar $2u/x^{2}$. Untuk $x=10^{-8}$ faktor itu bernilai $2{,}2$:
+seluruh digit lenyap.
+
+Berikut hasil eksekusi nyata untuk sepuluh nilai $x$, dibandingkan dengan acuan yang
+dihitung pada 50 digit dan dengan deret Taylor $0{,}5-x^{2}/24+x^{4}/720$; untuk
+$x\le10^{-3}$ kedua pembanding itu sepakat sampai digit terakhir. Kolom ``lugu'' adalah
+$(1-\cos x)/x^{2}$, kolom ``identitas'' adalah
+$\tfrac12\left(\sin(x/2)/(x/2)\right)^{2}$ yang berasal dari
+$1-\cos x=2\sin^{2}(x/2)$.
+
+\begin{center}
+\begin{tabular}{rccc}
+\hline
+$x$ & lugu & galat relatif & identitas \\
+\hline
+$10^{-1}$ & $0{,}499583472197418$ & $1{,}1\times10^{-14}$ & $0{,}499583472197423$ \\
+$10^{-2}$ & $0{,}499995833347366$ & $2{,}9\times10^{-13}$ & $0{,}499995833347222$ \\
+$10^{-3}$ & $0{,}499999958325503$ & $1{,}6\times10^{-11}$ & $0{,}499999958333335$ \\
+$10^{-4}$ & $0{,}499999996961265$ & $5{,}2\times10^{-9}$ & $0{,}499999999583333$ \\
+$10^{-5}$ & $0{,}500000041370185$ & $8{,}3\times10^{-8}$ & $0{,}499999999995833$ \\
+$10^{-6}$ & $0{,}500044450291171$ & $8{,}9\times10^{-5}$ & $0{,}499999999999958$ \\
+$10^{-7}$ & $0{,}499600361081320$ & $8{,}0\times10^{-4}$ & $0{,}500000000000000$ \\
+$10^{-8}$ & $0{,}000000000000000$ & $1{,}0$ & $0{,}500000000000000$ \\
+$10^{-9}$ & $0{,}000000000000000$ & $1{,}0$ & $0{,}500000000000000$ \\
+$10^{-10}$ & $0{,}000000000000000$ & $1{,}0$ & $0{,}500000000000000$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Polanya khas dan layak dihafal. Selama $x^{2}/2$ jauh di atas $u$, rumus lugu hampir
+benar. Ketika $x^{2}/2$ menyusut ke skala $u$, digit berartinya habis dan galat
+membesar mengikuti $2u/x^{2}$: setiap penurunan $x$ dengan faktor sepuluh menambah dua
+digit kehilangan. Di $x=10^{-8}$, $1-\cos x$ lebih kecil daripada setengah ulp di
+sekitar $1$, sehingga $\cos x$ dibulatkan tepat ke $1$ dan hasilnya nol. Titik runtuh
+itu bukan misteri: $x^{2}/2\approx u$, yaitu $x\approx\sqrt{2u}\approx1{,}5\times10^{-8}$.
+
+Kolom terakhir menunjukkan bahwa masalahnya berkondisi baik. Identitas sudut ganda
+memberi jawaban benar sampai digit terakhir untuk setiap $x$ di tabel, karena ia tidak
+pernah mengurangkan dua bilangan berdekatan. Galat bukan sifat masalah. Ia sifat rumus
+yang dipilih.
+
+\begin{resep}
+Empat langkah memilih bentuk rumus yang aman dari pemusnahan:
+\begin{enumerate}
+  \item Tandai setiap pengurangan $a-b$ di dalam rumus, lalu hitung
+        $\kappa=(|a|+|b|)/|a-b|$ pada data terburuk yang masuk akal.
+  \item Terjemahkan $\kappa$ menjadi digit yang hilang: $\kappa u\approx10^{-d}$
+        berarti $d$ digit terakhir tidak dapat dipercaya.
+  \item Cari bentuk setara yang tidak memuat selisih itu: kalikan dengan sekawan,
+        pakai identitas sudut ganda, faktorkan, atau panggil \texttt{log1p},
+        \texttt{expm1}, dan \texttt{hypot}.
+  \item Ulangi hitungan pada presisi lebih tinggi. Selisih kedua hasil harus sepadan
+        dengan $\kappa u$; bila jauh lebih besar, bentuk barunya masih menyembunyikan
+        pengurangan.
+\end{enumerate}
+Peringatan urutan: langkah 1 tidak boleh ditukar dengan langkah 3. Menulis ulang rumus
+sebelum tahu pengurangan mana yang berbahaya hanya memindahkan masalah, seperti pada
+bentuk satu-lintasan variansi yang menukar satu pengurangan berbahaya dengan
+pengurangan berbahaya yang lain.
+\end{resep}
+
+\section{Penjumlahan: galat yang tumbuh bersama $n$}
+\tingkat{lanjut}
+
+Penjumlahan adalah operasi yang paling sering dianggap remeh, padahal ia tempat galat
+paling mudah dihitung. Sebelum sampai ke batasnya, satu demonstrasi yang membongkar
+anggapan bahwa urutan tidak penting:
+
+\begin{center}
+\texttt{(0.1 + 0.2) + 0.3 = 0.6000000000000001}, \quad
+\texttt{0.1 + (0.2 + 0.3) = 0.6}.
+\end{center}
+
+Selisihnya $1{,}11\times10^{-16}$, tepat satu ulp pada skala $0{,}6$. Tidak ada
+kesalahan tulis; hanya tiga bilangan yang masing-masing tidak punya wakil biner
+berhingga, dan pembulatan yang berbeda urutan. Dalam matematika, penjumlahan bersifat
+asosiatif. Di dalam mesin, ia asosiatif hanya bila kebetulan tidak ada pembulatan yang
+berbeda.
+
+\begin{teorema}[Galat penjumlahan berurutan]
+Misalkan $s_{1}=x_{1}$ dan $s_{k}=\operatorname{fl}(s_{k-1}+x_{k})$ untuk
+$k=2,\dots,n$ dengan $x_{i}\in\mathbb{F}$. Maka
+\[
+  \left|s_{n}-\sum_{i=1}^{n}x_{i}\right|
+  \;\le\;(n-1)\,u\sum_{i=1}^{n}|x_{i}|+O(u^{2}).
+\]
+\end{teorema}
+
+\begin{proof}
+Setiap langkah memakai satu pembulatan, jadi $s_{k}=(s_{k-1}+x_{k})(1+\delta_{k})$
+dengan $|\delta_{k}|\le u$. Menguraikan hasilnya secara rekursif memberi
+\[
+  s_{n}=\sum_{i=1}^{n}x_{i}\prod_{k=i}^{n}(1+\delta_{k}),
+\]
+dengan suku pertama tidak memuat $\delta_{1}$ karena $s_{1}=x_{1}$ belum dibulatkan.
+Karena $\prod(1+\delta_{k})=1+\theta$ dengan
+$|\theta|\le(1+u)^{n-1}-1\le(n-1)u+O(u^{2})$, ketaksamaan segitiga memberi batas yang
+diklaim.
+\end{proof}
+
+Batas itu jujur tetapi longgar: ia menganggap setiap pembulatan mencapai galat
+terburuknya dan semuanya searah, yang praktis tidak pernah terjadi. Tabel berikut
+menunjukkan jurang antara batas dan kenyataan untuk deret harmonik
+$H_{n}=\sum_{i=1}^{n}1/i$ dalam binary32, dengan nilai eksak dihitung oleh
+\texttt{math.fsum} yang menjumlahkan secara eksak.
+
+\begin{center}
+\begin{tabular}{rccc}
+\hline
+$n$ & berurutan & eksak & batas $(n-1)u\sum|x_{i}|$ \\
+\hline
+$10^{2}$  & $5{,}1873779297$ & $5{,}1873775176$ & $3{,}1\times10^{-5}$ \\
+$10^{3}$  & $7{,}4854784012$ & $7{,}4854708606$ & $4{,}5\times10^{-4}$ \\
+$10^{4}$  & $9{,}7876129150$ & $9{,}7876060360$ & $5{,}8\times10^{-3}$ \\
+$10^{5}$  & $12{,}0908508301$ & $12{,}0901461299$ & $7{,}2\times10^{-2}$ \\
+$10^{6}$  & $14{,}3573579788$ & $14{,}3927267229$ & $8{,}6\times10^{-1}$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Galat sesungguhnya pada $n=10^{6}$ adalah $3{,}54\times10^{-2}$, sekitar dua puluh lima
+kali lebih kecil daripada batas, tetapi sudah menghapus dua setengah digit signifikan.
+Galatnya juga tidak naik mulus: ia sempat turun pada $n=10^{4}$ karena pembulatan
+searah dan berlawanan kebetulan saling meniadakan. Yang bisa diandalkan bukan besar
+galat pada satu $n$, melainkan kecenderungannya membesar, dengan laju terburuk
+sebanding $n$.
+
+Penyebabnya bukan pembulatan yang besar, melainkan akumulator yang menjauh dari nol.
+Begitu $s$ bernilai sekitar $14$, suku $1/i$ untuk $i$ besar berada di bawah setengah
+ulp $s$ dan setiap penambahan kehilangan seluruh informasinya. Kasus ekstremnya mudah
+dibuat: jumlahkan $1$ dengan sejuta suku bernilai $10^{-16}$; secara eksak hasilnya
+$1{,}0000000001$, sedangkan penjumlahan berurutan tetap $1$ untuk berapa pun banyaknya
+suku. Yang hilang bukan satu suku, melainkan seluruh kontribusi.
+
+Gambar~\ref{fig:galatjumlah} merangkum pola yang sama untuk kelima nilai $n$ pada tabel
+tadi, kali ini dengan penjumlahan Kahan sebagai pembanding.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.88\linewidth, height=6.0cm,
+  xmode=log, ymode=log,
+  xlabel={$n$}, ylabel={$|s_{n}-H_{n}|$},
+  xmin=70, xmax=1.6e6, ymin=1e-8, ymax=1,
+  grid=both, grid style={layergrey!15},
+  tick label style={font=\footnotesize},
+  label style={font=\footnotesize},
+  legend style={font=\footnotesize,draw=layergrey!40,
+                at={(0.03,0.97)},anchor=north west},
+  legend cell align=left,
+]
+\addplot[ink,thick,mark=*,mark size=1.7pt] coordinates {
+  (100,4.12e-7) (1000,7.54e-6) (10000,6.88e-6) (100000,7.05e-4) (1000000,3.54e-2)};
+\addlegendentry{berurutan}
+\addplot[accent,thick,mark=square*,mark size=1.6pt] coordinates {
+  (100,6.48e-8) (1000,8.88e-8) (10000,2.03e-7) (100000,6.51e-8) (1000000,1.75e-7)};
+\addlegendentry{Kahan}
+\end{axis}
+\end{tikzpicture}
+\caption{Galat mutlak jumlah harmonik dalam binary32 pada lima ukuran $n$, skala
+ganda-log. Penjumlahan berurutan naik dari $4{,}1\times10^{-7}$ pada $n=10^{2}$ ke
+$3{,}54\times10^{-2}$ pada $n=10^{6}$; Kahan bertahan di orde $10^{-7}$ sepanjang
+rentang, sehingga pada $n=10^{6}$ keduanya terpaut $2\times10^{5}$ kali. Data, presisi,
+dan banyaknya operasi sama; yang berbeda hanya urutan penjumlahannya.}
+\label{fig:galatjumlah}
+\end{figure}
+
+\begin{tangan}
+Bahan: sebelas kartu kosong, spidol, dan satu aturan main. Setiap kali dua kartu
+dijumlahkan, tulis hasilnya pada kartu baru dengan paling banyak empat angka penting,
+lalu buang kartu lamanya.
+
+Tulis $1{,}000$ pada satu kartu dan $0{,}0001$ pada sepuluh kartu lain. Jalur pertama:
+letakkan kartu besar, lalu tambahkan sepuluh kartu kecil satu per satu. Setiap kali
+$1{,}000+0{,}0001=1{,}0001$ dipotong menjadi $1{,}000$, sehingga kartu kecil itu hilang
+tanpa jejak dan tumpukan tetap $1{,}000$.
+
+Kocok ulang kartunya, jalur kedua: jumlahkan dulu sepuluh kartu kecil menjadi
+$0{,}0010$, baru tambahkan kartu besar. Tumpukan akhir $1{,}001$.
+
+Yang harus terlihat: sebelas kartu yang sama, aturan pemotongan yang sama, dua hasil
+yang berbeda pada digit terakhir. Yang berubah hanya urutan, dan mesin mengulang urutan
+itu sejuta kali.
+\end{tangan}
+
+Penjumlahan Kahan menyerang masalah itu secara langsung.\index{penjumlahan Kahan}
+Idenya sederhana: setiap kali
+sebuah suku hilang karena pembulatan, simpan sisa yang hilang di variabel kompensasi,
+lalu masukkan kembali pada langkah berikutnya.
+
+\begin{quote}
+\texttt{s = 0.0; c = 0.0}\\
+\texttt{for x in data:}\\
+\hspace*{1.5em}\texttt{y = x - c}\\
+\hspace*{1.5em}\texttt{t = s + y}\\
+\hspace*{1.5em}\texttt{c = (t - s) - y}\\
+\hspace*{1.5em}\texttt{s = t}
+\end{quote}
+
+Baris \texttt{c = (t - s) - y} adalah intinya, dan ia bekerja justru karena Sterbenz:
+$t-s$ adalah selisih dua bilangan berdekatan sehingga eksak, dan $(t-s)-y$ karena itu
+tepat sama dengan galat yang baru saja dibuang. Hasilnya tidak lagi menumpuk galat
+sebanding $n$.
+
+\begin{teorema}[Batas penjumlahan Kahan]
+Dengan algoritme Kahan di atas, jumlah yang terhitung memenuhi ketaksamaan
+\[
+  s=\sum_{i=1}^{n}x_{i}(1+\delta_{i})+O(nu^{2})\sum_{i=1}^{n}|x_{i}|,
+  \qquad |\delta_{i}|\le2u .
+\]
+\end{teorema}
+
+Bukti teorema ini tidak kita ulang di sini. Ia adalah Teorema 8 pada kitab Goldberg,
+dan buktinya ada di lampiran kitab itu, diambil dari Knuth. Yang perlu dibaca dari
+pernyataannya: galat relatif tiap suku dibatasi $2u$, dua kali lipat galat satu
+pembulatan, tetapi faktor $n$ hilang dari suku utama. Untuk $n$ kecil batas ini justru
+lebih longgar daripada batas lugu, karena $2u>u$. Keunggulannya baru muncul ketika
+$n$ besar, dan di situlah seluruh gunanya.
+
+Angka nyatanya pada deret harmonik dengan $n=10^{6}$: penjumlahan berurutan dalam
+binary32 memberi galat $3{,}54\times10^{-2}$, sedangkan Kahan memberi
+$1{,}75\times10^{-7}$, yaitu $0{,}18$ ulp dari jawaban benar. Dalam binary64
+selisihnya sama tajam: berurutan meleset $7{,}35\times10^{-13}$, atau $414$ ulp,
+sedangkan Kahan menghasilkan angka yang sama persis dengan \texttt{math.fsum}.
+
+Dua perbaikan lain layak disebut. Penjumlahan berpasangan, yang dipakai
+\texttt{numpy.sum},\index{penjumlahan berpasangan} membagi data secara rekursif
+sehingga galatnya tumbuh seperti $\log n$; ia hampir gratis dan cocok untuk data di
+memori. \texttt{math.fsum} memakai akumulator eksak dan memberi hasil yang dibulatkan
+benar untuk seluruh daftar, dengan biaya waktu lebih tinggi. Menjumlahkan dari suku
+terkecil ke terbesar adalah perbaikan termurah, tetapi ia hanya mengurangi galat.
+
+\section{Panduan praktis}
+\tingkat{dasar}
+
+Semua yang sudah kita bangun bisa diringkas menjadi beberapa kebiasaan yang murah
+dilakukan dan mahal kalau diabaikan.
+
+Pertama, pilih presisi berdasarkan bilangan kondisi, bukan berdasarkan kebiasaan.
+Galat relatif hasil kira-kira $\kappa u$. Dengan binary64, sebuah perhitungan
+berkondisi $10^{6}$ masih menyisakan sepuluh digit; dengan binary32, perhitungan yang
+sama hanya menyisakan satu digit. Untuk $10^{8}$ operasi berurutan batas kasarnya
+$nu$, dan dalam binary32 itu sudah melewati satu, artinya jawabannya tidak bermakna.
+
+Kedua, jangan menguji kesamaan bilangan pecahan dengan \texttt{==}. Dua lintasan yang
+secara matematis identik boleh menghasilkan bit yang berbeda, seperti
+$0{,}1+0{,}2$ tadi. Uji yang benar memakai toleransi berskala, misalnya
+$|x-y|\le10^{-12}\max(1,|x|,|y|)$, dan toleransi itu harus berasal dari analisis
+galat, bukan dari percobaan sampai uji lulus.
+
+Ketiga, curigai setiap rumus yang memuat selisih dua besaran hampir sama. Bentuk baku
+variansi, $(1-\cos x)/x^{2}$, dan $\log(1+x)$ untuk $x$ kecil semuanya bisa ditulis
+ulang. Pustaka standar sudah melakukannya: \texttt{log1p}, \texttt{expm1}, dan
+\texttt{hypot} ada justru karena bentuk lugunya tidak stabil.
+
+Keempat, untuk jumlah yang panjang atau bersuku sangat berbeda besarnya, gunakan
+\texttt{math.fsum} atau penjumlahan berpasangan, dan simpan akumulator dalam presisi
+lebih tinggi bila tersedia. Urutkan dari suku terkecil bila tidak ada pilihan lain.
+
+Kelima, jangan menyimpulkan kebenaran dari kesepakatan angka. Dua program yang sepakat
+sampai dua belas digit cukup meyakinkan; yang sepakat sampai tiga digit hanya memberi
+tahu bahwa keduanya memakai rumus yang sama. Uji yang lebih baik adalah mengulang
+hitungan pada presisi berbeda: bila hasilnya bergeser jauh melebihi ramalan
+$\kappa u$, ada yang salah dalam rumusnya, bukan dalam mesinnya.
+
+
+\pagebreak[4]
+\begin{tantangan}
+Hitung $10^{8}\left(\sqrt{10^{16}+1}-10^{8}\right)$ dalam binary64. Nilai sebenarnya
+$0{,}5$, tetapi program yang menuliskan rumus itu apa adanya melaporkan $0{,}0$.
+
+Jelaskan mengapa hasilnya nol, lalu hitung bentuk yang memberi $0{,}5$ tanpa menaikkan
+presisi sama sekali.
+
+Petunjuk 1: tanyakan berapa $\operatorname{ulp}(10^{16})$, lalu apakah $10^{16}+1$
+masih punya tempat di grid bilangan mesin.
+
+Petunjuk 2: kalikan pembilang dan penyebut dengan sekawan
+$\sqrt{10^{16}+1}+10^{8}$; pengurangan berbahaya itu menjadi pembagian.
+
+Kalau mentok, kembali ke bagian Pembatalan katastrofik: dua wajah.
+\end{tantangan}
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Semua angka di bagian ini bisa diperiksa dengan kalkulator, \texttt{struct}, dan
+pecahan biasa. Kita mulai dari membongkar satu pola bit, yaitu $0{,}1$ dalam binary32:
+
+\[
+  \underbrace{0}_{1}\;\underbrace{01111011}_{8}\;
+  \underbrace{10011001100110011001101}_{23}.
+\]
+
+Eksponen tersimpan $123$, jadi setelah dikurangi bias $127$ diperoleh $e=-4$. Bilangan
+bulat 23 bit pada mantissa adalah $5033165$, sehingga signifikannya
+$1+5033165/2^{23}$. Maka
+\[
+  x=\left(1+\frac{5033165}{2^{23}}\right)2^{-4}=\frac{13421773}{134217728}.
+\]
+Pembilangnya berasal dari $2^{23}+5033165=13421773$. Sementara itu penyebutnya
+$134217728$, dan sepersepuluhnya $13421772{,}8$, sehingga galatnya tepat
+$0{,}2/134217728$, yaitu $1{,}4901161\times10^{-9}$,
+dan galat relatifnya $1{,}49\times10^{-8}$, yaitu $u_{32}/4$. Angka itu masuk akal:
+bilangan $1/10$ sama dengan $1{,}1001100110011\dots_{2}\times2^{-4}$, yang memerlukan
+mantissa periodik dan tidak berhenti, sehingga pembulatan benar memotongnya pada bit
+ke-24. Pola yang tersimpan
+berakhir \texttt{\dots 1101}, bukan \texttt{\dots 1100}, karena sisa di belakangnya
+lebih besar daripada setengah ulp dan pembulatan naik.
+
+\kertas{Bongkar pola bit \texttt{0 01111100 01000000000000000000000} dengan tangan:
+tentukan tanda, eksponen setelah dikurangi bias, nilai mantissa, lalu tulis bilangannya
+sebagai pecahan dan sebagai desimal. Hitung $\operatorname{ulp}$ bilangan itu, lalu
+putuskan hasil dari menambahkan $2^{-27}$ dan $3\cdot2^{-27}$ dengan aturan
+\emph{tie to even}. Periksa jawabanmu dengan \texttt{struct.unpack} dan
+\texttt{numpy.float32}. Bilangan ini dipilih agar mantissanya berhenti setelah dua
+digit, sehingga seluruh aritmetikanya bisa dikerjakan tanpa kalkulator.}
+
+Sekarang kasus $0{,}1+0{,}2$ dalam binary64, yang seluruhnya bisa dihitung dengan
+pecahan. Ketiga bilangan yang terlibat berpenyebut pangkat dua:
+\[
+  \operatorname{fl}(0{,}1)=\frac{3602879701896397}{2^{55}},\qquad
+  \operatorname{fl}(0{,}2)=\frac{3602879701896397}{2^{54}},
+\]
+\[
+  \operatorname{fl}(0{,}3)=\frac{5404319552844595}{2^{54}}.
+\]
+Jumlah dua yang pertama sebelum dibulatkan adalah $10808639105689191/2^{55}$,
+sedangkan $\operatorname{fl}(0{,}3)=10808639105689190/2^{55}$. Jadi jumlah eksak itu
+terletak tepat setengah ulp di atas $\operatorname{fl}(0{,}3)$: titik seri, bukan di
+dekatnya. Digit terakhir mantissanya $1$, yaitu ganjil, sehingga \emph{tie to even}
+membulatkan ke atas: $0{,}300000000000000044408920985006\dots$
+
+Selisihnya terhadap $\operatorname{fl}(0{,}3)$ karena itu tepat satu ulp,
+$2^{-54}=5{,}551115123125783\times10^{-17}$, bukan galat acak. Pengurangan sesudahnya
+eksak menurut Sterbenz, jadi angka yang tercetak program adalah angka itu persis.
+
+Angka yang sama menjelaskan mengapa kesimpulannya bergantung pada presisi: dalam
+binary32, $0{,}1+0{,}2$ dan $0{,}3$ menghasilkan pola bit yang identik karena kedua
+galat pembulatannya kebetulan saling meniadakan. Jadi \texttt{0.1+0.2 != 0.3} bukan
+hukum alam, melainkan akibat kebetulan pada satu presisi.
+
+Sekarang akar kuadrat tadi, dengan aritmetika ulp. Diskriminan $b^{2}-4ac$ tepat
+sama dengan $10^{16}-4$, karena $10^{16}$ masih di bawah $2^{54}$ dan bilangan itu
+kelipatan $4$. Akar kuadratnya benar sampai $0{,}46$ ulp, jadi ia jatuh satu ulp di
+bawah $b$ karena $\operatorname{ulp}(b)=2^{-26}$. Selisih sebenarnya $2\times10^{-8}=1{,}34$ ulp,
+selisih yang terhitung $1$ ulp; kesalahan $0{,}34$ ulp pada skala $10^{8}$ itu, dibagi
+dua, menjadi seluruh galat akar kecil:
+\[
+  r_{2}^{\text{naif}}=-\frac{2^{-26}}{2}=-2^{-27}
+  =-7{,}450580596923828\times10^{-9},
+  \qquad r_{2}=-10^{-8}.
+\]
+Bentuk stabil $2c/(-b-\sqrt{b^{2}-4ac})$ tidak mengalami pengurangan berbahaya, dan
+hasilnya $-10^{-8}$ tepat, akar yang dibulatkan benar.
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+\begin{lab}
+\begin{verbatim}
+import math, struct
+import numpy as np
+
+def bit32(x):
+    return ''.join(f'{b:08b}' for b in struct.pack('>f', float(x)))
+
+print("0.1     :", bit32(0.1))
+print("6.0     :", bit32(6.0))
+print("-12.375 :", bit32(-12.375))
+print("hex     :", (0.1).hex(), (6.0).hex(), (1e-8).hex())
+print("eps     :", np.finfo(np.float32).eps, np.finfo(np.float64).eps)
+print("ulp     :", math.ulp(1.0), math.ulp(1e10))
+print("seri    :", 1 + 2.0**-53, 1 + 3*2.0**-53)
+
+s = (0.1 + 0.2) - 0.3
+print("0.1+0.2-0.3 :", repr(s), "=", s / math.ulp(0.3), "ulp")
+print("asosiatif   :", repr((0.1 + 0.2) + 0.3), repr(0.1 + (0.2 + 0.3)))
+
+n = 10**6
+exact = math.fsum(1.0 / i for i in range(1, n + 1))
+
+def jumlah(prec, kahan):
+    s, c = prec(0), prec(0)
+    for i in range(1, n + 1):
+        y = prec(1) / prec(i)
+        if kahan:
+            y = y - c
+            t = s + y
+            c = (t - s) - y
+            s = t
+        else:
+            s = s + y
+    return s
+
+print("H_n eksak   :", f"{exact:.12f}")
+for prec, nama in ((np.float32, "float32"), (np.float64, "float64")):
+    for kahan in (False, True):
+        v = float(jumlah(prec, kahan))
+        print(f"{nama} {'Kahan' if kahan else 'naif ':7} {v:.12f}"
+              f"  galat {abs(v - exact):.2e}")
+
+print(f"{'x':>8} {'lugu':>19} {'galat':>9} {'identitas':>19} {'galat':>9}")
+for k in range(1, 11):
+    x = 10.0**-k
+    lugu = (1 - math.cos(x)) / x**2
+    stabil = 2 * math.sin(x / 2)**2 / x**2
+    acuan = 0.5 - x**2/24 + x**4/720 - x**6/40320
+    print(f"{x:8.0e} {lugu:19.15f} {abs(lugu-acuan)/acuan:9.1e}"
+          f" {stabil:19.15f} {abs(stabil-acuan)/acuan:9.1e}")
+
+a, b, c = 1.0, 1e8, 1.0
+d = b*b - 4*a*c
+sq = math.sqrt(d)
+print("diskriminan :", d, " akar:", sq)
+print("b - akar    :", b - sq, " ulp(b):", math.ulp(b))
+print("akar naif   :", (-b + sq) / (2*a))
+print("akar stabil :", 2*c / (-b - sq))
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+0.1     : 00111101110011001100110011001101
+6.0     : 01000000110000000000000000000000
+-12.375 : 11000001010001100000000000000000
+hex     : 0x1.999999999999ap-4 0x1.8000000000000p+2 0x1.5798ee2308c3ap-27
+eps     : 1.1920929e-07 2.220446049250313e-16
+ulp     : 2.220446049250313e-16 1.9073486328125e-06
+seri    : 1.0 1.0000000000000004
+0.1+0.2-0.3 : 5.551115123125783e-17 = 1.0 ulp
+asosiatif   : 0.6000000000000001 0.6
+H_n eksak   : 14.392726722866
+float32 naif    14.357357978821  galat 3.54e-02
+float32 Kahan   14.392726898193  galat 1.75e-07
+float64 naif    14.392726722865  galat 7.35e-13
+float64 Kahan   14.392726722866  galat 0.00e+00
+       x                lugu     galat           identitas     galat
+   1e-01   0.499583472197418   5.6e-15   0.499583472197423   5.4e-15
+   1e-02   0.499995833347366   2.9e-13   0.499995833347222   1.1e-16
+   1e-03   0.499999958325503   1.6e-11   0.499999958333335   0.0e+00
+   1e-04   0.499999996961265   5.2e-09   0.499999999583333   1.1e-16
+   1e-05   0.500000041370185   8.3e-08   0.499999999995833   1.1e-16
+   1e-06   0.500044450291171   8.9e-05   0.499999999999958   0.0e+00
+   1e-07   0.499600361081320   8.0e-04   0.500000000000000   1.1e-16
+   1e-08   0.000000000000000   1.0e+00   0.500000000000000   0.0e+00
+   1e-09   0.000000000000000   1.0e+00   0.500000000000000   0.0e+00
+   1e-10   0.000000000000000   1.0e+00   0.500000000000000   0.0e+00
+diskriminan : 9999999999999996.0  akar: 99999999.99999999
+b - akar    : 1.4901161193847656e-08  ulp(b): 1.4901161193847656e-08
+akar naif   : -7.450580596923828e-09
+akar stabil : -1e-08
+\end{verbatim}
+\end{lab}
+
+Tiga baris pertama memastikan tabel di bagian awal bab bukan karangan: pola bit
+$0{,}1$, $6$, dan $-12{,}375$ keluar persis seperti hasil bongkar tangan, termasuk bit
+tanda. Baris \texttt{hex} memperlihatkan tiga belas digit heksadesimal. Baris
+\texttt{seri} adalah demonstrasi aturan genap yang paling telanjang: menambah
+setengah ulp kepada $1$ tidak mengubah apa pun, menambah satu setengah ulp memberi
+$1+2^{-51}$. Baris \texttt{0.1+0.2-0.3} mencetak
+$5{,}551115123125783\times10^{-17}$ dan menyatakannya sendiri sebagai $1{,}0$ ulp;
+baris \texttt{asosiatif} memberi dua hasil berbeda, berselisih
+$1{,}11\times10^{-16}$.
+
+Empat baris berikutnya adalah inti bab ini dalam bentuk paling ringkas: pada
+$n=10^{6}$, binary32 berurutan kehilangan $3{,}54\times10^{-2}$ sedangkan Kahan hanya
+$1{,}75\times10^{-7}$; binary64 berurutan $7{,}35\times10^{-13}$ sedangkan Kahan nol,
+bit yang sama dengan \texttt{math.fsum}. Galat $7{,}35\times10^{-13}$ itu setara
+$414$ ulp, jadi presisi ganda hanya memindahkan masalah ke skala lebih kecil.
+
+Tabel $(1-\cos x)/x^{2}$ memperlihatkan pola yang sudah dihitung di kertas. Pada
+$x=10^{-1}$ kedua cara berbeda dari acuan sekitar $5\times10^{-15}$ karena acuannya
+sendiri terpotong pada suku $x^{6}$; mulai $x=10^{-2}$ acuan itu jauh lebih akurat
+daripada mesin, dan galat rumus lugu naik dari $2{,}9\times10^{-13}$ ke $1{,}0$
+ketika $x$ turun ke $10^{-8}$, sedangkan kolom identitas bertahan pada $10^{-16}$.
+Nol pada $x=10^{-8}$ bukan pembulatan malas: $\cos(10^{-8})$ memang sama dengan $1$.
+
+Blok terakhir memeriksa akar kuadrat: diskriminan $10^{16}-4$, akar $10^{8}-2^{-26}$,
+selisih satu ulp $b$ yaitu $2^{-26}$, akar naif $-2^{-27}$, dan akar stabil $10^{-8}$
+yang dibulatkan benar. Dua baris
+terakhir berjarak $25{,}5$ persen, padahal rumusnya setara secara aljabar dan datanya
+sama persis.
+
+\begin{untukdosen}
+Urutan mengajar yang berhasil dipakai: mulai dari satu kegagalan yang bisa dihitung
+ulang, yaitu rumus kuadrat di awal bab, baru setelah itu masuk ke representasi. Bila
+representasi datang lebih dulu, mahasiswa menghafal $1/8/23$ dan $1/11/52$ tanpa tahu
+untuk apa. Setelah kegagalan itu, urutan yang bekerja adalah: banyaknya bilangan mesin
+(agar jelas bahwa pembulatan tak terhindarkan), aturan pembulatan, lemma ulp, batas
+$(1+\delta)$, lalu bilangan kondisi. Penjumlahan sebaiknya masuk setelah bilangan
+kondisi, karena batas $(n-1)u\sum|x_{i}|$ baru terbaca sebagai ``galat yang tumbuh''
+bila $\kappa$ sudah dikenal.
+
+Dua miskonsepsi khas. Pertama, mahasiswa menganggap galat pembulatan bersifat acak dan
+karena itu saling meniadakan pada penjumlahan panjang. Tabel harmonik membantahnya
+dengan keras: galatnya bergerak searah, dan pada $n=10^{6}$ ia mencapai tiga puluh
+lima ribu ulp. Kedua, mereka menganggap pengurangan selalu merusak digit, lalu
+menghindari semua pengurangan. Teorema Sterbenz menunjukkan sebaliknya: pengurangan
+dua bilangan mesin yang berdekatan justru eksak, dan yang merusak adalah galat yang
+sudah ada pada masukannya. Aturan yang perlu diulang: yang berbahaya bukan tanda
+minus, melainkan selisih kecil dari dua bilangan yang masing-masing sudah dibulatkan.
+
+Aktivitas papan tulis yang murah dan efektif: minta seluruh kelas menghitung
+$1+2^{-53}$ dan $1+3\cdot2^{-53}$ dengan aturan genap, lalu bandingkan dengan Python.
+Setelah itu, minta dua sukarelawan mengerjakan
+$(0{,}1+0{,}2)+0{,}3$ dan $0{,}1+(0{,}2+0{,}3)$ dengan menuliskan mantissa 52 bit
+sebagai pecahan. Kegaduhan biasanya muncul saat mereka menemukan bahwa keduanya benar.
+
+Tanda kesiapan lanjut: mahasiswa dapat menebak, tanpa menjalankan program, bahwa
+$\operatorname{fl}(1+10^{-16})=1$, dapat menjelaskan mengapa bentuk
+$2c/(-b-\sqrt{\Delta})$ lebih baik daripada $(-b+\sqrt{\Delta})/(2a)$, dan dapat
+memperkirakan berapa digit yang hilang dari sebuah $\kappa$ yang diberikan. Bila
+mereka menyebut kata ``galat ke belakang'' tanpa dipancing, mereka siap masuk Bab 25,
+tempat gradien jaringan dihitung dengan aturan serupa.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item $\mathbb{F}$ berhingga: $2^{p-1}$ bilangan normal per pangkat dua, jadi
+        hampir setiap bilangan real tidak punya wakil dan setiap penyimpanan berarti
+        pembulatan.
+  \item Pembulatan IEEE adalah \emph{round to nearest, ties to even}. Akibatnya
+        $\operatorname{fl}(x)=x(1+\delta)$ dengan $|\delta|\le u=2^{-p}$, yaitu
+        $1{,}11\times10^{-16}$ untuk binary64 dan $5{,}96\times10^{-8}$ untuk
+        binary32.
+  \item $\operatorname{eps}=2^{-p+1}$ adalah jarak $1$ ke bilangan sesudahnya;
+        $\operatorname{ulp}(x)=2^{e-p+1}$ untuk $2^{e}\le|x|<2^{e+1}$. Galat satu
+        pembulatan adalah setengah ulp, dan bila dinyatakan relatif ia berayun dengan
+        faktor dua.
+  \item Bilangan kondisi $\kappa_{f}=|xf'(x)|/|f(x)|$ mengukur pembesaran galat
+        masukan. Untuk pengurangan, $\kappa=(|a|+|b|)/|a-b|$, yang membesar tanpa
+        batas ketika $|a-b|$ mengecil.
+  \item Pengurangan dua bilangan mesin yang berdekatan eksak (Sterbenz). Pembatalan
+        katastrofik terjadi karena masukannya sudah membawa galat, bukan karena
+        pengurangannya.
+  \item Rumus kuadrat lugu menghitung akar kecil lewat pengurangan dua bilangan
+        berukuran $|b|$; bentuk $2c/(-b-\sqrt{\Delta})$ menghindarinya dan memberi akar
+        yang dibulatkan benar.
+  \item Penjumlahan berurutan punya galat terburuk $(n-1)u\sum|x_{i}|$ dan tidak
+        asosiatif. Kahan memindahkan galat ke variabel kompensasi sehingga faktor $n$
+        hilang dari suku utama.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Tentukan $\operatorname{ulp}$ dari $1$; $1024$; $0{,}1$; dan $3\times10^{8}$
+        dalam binary64, lalu bandingkan dengan $|x|\,u$. Berapa banyak bilangan
+        binary64 yang terletak di $[1,2)$?
+
+  \item Tunjukkan bahwa $1+2^{-53}=1$ dan $1+2^{-52}>1$ dalam binary64, lalu tentukan
+        bilangan positif terkecil $x$ dengan $1+x>1$ dalam binary32. Nyatakan
+        jawabanmu sebagai $2^{-k}$ dan bandingkan dengan tabel di bagian awal.
+
+  \item Buktikan bahwa untuk setiap $x$ normal berlaku
+        $|\operatorname{fl}(x)-x|\le\tfrac12\operatorname{ulp}(x)$, lalu jelaskan
+        mengapa ketaksamaan itu tidak dapat diganti dengan kesamaan untuk semua $x$.
+
+  \item Nilai klaim ini: \emph{karena setiap operasi IEEE-754 dibulatkan dengan benar,
+        galat relatif hasil akhir program yang hanya memakai $+,-,\times,\div$ selalu
+        paling besar beberapa $u$.} Putuskan benar, salah, atau belum cukup bukti, dan
+        sebutkan satu contoh dari bab ini yang mendukung keputusanmu.
+
+  \item Hitung dengan tangan $(0{,}1+0{,}2)+0{,}3$ dan $0{,}1+(0{,}2+0{,}3)$ sebagai
+        pecahan berpenyebut pangkat dua, lalu tunjukkan bahwa selisihnya satu ulp.
+        Periksa dengan \texttt{math.fsum} dan dengan \texttt{float.hex()}.
+        (Petunjuk: nyatakan setiap bilangan sebagai $m/2^{55}$ atau $m/2^{54}$ dan
+        hitung pembilangnya sebagai bilangan bulat.)
+
+  \item Ulangi perhitungan $(1-\cos x)/x^{2}$ untuk $x=10^{-7}$ dengan identitas sudut
+        ganda, lalu bandingkan dengan $0{,}5-x^{2}/24+x^{4}/720$. Berapa galat relatif
+        sisanya, dan dari mana asalnya?
+
+  \item Untuk $a=1$, $b=10^{4}$, $c=1$, hitung kedua akar dengan rumus lugu dan dengan
+        bentuk stabil dalam binary64. Tentukan bilangan kondisi pengurangannya, lalu
+        ramalkan berapa digit yang hilang sebelum menjalankan program. Periksa
+        ramalanmu dengan Python.
+        (Petunjuk: $\sqrt{10^{8}-4}\approx10^{4}-2\times10^{-4}$; bandingkan dengan
+        $\operatorname{ulp}(10^{4})=2^{-39}$.)
+
+  \item Buktikan bahwa penjumlahan berpasangan atas $n=2^{k}$ suku mempunyai galat
+        terburuk sebanding $ku\sum|x_{i}|$, bukan $nu\sum|x_{i}|$, dengan menguraikan
+        pohon penjumlahannya dan menghitung kedalaman pohon.
+
+  \item Misalkan $x_{i}=10^{-16}$ untuk $i=1,\dots,10^{6}$ dan $x_{0}=1$. Hitung
+        penjumlahan berurutan dan penjumlahan Kahan keduanya dengan tangan (boleh
+        dibantu kalkulator), lalu jelaskan mengapa jawaban Kahan berbeda padahal
+        setiap langkahnya juga dibulatkan.
+        (Petunjuk: pada penjumlahan berurutan, setiap suku di bawah setengah ulp
+        akumulator; pada Kahan, kompensasi $c$ menyimpan sisa itu dan menambahkannya
+        kembali pada langkah berikutnya.)
+
+  \item Sebuah program menghitung variansi dengan
+        $\frac1n\sum x_{i}^{2}-\left(\frac1n\sum x_{i}\right)^{2}$ pada data yang
+        seluruhnya sekitar $999$. Tentukan bilangan kondisi bentuk itu, ramalkan
+        berapa digit yang hilang dalam binary32, dan bandingkan dengan bentuk
+        dua-lintasan $\frac1n\sum(x_{i}-\bar{x})^{2}$. Jelaskan mengapa bentuk kedua
+        lebih baik meskipun memerlukan dua kali lintasan data.
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini adalah pernyataan-pernyataan baku dan tidak
+bergantung pada mesin tertentu: batas $\operatorname{fl}(x)=x(1+\delta)$ dengan
+$|\delta|\le u$, lemma ulp, teorema Sterbenz, batas galat penjumlahan berurutan, dan
+ketaksamaan bilangan kondisi lewat teorema nilai rata-rata. Rujukan primernya Goldberg,
+\emph{What Every Computer Scientist Should Know About Floating-Point Arithmetic}
+(ACM Computing Surveys 23(1), 1991), bagian ``Relative Error and Ulps'',
+``Cancellation'', ``Exactly Rounded Operations'', dan ``Errors in Summation''. Batas
+Kahan adalah Teorema 8 kitab itu; buktinya di lampiran, diambil dari Knuth, dan tidak
+diulang di sini. Untuk perlakuan sistematis mengenai kestabilan, rujukan lanjutannya
+Higham, \emph{Accuracy and Stability of Numerical Algorithms}, bab tentang analisis
+galat dan penjumlahan.
+
+Yang lebih sering dipopulerkan daripada dibuktikan ada tiga. Pertama, klaim bahwa
+``galat pembulatan bersifat acak dan saling meniadakan''. Itu benar hanya sebagai
+model statistik untuk pembulatan yang tak berkorelasi, dan justru gagal pada kasus
+yang paling penting: akumulasi pada penjumlahan panjang bersifat sistematis, seperti
+terlihat pada tabel harmonik. Kedua, klaim bahwa galat selalu bisa dikurangi dengan
+presisi lebih tinggi. Untuk pembatalan katastrofik, menaikkan presisi hanya
+memindahkan titik runtuh, bukan menghapusnya: dalam binary64 titik itu ada di
+$x\approx1{,}5\times10^{-8}$, dan dalam binary128 ia ada di sekitar $10^{-17}$. Ketiga,
+klaim bahwa ulp adalah satuan galat yang bebas ambiguitas. Goldberg menunjukkan bahwa
+ulp dapat didefinisikan sebagai jarak antar bilangan atau setengah jarak itu, dan
+selisih kedua definisi itu muncul sebagai faktor dua dalam setiap batas. Angka
+``$0{,}46$ ulp'' pada pembahasan akar kuadrat di bab ini memakai definisi pertama.
+
+Batas keberlakuan hasil di sini perlu dinyatakan. Seluruh analisis menganggap model
+pembulatan benar dan tidak ada \emph{fused multiply-add} yang mengubah urutan operasi,
+tidak ada pengaturan ulang oleh pengompilasi, dan tidak ada mode pembulatan selain
+\emph{to nearest}. Di perangkat nyata, vektorisasi dan instruksi FMA dapat mengubah
+hasil bit demi bit; itu bukan pelanggaran standar, tetapi membuat perbandingan antar
+mesin menjadi tidak deterministik. Analisis galat juga tidak menyentuh galat model,
+galat data, atau galat pemotongan: bab ini hanya membahas galat pembulatan.
+
+Pertanyaan terbuka yang jujur. Pertama, analisis galat klasik memberi batas terburuk,
+sedangkan yang dibutuhkan praktisi adalah perkiraan yang ketat untuk kasus khas;
+probabilistik pembulatan masih menjadi alat yang aktif diteliti dan belum menjadi
+teori yang selesai. Kedua, untuk algoritme iteratif dan penyelesaian sistem linear,
+galat pembulatan berinteraksi dengan bilangan kondisi matriks sedemikian rupa sehingga
+batas naif terlalu pesimistis; analisis ke belakang, yang menjadi gagasan utama
+Higham dan Wilkinson, memberi kerangka yang lebih tajam tetapi tidak dibahas di sini.
+Ketiga, keputusan praktis seperti ``apakah binary32 cukup'' bergantung pada distribusi
+data, dan tidak ada jawaban yang berlaku umum.
+\end{untukpeneliti}
+
+\peta{Bab ini mengikuti Goldberg, \emph{What Every Computer Scientist Should Know About
+Floating-Point Arithmetic} (ACM Computing Surveys, 1991), bagian ``Introduction'',
+``Relative Error and Ulps'', ``Cancellation'', ``Exactly Rounded Operations'',
+``Formats and Operations'', ``Special Quantities'', dan ``Errors in Summation'', dengan
+Teorema 8 untuk batas penjumlahan Kahan. Untuk sisi analisis real dari gagasan limit
+dan teorema nilai rata-rata yang dipakai pada bukti bilangan kondisi, lihat Abbott,
+\emph{Understanding Analysis}, bagian 2.2 (Limit of a Sequence), 5.3 (The Mean Value
+Theorem), dan 6.6 (Taylor Series). Contoh $0{,}1+0{,}2$, pembongkaran pola bit,
+analisis $(1-\cos x)/x^{2}$, dan seluruh angka pada tabel serta lab adalah perhitungan
+sendiri yang dijalankan dengan Python 3.14 dan NumPy 2.5 dan diverifikasi ulang dengan
+pecahan biasa serta aritmetika 50 digit. Untuk perlakuan lanjutan mengenai kestabilan
+dan galat ke belakang, rujukan yang biasa dipakai adalah Higham, \emph{Accuracy and
+Stability of Numerical Algorithms}.}

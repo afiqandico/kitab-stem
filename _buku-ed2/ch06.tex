@@ -1,0 +1,1084 @@
+\chapter{Ruang Vektor dan Subruang}
+
+Tabel berikut memuat tiga rekaman aliran jaringan; setiap baris satu rekaman, setiap kolom satu
+fitur (paket masuk, paket keluar, durasi, koneksi gagal). Kolom-kolomnya, dibaca dari atas ke
+bawah, adalah
+\[
+  \mathbf{c}_{1}=(1,2,3),\quad \mathbf{c}_{2}=(2,4,6),\quad
+  \mathbf{c}_{3}=(0,1,2),\quad \mathbf{c}_{4}=(1,3,5),
+\]
+sedangkan baris-barisnya $\mathbf{r}_{1}=(1,2,0,1)$, $\mathbf{r}_{2}=(2,4,1,3)$, dan
+$\mathbf{r}_{3}=(3,6,2,5)$.
+
+Berapa kolom yang benar-benar membawa informasi baru? Menghitung kolom tak nol memberi empat,
+dan hitungan itu keliru: kolom kedua dua kali kolom pertama, kolom keempat jumlah kolom
+pertama dan ketiga. Tabel itu hanya memuat dua arah data mandiri. Kalimat ``dapat dihitung
+ulang'' baru punya arti setelah kita dapat mengukur berapa vektor minimal yang membangunnya.
+
+Bab 1 sampai Bab 5 menyiapkan bahasa himpunan, aksioma bilangan real, lalu limit barisan dan
+deret; semuanya bekerja dengan kedekatan. Persoalan di atas tidak memuat kedekatan sama sekali:
+entrinya eksak, dan pertanyaannya murni aljabar. Himpunan mana yang tertutup terhadap kedua
+operasi, dan berapa vektor paling sedikit yang membangunnya. Satu kebiasaan dari Bab 5 tetap
+terpakai: di sini setiap kombinasi berhingga banyaknya.
+
+Ada pertanyaan kedua yang menuntut alat yang sama. Penilai linear memberi skor
+$s(\mathbf{x})=\mathbf{w}\cdot\mathbf{x}$ dengan $\mathbf{w}=(1,1,1)$. Arah
+$\boldsymbol{\delta}$ yang tidak mengubah skor memenuhi
+$\mathbf{w}\cdot\boldsymbol{\delta}=0$, yaitu sebuah bidang; setiap perturbasi terpecah
+menjadi bagian yang mengubah skor dan bagian yang tidak. Apakah pecahan itu tunggal? Ya, dan
+sifat itu bernama jumlah langsung.
+
+\begin{untukanak}
+Bayangkan sekotak cat poster berisi empat kaleng: merah, kuning, biru, dan jingga. Kita
+boleh mencampur isi kaleng dengan takaran apa pun, dan hasil campurannya boleh dipakai
+untuk mencampur lagi. Jingga bisa dibuat dari merah dan kuning. Jadi kaleng jingga tidak
+menambah satu kemampuan pun yang belum ada di kotak itu; ia hanya memakan tempat.
+
+Pertanyaan yang membuat penasaran: berapa kaleng paling sedikit yang harus tetap ada agar
+semua warna yang bisa kita buat tetap bisa kita buat? Jawabannya tidak sama dengan banyaknya
+kaleng yang tersisa setelah kita membuang satu, dan urutan membuangnya tidak boleh mengubah
+angka itu. Itu bukan kebetulan, dan membuktikannya tidak sesederhana kelihatannya.
+
+Ada pertanyaan yang lebih aneh. Misalkan dua orang mencampur dengan resep berbeda, lalu
+hasilnya sama persis. Apakah resepnya sama? Kadang ya, kadang tidak. Di bab ini kita akan tahu
+mengapa angka itu punya nama sendiri, mengapa ia tidak bergantung pada urutan membuang, dan
+mengapa dua campuran berbeda kadang menghasilkan warna yang sama.
+\end{untukanak}
+
+\section{Aksioma ruang vektor dan contohnya}
+\tingkat{dasar}
+
+Ruang vektor adalah himpunan yang anggotanya boleh dijumlahkan dan boleh diperbesar atau
+diperkecil dengan bilangan, dengan hasil yang tetap berada di dalam himpunan itu, dan dengan
+aturan hitung yang sama seperti pada pasangan bilangan biasa.
+
+\begin{definisi}[Ruang vektor]
+\index{ruang vektor}
+Himpunan tak kosong $V$ bersama operasi penjumlahan $V\times V\to V$ dan perkalian skalar
+$\mathbb{R}\times V\to V$ disebut \emph{ruang vektor atas $\mathbb{R}$} jika untuk semua
+$\mathbf{u},\mathbf{v},\mathbf{w}\in V$ dan semua $a,b\in\mathbb{R}$ berlaku:
+\begin{enumerate}
+  \item $\mathbf{u}+\mathbf{v}=\mathbf{v}+\mathbf{u}$;
+  \item $(\mathbf{u}+\mathbf{v})+\mathbf{w}=\mathbf{u}+(\mathbf{v}+\mathbf{w})$;
+  \item ada $\mathbf{0}\in V$ dengan $\mathbf{v}+\mathbf{0}=\mathbf{v}$ untuk setiap
+        $\mathbf{v}$;
+  \item ada $-\mathbf{v}\in V$ dengan $\mathbf{v}+(-\mathbf{v})=\mathbf{0}$;
+  \item $a(\mathbf{u}+\mathbf{v})=a\mathbf{u}+a\mathbf{v}$;
+  \item $(a+b)\mathbf{v}=a\mathbf{v}+b\mathbf{v}$;
+  \item $a(b\mathbf{v})=(ab)\mathbf{v}$;
+  \item $1\mathbf{v}=\mathbf{v}$.
+\end{enumerate}
+\end{definisi}
+
+Kedua operasi itu membawa syarat ketertutupan di dalam tipenya: hasilnya selalu di $V$, jadi
+definisi ini tidak memuat aksioma penutupan tersendiri. Delapan aksioma itu juga tidak saling
+bebas, dan kita tidak mengejar daftar terpendek; yang dibutuhkan akibat-akibat kecilnya,
+semuanya diturunkan tanpa melihat bentuk anggota $V$.
+
+\begin{lemma}
+Dalam sembarang ruang vektor, vektor nol tunggal, invers penjumlahan setiap vektor tunggal,
+$0\mathbf{v}=\mathbf{0}$, $(-1)\mathbf{v}=-\mathbf{v}$, dan $c\mathbf{v}=\mathbf{0}$
+mengakibatkan $c=0$ atau $\mathbf{v}=\mathbf{0}$.
+\end{lemma}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+Untuk ketunggalan nol, misalkan $\mathbf{0}$ dan $\mathbf{0}'$ keduanya netral. Maka
+$\mathbf{0}=\mathbf{0}+\mathbf{0}'=\mathbf{0}'$. Untuk ketunggalan invers, misalkan
+$\mathbf{v}+\mathbf{a}=\mathbf{0}$ dan $\mathbf{v}+\mathbf{b}=\mathbf{0}$. Maka
+\[
+  \mathbf{a}=\mathbf{a}+\mathbf{0}=\mathbf{a}+(\mathbf{v}+\mathbf{b})
+  =(\mathbf{a}+\mathbf{v})+\mathbf{b}=\mathbf{0}+\mathbf{b}=\mathbf{b}.
+\]
+Selanjutnya $0\mathbf{v}=(0+0)\mathbf{v}=0\mathbf{v}+0\mathbf{v}$. Menambahkan
+$-(0\mathbf{v})$ pada kedua ruas memberi $\mathbf{0}=0\mathbf{v}$. Dari situ
+$\mathbf{v}+(-1)\mathbf{v}=1\mathbf{v}+(-1)\mathbf{v}=(1-1)\mathbf{v}=0\mathbf{v}=\mathbf{0}$,
+jadi $(-1)\mathbf{v}$ adalah invers $\mathbf{v}$, dan karena invers tunggal,
+$(-1)\mathbf{v}=-\mathbf{v}$. Terakhir, jika $c\mathbf{v}=\mathbf{0}$ dan $c\neq 0$, maka
+\[
+  \mathbf{v}=1\mathbf{v}=(c^{-1}c)\mathbf{v}=c^{-1}(c\mathbf{v})=c^{-1}\mathbf{0}=\mathbf{0}.
+\]
+\hfill$\square$\par\medskip
+
+Empat contoh berikut cukup untuk seluruh buku ini.
+
+\emph{(i) Ruang koordinat.} $\mathbb{R}^{n}$ dengan penjumlahan dan perkalian skalar
+koordinat demi koordinat. Di sini $\mathbf{0}=(0,\dots,0)$, dan kedelapan aksioma tinggal
+sifat lapangan bilangan real yang sudah dibahas di Bab 3.
+
+\emph{(ii) Ruang matriks.} $M_{2\times3}(\mathbb{R})$, himpunan matriks $2\times3$ berentri
+real, dengan operasi pada setiap entri dan matriks nol sebagai $\mathbf{0}$. Tidak ada yang
+berubah bila $2\times3$ diganti $m\times n$.
+
+\emph{(iii) Ruang polinomial.} $P_{3}$ adalah himpunan polinomial berkoefisien real
+berderajat paling tinggi $3$ beserta polinomial nol, dengan operasi suku demi suku. Jebakan
+yang layak dicatat: polinomial berderajat \emph{tepat} $3$ tidak membentuk ruang vektor, sebab
+$x^{3}$ dan $-x^{3}+x$ berderajat tiga tetapi jumlahnya $x$ berderajat satu. Kata ``paling
+tinggi'' bukan hiasan.
+
+\emph{(iv) Ruang fungsi.} Himpunan semua fungsi $\mathbb{R}\to\mathbb{R}$, ditulis
+$\mathbb{R}^{\mathbb{R}}$, dengan $(f+g)(x)=f(x)+g(x)$ dan $(af)(x)=af(x)$. Fungsi nol adalah
+$\mathbf{0}$, dan aksioma ruang vektor diwarisi dari $\mathbb{R}$ di setiap titik $x$.
+
+Dari contoh (iv) muncul contoh yang lebih halus. Himpunan $C[0,1]$ fungsi kontinu pada
+$[0,1]$ adalah ruang vektor, karena jumlah dan kelipatan skalar fungsi kontinu tetap kontinu.
+Begitu pula barisan real yang konvergen, memakai sifat limit jumlah dari Bab 4. Keduanya
+bagian dari ruang yang lebih besar, dan bagian semacam itu kita definisikan sekarang.
+
+Kembali ke $\mathbb{R}^{2}$, tempat kedua operasi itu terlihat langsung.
+Gambar~\ref{fig:ch06-dua-operasi} memakai $\mathbf{u}=(2,1)$ dan $\mathbf{v}=(1,2)$: jumlah
+$\mathbf{u}+\mathbf{v}=(3,3)$ tercapai lewat dua urutan, dan $2\mathbf{u}$ serta
+$-\mathbf{u}$ tetap segaris dengan $\mathbf{u}$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.85,>=Stealth,font=\small]
+  \draw[->,layergrey] (-2.8,0) -- (5.0,0) node[below] {$x$};
+  \draw[->,layergrey] (0,-1.8) -- (0,4.2) node[left] {$y$};
+  \draw[dashed,layergrey] (2,1) -- (3,3);
+  \draw[dashed,layergrey] (1,2) -- (3,3);
+  \draw[->,thick,accent] (0,0) -- (2,1) node[below right] {$\mathbf{u}$};
+  \draw[->,thick,layerindigo] (0,0) -- (1,2) node[above left] {$\mathbf{v}$};
+  \draw[->,thick,layerteal] (0,0) -- (3,3) node[right] {$\mathbf{u}+\mathbf{v}$};
+  \draw[->,layerorange] (0,0) -- (4,2) node[right] {$2\mathbf{u}$};
+  \draw[->,layerbrown] (0,0) -- (-2,-1) node[left] {$-\mathbf{u}$};
+  \fill[ink] (0,0) circle (1.2pt);
+  \node[below left] at (0,0) {$\mathbf{0}$};
+\end{tikzpicture}
+\caption{Dua operasi di $\mathbb{R}^{2}$. Panah tebal menunjukkan $\mathbf{u}=(2,1)$ dan
+$\mathbf{v}=(1,2)$; garis putus-putus melengkapi jajar genjang, sehingga
+$\mathbf{u}+\mathbf{v}=(3,3)$ tercapai lewat dua urutan yang sama. Panah tipis menunjukkan
+$2\mathbf{u}=(4,2)$ dan $-\mathbf{u}=(-2,-1)$, keduanya tetap pada satu garis dengan
+$\mathbf{u}$.}
+\label{fig:ch06-dua-operasi}
+\end{figure}
+
+\kamus{ruang vektor}{vector space}{kotak pencampur: isinya boleh dijumlahkan dan diperbesar, dan hasilnya tidak pernah keluar dari kotak.}
+\begin{bacakeras}
+Delapan aksioma, dibaca seperti daftar periksa. Dua suara, bergantian; suara kedua selalu
+menjawab dengan tiga kata.
+
+Suara pertama: Tukar tempat. Suara kedua: Hasilnya sama.
+Suara pertama: Pindah kurung. Suara kedua: Hasilnya sama.
+Suara pertama: Ada vektor nol. Suara kedua: Tidak menambah apa pun.
+Suara pertama: Ada vektor lawan. Suara kedua: Kembali ke nol.
+Suara pertama: Skalar menyebar ke dua suku. Suara kedua: Kiri dan kanan sama.
+Suara pertama: Dua skalar menjumlah. Suara kedua: Satu vektor menanggung.
+Suara pertama: Dua skalar mengali. Suara kedua: Satu kali saja.
+Suara pertama: Skalar satu. Suara kedua: Diam, tidak berubah.
+
+Dua baris terakhir berbunyi hampir sama padahal berbeda: yang satu menjumlah takaran, yang
+lain mengalikan takaran. Di situlah kekeliruan hitung paling sering lahir.
+
+Ucapkan sekali lagi, pelan, sebagai satu tarikan napas: tukar tempat, pindah kurung, ada nol,
+ada lawan, menyebar, menjumlah, mengali, diam.
+\end{bacakeras}
+
+
+\section{Subruang dan uji subruang}
+\tingkat{dasar}
+
+Subruang adalah bagian dari ruang vektor yang tetap berperilaku sebagai ruang vektor walaupun
+kita hanya memakai anggota bagian itu.
+
+\begin{definisi}[Subruang]
+\index{subruang}
+Himpunan $W\subseteq V$ disebut \emph{subruang} dari $V$ jika $W$ merupakan ruang vektor
+dengan operasi yang sama seperti pada $V$.
+\end{definisi}
+
+Definisi itu menuntut delapan aksioma, dan memeriksa delapan hal setiap kali terlalu mahal.
+Enam di antaranya gratis: komutatif, asosiatif, distributif berlaku di $W$ karena berlaku di
+$V$. Yang tersisa tiga hal, dan itulah isi teorema berikut.
+
+Jika $W$ tidak kosong dan tertutup terhadap kedua operasi, maka $W$ otomatis subruang.
+
+\begin{teorema}[Uji subruang]
+\index{uji subruang}
+Misalkan $V$ ruang vektor dan $W\subseteq V$ dengan $W\neq\varnothing$. Maka $W$ subruang
+dari $V$ jika dan hanya jika $W$ tertutup terhadap penjumlahan dan perkalian skalar.
+\end{teorema}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+Jika $W$ subruang, hasil kedua operasi pada anggota $W$ harus menjadi anggota $W$, jadi
+kedua penutupan berlaku. Sebaliknya, andaikan $W$ tidak kosong dan tertutup terhadap kedua
+operasi. Ambil $\mathbf{w}\in W$. Menurut penutupan skalar, $\mathbf{0}=0\mathbf{w}\in W$,
+jadi $W$ memuat netral. Juga $-\mathbf{w}=(-1)\mathbf{w}\in W$, jadi setiap anggota $W$
+punya invers di dalam $W$. Aksioma yang tersisa berlaku karena berlaku di $V$ dan operasi
+pada $W$ hanyalah pembatasan operasi pada $V$.
+\hfill$\square$\par\medskip
+
+Dalam praktik kita memeriksa tiga hal: $\mathbf{0}\in W$ dan kedua ketertutupan. Ketiganya
+perlu; tiga contoh berikut menunjukkan bahwa kegagalan satu syarat tidak dapat ditutupi
+syarat lain.
+\begin{resep}
+\begin{enumerate}
+  \item Tulis syarat keanggotaan $W$ sebagai persamaan, bukan sebagai gambar atau nama.
+  \item Masukkan $\mathbf{v}=\mathbf{0}$ ke syarat itu. Bila gagal, berhenti: bukan subruang.
+  \item Ambil $\mathbf{u},\mathbf{v}\in W$ sembarang, periksa $\mathbf{u}+\mathbf{v}$ memakai
+        syarat yang sama, bukan memakai contoh angka.
+  \item Ambil $c\in\mathbb{R}$ sembarang dan $\mathbf{u}\in W$, periksa $c\mathbf{u}$; sertakan
+        $c<0$ dan $0<c<1$.
+\end{enumerate}
+Peringatan urutan: jangan menukar langkah 2 dengan langkah 3 dan 4. Himpunan yang tidak memuat
+$\mathbf{0}$ tidak perlu diuji ketertutupannya, tetapi berhenti setelah langkah 2 juga keliru:
+memuat $\mathbf{0}$ belum cukup, seperti ditunjukkan contoh-contoh berikut.
+\end{resep}
+
+
+\emph{Garis tak melalui titik asal.} $W=\{(x,y)\in\mathbb{R}^{2}:x+y=1\}$ tidak memuat
+$\mathbf{0}$, jadi bukan subruang; ia juga tidak tertutup terhadap penjumlahan maupun
+perkalian skalar, sebab $(1,0)+(0,1)$ dan $2(1,0)$ keduanya keluar dari $W$.
+
+\emph{Gabungan dua sumbu.} $W=\{(x,0)\}\cup\{(0,y)\}$ memuat $\mathbf{0}$ dan tertutup
+terhadap perkalian skalar, tetapi $(1,0)+(0,1)=(1,1)$ keluar dari $W$.
+
+\emph{Kuadran pertama.} $W=\{(x,y):x\ge 0,\ y\ge 0\}$ tertutup terhadap penjumlahan,
+tetapi $(-1)(1,1)=(-1,-1)$ keluar dari $W$.
+
+Ketiga contoh gagal pada syarat berbeda; Gambar~\ref{fig:ch06-garis} memperlihatkan pasangan
+paling sederhana, yaitu garis melalui titik asal dan garis yang melewatinya.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.72,>=Stealth,font=\small]
+  \draw[->,layergrey] (-1.6,0) -- (3.2,0) node[below] {$x$};
+  \draw[->,layergrey] (0,-1.6) -- (0,3.2) node[left] {$y$};
+  \draw[very thick,layerteal] (-1.4,-1.4) -- (2.8,2.8);
+  \fill[ink] (0,0) circle (1.3pt) node[below left] {$\mathbf{0}$};
+  \fill[accent] (2,2) circle (1.5pt) node[above right] {$(2,2)$};
+  \node at (0.8,-2.4) {\emph{garis melalui titik asal}};
+  \begin{scope}[xshift=7cm]
+    \draw[->,layergrey] (-1.6,0) -- (3.2,0) node[below] {$x$};
+    \draw[->,layergrey] (0,-1.6) -- (0,3.2) node[left] {$y$};
+    \draw[very thick,accent] (-0.8,1.8) -- (2.4,-1.4);
+    \fill[accent] (1,0) circle (1.5pt) node[below right] {$(1,0)$};
+    \fill[accent] (0,1) circle (1.5pt) node[above left] {$(0,1)$};
+    \draw[ink,thick] (0,0) circle (3pt);
+    \node[below left] at (0,0) {$\mathbf{0}$};
+    \node at (0.8,-2.4) {\emph{garis tanpa titik asal}};
+  \end{scope}
+\end{tikzpicture}
+\caption{Dua himpunan di $\mathbb{R}^{2}$. Kiri: $\{(x,y):y=x\}$ memuat $\mathbf{0}$ dan
+$(2,2)$, jadi tertutup terhadap kedua operasi. Kanan: $\{(x,y):x+y=1\}$ memuat $(1,0)$ dan
+$(0,1)$, tetapi titik asal ditandai lingkaran kosong karena tidak termasuk; satu titik yang
+hilang sudah cukup membatalkan subruang.}
+\label{fig:ch06-garis}
+\end{figure}
+
+
+
+Sebaliknya, dua kelas contoh berikut selalu lolos.
+
+\emph{Ruang nol.} Untuk matriks $A$ berukuran $m\times n$, himpunan
+$\{\mathbf{x}:A\mathbf{x}=\mathbf{0}\}$ adalah subruang, sebab $A\mathbf{0}=\mathbf{0}$,
+$A(\mathbf{x}+\mathbf{y})=A\mathbf{x}+A\mathbf{y}=\mathbf{0}$, dan
+$A(c\mathbf{x})=cA\mathbf{x}=\mathbf{0}$. Himpunan itu disebut ruang nol atau kernel $A$,
+ditulis $\ker A$, dan dibahas lanjut di Bab 7.
+
+\emph{Polinomial yang lenyap di satu titik.} Himpunan
+$\{p\in P_{3}:p(1)=0\}$ adalah subruang $P_{3}$, karena evaluasi di titik $1$ linear:
+$(p+q)(1)=p(1)+q(1)$ dan $(cp)(1)=c\,p(1)$.
+
+Kedua contoh itu sama-sama mempertahankan himpunan solusi persamaan homogen. Itu bukan
+kebetulan.
+\begin{tantangan}
+Contoh kuadran pertama gagal karena satu skalar negatif. Carilah himpunan
+$W\subseteq\mathbb{R}^{2}$ yang memuat $\mathbf{0}$, tertutup terhadap penjumlahan, tidak
+tertutup terhadap perkalian skalar, dan bukan gabungan dua sumbu, bukan kuadran, bukan pula
+himpunan berkoordinat bulat.
+
+Petunjuk 1: jangan mengatur arah panahnya; atur bilangan apa yang boleh muncul pada jumlah
+kedua koordinat.
+
+Petunjuk 2: minta $x+y$ bulat. Maka $(1,0)+(0,1)=(1,1)$ tetap di dalam, sedangkan
+$\tfrac{1}{2}(1,0)$ keluar.
+
+Kalau mentok, kembali ke bagian ``Subruang dan uji subruang'' dan bandingkan dengan contoh
+garis $x+y=1$; bedanya hanya pada ruas kanan persamaan.
+\end{tantangan}
+
+
+\kamus{subruang}{subspace}{lorong di dalam gedung: kita boleh berjalan bolak-balik di lorong itu, tetapi tidak pernah keluar darinya.}
+
+\begin{untukanak}
+Bayangkan dua lorong lurus di sebuah gedung yang bertemu di satu titik, seperti huruf X.
+Setiap lorong, kalau kita berjalan di dalamnya, tetap merupakan lorong: kita bisa maju,
+mundur, dan berhenti di mana saja tanpa meninggalkannya. Begitu juga kalau kita berjalan
+dua kali lebih jauh di lorong yang sama; kita masih di lorong itu.
+
+Sekarang perhatikan gabungan kedua lorong. Ambil satu langkah di lorong pertama, lalu satu
+langkah di lorong kedua. Tempat kita berhenti tidak berada di lorong mana pun. Jadi gabungan
+dua lorong bukan lorong, walaupun masing-masing lorong adalah lorong. Inilah hal yang paling
+sering dilupakan tentang kata ``tertutup'': yang diperiksa bukan anggotanya satu per satu,
+melainkan hasil mencampurnya.
+
+Pertanyaan yang membuat penasaran: kalau ada tiga lorong bertemu di satu titik, apakah
+gabungannya lorong? Kadang ya, kalau ketiganya lorong yang sama. Di bab ini kita akan tahu
+mengapa ``tertutup terhadap pencampuran'' jauh lebih kuat daripada ``memuat titik temu'', dan
+mengapa satu contoh langkah yang keluar sudah cukup membatalkan semuanya.
+\end{untukanak}
+
+\section{Kombinasi linear dan rentang}
+\tingkat{menengah}
+
+Kombinasi linear adalah hasil mencampur beberapa vektor dengan takaran tertentu. Adapun
+rentang adalah himpunan semua hasil campuran itu, untuk segala takaran yang mungkin.
+
+\begin{definisi}[Kombinasi linear dan rentang]
+\index{kombinasi linear}
+\index{rentang}
+Vektor $\mathbf{v}$ adalah \emph{kombinasi linear} dari
+$\mathbf{v}_{1},\dots,\mathbf{v}_{k}$ jika ada skalar $c_{1},\dots,c_{k}$ dengan
+$\mathbf{v}=c_{1}\mathbf{v}_{1}+\dots+c_{k}\mathbf{v}_{k}$. \emph{Rentang} himpunan
+$S\subseteq V$, ditulis $\operatorname{span}(S)$, adalah himpunan semua kombinasi linear
+berhingga anggota $S$. Untuk $S=\varnothing$ kita tetapkan
+$\operatorname{span}(S)=\{\mathbf{0}\}$.
+\end{definisi}
+
+Rentang selalu subruang, dan ia subruang terkecil yang memuat $S$. Pernyataan pertama
+mengatakan rentang layak disebut ruang; yang kedua, tidak ada ruang lain yang lebih hemat.
+
+\begin{lemma}
+Untuk setiap $S\subseteq V$, $\operatorname{span}(S)$ adalah subruang $V$, dan setiap
+subruang yang memuat $S$ juga memuat $\operatorname{span}(S)$.
+\end{lemma}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+Untuk $S=\varnothing$ pernyataan benar karena $\{\mathbf{0}\}$ subruang. Untuk $S$ tak
+kosong, ambil $\mathbf{u}=\sum a_{i}\mathbf{s}_{i}$ dan $\mathbf{v}=\sum b_{j}\mathbf{t}_{j}$
+dua kombinasi linear berhingga anggota $S$. Maka
+$\mathbf{u}+\mathbf{v}=\sum a_{i}\mathbf{s}_{i}+\sum b_{j}\mathbf{t}_{j}$ dan
+$c\mathbf{u}=\sum (ca_{i})\mathbf{s}_{i}$ juga kombinasi linear berhingga anggota $S$, jadi
+rentang tertutup terhadap kedua operasi; ia juga memuat $\mathbf{0}=0\mathbf{s}$ untuk
+sembarang $\mathbf{s}\in S$. Jika $W$ subruang dan $S\subseteq W$, maka setiap
+$\mathbf{s}\in S$ ada di $W$, dan ketertutupan $W$ memaksa setiap kombinasi linear berhingga
+anggota $S$ juga ada di $W$.
+\hfill$\square$\par\medskip
+
+Karena itu $\operatorname{span}(S)$ adalah irisan semua subruang yang memuat $S$, dan
+menambahkan vektor yang sudah di dalam rentang tidak mengubah apa pun:
+$\operatorname{span}(\operatorname{span}(S))=\operatorname{span}(S)$.
+
+Jika $\mathbf{b}$ berada di rentang kolom-kolom $A$, maka sistem $A\mathbf{x}=\mathbf{b}$
+punya solusi.
+
+\begin{proposisi}
+Misalkan $A$ matriks $m\times n$ dengan kolom $\mathbf{a}_{1},\dots,\mathbf{a}_{n}$ dan
+$\mathbf{b}\in\mathbb{R}^{m}$. Sistem $A\mathbf{x}=\mathbf{b}$ konsisten jika dan hanya jika
+$\mathbf{b}\in\operatorname{span}(\mathbf{a}_{1},\dots,\mathbf{a}_{n})$.
+\end{proposisi}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+Menulis $A\mathbf{x}=\mathbf{b}$ koordinat demi koordinat sama dengan menulis
+$x_{1}\mathbf{a}_{1}+\dots+x_{n}\mathbf{a}_{n}=\mathbf{b}$. Jadi solusi $\mathbf{x}$ ada
+tepat ketika $\mathbf{b}$ merupakan kombinasi linear kolom-kolom $A$ dengan koefisien
+$x_{1},\dots,x_{n}$.
+\hfill$\square$\par\medskip
+
+Himpunan $\operatorname{span}(\mathbf{a}_{1},\dots,\mathbf{a}_{n})$ disebut
+\emph{ruang kolom} $A$, dan ia subruang $\mathbb{R}^{m}$ menurut lemma di atas. Untuk tabel
+pembuka, ruang kolom itu dibangun empat kolom, dan dua di antaranya berlebih.
+
+Sebagai contoh kecil, di $\mathbb{R}^{3}$ tinjau $\mathbf{s}_{1}=(1,0,1)$ dan
+$\mathbf{s}_{2}=(0,1,1)$. Setiap kombinasi linear berbentuk $(a,b,a+b)$, jadi rentangnya
+bidang $z=x+y$. Vektor $(1,2,4)$ di luar bidang itu karena $4\neq 1+2$, sedangkan $(1,2,3)$
+di dalamnya dengan $a=1$, $b=2$.
+
+\begin{tangan}
+Bahan: dua pensil sama panjang dan satu meja datar. Tandai satu titik di meja dengan ujung
+jari; sebut itu titik asal.
+
+Letakkan pensil pertama dengan ekor di titik asal. Letakkan pensil kedua dengan ekor di ujung
+pensil pertama, menyiku dengan yang pertama. Sekarang geser pensil kedua tanpa memutarnya
+sampai ekornya kembali ke titik asal. Ujungnya berpindah ke tempat lain, dan tempat itu adalah
+jumlah kedua pensil: dua urutan penjumlahan berhenti di titik yang sama.
+
+Sekarang skalarnya. Balik satu pensil, arahnya menjadi negatif. Sambung dua pensil yang sama
+dari titik asal, panjangnya menjadi dua kali. Yang harus pembaca lihat: semua ujung itu tetap
+pada satu garis lurus, sejauh apa pun pensil disambung. Satu pensil hanya menutupi satu garis
+di meja; dua pensil yang tidak sejajar menutupi seluruh permukaan meja. Itu bedanya garis dan
+bidang, dan tidak ada pensil ketiga yang menambah permukaan baru.
+\end{tangan}
+
+
+
+\section{Kebebasan linear dan ketergantungan}
+\tingkat{menengah}
+
+Himpunan vektor disebut bebas linear jika tidak ada satu pun anggotanya yang dapat dicampur
+dari anggota lain. Ia bergantung linear jika ada anggota yang berlebih.
+
+\begin{definisi}[Bebas dan bergantung linear]
+\index{kebebasan linear}
+Himpunan $\{\mathbf{v}_{1},\dots,\mathbf{v}_{k}\}\subseteq V$ \emph{bebas linear} jika
+satu-satunya pilihan skalar yang memenuhi
+$c_{1}\mathbf{v}_{1}+\dots+c_{k}\mathbf{v}_{k}=\mathbf{0}$ adalah
+$c_{1}=\dots=c_{k}=0$. Jika ada pilihan lain, himpunan itu \emph{bergantung linear}.
+\end{definisi}
+
+Dua kesepakatan kecil: himpunan kosong bebas linear karena tidak ada koefisien yang perlu
+diperiksa, dan $\{\mathbf{0}\}$ bergantung linear karena $1\cdot\mathbf{0}=\mathbf{0}$
+adalah relasi nontrivial.
+
+Dalam himpunan yang bergantung linear selalu ada satu vektor yang terletak di rentang
+vektor-vektor sebelumnya.
+
+\begin{lemma}[Ketergantungan]
+Misalkan $\mathbf{v}_{1}\neq\mathbf{0}$ dan $S=\{\mathbf{v}_{1},\dots,\mathbf{v}_{k}\}$.
+Himpunan $S$ bergantung linear jika dan hanya jika ada indeks $j\ge 2$ dengan
+$\mathbf{v}_{j}\in\operatorname{span}(\mathbf{v}_{1},\dots,\mathbf{v}_{j-1})$.
+\end{lemma}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+Jika $\mathbf{v}_{j}=\sum_{i<j}c_{i}\mathbf{v}_{i}$, maka
+$\sum_{i<j}c_{i}\mathbf{v}_{i}-\mathbf{v}_{j}=\mathbf{0}$ adalah relasi nontrivial, karena
+koefisien $\mathbf{v}_{j}$ adalah $-1$; jadi $S$ bergantung. Sebaliknya, jika $S$ bergantung
+maka ada relasi nontrivial $\sum_{i=1}^{k}c_{i}\mathbf{v}_{i}=\mathbf{0}$. Pilih $j$ terbesar
+dengan $c_{j}\neq 0$. Karena $\mathbf{v}_{1}\neq\mathbf{0}$, indeks $j$ bukan $1$, jadi
+$j\ge 2$ dan
+\[
+  \mathbf{v}_{j}=-\frac{1}{c_{j}}\sum_{i<j}c_{i}\mathbf{v}_{i}
+  \in\operatorname{span}(\mathbf{v}_{1},\dots,\mathbf{v}_{j-1}).
+\]
+\hfill$\square$\par\medskip
+
+Tiga akibatnya kita pakai terus: himpunan yang memuat $\mathbf{0}$ selalu bergantung; dua
+vektor bergantung tepat ketika salah satunya kelipatan yang lain; dan setiap himpunan bagian
+dari himpunan bebas linear juga bebas linear.
+
+Sebagai contoh, tinjau $\mathbf{v}_{1}=(1,2,-1)$, $\mathbf{v}_{2}=(0,1,3)$, dan
+$\mathbf{v}_{3}=(2,5,1)$ di $\mathbb{R}^{3}$. Karena
+$2\mathbf{v}_{1}+\mathbf{v}_{2}=(2,5,1)=\mathbf{v}_{3}$, relasi
+$2\mathbf{v}_{1}+\mathbf{v}_{2}-\mathbf{v}_{3}=\mathbf{0}$ nontrivial dan ketiganya
+bergantung. Tidak satu pun vektor itu nol, dan tidak ada dua yang berkelipatan; ketergantungan
+baru muncul pada tiga vektor.
+
+Gambar~\ref{fig:ch06-bidang} menaruh keduanya berdampingan: rentang dua vektor sebagai
+bidang, dan tiga vektor yang salah satunya sudah di rentang dua lainnya.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.8,>=Stealth,font=\small]
+  \begin{scope}[x={(1cm,0cm)}, y={(0.40cm,0.28cm)}, z={(0cm,1cm)}]
+    \fill[layerteal!10] (0,0,0) -- (2.4,0,2.4) -- (2.4,1.8,4.2) -- (0,1.8,2.4) -- cycle;
+    \draw[layerteal] (0,0,0) -- (2.4,0,2.4) -- (2.4,1.8,4.2) -- (0,1.8,2.4) -- cycle;
+    \draw[->,layergrey] (0,0,0) -- (3.0,0,0) node[below] {$x$};
+    \draw[->,layergrey] (0,0,0) -- (0,2.2,0) node[right] {$y$};
+    \draw[->,layergrey] (0,0,0) -- (0,0,2.6) node[left] {$z$};
+    \draw[->,thick,accent] (0,0,0) -- (1,0,1)
+      node[above left,font=\scriptsize,inner sep=1pt] {$\mathbf{s}_{1}$};
+    \draw[->,thick,layerindigo] (0,0,0) -- (0,1,1)
+      node[right,font=\scriptsize,inner sep=1pt] {$\mathbf{s}_{2}$};
+    \fill[layerjade] (1,2,3) circle (1.6pt);
+    \node[right,font=\scriptsize] at (1,2,3) {$(1,2,3)$};
+    \draw[ink] (1,2,4) circle (2pt);
+    \node[right,font=\scriptsize] at (1,2,4) {$(1,2,4)$};
+  \end{scope}
+  \begin{scope}[xshift=6.4cm]
+    \draw[->,layergrey] (-0.4,0) -- (3.2,0) node[below] {$x$};
+    \draw[->,layergrey] (0,-0.4) -- (0,2.6) node[left] {$y$};
+    \draw[dashed,layergrey] (0,0) -- (2,1);
+    \draw[dashed,layergrey] (2,1) -- (2.4,2);
+    \draw[->,thick,accent] (0,0) -- (1,0.5) node[below right] {$\mathbf{v}_{1}$};
+    \draw[->,thick,layerindigo] (0,0) -- (0.4,1) node[above left] {$\mathbf{v}_{2}$};
+    \draw[->,very thick,layerorange] (0,0) -- (2.4,2) node[right] {$\mathbf{v}_{3}$};
+    \fill[ink] (0,0) circle (1.2pt);
+  \end{scope}
+\end{tikzpicture}
+\caption{Kiri: $\operatorname{span}\{(1,0,1),(0,1,1)\}$ adalah bidang $z=x+y$; titik
+$(1,2,3)$ berada di dalamnya, titik $(1,2,4)$ di luarnya. Kanan: sketsa dua dimensi dari
+$\mathbf{v}_{1}=(1,2,-1)$ dan $\mathbf{v}_{2}=(0,1,3)$ dengan
+$\mathbf{v}_{3}=2\mathbf{v}_{1}+\mathbf{v}_{2}=(2,5,1)$; garis putus-putus menunjukkan
+$2\mathbf{v}_{1}$ ditambah $\mathbf{v}_{2}$ mendarat tepat di ujung $\mathbf{v}_{3}$, sehingga
+ketiganya bergantung.}
+\label{fig:ch06-bidang}
+\end{figure}
+
+
+
+Di $\mathbb{R}^{2}$ setiap tiga vektor selalu bergantung, tanpa perlu menghitung apa pun.
+
+\begin{proposisi}
+Setiap himpunan tiga vektor di $\mathbb{R}^{2}$ bergantung linear.
+\end{proposisi}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+Misalkan $S=\{\mathbf{u},\mathbf{v},\mathbf{w}\}\subseteq\mathbb{R}^{2}$. Jika dua di
+antaranya berkelipatan, $S$ bergantung. Jika tidak, $\mathbf{u}$ dan $\mathbf{v}$ bebas
+linear. Ambil $\mathbf{w}=(w_{1},w_{2})$ dan cari $a,b$ dengan
+$a\mathbf{u}+b\mathbf{v}=\mathbf{w}$. Menuliskan komponennya memberi dua persamaan linear
+dalam $a$ dan $b$, dan karena $\mathbf{u}$, $\mathbf{v}$ tidak berkelipatan, sistem itu punya
+solusi tunggal. Jadi $\mathbf{w}\in\operatorname{span}(\mathbf{u},\mathbf{v})$.
+\hfill$\square$\par\medskip
+
+Di $\mathbb{R}^{3}$ pernyataan serupa berlaku untuk empat vektor, tetapi cara di atas akan
+menjadi pengecekan kasus yang panjang; kita butuh argumen seragam.
+
+Untuk memeriksa kebebasan secara hitung, susun vektor sebagai kolom matriks lalu selesaikan
+$A\mathbf{c}=\mathbf{0}$; himpunan bebas linear tepat ketika sistem itu hanya punya solusi
+trivial. Determinan memberi jalan pintas di $\mathbb{R}^{3}$, tetapi alat itu baru dibangun di
+Bab 8.
+
+\section{Basis dan dimensi}
+\tingkat{lanjut}
+
+Basis adalah daftar vektor yang cukup untuk membangun seluruh ruang dan tidak memuat satu pun
+vektor berlebih. Kata ``cukup'' dan ``tidak berlebih'' persis dua syarat yang sudah kita punya.
+
+\begin{definisi}[Basis dan dimensi]
+\index{basis}
+Himpunan $B\subseteq V$ disebut \emph{basis} dari $V$ jika $B$ bebas linear dan
+$\operatorname{span}(B)=V$. Jika $V$ mempunyai basis berhingga, $V$ disebut
+\emph{berdimensi hingga}; jika tidak, $V$ berdimensi tak hingga.
+\end{definisi}
+
+Definisi dimensi belum bisa ditulis, karena ia bergantung pada satu kenyataan yang belum
+dibuktikan: dua basis dari ruang yang sama selalu berukuran sama.
+
+Langkah pertama: penulisan dalam basis selalu tunggal.
+
+\begin{lemma}[Ketunggalan koordinat]
+Jika $B=\{\mathbf{b}_{1},\dots,\mathbf{b}_{n}\}$ basis $V$, maka setiap $\mathbf{v}\in V$
+dapat ditulis secara tunggal sebagai $\mathbf{v}=a_{1}\mathbf{b}_{1}+\dots+a_{n}\mathbf{b}_{n}$.
+\end{lemma}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+Keberadaan penulisan datang dari $\operatorname{span}(B)=V$. Andaikan ada dua penulisan
+dengan koefisien $a_{i}$ dan $a_{i}'$. Pengurangan keduanya memberi
+$\sum_{i}(a_{i}-a_{i}')\mathbf{b}_{i}=\mathbf{0}$. Karena $B$ bebas linear, semua koefisien
+selisih itu nol, jadi $a_{i}=a_{i}'$ untuk setiap $i$.
+\hfill$\square$\par\medskip
+
+Angka $a_{1},\dots,a_{n}$ disebut koordinat $\mathbf{v}$ terhadap $B$; pertukaran basis
+adalah pokok bahasan Bab 7, dan di sini kita hanya memerlukan ketunggalannya.
+
+Langkah kedua: satu vektor dapat ditukar dengan vektor lain tanpa merusak sifat merentang.
+Menukar satu vektor dalam himpunan merentang dengan kombinasi yang memuatnya tidak mengurangi
+apa yang dapat dibangun.
+
+\begin{lemma}[Penukaran]
+\index{lemma penukaran}
+Misalkan $\mathbf{u}=\sum_{\mathbf{s}\in S}a_{\mathbf{s}}\mathbf{s}$ jumlah berhingga dengan
+$a_{\mathbf{s}_{0}}\neq 0$ untuk suatu $\mathbf{s}_{0}\in S$. Jika $S\cup\{\mathbf{u}\}$
+merentang $V$, maka $(S\setminus\{\mathbf{s}_{0}\})\cup\{\mathbf{u}\}$ juga merentang $V$.
+\end{lemma}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+Dari relasi itu,
+$\mathbf{s}_{0}=a_{\mathbf{s}_{0}}^{-1}\bigl(\mathbf{u}-\sum_{\mathbf{s}\neq\mathbf{s}_{0}}a_{\mathbf{s}}\mathbf{s}\bigr)$,
+jadi $\mathbf{s}_{0}$ adalah kombinasi linear anggota himpunan kecil
+$T=(S\setminus\{\mathbf{s}_{0}\})\cup\{\mathbf{u}\}$. Setiap anggota $S\cup\{\mathbf{u}\}$
+karena itu berada di $\operatorname{span}(T)$, sehingga
+$\operatorname{span}(S\cup\{\mathbf{u}\})\subseteq\operatorname{span}(T)$. Arah sebaliknya
+jelas karena $T\subseteq S\cup\{\mathbf{u}\}$. Jadi kedua rentang sama dengan $V$.
+\hfill$\square$\par\medskip
+
+Langkah ketiga adalah inti bab ini.
+
+Jika ruang dapat dibangun oleh $n$ vektor, maka mustahil menemukan $n+1$ vektor yang bebas
+linear di dalamnya.
+
+\begin{teorema}[Pertukaran]
+\index{teorema pertukaran}
+Jika $V$ direntang oleh $n$ vektor dan $\mathbf{w}_{1},\dots,\mathbf{w}_{m}$ bebas linear di
+$V$, maka $m\le n$.
+\end{teorema}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+Misalkan $S_{0}=\{\mathbf{v}_{1},\dots,\mathbf{v}_{n}\}$ merentang $V$. Untuk $j=1$:
+$\mathbf{w}_{1}\neq\mathbf{0}$ adalah kombinasi linear anggota $S_{0}$ dengan sekurangnya
+satu koefisien tak nol, sehingga lemma penukaran memberi $T_{1}\subseteq S_{0}$ berukuran
+$n-1$ dengan $\{\mathbf{w}_{1}\}\cup T_{1}$ merentang.
+
+Andaikan $\{\mathbf{w}_{1},\dots,\mathbf{w}_{j}\}\cup T_{j}$ merentang dengan
+$|T_{j}|=n-j$. Vektor $\mathbf{w}_{j+1}$ adalah kombinasi linear himpunan itu. Jika semua
+koefisien pada $T_{j}$ nol, maka $\mathbf{w}_{j+1}$ menjadi kombinasi linear
+$\mathbf{w}_{1},\dots,\mathbf{w}_{j}$, yang mustahil karena himpunan itu bebas linear. Jadi
+ada anggota $T_{j}$ berkoefisien tak nol, dan lemma penukaran memberi $T_{j+1}$ berukuran
+$n-j-1$ yang tetap merentang bersama $\mathbf{w}_{1},\dots,\mathbf{w}_{j+1}$.
+
+Setelah $m$ langkah kita memperoleh himpunan merentang berukuran $n-m$; ukuran himpunan tidak
+boleh negatif, jadi $m\le n$.
+\hfill$\square$\par\medskip
+
+Sekarang ukuran sebuah ruang dapat ditulis: banyaknya vektor dalam daftar paling hematnya,
+dan angka itu tidak bergantung pada daftar yang dipilih.
+
+Dua basis dari ruang berdimensi hingga selalu sama banyak.
+
+\begin{akibat}
+Jika $V$ berdimensi hingga dengan basis $B_{1}$ berukuran $n$ dan basis $B_{2}$ berukuran
+$m$, maka $n=m$.
+\end{akibat}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+$B_{1}$ merentang dan $B_{2}$ bebas linear, jadi teorema pertukaran memberi $m\le n$.
+Sebaliknya $B_{2}$ merentang dan $B_{1}$ bebas linear, sehingga $n\le m$.
+\hfill$\square$\par\medskip
+
+Banyaknya vektor dalam daftar paling hemat itu cukup penting untuk diberi nama sendiri.
+
+\begin{definisi}[Dimensi]
+\index{dimensi}
+Untuk $V$ berdimensi hingga, $\dim V$ adalah banyaknya anggota sembarang basis $V$. Ruang
+nol $\{\mathbf{0}\}$ ditetapkan berdimensi $0$.
+\end{definisi}
+
+Ukuran subruang tidak pernah melebihi ukuran ruangnya; daftar yang panjangnya pas dengan
+dimensi langsung menjadi basis; dan daftar yang bebas linear selalu bisa dilengkapi sampai
+penuh.
+
+\begin{akibat}
+Misalkan $\dim V=n$. (a) Setiap himpunan $n$ vektor yang bebas linear adalah basis.
+(b) Setiap himpunan $n$ vektor yang merentang adalah basis. (c) Setiap himpunan bebas linear
+dapat diperluas menjadi basis. (d) Jika $U$ subruang $V$, maka $\dim U\le\dim V$, dan
+kesamaan berlaku hanya bila $U=V$.
+\end{akibat}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+Untuk (a), himpunan bebas linear berukuran $n$ yang tidak merentang dapat ditambah satu
+vektor di luar rentangnya, dan hasilnya tetap bebas linear; jadi ada $n+1$ vektor bebas
+linear, dan teorema pertukaran melawannya. Untuk (b), himpunan merentang berukuran $n$ yang
+bergantung dapat kehilangan satu vektor lewat lemma ketergantungan dan tetap merentang dengan
+$n-1$ vektor; lagi-lagi bertentangan dengan pertukaran. Untuk (c), tambahkan vektor di luar
+rentang selama masih ada; proses berhenti setelah paling banyak $n$ langkah, dan saat berhenti
+rentangnya sudah seluruh $V$. Untuk (d), basis $U$ adalah himpunan bebas linear di $V$, jadi
+ukurannya paling banyak $n$; bila ukurannya $n$, bagian (a) membuatnya basis $V$, sehingga
+$U=V$.
+\hfill$\square$\par\medskip
+
+Dengan demikian $\dim\mathbb{R}^{n}=n$, $\dim P_{n}=n+1$ dengan basis $1,x,\dots,x^{n}$,
+$\dim M_{m\times n}(\mathbb{R})=mn$ dengan basis matriks yang tepat satu entrinya $1$, dan
+$\dim\{\mathbf{0}\}=0$. Untuk ruang fungsi seperti $\mathbb{R}^{\mathbb{R}}$ tidak ada basis
+berhingga; buktinya memerlukan aksioma pilihan dan di luar cakupan buku ini.
+
+\kamus{basis}{basis}{daftar kaleng cat paling hemat: cukup untuk membuat semua warna, dan tidak ada satu kaleng pun yang bisa dibuang.}
+
+\kamus{dimensi}{dimension}{banyaknya kaleng dalam daftar paling hemat itu; angkanya milik ruang, bukan milik daftar yang kebetulan kita pilih.}
+
+\section{Jumlah langsung dan subruang komplemen}
+\tingkat{lanjut}
+
+Jumlah dua subruang adalah himpunan semua hasil menambah satu anggota dari masing-masing
+subruang.
+
+\begin{definisi}[Jumlah subruang]
+\index{jumlah subruang}
+Untuk subruang $U,W\subseteq V$, \emph{jumlah} $U+W$ adalah
+$\{\mathbf{u}+\mathbf{w}:\mathbf{u}\in U,\ \mathbf{w}\in W\}$.
+\end{definisi}
+
+Ia berbeda dari gabungan, yang hampir selalu bukan subruang seperti contoh dua sumbu.
+
+Jumlahnya sendiri sebuah subruang, dan tidak ada subruang lain yang lebih kecil yang
+memuat keduanya.
+
+\begin{proposisi}
+Untuk subruang $U,W\subseteq V$, himpunan $U+W$ adalah subruang $V$, dan ia termuat di
+setiap subruang yang memuat $U\cup W$.
+\end{proposisi}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+Himpunan $U+W$ memuat $\mathbf{0}=\mathbf{0}+\mathbf{0}$. Jika
+$\mathbf{u}_{1}+\mathbf{w}_{1}$ dan $\mathbf{u}_{2}+\mathbf{w}_{2}$ dua anggotanya, jumlahnya
+$(\mathbf{u}_{1}+\mathbf{u}_{2})+(\mathbf{w}_{1}+\mathbf{w}_{2})$ dengan suku pertama di $U$
+dan kedua di $W$, dan $c(\mathbf{u}_{1}+\mathbf{w}_{1})=c\mathbf{u}_{1}+c\mathbf{w}_{1}$ juga
+demikian; jadi $U+W$ subruang. Jika $Z$ subruang memuat $U$ dan $W$, maka $Z$ memuat setiap
+$\mathbf{u}+\mathbf{w}$ karena tertutup terhadap penjumlahan, jadi $U+W\subseteq Z$.
+\hfill$\square$\par\medskip
+
+Ukuran jumlah bukan jumlah ukuran, karena bagian yang beririsan terhitung dua kali.
+
+$\dim(U+W)$ sama dengan $\dim U$ ditambah $\dim W$ dikurangi dimensi irisan.
+
+\begin{teorema}[Dimensi jumlah]
+\index{dimensi jumlah}
+Jika $U$ dan $W$ subruang ruang berdimensi hingga $V$, maka
+\[
+  \dim(U+W)=\dim U+\dim W-\dim(U\cap W).
+\]
+\end{teorema}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+Irisan $U\cap W$ subruang, jadi berdimensi hingga. Ambil basis
+$\{\mathbf{z}_{1},\dots,\mathbf{z}_{m}\}$ dari $U\cap W$. Karena bebas linear di $U$,
+himpunan itu diperluas menjadi basis $U$ dengan menambahkan $\mathbf{u}_{1},\dots,
+\mathbf{u}_{j}$, sehingga $\dim U=m+j$; dengan cara sama, menambahkan
+$\mathbf{w}_{1},\dots,\mathbf{w}_{k}$ menghasilkan basis $W$, sehingga $\dim W=m+k$.
+
+Klaim: $\{\mathbf{z}_{1},\dots,\mathbf{z}_{m},\mathbf{u}_{1},\dots,\mathbf{u}_{j},
+\mathbf{w}_{1},\dots,\mathbf{w}_{k}\}$ basis $U+W$. Himpunan itu memuat basis $U$ dan basis
+$W$, jadi rentangnya memuat $U+W$; arah sebaliknya jelas. Untuk kebebasan, andaikan
+\[
+  \sum_{i}a_{i}\mathbf{z}_{i}+\sum_{r}b_{r}\mathbf{u}_{r}
+  +\sum_{s}c_{s}\mathbf{w}_{s}=\mathbf{0}.
+\]
+Maka $\sum_{s}c_{s}\mathbf{w}_{s}=-\sum_{i}a_{i}\mathbf{z}_{i}-\sum_{r}b_{r}\mathbf{u}_{r}$
+berada di $U$ sekaligus di $W$; jadi ia anggota $U\cap W$ dan dapat ditulis
+$\sum_{i}d_{i}\mathbf{z}_{i}$. Maka $\sum_{s}c_{s}\mathbf{w}_{s}-\sum_{i}d_{i}\mathbf{z}_{i}
+=\mathbf{0}$ adalah relasi linear dalam basis $W$, sehingga semua $c_{s}$ dan $d_{i}$ nol;
+persamaan awal menyusut menjadi relasi linear dalam basis $U$, sehingga $a_{i}$ dan $b_{r}$
+juga nol.
+
+Jadi $\dim(U+W)=m+j+k=(m+j)+(m+k)-m=\dim U+\dim W-\dim(U\cap W)$.
+\hfill$\square$\par\medskip
+
+Sekarang pertanyaan kedua pembuka bab: kapan penguraian menjadi dua suku itu tunggal?
+
+Jumlah $U+W$ disebut \emph{jumlah langsung}, ditulis $U\oplus W$, jika setiap anggota
+$U+W$ dapat ditulis sebagai $\mathbf{u}+\mathbf{w}$ dengan cara tepat satu.
+
+\begin{definisi}[Jumlah langsung]
+\index{jumlah langsung}
+Jika setiap $\mathbf{x}\in U+W$ memiliki tepat satu penulisan
+$\mathbf{x}=\mathbf{u}+\mathbf{w}$ dengan $\mathbf{u}\in U$ dan $\mathbf{w}\in W$, maka
+$U+W$ disebut jumlah langsung dan ditulis $U\oplus W$.
+\end{definisi}
+
+Ketunggalan seluruh penulisan dapat diperiksa hanya dengan melihat penulisan nol.
+
+$U+W$ jumlah langsung tepat ketika $U\cap W=\{\mathbf{0}\}$.
+
+\begin{teorema}[Kriteria jumlah langsung]
+Misalkan $U$ dan $W$ subruang $V$. Maka $U+W=U\oplus W$ jika dan hanya jika
+$U\cap W=\{\mathbf{0}\}$.
+\end{teorema}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+Andaikan $U+W$ jumlah langsung dan ambil $\mathbf{x}\in U\cap W$. Maka
+$\mathbf{0}=\mathbf{x}+(-\mathbf{x})$ dengan $\mathbf{x}\in U$ dan $-\mathbf{x}\in W$, dan
+juga $\mathbf{0}=\mathbf{0}+\mathbf{0}$. Ketunggalan memberi $\mathbf{x}=\mathbf{0}$.
+
+Sebaliknya andaikan $U\cap W=\{\mathbf{0}\}$. Ambil $\mathbf{x}\in U+W$ dengan dua penulisan
+$\mathbf{x}=\mathbf{u}_{1}+\mathbf{w}_{1}=\mathbf{u}_{2}+\mathbf{w}_{2}$. Maka
+$\mathbf{u}_{1}-\mathbf{u}_{2}=\mathbf{w}_{2}-\mathbf{w}_{1}$ berada di $U$ dan di $W$,
+jadi sama dengan $\mathbf{0}$. Akibatnya $\mathbf{u}_{1}=\mathbf{u}_{2}$ dan
+$\mathbf{w}_{1}=\mathbf{w}_{2}$.
+\hfill$\square$\par\medskip
+
+Bagi dua subruang kriteria itu cukup. Bagi tiga subruang atau lebih, memeriksa irisan
+berpasangan tidak cukup, dan contoh berikut menunjukkan mengapa.
+
+Di $\mathbb{R}^{3}$ ambil $V_{1}=\operatorname{span}\{(1,0,0)\}$,
+$V_{2}=\operatorname{span}\{(0,1,0)\}$, dan $V_{3}=\operatorname{span}\{(1,1,0)\}$. Setiap
+irisan berpasangan hanya memuat $\mathbf{0}$, tetapi $V_{1}+V_{2}+V_{3}$ bukan jumlah
+langsung: $(1,1,0)$ dapat ditulis $(1,0,0)+(0,1,0)+\mathbf{0}$ dan juga
+$\mathbf{0}+\mathbf{0}+(1,1,0)$. Nol pun punya dua penulisan, yaitu
+$\mathbf{0}+\mathbf{0}+\mathbf{0}$ dan $(1,0,0)+(0,1,0)+(-1,-1,0)$.
+
+Untuk banyak suku, kriterianya kembali ke definisi: $\mathbf{0}=\mathbf{v}_{1}+\dots+
+\mathbf{v}_{k}$ dengan $\mathbf{v}_{i}\in V_{i}$ hanya mungkin bila semua $\mathbf{v}_{i}$
+nol.
+
+Terakhir, setiap subruang dapat dipasangkan dengan subruang lain sehingga keduanya
+menguraikan seluruh ruang.
+
+\begin{teorema}[Komplemen]
+\index{komplemen}
+Jika $V$ berdimensi hingga dan $U$ subruang $V$, maka ada subruang $W\subseteq V$ dengan
+$V=U\oplus W$. Dalam hal itu $\dim V=\dim U+\dim W$.
+\end{teorema}
+
+\par\medskip\noindent\textbf{Bukti.}\ 
+Jika $U=\{\mathbf{0}\}$, ambil $W=V$. Jika tidak, ambil basis
+$\{\mathbf{u}_{1},\dots,\mathbf{u}_{m}\}$ dari $U$ dan perluas menjadi basis
+$\{\mathbf{u}_{1},\dots,\mathbf{u}_{m},\mathbf{w}_{1},\dots,\mathbf{w}_{k}\}$ dari $V$;
+perluasan ini dimungkinkan oleh akibat (c) di bagian sebelumnya. Tetapkan
+$W=\operatorname{span}\{\mathbf{w}_{1},\dots,\mathbf{w}_{k}\}$.
+
+Setiap $\mathbf{x}\in V$ adalah kombinasi linear seluruh basis, dan memisahkan suku
+$\mathbf{u}$ dari suku $\mathbf{w}$ menunjukkannya sebagai anggota $U+W$. Untuk irisan, ambil
+$\mathbf{x}\in U\cap W$. Maka
+$\mathbf{x}=\sum a_{i}\mathbf{u}_{i}=\sum b_{s}\mathbf{w}_{s}$, sehingga
+$\sum a_{i}\mathbf{u}_{i}-\sum b_{s}\mathbf{w}_{s}=\mathbf{0}$. Ini relasi linear dalam basis
+$V$, jadi semua koefisiennya nol, khususnya $\mathbf{x}=\mathbf{0}$. Menurut kriteria di
+atas, $V=U\oplus W$, dan dari teorema dimensi jumlah,
+$\dim V=\dim U+\dim W$.
+
+Komplemen itu tidak tunggal. Di $\mathbb{R}^{2}$ dengan $U$ sumbu-$x$, setiap garis melalui
+titik asal selain sumbu-$x$ adalah komplemen $U$; yang tunggal bukan pilihannya, melainkan
+dimensinya. Di Bab 10, komplemen ortogonal membuat penguraian itu sekaligus terpendek.
+
+Sekarang pertanyaan pembuka dapat dijawab. Untuk $\mathbf{w}=(1,1,1)$, misalkan
+$U=\{\boldsymbol{\delta}:\mathbf{w}\cdot\boldsymbol{\delta}=0\}$ dan
+$W=\operatorname{span}\{\mathbf{w}\}$. Irisannya hanya $\{\mathbf{0}\}$, sebab
+$\mathbf{w}\cdot(t\mathbf{w})=3t$ yang nol hanya bila $t=0$; dengan $\dim U=2$ dan
+$\dim W=1$ kita peroleh $U\oplus W=\mathbb{R}^{3}$. Setiap perturbasi terpecah tunggal menjadi
+bagian yang tidak mengubah skor, yaitu anggota $U$, dan bagian yang mengubahnya, anggota $W$.
+
+\kamus{jumlah langsung}{direct sum}{dua lorong yang hanya bertemu di titik asal, sehingga setiap tempat di gedung dapat dicapai dengan satu jalan yang tidak bisa diperselisihkan.}
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Empat hitungan berikut memakai seluruh isi bab; semuanya diperiksa ulang dengan Python di
+bagian lab.
+
+\subsection*{(a) Rank dan basis ruang kolom}
+
+Kembali ke tabel pembuka. Eliminasi baris: $R_{2}\leftarrow R_{2}-2R_{1}$ mengubah baris
+kedua menjadi $(0,0,1,1)$, dan $R_{3}\leftarrow R_{3}-3R_{1}$ mengubah baris ketiga menjadi
+$(0,0,2,2)$. Lalu $R_{3}\leftarrow R_{3}-2R_{2}$ menghabisi baris ketiga, sehingga tersisa
+$\mathbf{r}_{1}=(1,2,0,1)$ dan $(0,0,1,1)$.
+
+Bentuk itu sudah eselon tereduksi, dengan kolom pivot $1$ dan $3$. Jadi
+$\operatorname{rank}A=2$ dan ruang kolomnya berdimensi $2$ dengan basis
+$\{\mathbf{c}_{1},\mathbf{c}_{3}\}=\{(1,2,3),(0,1,2)\}$.
+
+Pemeriksaan langsung terhadap kolom yang dibuang:
+\[
+  \mathbf{c}_{2}=(2,4,6)=2\mathbf{c}_{1},
+  \qquad
+  \mathbf{c}_{4}=(1,3,5)=\mathbf{c}_{1}+\mathbf{c}_{3}.
+\]
+Keduanya eksak, tanpa pembulatan. Inilah jawaban ``dua'' untuk pertanyaan pembuka: kolom pivot
+memberi himpunan bebas linear yang merentang ruang kolom, dan kolom tanpa pivot adalah
+kombinasi kolom pivot di kirinya.
+
+Ruang nol $A$ juga terbaca dari bentuk tereduksi. Dari $x_{1}+2x_{2}+x_{4}=0$ dan
+$x_{3}+x_{4}=0$ kita peroleh $x_{1}=-2x_{2}-x_{4}$ dan $x_{3}=-x_{4}$, sehingga
+\[
+  \mathbf{x}=x_{2}\,(-2,1,0,0)+x_{4}\,(-1,0,-1,1),
+\]
+ditulis sebagai vektor baris agar ringkas. Jadi $\dim\ker A=2$, dan
+$\operatorname{rank}A+\dim\ker A=2+2=4$ sama dengan banyak kolom; pernyataan umumnya adalah
+rank-nullity, dibuktikan di Bab 7.
+
+\subsection*{(b) Tiga vektor yang bergantung}
+
+Tinjau $\mathbf{v}_{1}=(1,2,-1)$, $\mathbf{v}_{2}=(0,1,3)$, $\mathbf{v}_{3}=(2,5,1)$ sebagai
+kolom $V$. Ekspansi kofaktor sepanjang baris pertama:
+\[
+  \det V=1(1\cdot1-3\cdot5)+0+2\bigl(2\cdot3-1\cdot(-1)\bigr)=(1-15)+2(6+1)=0.
+\]
+Determinan nol berarti kolomnya bergantung; relasinya ditebak lalu diperiksa:
+$2\mathbf{v}_{1}+\mathbf{v}_{2}=(2,5,1)=\mathbf{v}_{3}$, jadi
+$2\mathbf{v}_{1}+\mathbf{v}_{2}-\mathbf{v}_{3}=\mathbf{0}$ dan $\operatorname{rank}V=2$.
+
+\subsection*{(c) Dimensi ruang polinomial}
+
+$\dim P_{3}=4$, karena $\{1,x,x^{2},x^{3}\}$ basis. Himpunan
+$B=\{1,\ 1+x,\ 1+x+x^{2},\ 1+x+x^{2}+x^{3}\}$ juga basis: matriks koordinatnya terhadap
+basis standar berbentuk segitiga atas dengan diagonal $1$, jadi $B$ bebas linear, dan karena
+jumlahnya $4=\dim P_{3}$, akibat (a) membuatnya basis.
+
+Koordinat $p=2-x+3x^{3}$ terhadap $B$ dihitung dari derajat tertinggi ke bawah: $a_{4}=3$,
+lalu $a_{3}+a_{4}=0$ memberi $a_{3}=-3$, $a_{2}+a_{3}+a_{4}=-1$ memberi $a_{2}=-1$, dan
+konstanta memberi $a_{1}=3$. Jadi $p=3-(1+x)-3(1+x+x^{2})+3(1+x+x^{2}+x^{3})$, yang bila
+diuraikan memberi $2-x+3x^{3}$.
+
+\subsection*{(d) Penguraian jumlah langsung}
+
+Ambil $U=\{(x,y,z):x+y+z=0\}$ dan $W=\operatorname{span}\{(1,1,1)\}$ di $\mathbb{R}^{3}$.
+Basis $U$ adalah $\{(1,-1,0),(1,0,-1)\}$, jadi $\dim U=2$; dengan $\dim W=1$ dan
+$U\cap W=\{\mathbf{0}\}$ kita peroleh $\mathbb{R}^{3}=U\oplus W$.
+
+Uraikan $\mathbf{v}=(3,0,1)$ sebagai $\mathbf{u}+t(1,1,1)$. Syarat jumlah koordinat
+$\mathbf{u}$ nol memberi $3+0+1-3t=0$, jadi $t=4/3$. Maka
+\[
+  \mathbf{v}=\underbrace{\Bigl(\tfrac53,-\tfrac43,-\tfrac13\Bigr)}_{\in U}
+  +\underbrace{\Bigl(\tfrac43,\tfrac43,\tfrac43\Bigr)}_{\in W},
+\]
+dan $\tfrac53-\tfrac43-\tfrac13=0$ memastikan suku pertama memang di $U$. Menurut teorema
+kriteria, tidak ada penguraian lain.
+
+\kertas{Ulangi (a) tanpa melihat: kerjakan eliminasi pada $A$, tandai kolom pivot, lalu
+tuliskan $\mathbf{c}_{2}$ dan $\mathbf{c}_{4}$ sebagai kombinasi $\mathbf{c}_{1}$ dan
+$\mathbf{c}_{3}$. Kemudian hitung $\dim\ker A$ dari bentuk tereduksi dan periksa bahwa
+jumlahnya dengan rank sama dengan banyak kolom. Terakhir, untuk matriks $V$ pada (b),
+gantilah entri $(3,1)$ menjadi $0$ dan tentukan apakah kolomnya masih bergantung.}
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+Kode berikut dijalankan apa adanya dengan numpy. Fungsi \texttt{rref} ditulis sendiri supaya
+kolom pivot terlihat; baris terakhirnya membersihkan sisa pembulatan dan tanda nol negatif.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+np.set_printoptions(precision=3, suppress=True)
+
+def rref(M):
+    M = M.astype(float).copy()
+    r = 0
+    for c in range(M.shape[1]):
+        i = np.argmax(np.abs(M[r:, c])) + r
+        if abs(M[i, c]) < 1e-12:
+            continue
+        M[[r, i]] = M[[i, r]]
+        M[r] = M[r] / M[r, c]
+        for j in range(M.shape[0]):
+            if j != r:
+                M[j] = M[j] - M[j, c] * M[r]
+        r = r + 1
+        if r == M.shape[0]:
+            break
+    M[np.abs(M) < 1e-12] = 0.0
+    return M
+
+A = np.array([[1, 2, 0, 1],
+              [2, 4, 1, 3],
+              [3, 6, 2, 5]], float)
+print("RREF(A):"); print(rref(A))
+print("rank(A) =", np.linalg.matrix_rank(A))
+print("k2-2k1 =", A[:, 1] - 2 * A[:, 0])
+print("k4-k1-k3 =", A[:, 3] - A[:, 0] - A[:, 2])
+
+V = np.array([[1, 0, 2],
+              [2, 1, 5],
+              [-1, 3, 1]], float)
+print("det(V) =", np.linalg.det(V))
+print("2v1+v2-v3 =", 2 * V[:, 0] + V[:, 1] - V[:, 2])
+
+x = np.array([0., 1, 2, 3])
+M = np.vander(x, 4, increasing=True)
+print("det(M) =", np.linalg.det(M))
+print("rank(M) =", np.linalg.matrix_rank(M))
+
+B = np.array([[1, 1, 1, 1],
+              [0, 1, 1, 1],
+              [0, 0, 1, 1],
+              [0, 0, 0, 1]], float)
+p = np.array([2, -1, 0, 3], float)
+k = np.linalg.solve(B, p)
+print("koordinat p =", k)
+print("sisa =", B @ k - p)
+\end{verbatim}
+\end{lab}
+
+Keluaran yang tercetak:
+\begin{verbatim}
+RREF(A):
+[[1. 2. 0. 1.]
+ [0. 0. 1. 1.]
+ [0. 0. 0. 0.]]
+rank(A) = 2
+k2-2k1 = [0. 0. 0.]
+k4-k1-k3 = [0. 0. 0.]
+det(V) = 0.0
+2v1+v2-v3 = [0. 0. 0.]
+det(M) = 12.0
+rank(M) = 4
+koordinat p = [ 3. -1. -3.  3.]
+sisa = [0. 0. 0. 0.]
+\end{verbatim}
+
+Empat hal terbaca dari keluaran itu. Kolom pivot $1$ dan $3$ serta
+$\operatorname{rank}A=2$ cocok dengan hitungan tangan. Selisih
+$\mathbf{c}_{2}-2\mathbf{c}_{1}$ dan $\mathbf{c}_{4}-\mathbf{c}_{1}-\mathbf{c}_{3}$ nol
+eksak; pada data nyata selisih itu kecil tetapi tak nol, dan di situlah batas penerapan rank
+secara numerik. $\det V=0$ menegaskan ketergantungan di (b), dan matriks Vandermonde titik $0,1,2,3$
+berdeterminan $12$ serta berank $4$. Koordinat $p$ tercetak $(3,-1,-3,3)$, cocok dengan
+hitungan tangan.
+
+\begin{untukdosen}
+Mulai dari tabel pembuka, bukan dari aksioma: minta mahasiswa menebak berapa kolom yang
+mandiri, lalu tunjukkan bahwa tebakan ``empat'' salah. Aksioma masuk setelah itu, sebagai
+jawaban atas kebutuhan. Uji subruang dan rentang pada pertemuan kedua, kebebasan linear dan
+basis pada pertemuan ketiga, jumlah langsung pada pertemuan keempat.
+
+Dua miskonsepsi khas. Pertama, memeriksa subruang hanya dengan ``apakah memuat nol'' lalu
+berhenti; kuadran pertama memuat nol dan tertutup terhadap penjumlahan, tetapi gagal pada
+kelipatan negatif. Kedua, menganggap basis berarti basis standar, sehingga $(5,7)$ dan
+$(4,3)$ dianggap bukan basis $\mathbb{R}^{2}$; tekankan bahwa basis adalah sifat himpunan.
+
+Aktivitas kelas: setiap kelompok menulis tiga vektor di $\mathbb{R}^{3}$ dan memutuskan bebas
+atau bergantung lewat eliminasi; kelompok lain mengubah satu entri dan meminta keputusan
+ulang. Mahasiswa siap lanjut bila dapat menjelaskan mengapa tiga vektor di $\mathbb{R}^{2}$
+selalu bergantung.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Ruang vektor: himpunan dengan penjumlahan dan perkalian skalar yang memenuhi delapan
+        aksioma; anggotanya boleh vektor, matriks, polinomial, atau fungsi.
+  \item Subruang cukup diperiksa dengan tiga hal: memuat $\mathbf{0}$ dan tertutup terhadap
+        kedua operasi.
+  \item $\operatorname{span}(S)$ adalah subruang terkecil yang memuat $S$; $\mathbf{b}$ di
+        rentang kolom $A$ tepat ketika $A\mathbf{x}=\mathbf{b}$ konsisten.
+  \item Bergantung linear: satu anggota berada di rentang anggota sebelumnya; tiga vektor di
+        $\mathbb{R}^{2}$ selalu bergantung.
+  \item Teorema pertukaran menutup $n+1$ vektor bebas linear di ruang berrentang $n$ vektor,
+        sehingga semua basis sama ukuran dan $\dim V$ terdefinisi.
+  \item $\dim(U+W)=\dim U+\dim W-\dim(U\cap W)$; $U+W$ langsung tepat ketika
+        $U\cap W=\{\mathbf{0}\}$; setiap subruang berdimensi hingga punya komplemen.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{dasar}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Tentukan apakah $W=\{(x,y,z)\in\mathbb{R}^{3}:x-2y+z=0\ \text{dan}\ x+y=0\}$
+        subruang $\mathbb{R}^{3}$. Bila ya, tentukan basis dan dimensinya.
+  \item Buktikan bahwa himpunan semua matriks $2\times2$ yang entri diagonal utamanya nol
+        adalah subruang $M_{2\times2}(\mathbb{R})$, lalu tentukan basis dan dimensinya.
+  \item Tunjukkan bahwa $S=\{1+x,\ 1+x^{2},\ 2+x+x^{2}\}$ bergantung linear di $P_{2}$.
+        Tentukan $\dim\operatorname{span}(S)$, lalu perluas himpunan bagian bebas linear
+        terbesar dari $S$ menjadi basis $P_{2}$.
+  \item Buktikan: jika $\{\mathbf{v}_{1},\mathbf{v}_{2},\mathbf{v}_{3}\}$ bebas linear di
+        $V$, maka $\{\mathbf{v}_{1}+\mathbf{v}_{2},\ \mathbf{v}_{2}+\mathbf{v}_{3},\
+        \mathbf{v}_{3}+\mathbf{v}_{1}\}$ juga bebas linear.
+  \item Hitung $\dim(U\cap W)$ dan $\dim(U+W)$ untuk dua subruang
+        \begin{align*}
+          U &= \operatorname{span}\{(1,0,0),(0,1,0)\}, \\
+          W &= \operatorname{span}\{(1,1,0),(0,0,1)\}
+        \end{align*}
+        di $\mathbb{R}^{3}$. Periksa rumus dimensi jumlah, lalu hitung juga dengan numpy.
+  \item Untuk matriks $3\times4$ dengan baris $(1,2,3,4)$, $(2,4,6,9)$, dan $(0,1,1,1)$,
+        tentukan rank, satu basis ruang kolom, dan satu basis ruang nol.
+        Periksa dengan fungsi \texttt{matrix\_rank} dari numpy dan
+        \texttt{null\_space} dari scipy.
+  \item Nilai klaim ini: \emph{jika $U_{1},U_{2},U_{3}$ subruang $V$ dan setiap irisan
+        berpasangan sama dengan $\{\mathbf{0}\}$, maka
+        $U_{1}+U_{2}+U_{3}=U_{1}\oplus U_{2}\oplus U_{3}$.} Nyatakan benar, salah, atau
+        belum cukup bukti, dan sertakan alasan atau contoh penyangkal.
+  \item Buktikan bahwa jika $\dim V=n$ dan $U$ subruang dengan $\dim U=n-1$, maka ada
+        vektor $\mathbf{v}\in V$ sehingga $V=U\oplus\operatorname{span}\{\mathbf{v}\}$.
+  \item Tentukan dimensi ruang semua polinomial berderajat paling tinggi $4$ yang lenyap di
+        $x=0$ dan $x=1$ sekaligus, lalu berikan satu basisnya. Periksa jawabanmu dengan
+        menghitung rank matriks evaluasi berukuran $2\times5$ di dua titik itu.
+  \item Diketahui $B=\{1,\ 1+x,\ 1+x+x^{2},\ 1+x+x^{2}+x^{3}\}$ basis $P_{3}$. Tentukan
+        koordinat $q=4+2x-5x^{2}+x^{3}$ terhadap $B$, lalu periksa dengan menyelesaikan
+        sistem linear di numpy.
+\end{enumerate}
+
+\noindent\textbf{Petunjuk tiga butir tersulit.} Butir 4: andaikan
+$\sum c_{i}(\dots)=\mathbf{0}$, kumpulkan koefisien setiap $\mathbf{v}_{i}$, lalu pakai
+kebebasan $\{\mathbf{v}_{1},\mathbf{v}_{2},\mathbf{v}_{3}\}$. Butir 8: ambil basis $U$,
+perluas dengan satu vektor, lalu pakai akibat (d). Butir 9: polinomial berderajat paling
+tinggi $4$ yang lenyap di $0$ dan $1$ habis dibagi $x(x-1)$; hitung parameter bebasnya.
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang benar-benar terbukti di bab ini ada tiga, dan ketiganya berlaku atas medan apa pun:
+ketunggalan ukuran basis lewat teorema pertukaran (hasil Steinitz), rumus
+$\dim(U+W)=\dim U+\dim W-\dim(U\cap W)$, dan keberadaan komplemen bagi setiap subruang
+berdimensi hingga. Klaim populer bahwa ``rank sama dengan banyaknya fitur informatif'' hanya
+bermakna bila ``informatif'' berarti bebas linear, dan pada data nyata syarat itu tidak pernah
+terpenuhi secara eksak.
+
+Sumber primer: Anton, \emph{Elementary Linear Algebra} edisi ke-11, Bab 4 bagian 4.1--4.5;
+Axler, \emph{Linear Algebra Done Right} edisi ke-4, bagian 1B, 1C, 2A--2C; Hoffman dan Kunze,
+\emph{Linear Algebra} edisi ke-2, Bab 2.
+
+Pertanyaan terbuka: seberapa jauh $\dim(U\cap W)$ bergeser akibat perturbasi entri? Batas
+keberlakuan: semua hasil mengandaikan aksioma ruang vektor; untuk ruang berdimensi tak hingga,
+keberadaan basis memerlukan lemma Zorn. Rank yang dihitung komputer bergantung pada ambang.
+\end{untukpeneliti}
+
+\peta{Bab ini mengikuti Anton, \emph{Elementary Linear Algebra} edisi ke-11, Bab 4 (General
+Vector Spaces) bagian 4.1 (Real Vector Spaces) untuk aksioma dan contoh, 4.2 (Subspaces) untuk
+uji subruang dan rentang, 4.3 (Linear Independence) untuk kebebasan dan lemma ketergantungan,
+serta 4.5 (Dimension) untuk teorema pertukaran dan akibatnya; pada edisi lain penomorannya
+berbeda. Padanan yang lebih abstrak ada di Axler, \emph{Linear Algebra Done Right} edisi
+ke-4, Bab 1 bagian 1B dan 1C (termasuk jumlah dan jumlah langsung subruang) serta Bab 2
+bagian 2A, 2B, dan 2C, tempat teorema pertukaran muncul sebagai perbandingan panjang daftar
+bebas linear dengan daftar merentang. Pembahasan koordinat, transformasi linear, dan
+rank-nullity tidak ada di bab ini melainkan di Bab 7.}

@@ -1,0 +1,1229 @@
+\chapter{Floating-Point Arithmetic and Error Analysis}
+
+A program solves $x^{2}+10^{8}x+1=0$ with the quadratic formula we have used since
+school, $x=(-b\pm\sqrt{b^{2}-4ac})/(2a)$. For $a=1$, $b=10^{8}$, $c=1$ it reports
+the roots $-10^{8}$ and $-7.450580596923828\times10^{-9}$. The first root is correct
+to the last digit. The second is wrong by a quarter: the true value is $-10^{-8}$, and
+its relative error is $0.255$. The formula is not mistyped. Neither is
+the machine broken. The coefficients are exact, the discriminant is exact, and the
+subtraction is even exact according to the theorem we shall prove below.
+
+What collapses is the algebraic form. The numbers $b=10^{8}$ and $\sqrt{b^{2}-4ac}$
+differ by only one ulp, that is one smallest step the machine can still tell apart at
+that scale: the difference is $1.49\times10^{-8}$, or $1.5\times10^{-16}$ times the
+size of the numbers themselves. A difference that small means nothing as long as we
+regard numbers of size $10^{8}$. As soon as the two are subtracted, the result has
+size $10^{-8}$ and that difference becomes the whole answer: what remains is error,
+not a number.
+
+Chapters 4 and 5 build limits, continuity, and derivatives over $\mathbb{R}$ whose
+every point is exact. Chapter 20 uses the variance formula and the square root under
+the same assumption. A computer does not work in $\mathbb{R}$. It works in a finite
+set of numbers that has rules of its own: every operation is rounded, addition is not
+associative, and two algebraically equivalent routes can give answers far apart. This
+chapter builds a way of reading those rules, of measuring the damage before the program
+runs, and of choosing a form of the formula that does not collapse.
+
+\begin{untukanak}
+Imagine a digital kitchen scale whose display holds only five digits. We weigh a sack
+of rice together with its container, then weigh the empty container, then subtract the
+two numbers to get the weight of the rice. If container and rice each weigh about
+twenty kilograms, the display can only show numbers to the nearest tens of grams. The
+difference of two large numbers that are nearly equal is correct as arithmetic, but its
+last digits no longer mean anything. Rice that actually weighs eight hundred grams can
+show up as seven hundred grams, or even as an absurd number.
+
+There is a second, subtler problem. The same scale cannot weigh a single grain of rice:
+the needle does not move at all. If we pour in a million grains one at a time, not one
+of them is recorded, even though a million grains have weight. A calculating machine
+works in exactly that way: some numbers are too small to change anything, and some
+subtractions throw away almost every digit.
+
+The question: if the machine is like that, how can we know when an answer can still be
+trusted? In this chapter we shall learn why that error is not a random event but
+something whose bound can be computed before a single line of the program runs.
+\end{untukanak}
+
+\section{Numbers without a representative}
+\tingkat{basic}
+
+Between $0$ and $1$ there are infinitely many real numbers. Inside a computer, all
+numbers are stored in 32 or 64 bits, so only finitely many are available. The
+compromise adopted from the first machines down to the IEEE-754 standard is binary
+scientific notation with fixed field widths: one sign, one exponent, one mantissa.
+
+\kamus{floating-point system}{sistem floating-point}{Binary scientific notation with a
+fixed number of digits, like writing $1.01\times2^{7}$ in limited room.}
+
+\begin{definisi}[Floating-point number system]
+Let $\beta=2$ be the base, $p$ the precision, and $e_{\min}\le e\le e_{\max}$ the
+exponent bounds. A normal number is
+\[
+  x=\pm\left(1.d_{1}d_{2}\dots d_{p-1}\right)_{2}\times2^{e},
+\]
+with $d_{i}\in\{0,1\}$. Subnormal numbers use $e=e_{\min}$ with leading digit
+$0$.\index{subnormal}\index{floating-point arithmetic} We call the set of all
+representable numbers, together with zero, the two infinities, and NaN,
+$\mathbb{F}$.
+\end{definisi}
+
+The leading digit is always $1$ for a normal number, so that digit is not stored;
+that is why the mantissa field has $p-1$ bits. One bit saved doubles the precision:
+23 stored bits give 24 significant
+bits.
+
+
+
+\begin{teorema}[Number of machine numbers]
+For every exponent $e$, the number of normal numbers in the interval
+$\left[2^{e},2^{e+1}\right)$ is $2^{p-1}$. The set $\mathbb{F}$ is finite, hence
+countable.
+\end{teorema}
+
+\begin{proof}
+On that interval every number has the form $M\cdot2^{e-p+1}$ with $M$ an integer
+and $2^{p-1}\le M<2^{p}$. The number of such $M$ is exactly $2^{p}$, minus
+$2^{p-1}$, that is $2^{p-1}$. There are finitely many allowed exponents, so
+$\mathbb{F}$ is a finite union of finite sets.
+\end{proof}
+
+For binary64, $2^{p-1}=2^{52}=4\,503\,599\,627\,370\,496$. That is a lot, but Chapter 2
+already showed that $\mathbb{R}$ is uncountable. So almost every real number has no
+representative: representation always means rounding, and rounding always means
+error. The question is not whether there is error, but how large it is and where it
+goes.
+
+\begin{bacakeras}
+Two voices, read alternately with a friend. Tap the table every time the word ``piece''
+is said.
+
+``One divided by three, how much?'' ``Zero point three three three, on and on, without
+end.'' ``Does the machine write it out whole?'' ``No. It stops where there is room.''
+``So what is stored?'' ``A piece. Not the value, the piece.''
+``And if the pieces are added?'' ``What grows is the pieces, not the value.''
+``And if the pieces are subtracted?'' ``The leading digits are used up, dust is what
+remains.''
+
+Repeat the three middle lines, faster and faster, with the same tapping: a piece is not
+the value, a piece is not the value, a piece is not the value.
+
+The second voice closes quietly: the machine does not lie, it only cuts. We are the ones
+who go wrong if we read the piece as the value.
+
+The line the reader must repeat, once, in a clear voice: a computer stores pieces, not
+values, so every computed result must be checked, not trusted.
+\end{bacakeras}
+
+The IEEE-754 standard fixes two widths that are used everywhere. This table contains all
+the numbers; nothing needs memorizing except $p$ and the bias.
+
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+ & binary32 & binary64 \\
+\hline
+sign / exponent / mantissa bits & $1/8/23$ & $1/11/52$ \\
+precision $p$ & $24$ & $53$ \\
+exponent bias & $127$ & $1023$ \\
+$e_{\min},\ e_{\max}$ & $-126,\ 127$ & $-1022,\ 1023$ \\
+$\mathrm{eps}=2^{-p+1}$ & $1.1920929\times10^{-7}$ & $2.2204460\times10^{-16}$ \\
+$u=2^{-p}$ & $5.9604645\times10^{-8}$ & $1.1102230\times10^{-16}$ \\
+smallest normal & $1.1754944\times10^{-38}$ & $2.2250739\times10^{-308}$ \\
+smallest subnormal & $1.4012985\times10^{-45}$ & $4.9406565\times10^{-324}$ \\
+largest & $3.4028235\times10^{38}$ & $1.7976931\times10^{308}$ \\
+\hline
+\end{tabular}
+\end{center}
+
+Exponents are stored with a bias so that no separate sign is needed: a stored value of
+$123$ means an actual exponent of $123-127=-4$. This trick makes the bit patterns from
+zero up to positive infinity increase monotonically, so that two positive numbers can be
+compared as integers.
+
+Let us take apart three bit patterns that Python actually produces. In binary32,
+$0.1$ prints as \texttt{0 01111011 10011001100110011001101} with
+$e=123-127=-4$; $6$ becomes \texttt{0 10000001 10000000000000000000000}, that is
+$1.5\times2^{2}$; and $-12.375$ becomes
+\texttt{1 10000010 10001100000000000000000}, that is $-1.546875\times2^{3}$.
+Two boundary cases complete the picture:
+
+\begin{center}
+\begin{tabular}{ll}
+\hline
+smallest subnormal & \texttt{0 00000000 00000000000000000000001} \\
+largest & \texttt{0 11111110 11111111111111111111111} \\
+\hline
+\end{tabular}
+\end{center}
+
+The first has the value $2^{-149}$: all its exponent bits are zero and only the last
+mantissa bit is on. The second has the value $3.4028235\times10^{38}$, with stored
+exponent $254$ and a full mantissa.
+
+A more readable form for binary64 is provided by \texttt{float.hex()}. Here is the result for several numbers:
+
+\begin{center}
+\begin{tabular}{ll}
+\hline
+$0.1$ & \texttt{0x1.999999999999ap-4} \\
+$6.0$ & \texttt{0x1.8000000000000p+2} \\
+$10^{-8}$ & \texttt{0x1.5798ee2308c3ap-27} \\
+$5\times10^{-324}$ & \texttt{0x0.0000000000001p-1022} \\
+\hline
+\end{tabular}
+\end{center}
+
+That form shows three things. The digits after the hexadecimal point are always
+thirteen, and $13\times4=52$, the width of the binary64 mantissa. The last digit of
+$0.1$ is \texttt{a}, that is $1010$, a rounding up from the repeating pattern
+$1001$. The last row has a zero before the point: the mark of a subnormal number.
+
+Special values complete this system: $\pm\infty$ for results beyond
+$e_{\max}$, signed zero, subnormal numbers below $2^{e_{\min}}$, and NaN
+(\emph{not a number}) for indeterminate forms such as $0/0$. One property of NaN
+deserves remembering because it often surprises: it is not equal to itself, so that
+the comparison \texttt{x == x} is false precisely when $x$ is NaN.\index{NaN}
+
+\section{The only bridge: rounding}
+\tingkat{basic}
+
+No operation other than rounding connects $\mathbb{R}$ with $\mathbb{F}$. That is why
+the whole of error analysis rests on one question: how far is the nearest machine number
+from the original number, and how does that distance scale.
+
+IEEE-754 lays down the rule \emph{round to nearest, ties to even}: choose the nearest
+machine number, and if two candidates are equally far, choose the one whose last
+mantissa digit is even. The second rule is no theoretical luxury. Without that rule,
+rounding at a tie point always leans one way, and the error of a million operations
+piles up in the same direction instead of canceling out.
+
+Tie points really do occur, and we can create one deliberately. In
+binary64, the distance between $1$ and the number after it is $2^{-52}$. Hence
+$1+2^{-53}$ falls exactly halfway, and the even rule chooses $1$ because its mantissa
+ends in zero. Python gives
+
+\begin{center}
+\texttt{1 + 2.0**-53 = 1.0}, whereas \texttt{1 + 3*2.0**-53 = 1.0000000000000004}.
+\end{center}
+
+The first case rounds down, the second up, although both are exactly halfway. Only the
+parity of the last digit distinguishes them. This is why
+$1+10^{-16}=1$ in binary64: not because $10^{-16}$ is ignored carelessly,
+but because there is no room to store it.
+
+\kamus{machine epsilon}{epsilon mesin}{The distance between $1$ and the next machine
+number: the size of one step at scale one.}\index{machine epsilon}
+
+Two numbers are often confused, and the confusion changes an error bound by a factor of
+two. The machine epsilon $\mathrm{eps}=2^{-p+1}$ is the distance between $1$ and the
+number after it, namely $2^{-52}$ for binary64. The unit roundoff
+$u=2^{-p}=2^{-53}$ is half that distance, and only $u$ appears in error
+bounds. Python calls the first \texttt{numpy.finfo(float).eps}; the second we must
+compute ourselves.
+
+The distance between numbers is not uniform. Near $1$ it is $2^{-52}$, near
+$10^{10}$ it is $1.9\times10^{-6}$. What is uniform is that distance relative
+to the size of the number, and that is the content of the following lemma.
+
+\begin{lemma}[Ulp]
+If $2^{e}\le|x|<2^{e+1}$, then the distance between $x$ and the next machine number is
+$\operatorname{ulp}(x)=2^{e-p+1}$.
+\end{lemma}
+
+\begin{proof}
+On that interval all normal numbers have the form $M\cdot2^{e-p+1}$ with $M$ an integer
+and $2^{p-1}\le M<2^{p}$; the number of such $M$ is $2^{p-1}$ and the gap between two
+consecutive $M$ is one unit $2^{e-p+1}$. The next interval uses $e+1$ so that the gap
+doubles, and that is the only point where the density changes.
+\end{proof}
+
+\kamus{ulp}{unit in the last place}{The smallest step the machine can tell apart at the
+scale of a number.}\index{ulp}
+
+The lemma explains two things at once.
+$\operatorname{ulp}(1)=2^{-52}=2.220446049250313\times10^{-16}$, whereas
+$\operatorname{ulp}(10^{10})=2^{-52}\cdot2^{33}\approx1.9\times10^{-6}$. So
+adding $1$ to $10^{16}$ changes nothing in binary64, because
+$\operatorname{ulp}(10^{16})=2$: there really is no machine number between the two.
+
+Figure~\ref{fig:titikmesin} shows the consequence of that lemma over the first four
+octaves: each octave holds $2^{23}$ points, but its width doubles, so that the
+distance between points doubles as well.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=2.1cm,y=1cm,every node/.style={font=\footnotesize}]
+  \draw[ink,thick,->] (-0.55,0) -- (4.30,0);
+  \draw[ink,thick,fill=white] (-0.42,0) circle (1.7pt);
+  \draw[ink,thick] (-0.48,-0.09) -- (-0.36,0.09);
+  \foreach \x in {0,0.125,...,0.875} {\draw[ink] (\x,0.055) -- (\x,-0.055);}
+  \foreach \x in {1,1.25,...,1.875} {\draw[ink] (\x,0.055) -- (\x,-0.055);}
+  \foreach \x in {2,2.5,...,3.0} {\draw[ink] (\x,0.055) -- (\x,-0.055);}
+  \foreach \x in {3,4} {\draw[ink] (\x,0.055) -- (\x,-0.055);}
+  \foreach \x/\lab in {0/{$2^{0}$},1/{$2^{1}$},2/{$2^{2}$},3/{$2^{3}$},4/{$2^{4}$}} {
+    \draw[ink,thick] (\x,0.14) -- (\x,-0.14);
+    \node[below=1pt] at (\x,-0.14) {\lab};
+  }
+  \draw[{Latex}-{Latex},accent] (0.125,-0.62) -- (0.25,-0.62) node[midway,below] {$d$};
+  \draw[{Latex}-{Latex},accent] (1.25,-0.62) -- (1.50,-0.62) node[midway,below] {$2d$};
+  \draw[{Latex}-{Latex},accent] (2.50,-0.62) -- (3.00,-0.62) node[midway,below] {$4d$};
+  \draw[{Latex}-{Latex},accent] (3.00,-0.62) -- (4.00,-0.62) node[midway,below] {$8d$};
+  \node[align=center,text width=3.0cm] at (1.95,0.92)
+    {each octave holds $2^{23}$ points, twice the width of the one before};
+  \node[align=center,text width=3.0cm] at (0.40,-1.32)
+    {leftward toward zero: the gaps shrink};
+\end{tikzpicture}
+\caption{The first four octaves of binary32 machine numbers. Each octave holds $2^{23}$
+points, but its width is twice that of the octave before, so the spacing between points
+doubles: $d=2^{-23}$ on $[1,2)$, $2d$ on $[2,4)$, $4d$ on $[4,8)$, and $8d$ on
+$[8,16)$. The tail does not hold fewer points, only sparser ones; toward zero the
+spacing shrinks down to the subnormal limit.}
+\label{fig:titikmesin}
+\end{figure}
+
+There is one subtlety worth naming before we use the ulp as a unit of error. The largest
+rounding error is half an ulp, but expressed as a relative error that figure is not one
+number but an interval. For $x$ exactly equal to a power of two, half an ulp is
+$2^{-53}$ relative; for $x$ that nearly reaches the next power of two, the value
+approaches $2^{-54}$. So the relative error of one rounding can swing by a factor of
+two. Goldberg named that swing \emph{wobble}, and that is why the bound $u$ is always
+used as a worst case, not as a typical value.
+
+\begin{teorema}[Relative rounding error]
+For every $x\in\mathbb{R}$ in the normal range, correct rounding satisfies
+$\operatorname{fl}(x)=x(1+\delta)$ with $|\delta|\le u=2^{-p}$.
+\end{teorema}
+
+\begin{proof}
+Take $2^{e}\le|x|<2^{e+1}$. The nearest machine number is at most half an
+ulp away, that is $2^{e-p}$, so that
+$|\operatorname{fl}(x)-x|\le2^{e-p}=u\cdot2^{e}\le u|x|$. Dividing by $|x|$
+gives $|\delta|\le u$, and the sign of $\delta$ follows the direction of rounding.
+\end{proof}
+
+The form $x(1+\delta)$ is the beginning of everything: it turns the question ``how
+wrong'' into ``how many factors $(1+\delta)$ pile up''. The operations
+$+,-,\times,\div,\sqrt{\phantom{x}}$ in IEEE-754 are required to return the correctly
+rounded exact result, so every operation contributes one such factor
+and no more. This guarantee is what makes error analysis possible.
+\section{Error, condition number, and cancellation}
+\tingkat{intermediate}
+
+Now we have a unit. What we do not yet have is a measure of how much the error of a
+computation exceeds the error of its input. Two problems can both receive input that is
+wrong by $10^{-16}$ and come out with an answer that is wrong by $10^{-16}$ or by
+$10^{-1}$, depending on the problem itself.
+
+\kamus{condition number}{bilangan kondisi}{The multiplier showing how many times a
+computation amplifies the error of its input.}\index{condition number}
+
+\begin{definisi}[Absolute, relative, and backward error]
+Let $\tilde{x}$ be an approximation to $x$. Its absolute error is $|\tilde{x}-x|$, its
+relative error is $|\tilde{x}-x|/|x|$ for $x\neq0$. If $\tilde{x}$ is the exact answer
+to a problem with data $x+\Delta x$, then $\|\Delta x\|/\|x\|$ is called the backward
+error, and an algorithm that always gives a small backward error is called
+\emph{backward stable}.\index{relative error}\index{backward stable}
+\end{definisi}
+
+The last distinction is the most useful in practice. A backward stable algorithm may be
+badly wrong, provided its answer is right for a slightly different problem: the error
+belongs to the problem. A large backward error is the mistake of the person writing the
+code.
+
+For a function of one variable, that amplification is computed directly with the
+derivative: the condition number is the slope of the function at that point, multiplied
+by the size of the point, divided by the size of its value.
+
+\begin{teorema}[Condition number]
+Let $f$ be differentiable on an interval containing $x$ and $f(x)\neq0$. If
+$\tilde{x}=x(1+\delta)$ with $|\delta|\le u$, then
+\[
+  \frac{|f(\tilde{x})-f(x)|}{|f(x)|}\;\le\;\kappa_{f}(x)\,u+O(u^{2}),
+  \qquad \kappa_{f}(x)=\frac{|x\,f'(x)|}{|f(x)|}.
+\]
+\end{teorema}
+
+\begin{proof}
+By the mean value theorem there is $\xi$ between $x$ and $\tilde{x}$ with
+$f(\tilde{x})-f(x)=f'(\xi)(\tilde{x}-x)$. Since $|\tilde{x}-x|\le u|x|$ and $f'$ is
+continuous at $x$, we have $|f'(\xi)|=|f'(x)|+O(u)$. Hence
+$|f(\tilde{x})-f(x)|\le u|x|\,|f'(x)|+O(u^{2}|x|)$. Dividing by $|f(x)|$ gives the
+claimed inequality.
+\end{proof}
+
+The number $\kappa_{f}$ does not depend on the machine, only on the problem. For
+$f(x)=\sqrt{x}$ it is $1/2$: a square root never makes the relative error worse.
+For $f(x)=\log x$ it is $1/|\log x|$, which is large when $x$ is near $1$ because
+there $\log x$ is almost zero. For $f(x)=x-c$ with $c$ a large constant, it is
+$|x|/|x-c|$, which grows without bound as $x$ approaches $c$. That last pattern is
+what becomes the source of the whole trouble in this chapter.
+
+Subtracting two numbers that are close together is the most dangerous operation in
+machine arithmetic, and the danger is often blamed on the wrong thing. A common
+misunderstanding runs: subtraction loses digits, so the operation of subtraction is
+itself inaccurate. The truth is subtler and more reassuring: when the two numbers are
+close together, the subtraction is in fact exact.
+
+\begin{teorema}[Sterbenz]
+If $a,b\in\mathbb{F}$ and $b/2\le a\le2b$ with $b>0$, then $a-b$ is represented exactly
+in $\mathbb{F}$.
+\end{teorema}
+
+\begin{proof}
+Let $2^{e}\le b<2^{e+1}$. Every machine number on that interval is an integer multiple of
+$2^{e-p+1}$, so $a$ is as well, and hence $a-b$ is a multiple of $2^{e-p+1}$. From
+$b/2\le a\le2b$ we get $0\le a-b\le b/2<2^{e}$. A multiple of $2^{e-p+1}$ that
+lies in $[0,2^{e})$ has the form $M\cdot2^{e-p+1}$ with $0\le M<2^{p}$, and
+all of them are represented with $p$ digits. Hence the result is exact.
+\end{proof}
+
+So when the result of a subtraction looks bad, what is bad is the input. The digits that
+``disappear'' had already disappeared before the subtraction was carried out: $a$ and $b$
+are each known only to relative error $u$, and an absolute error of size $u|a|$ does not
+shrink along with the result when the two numbers cancel each other. Only the size of the
+result shrinks, so that the relative error explodes.
+
+\begin{proposisi}[Condition number of subtraction]
+Let $x=a-b\neq0$ and let the machine work with $\tilde{a}=a(1+\delta_{a})$,
+$\tilde{b}=b(1+\delta_{b})$, $|\delta_{a}|,|\delta_{b}|\le u$. Then
+\[
+  \frac{|\operatorname{fl}(\tilde{a}-\tilde{b})-x|}{|x|}
+  \;\le\;\kappa\,u+u,
+  \qquad \kappa=\frac{|a|+|b|}{|a-b|}.
+\]
+\end{proposisi}
+
+\begin{proof}
+Since $\operatorname{fl}(\tilde{a}-\tilde{b})$ is the correctly rounded version of
+$\tilde{a}-\tilde{b}$, the additional error is at most $u|\tilde{a}-\tilde{b}|$.
+Furthermore
+$|\tilde{a}-\tilde{b}-(a-b)|\le|a||\delta_{a}|+|b||\delta_{b}|\le u(|a|+|b|)$,
+and dividing by $|x|=|a-b|$ gives $u\kappa$. Adding the two errors with the
+triangle inequality completes the proof.
+\end{proof}
+
+The number $\kappa$ is never less than one and grows without bound as
+$|a-b|$ shrinks. For $a=12345.678$ and $b=12345.671$ we get $a-b=0.007$
+and $\kappa\approx3.53\times10^{6}$, so that the relative error of the result can reach
+$3.9\times10^{-10}$ even though each input is off by only $10^{-16}$. Since every
+factor of ten in $\kappa$ erases one significant digit,
+$\log_{10}\kappa\approx6.5$ means six and a half of the sixteen machine digits are gone,
+and the result $0.007$ leaves only about ten digits that can be trusted.
+
+One note that saves us: Sterbenz's rule applies to differences, not to
+sums. For the sum $a+b$ the condition number is
+$(|a|+|b|)/|a+b|$, which approaches one when $a$ and $b$ have the same sign. Adding
+large numbers is not dangerous. Subtracting two large numbers that are nearly equal is
+dangerous, and that is the only habit that needs watching.
+
+\section{Catastrophic cancellation: two faces}
+\tingkat{intermediate}
+
+We already know the mechanism. Now let us give it a name, because two similar kinds of
+cancellation are often taken for the same thing although their consequences differ
+widely.
+
+\begin{untukanak}
+If we want to know the thickness of a sheet of paper, an ordinary ruler will not help:
+one sheet is far thinner than a millimeter, so the needle seems not to move. The way is
+not to look for a finer ruler but to change what is measured: stack five hundred sheets,
+measure the thickness of the stack, then divide by five hundred. The result is far more
+trustworthy, even though the ruler is the same ruler.
+
+It turns out that a formula can be treated in the same way. Some formulas work by
+subtracting two large numbers that are nearly equal, and that is the same as weighing a
+single sheet of paper with a ruler. Other formulas are mathematically exactly the same,
+but order their steps so that the small number is measured directly rather than
+recovered from a difference. The results can differ widely, even though the paper has
+not changed.
+
+The question: if two formulas that are equally correct give different answers, which
+one should we trust? In this chapter we shall learn why the wrong formula is not the one
+whose arithmetic is mistaken but the one that chooses the step that throws information
+away, and how to recognize it before the program runs.
+\end{untukanak}
+
+\kamus{catastrophic cancellation}{pembatalan katastrofik}{The loss of significant digits
+when two nearly equal numbers are subtracted, so that only error is left.}
+\index{catastrophic cancellation}
+
+\begin{definisi}[Catastrophic and benign cancellation]
+Let $x$ and $y$ be machine numbers computed from earlier data.
+The subtraction $x-y$ is called \emph{benign cancellation} if $x$ and $y$ are exact, so
+that the result is exact by Sterbenz's theorem. It is called \emph{catastrophic
+cancellation} if $x$ and $y$ themselves already carry rounding error, so that the digits
+the two share disappear as well and what is left is dominated by that error.
+\end{definisi}
+
+A benign example: $1.0000000000000002-1$ in binary64. Both are machine numbers, the
+difference is $2^{-52}$ and is represented exactly. The result is small, but not one
+digit disappears: we really do know both inputs to the last bit.
+
+The catastrophic example is the quadratic formula from the opening of the chapter. There
+$b^{2}$ and $4ac$ are each the result of a multiplication, so both are rounded. For
+$a=1$, $b=10^{8}$, $c=1$ both happen to be exact, and it is precisely that specialness
+which makes this example worth examining down to the bit: the collapse does not come
+from the multiplications but from the rounding of the square root. Python computes
+
+\begin{center}
+\begin{tabular}{ll}
+\hline
+discriminant $b^{2}-4ac$ & \texttt{9999999999999996.0} \\
+$\sqrt{b^{2}-4ac}$ & \texttt{99999999.99999999} \\
+$b-\sqrt{b^{2}-4ac}$ & \texttt{1.4901161193847656e-08} \\
+$\operatorname{ulp}(b)$ & \texttt{1.4901161193847656e-08} \\
+\hline
+\end{tabular}
+\end{center}
+
+The true value of $b-\sqrt{b^{2}-4ac}$ is $2\times10^{-8}$, that is $1.34$ ulp.
+What is computed is exactly $1$ ulp, and half an ulp of error in the square root is
+enough for that: the square root is correct to $0.46$ ulp at the scale $10^{8}$, but a
+difference that ought to be $1.34$ ulp can only land on $1$ or $2$ ulp, so its
+information is down to one binary choice. The final result is $-7.45\times10^{-9}$, that
+is $-2^{-27}$, whereas the true root is $-10^{-8}$. Relative error $0.255$.
+
+Note the division of labor. The square root works with relative error
+$5\times10^{-17}$, far below $u$. The problem itself is well conditioned: shifting
+$b$ by one ulp shifts the small root by one ulp, so
+$\kappa\approx|b|/\sqrt{b^{2}-4ac}\approx1$. What is bad is the \emph{form} we have
+chosen: the condition number of the subtraction at that step is
+\[
+  \kappa=\frac{|b|+\sqrt{b^{2}-4ac}}{\left|\sqrt{b^{2}-4ac}-|b|\right|}
+  =\frac{2\times10^{8}}{1.49\times10^{-8}}\approx1.34\times10^{16},
+\]
+so that $\kappa u\approx1.49$: the relative error bound passes one, which means not a
+single digit is guaranteed.
+
+Figure~\ref{fig:katastrofik} separates two things that are often mixed up at that step:
+the size of the numbers, and how many digits still mean something after the subtraction.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[every node/.style={font=\footnotesize}]
+  \draw[ink,thick,->] (1.2,3.20) -- (10.6,3.20);
+  \foreach \dec/\tk in {-9/{$10^{-9}$},-6/{$10^{-6}$},-3/{$10^{-3}$},0/{$10^{0}$},
+                        3/{$10^{3}$},6/{$10^{6}$},9/{$10^{9}$}} {
+    \draw[ink] ({1.4+(\dec+9)*0.5},3.26) -- ({1.4+(\dec+9)*0.5},3.14);
+    \node[below] at ({1.4+(\dec+9)*0.5},3.12) {\tk};
+  }
+  \fill[accent] ({1.4+17*0.5},3.20) circle (2.4pt);
+  \node[above=2pt] at ({1.4+17*0.5},3.24) {$b=10^{8}$};
+  \fill[layerteal] ({1.4+1.173*0.5},3.20) circle (2.4pt);
+  \node[above=2pt] at ({1.4+1.173*0.5},3.24) {$b-\sqrt{\Delta}$};
+  \draw[<->,thick,dashed,layergrey] ({1.4+1.173*0.5},3.72) -- ({1.4+17*0.5},3.72);
+  \node[above] at ({1.4+9.1*0.5},3.74) {sixteen orders of magnitude};
+  \foreach \i in {0,...,16} {
+    \fill[accent!28] ({1.4+\i*0.45},1.60) rectangle ++(0.45,0.40);
+    \draw[ink!45] ({1.4+\i*0.45},1.60) rectangle ++(0.45,0.40);
+  }
+  \foreach \i in {0,...,15} {
+    \fill[layergrey!16] ({1.4+\i*0.45},0.85) rectangle ++(0.45,0.40);
+    \draw[ink!45] ({1.4+\i*0.45},0.85) rectangle ++(0.45,0.40);
+  }
+  \fill[accent!70] ({1.4+16*0.45},0.85) rectangle ++(0.45,0.40);
+  \draw[ink!45] ({1.4+16*0.45},0.85) rectangle ++(0.45,0.40);
+  \node[left] at (1.35,1.80) {$b$};
+  \node[left] at (1.35,1.05) {$b-\sqrt{\Delta}$};
+  \draw[{Latex}-{Latex},layergrey] (1.40,0.62) -- ({1.4+16*0.45},0.62);
+  \node[below] at ({1.4+8*0.45},0.60) {sixteen identical digits, canceling out};
+  \node[right] at ({1.4+17*0.45},1.05) {one digit};
+\end{tikzpicture}
+\caption{Top: $b$ and $\sqrt{b^{2}-4ac}$ on a log scale, sixteen orders of
+magnitude away from their difference. Bottom: the boxes are significant digits, seventeen
+go in and sixteen of them are the same so that they cancel out. What remains is one
+digit, namely the difference $1.49\times10^{-8}$ itself; since half an ulp of error in
+the square root is enough to shift the last digit, the small root comes out with a
+relative error of $0.255$.}
+\label{fig:katastrofik}
+\end{figure}
+
+The fix is not more precision but choosing which root to compute first.
+The product of the two roots is $c/a$, so once the large root $r_{1}$ is known, the
+small root is obtained by a division, not by a subtraction:
+\[
+  r_{1}=\frac{-b-\sqrt{b^{2}-4ac}}{2a},\qquad r_{2}=\frac{c}{a\,r_{1}}
+  =\frac{2c}{-b-\sqrt{b^{2}-4ac}}.
+\]
+The second form never subtracts two numbers that are close together. For the example
+above it gives $-10^{-8}$ exactly, that is the correctly rounded root. The same formula
+with the signs arranged according to the sign of $b$ is used in almost every library
+that solves quadratic equations, and the reason is stability, not tidiness.
+
+The second face of catastrophic cancellation appears in a place that looks harmless:
+the difference $1-\cos x$ for small $x$. For small $x$,
+\[
+  \frac{1-\cos x}{x^{2}}\longrightarrow\frac{1}{2},
+\]
+because $\cos x=1-x^{2}/2+x^{4}/24-\cdots$. The formula is right, and it is also the
+most natural one to write. But $\cos x$ is stored with relative error $u$, and because
+$|\cos x|\le1$, its absolute error is about $u$. After division by $x^{2}$, that error
+becomes a relative error of about $2u/x^{2}$. For $x=10^{-8}$ that factor is $2.2$:
+every digit is wiped out.
+
+Here are the results of an actual run for ten values of $x$, compared with a reference
+computed at 50 digits and with the Taylor series $0.5-x^{2}/24+x^{4}/720$; for
+$x\le10^{-3}$ the two comparators agree to the last digit. The ``naive'' column is
+$(1-\cos x)/x^{2}$, the ``identity'' column is
+$\tfrac12\left(\sin(x/2)/(x/2)\right)^{2}$, which comes from
+$1-\cos x=2\sin^{2}(x/2)$.
+
+\begin{center}
+\begin{tabular}{rccc}
+\hline
+$x$ & naive & relative error & identity \\
+\hline
+$10^{-1}$ & $0.499583472197418$ & $1.1\times10^{-14}$ & $0.499583472197423$ \\
+$10^{-2}$ & $0.499995833347366$ & $2.9\times10^{-13}$ & $0.499995833347222$ \\
+$10^{-3}$ & $0.499999958325503$ & $1.6\times10^{-11}$ & $0.499999958333335$ \\
+$10^{-4}$ & $0.499999996961265$ & $5.2\times10^{-9}$ & $0.499999999583333$ \\
+$10^{-5}$ & $0.500000041370185$ & $8.3\times10^{-8}$ & $0.499999999995833$ \\
+$10^{-6}$ & $0.500044450291171$ & $8.9\times10^{-5}$ & $0.499999999999958$ \\
+$10^{-7}$ & $0.499600361081320$ & $8.0\times10^{-4}$ & $0.500000000000000$ \\
+$10^{-8}$ & $0.000000000000000$ & $1.0$ & $0.500000000000000$ \\
+$10^{-9}$ & $0.000000000000000$ & $1.0$ & $0.500000000000000$ \\
+$10^{-10}$ & $0.000000000000000$ & $1.0$ & $0.500000000000000$ \\
+\hline
+\end{tabular}
+\end{center}
+
+The pattern is typical and worth memorizing. As long as $x^{2}/2$ is far above $u$, the
+naive formula is nearly right. When $x^{2}/2$ shrinks to the scale of $u$, the
+significant digits run out and the error grows like $2u/x^{2}$: each tenfold decrease of
+$x$ adds two digits of loss. At $x=10^{-8}$, $1-\cos x$ is smaller than half an ulp
+around $1$, so that $\cos x$ is rounded exactly to $1$ and the result is zero. That
+breakdown point is no mystery: $x^{2}/2\approx u$, that is $x\approx\sqrt{2u}\approx1.5\times10^{-8}$.
+
+The last column shows that the problem is well conditioned. The double-angle identity
+gives an answer correct to the last digit for every $x$ in the table, because it never
+subtracts two numbers that are close together. Error is not a property of the problem.
+It is a property of the formula chosen.
+
+\begin{resep}
+Four steps for choosing a formula form that is safe from cancellation:
+\begin{enumerate}
+  \item Mark every subtraction $a-b$ inside the formula, then compute
+        $\kappa=(|a|+|b|)/|a-b|$ on the worst data that can reasonably arrive.
+  \item Translate $\kappa$ into lost digits: $\kappa u\approx10^{-d}$
+        means the last $d$ digits cannot be trusted.
+  \item Look for an equivalent form that contains no such difference: multiply by the
+        conjugate, use the double-angle identity, factor, or call \texttt{log1p},
+        \texttt{expm1}, and \texttt{hypot}.
+  \item Repeat the computation at higher precision. The difference between the two
+        results should be comparable to $\kappa u$; if it is far larger, the new form
+        still hides a subtraction.
+\end{enumerate}
+A warning about order: step 1 must not be swapped with step 3. Rewriting a formula
+before knowing which subtraction is dangerous only moves the problem, as in the one-pass
+form of the variance that trades one dangerous subtraction for another.
+\end{resep}
+\section{Summation: error that grows with $n$}
+\tingkat{advanced}
+
+Summation is the operation most often taken for granted, and yet it is where error is
+easiest to compute. Before we come to the bound, here is a demonstration that dismantles
+the assumption that order does not matter:
+
+\begin{center}
+\texttt{(0.1 + 0.2) + 0.3 = 0.6000000000000001}, \quad
+\texttt{0.1 + (0.2 + 0.3) = 0.6}.
+\end{center}
+
+The difference is $1.11\times10^{-16}$, exactly one ulp at the scale $0.6$. No digit is
+written down wrongly: only three numbers, each with no finite binary
+representative, summed in a different order. In mathematics, addition is
+associative. Inside the machine, it is associative only when no differing rounding
+happens to occur.
+
+\begin{teorema}[Error of sequential summation]
+Let $s_{1}=x_{1}$ and $s_{k}=\operatorname{fl}(s_{k-1}+x_{k})$ for
+$k=2,\dots,n$ with $x_{i}\in\mathbb{F}$. Then
+\[
+  \left|s_{n}-\sum_{i=1}^{n}x_{i}\right|
+  \;\le\;(n-1)\,u\sum_{i=1}^{n}|x_{i}|+O(u^{2}).
+\]
+\end{teorema}
+
+\begin{proof}
+Every step uses one rounding, so $s_{k}=(s_{k-1}+x_{k})(1+\delta_{k})$
+with $|\delta_{k}|\le u$. Expanding the result recursively gives
+\[
+  s_{n}=\sum_{i=1}^{n}x_{i}\prod_{k=i}^{n}(1+\delta_{k}),
+\]
+where the first term carries no $\delta_{1}$ because $s_{1}=x_{1}$ has not been rounded.
+Since $\prod(1+\delta_{k})=1+\theta$ with
+$|\theta|\le(1+u)^{n-1}-1\le(n-1)u+O(u^{2})$, the triangle inequality gives the bound
+claimed.
+\end{proof}
+
+That bound is honest but loose: it assumes every rounding reaches its
+worst error and that all of them point the same way, which in practice never happens.
+The following table shows the gulf between bound and reality for the harmonic series
+$H_{n}=\sum_{i=1}^{n}1/i$ in binary32, with the exact value computed by
+\texttt{math.fsum}, which sums exactly.
+
+\begin{center}
+\begin{tabular}{rccc}
+\hline
+$n$ & sequential & exact & bound $(n-1)u\sum|x_{i}|$ \\
+\hline
+$10^{2}$  & $5.1873779297$ & $5.1873775176$ & $3.1\times10^{-5}$ \\
+$10^{3}$  & $7.4854784012$ & $7.4854708606$ & $4.5\times10^{-4}$ \\
+$10^{4}$  & $9.7876129150$ & $9.7876060360$ & $5.8\times10^{-3}$ \\
+$10^{5}$  & $12.0908508301$ & $12.0901461299$ & $7.2\times10^{-2}$ \\
+$10^{6}$  & $14.3573579788$ & $14.3927267229$ & $8.6\times10^{-1}$ \\
+\hline
+\end{tabular}
+\end{center}
+
+The actual error at $n=10^{6}$ is $3.54\times10^{-2}$, about twenty-five
+times smaller than the bound, but it has already erased two and a half significant
+digits. Nor does the error rise smoothly: it dips at $n=10^{4}$ because roundings in the
+same and in opposite directions happened to cancel. What can be relied on is not the
+size of the error at one $n$, but its tendency to grow, at a worst-case rate
+proportional to $n$.
+
+The cause is not large rounding but an accumulator that moves away from zero.
+Once $s$ is around $14$, the term $1/i$ for large $i$ lies below half an
+ulp of $s$ and every addition loses all its information. The extreme case is easy to
+construct: add $1$ to a million terms of value $10^{-16}$; exactly the result is
+$1.0000000001$, whereas sequential summation stays at $1$ for however many terms there
+are. What is lost is not one term but the whole contribution.
+
+Figure~\ref{fig:galatjumlah} summarizes the same pattern for the five values of $n$ in the
+table above, this time with Kahan summation as the comparison.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.88\linewidth, height=6.0cm,
+  xmode=log, ymode=log,
+  xlabel={$n$}, ylabel={$|s_{n}-H_{n}|$},
+  xmin=70, xmax=1.6e6, ymin=1e-8, ymax=1,
+  grid=both, grid style={layergrey!15},
+  tick label style={font=\footnotesize},
+  label style={font=\footnotesize},
+  legend style={font=\footnotesize,draw=layergrey!40,
+                at={(0.03,0.97)},anchor=north west},
+  legend cell align=left,
+]
+\addplot[ink,thick,mark=*,mark size=1.7pt] coordinates {
+  (100,4.12e-7) (1000,7.54e-6) (10000,6.88e-6) (100000,7.05e-4) (1000000,3.54e-2)};
+\addlegendentry{sequential}
+\addplot[accent,thick,mark=square*,mark size=1.6pt] coordinates {
+  (100,6.48e-8) (1000,8.88e-8) (10000,2.03e-7) (100000,6.51e-8) (1000000,1.75e-7)};
+\addlegendentry{Kahan}
+\end{axis}
+\end{tikzpicture}
+\caption{Absolute error of the harmonic sum in binary32 at five sizes $n$, log-log
+scale. Sequential summation rises from $4.1\times10^{-7}$ at $n=10^{2}$ to
+$3.54\times10^{-2}$ at $n=10^{6}$; Kahan holds at order $10^{-7}$ across the whole
+range, so that at $n=10^{6}$ the two are $2\times10^{5}$ times apart. The data, the
+precision, and the number of operations are the same; only the order of summation
+differs.}
+\label{fig:galatjumlah}
+\end{figure}
+
+\begin{tangan}
+Materials: eleven blank cards, a marker, and one rule of the game. Every time two cards
+are added, write the result on a new card with at most four significant figures,
+then throw the old cards away.
+
+Write $1.000$ on one card and $0.0001$ on ten other cards. First route: put down the big
+card, then add the ten small cards one at a time. Each time
+$1.000+0.0001=1.0001$ is cut down to $1.000$, so that the small card disappears
+without a trace and the pile stays $1.000$.
+
+Shuffle the cards again, second route: first add up the ten small cards into
+$0.0010$, then add the big card. The final pile is $1.001$.
+
+What must be visible: the same eleven cards, the same cutting rule, two
+different results in the last digit. Only the order changed, and the machine repeats that
+order a million times.
+\end{tangan}
+
+Kahan summation attacks that problem directly.\index{Kahan summation}
+The idea is simple: every time
+a term is lost to rounding, keep the lost remainder in a compensation variable,
+then put it back in at the next step.
+
+\begin{quote}
+\texttt{s = 0.0; c = 0.0}\\
+\texttt{for x in data:}\\
+\hspace*{1.5em}\texttt{y = x - c}\\
+\hspace*{1.5em}\texttt{t = s + y}\\
+\hspace*{1.5em}\texttt{c = (t - s) - y}\\
+\hspace*{1.5em}\texttt{s = t}
+\end{quote}
+
+The line \texttt{c = (t - s) - y} is the heart of it, and it works precisely because of
+Sterbenz: $t-s$ is the difference of two numbers that are close together and hence exact,
+and $(t-s)-y$ is therefore exactly the error that was just discarded. The result no
+longer piles up error proportional to $n$.
+
+\begin{teorema}[Kahan summation bound]
+With Kahan's algorithm above, the computed sum satisfies the inequality
+\[
+  s=\sum_{i=1}^{n}x_{i}(1+\delta_{i})+O(nu^{2})\sum_{i=1}^{n}|x_{i}|,
+  \qquad |\delta_{i}|\le2u .
+\]
+\end{teorema}
+
+We do not repeat the proof of this theorem here. It is Theorem 8 in Goldberg's
+survey, and its proof is in the appendix of that work, taken from Knuth. What is worth
+reading from the statement: the relative error of each term is bounded by $2u$, twice the
+error of a single rounding, but the factor $n$ is gone from the leading term. For small
+$n$ this bound is in fact looser than the naive one, because $2u>u$. Its advantage
+appears only when $n$ is large, and that is where its whole use lies.
+
+The real numbers on the harmonic series with $n=10^{6}$: sequential summation in
+binary32 gives an error of $3.54\times10^{-2}$, whereas Kahan gives
+$1.75\times10^{-7}$, that is $0.18$ ulp from the correct answer. In binary64
+the difference is just as sharp: sequential is off by $7.35\times10^{-13}$, or $414$ ulp,
+whereas Kahan produces a figure identical to \texttt{math.fsum}.
+
+Two other improvements deserve mention. Pairwise summation, which
+\texttt{numpy.sum} uses,\index{pairwise summation} splits the data recursively
+so that the error grows like $\log n$; it is nearly free and suits data in
+memory. \texttt{math.fsum} uses an exact accumulator and gives a result that is correctly
+rounded for the whole list, at a higher cost in time. Summing from the smallest term to
+the largest is the cheapest improvement, but it only reduces the error.
+
+\section{Practical guidance}
+\tingkat{basic}
+
+Everything we have built can be compressed into a few habits that are cheap to
+keep and expensive to neglect.
+
+First, choose precision from the condition number, not from habit.
+The relative error of the result is roughly $\kappa u$. With binary64, a computation
+with condition $10^{6}$ still leaves ten digits; with binary32, the same computation
+leaves only one digit. For $10^{8}$ sequential operations the crude bound is
+$nu$, and in binary32 that already passes one, which means the answer is meaningless.
+
+Second, do not test fractional numbers for equality with \texttt{==}. Two paths that
+are mathematically identical may produce different bits, like
+$0.1+0.2$ above. The right test uses a scaled tolerance, for instance
+$|x-y|\le10^{-12}\max(1,|x|,|y|)$, and that tolerance must come from error
+analysis, not from experimenting until the test passes.
+
+Third, distrust every formula that contains a difference of two nearly equal quantities.
+The standard form of the variance, $(1-\cos x)/x^{2}$, and $\log(1+x)$ for small $x$ can
+all be written differently. The standard library already does so: \texttt{log1p},
+\texttt{expm1}, and \texttt{hypot} exist precisely because their naive forms are not
+stable.
+
+Fourth, for a long sum, or one with terms of very different sizes, use
+\texttt{math.fsum} or pairwise summation, and keep the accumulator in higher precision
+where available. Sort from the smallest term if there is no other choice.
+
+Fifth, do not conclude truth from agreement between numbers. Two programs that agree
+to twelve digits are fairly convincing; ones that agree to three digits only tell
+us that both use the same formula. A better test is to repeat the computation at a
+different precision: if the result shifts far beyond the prediction
+$\kappa u$, something is wrong with the formula, not with the machine.
+
+
+\pagebreak[4]
+\begin{tantangan}
+Compute $10^{8}\left(\sqrt{10^{16}+1}-10^{8}\right)$ in binary64. The true value is
+$0.5$, but a program that writes the formula down as it stands reports $0.0$.
+
+Explain why the result is zero, then compute the form that gives $0.5$ without raising
+the precision at all.
+
+Hint 1: ask what $\operatorname{ulp}(10^{16})$ is, then whether $10^{16}+1$
+still has room on the grid of machine numbers.
+
+Hint 2: multiply numerator and denominator by the conjugate
+$\sqrt{10^{16}+1}+10^{8}$; the dangerous subtraction becomes a division.
+
+If you are stuck, go back to the section Catastrophic cancellation: two faces.
+\end{tantangan}
+
+\section{Worked example}
+\tingkat{intermediate}
+
+Every number in this section can be checked with a calculator, \texttt{struct}, and
+ordinary fractions. We begin by taking apart one bit pattern, namely $0.1$ in binary32:
+
+\[
+  \underbrace{0}_{1}\;\underbrace{01111011}_{8}\;
+  \underbrace{10011001100110011001101}_{23}.
+\]
+
+The stored exponent is $123$, so after subtracting the bias $127$ we get $e=-4$. The
+23-bit integer in the mantissa is $5033165$, so that the significand is
+$1+5033165/2^{23}$. Hence
+\[
+  x=\left(1+\frac{5033165}{2^{23}}\right)2^{-4}=\frac{13421773}{134217728}.
+\]
+The numerator comes from $2^{23}+5033165=13421773$. Meanwhile the denominator is
+$134217728$, and a tenth of it is $13421772.8$, so that the error is exactly
+$0.2/134217728$, that is $1.4901161\times10^{-9}$,
+and the relative error is $1.49\times10^{-8}$, that is $u_{32}/4$. That figure makes
+sense: the number $1/10$ equals $1.1001100110011\dots_{2}\times2^{-4}$, which needs a
+periodic mantissa and does not terminate, so that correct rounding cuts it at the 24th
+bit. The pattern that is stored
+ends in \texttt{\dots 1101}, not \texttt{\dots 1100}, because the remainder behind it is
+greater than half an ulp and the rounding goes up.
+
+\kertas{Take apart the pattern \texttt{0 01111100 01000000000000000000000} by hand:
+determine the sign, the exponent after subtracting the bias, the value of the mantissa,
+then write the number as a fraction and as a decimal. Compute the
+$\operatorname{ulp}$ of that number, then decide the result of adding $2^{-27}$ and
+$3\cdot2^{-27}$ under the \emph{tie to even} rule. Check your answer with
+\texttt{struct.unpack} and \texttt{numpy.float32}. This number was chosen so that its
+mantissa stops after two digits, so that all of its arithmetic can be done without a
+calculator.}
+
+Now the case $0.1+0.2$ in binary64, which can be computed entirely with
+fractions. All three numbers involved have power-of-two denominators:
+\[
+  \operatorname{fl}(0.1)=\frac{3602879701896397}{2^{55}},\qquad
+  \operatorname{fl}(0.2)=\frac{3602879701896397}{2^{54}},
+\]
+\[
+  \operatorname{fl}(0.3)=\frac{5404319552844595}{2^{54}}.
+\]
+The sum of the first two before rounding is $10808639105689191/2^{55}$,
+whereas $\operatorname{fl}(0.3)=10808639105689190/2^{55}$. So the exact sum
+lies exactly half an ulp above $\operatorname{fl}(0.3)$: a tie point, not something near
+one. The last digit of its mantissa is $1$, that is odd, so that \emph{tie to even}
+rounds up: $0.300000000000000044408920985006\dots$
+
+The difference from $\operatorname{fl}(0.3)$ is therefore exactly one ulp,
+$2^{-54}=5.551115123125783\times10^{-17}$, not a random error. The subtraction that
+follows is exact by Sterbenz, so that the figure the program prints is that figure
+precisely.
+
+The same numbers explain why the conclusion depends on the precision: in
+binary32, $0.1+0.2$ and $0.3$ produce identical bit patterns because the two
+rounding errors happen to cancel each other. So \texttt{0.1+0.2 != 0.3} is not a law of
+nature but the consequence of a coincidence at one precision.
+
+Now the square root from before, with ulp arithmetic. The discriminant $b^{2}-4ac$ is
+exactly $10^{16}-4$, because $10^{16}$ is still below $2^{54}$ and that number is a
+multiple of $4$. Its square root is correct to $0.46$ ulp, so that it lands one ulp
+below $b$ because $\operatorname{ulp}(b)=2^{-26}$. The true difference is $2\times10^{-8}=1.34$ ulp,
+the computed difference $1$ ulp; that error of $0.34$ ulp at the scale $10^{8}$, divided
+by two, becomes the whole error of the small root:
+\[
+  r_{2}^{\text{naive}}=-\frac{2^{-26}}{2}=-2^{-27}
+  =-7.450580596923828\times10^{-9},
+  \qquad r_{2}=-10^{-8}.
+\]
+The stable form $2c/(-b-\sqrt{b^{2}-4ac})$ suffers no dangerous subtraction, and
+its result is $-10^{-8}$ exactly, the correctly rounded root.
+\section{Computational lab}
+\tingkat{advanced}
+
+\begin{lab}
+\begin{verbatim}
+import math, struct
+import numpy as np
+
+def bit32(x):
+    return ''.join(f'{b:08b}' for b in struct.pack('>f', float(x)))
+
+print("0.1     :", bit32(0.1))
+print("6.0     :", bit32(6.0))
+print("-12.375 :", bit32(-12.375))
+print("hex     :", (0.1).hex(), (6.0).hex(), (1e-8).hex())
+print("eps     :", np.finfo(np.float32).eps, np.finfo(np.float64).eps)
+print("ulp     :", math.ulp(1.0), math.ulp(1e10))
+print("tie     :", 1 + 2.0**-53, 1 + 3*2.0**-53)
+
+s = (0.1 + 0.2) - 0.3
+print("0.1+0.2-0.3 :", repr(s), "=", s / math.ulp(0.3), "ulp")
+print("associative :", repr((0.1 + 0.2) + 0.3), repr(0.1 + (0.2 + 0.3)))
+
+n = 10**6
+exact = math.fsum(1.0 / i for i in range(1, n + 1))
+
+def jumlah(prec, kahan):
+    s, c = prec(0), prec(0)
+    for i in range(1, n + 1):
+        y = prec(1) / prec(i)
+        if kahan:
+            y = y - c
+            t = s + y
+            c = (t - s) - y
+            s = t
+        else:
+            s = s + y
+    return s
+
+print("H_n exact   :", f"{exact:.12f}")
+for prec, nama in ((np.float32, "float32"), (np.float64, "float64")):
+    for kahan in (False, True):
+        v = float(jumlah(prec, kahan))
+        print(f"{nama} {'Kahan' if kahan else 'naive':7} {v:.12f}"
+              f"  error {abs(v - exact):.2e}")
+
+print(f"{'x':>8} {'naive':>19} {'error':>9} {'identity':>19} {'error':>9}")
+for k in range(1, 11):
+    x = 10.0**-k
+    lugu = (1 - math.cos(x)) / x**2
+    stabil = 2 * math.sin(x / 2)**2 / x**2
+    acuan = 0.5 - x**2/24 + x**4/720 - x**6/40320
+    print(f"{x:8.0e} {lugu:19.15f} {abs(lugu-acuan)/acuan:9.1e}"
+          f" {stabil:19.15f} {abs(stabil-acuan)/acuan:9.1e}")
+
+a, b, c = 1.0, 1e8, 1.0
+d = b*b - 4*a*c
+sq = math.sqrt(d)
+print("discriminant :", d, " root:", sq)
+print("b - root    :", b - sq, " ulp(b):", math.ulp(b))
+print("naive root  :", (-b + sq) / (2*a))
+print("stable root :", 2*c / (-b - sq))
+\end{verbatim}
+The actual output:
+\begin{verbatim}
+0.1     : 00111101110011001100110011001101
+6.0     : 01000000110000000000000000000000
+-12.375 : 11000001010001100000000000000000
+hex     : 0x1.999999999999ap-4 0x1.8000000000000p+2 0x1.5798ee2308c3ap-27
+eps     : 1.1920929e-07 2.220446049250313e-16
+ulp     : 2.220446049250313e-16 1.9073486328125e-06
+tie     : 1.0 1.0000000000000004
+0.1+0.2-0.3 : 5.551115123125783e-17 = 1.0 ulp
+associative : 0.6000000000000001 0.6
+H_n exact   : 14.392726722866
+float32 naive   14.357357978821  error 3.54e-02
+float32 Kahan   14.392726898193  error 1.75e-07
+float64 naive   14.392726722865  error 7.35e-13
+float64 Kahan   14.392726722866  error 0.00e+00
+       x               naive     error            identity     error
+   1e-01   0.499583472197418   5.6e-15   0.499583472197423   5.4e-15
+   1e-02   0.499995833347366   2.9e-13   0.499995833347222   1.1e-16
+   1e-03   0.499999958325503   1.6e-11   0.499999958333335   0.0e+00
+   1e-04   0.499999996961265   5.2e-09   0.499999999583333   1.1e-16
+   1e-05   0.500000041370185   8.3e-08   0.499999999995833   1.1e-16
+   1e-06   0.500044450291171   8.9e-05   0.499999999999958   0.0e+00
+   1e-07   0.499600361081320   8.0e-04   0.500000000000000   1.1e-16
+   1e-08   0.000000000000000   1.0e+00   0.500000000000000   0.0e+00
+   1e-09   0.000000000000000   1.0e+00   0.500000000000000   0.0e+00
+   1e-10   0.000000000000000   1.0e+00   0.500000000000000   0.0e+00
+discriminant : 9999999999999996.0  root: 99999999.99999999
+b - root    : 1.4901161193847656e-08  ulp(b): 1.4901161193847656e-08
+naive root  : -7.450580596923828e-09
+stable root : -1e-08
+\end{verbatim}
+\end{lab}
+
+The first three lines confirm that the table at the beginning of the chapter is not
+invented: the bit patterns of $0.1$, $6$, and $-12.375$ come out exactly as in the hand
+decomposition, sign bit included. The \texttt{hex} line shows thirteen hexadecimal
+digits. The \texttt{tie} line is the plainest demonstration of the even rule: adding
+half an ulp to $1$ changes nothing, adding one and a half ulp gives
+$1+2^{-51}$. The \texttt{0.1+0.2-0.3} line prints
+$5.551115123125783\times10^{-17}$ and declares itself to be $1.0$ ulp; the
+\texttt{associative} line gives two different results, differing by
+$1.11\times10^{-16}$.
+
+The next four lines are the core of this chapter in its most compact form: at
+$n=10^{6}$, binary32 sequential loses $3.54\times10^{-2}$ whereas Kahan loses only
+$1.75\times10^{-7}$; binary64 sequential $7.35\times10^{-13}$ whereas Kahan zero, the
+same bits as \texttt{math.fsum}. That error of $7.35\times10^{-13}$ is equivalent to
+$414$ ulp, so double precision only moves the problem to a smaller scale.
+
+The table for $(1-\cos x)/x^{2}$ shows the pattern already computed on paper. At
+$x=10^{-1}$ both methods differ from the reference by about $5\times10^{-15}$ because the
+reference itself is truncated at the $x^{6}$ term; from $x=10^{-2}$ on that reference is
+far more accurate than the machine, and the error of the naive formula rises from
+$2.9\times10^{-13}$ to $1.0$ as $x$ falls to $10^{-8}$, whereas the identity column holds
+at $10^{-16}$. The zero at $x=10^{-8}$ is not lazy rounding: $\cos(10^{-8})$ really
+equals $1$.
+
+The last block checks the square root: discriminant $10^{16}-4$, root $10^{8}-2^{-26}$,
+a difference of one ulp of $b$, namely $2^{-26}$, naive root $-2^{-27}$, and stable root
+$10^{-8}$, which is correctly rounded. The last two lines
+are $25.5$ percent apart, even though the formulas are algebraically equivalent and the
+data are exactly the same.
+
+\begin{untukdosen}
+A teaching order that has worked in practice: begin with one failure that can be
+recomputed, namely the quadratic formula at the opening of the chapter, and only then go
+into representation. If representation comes first, students memorize $1/8/23$ and
+$1/11/52$ without knowing what for. After that failure, the order that works is: the
+number of machine numbers (so that it is clear rounding cannot be avoided), the rounding
+rule, the ulp lemma, the $(1+\delta)$ bound, then the condition number. Summation is
+better placed after the condition number, because the bound $(n-1)u\sum|x_{i}|$ only
+reads as ``error that grows'' once $\kappa$ is familiar.
+
+Two typical misconceptions. First, students believe that rounding error is random and
+therefore cancels out in long sums. The harmonic table contradicts that sharply: the
+error moves in one direction, and at $n=10^{6}$ it reaches thirty-five thousand ulp.
+Second, they believe that subtraction always damages digits, and then avoid all
+subtraction. Sterbenz's theorem shows the opposite: the subtraction of two nearby machine
+numbers is in fact exact, and what does the damage is the error already present in the
+input. The rule that needs repeating: what is dangerous is not the minus sign, but a
+small difference of two numbers that have each already been rounded.
+
+A cheap and effective whiteboard activity: ask the whole class to compute
+$1+2^{-53}$ and $1+3\cdot2^{-53}$ with the even rule, then compare with Python.
+After that, ask two volunteers to work out
+$(0.1+0.2)+0.3$ and $0.1+(0.2+0.3)$ by writing the 52-bit mantissa
+as a fraction. The hubbub usually starts when they discover that both are right.
+
+A sign of readiness to move on: students can guess, without running a program, that
+$\operatorname{fl}(1+10^{-16})=1$, can explain why the form
+$2c/(-b-\sqrt{\Delta})$ is better than $(-b+\sqrt{\Delta})/(2a)$, and can
+estimate how many digits are lost from a given $\kappa$. If
+they say the words ``backward error'' without being prompted, they are ready for Chapter 25,
+where the gradient of a network is computed with a similar rule.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item $\mathbb{F}$ is finite: $2^{p-1}$ normal numbers per power of two, so
+        almost every real number has no representative and every act of storage means
+        rounding.
+  \item IEEE rounding is \emph{round to nearest, ties to even}. Consequently
+        $\operatorname{fl}(x)=x(1+\delta)$ with $|\delta|\le u=2^{-p}$, that is
+        $1.11\times10^{-16}$ for binary64 and $5.96\times10^{-8}$ for
+        binary32.
+  \item $\operatorname{eps}=2^{-p+1}$ is the distance from $1$ to the number after it;
+        $\operatorname{ulp}(x)=2^{e-p+1}$ for $2^{e}\le|x|<2^{e+1}$. The error of one
+        rounding is half an ulp, and expressed as a relative error it swings by
+        a factor of two.
+  \item The condition number $\kappa_{f}=|xf'(x)|/|f(x)|$ measures the amplification of
+        input error. For subtraction, $\kappa=(|a|+|b|)/|a-b|$, which grows without
+        bound as $|a-b|$ shrinks.
+  \item Subtracting two nearby machine numbers is exact (Sterbenz). Catastrophic
+        cancellation happens because the inputs already carry error, not because of
+        the subtraction.
+  \item The naive quadratic formula computes the small root through a subtraction of two
+        numbers of size $|b|$; the form $2c/(-b-\sqrt{\Delta})$ avoids it and gives the
+        correctly rounded root.
+  \item Sequential summation has a worst-case error of $(n-1)u\sum|x_{i}|$ and is not
+        associative. Kahan moves the error into a compensation variable so that the
+        factor $n$ disappears from the leading term.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Determine the $\operatorname{ulp}$ of $1$; $1024$; $0.1$; and $3\times10^{8}$
+        in binary64, then compare with $|x|\,u$. How many binary64
+        numbers lie in $[1,2)$?
+
+  \item Show that $1+2^{-53}=1$ and $1+2^{-52}>1$ in binary64, then determine
+        the smallest positive number $x$ with $1+x>1$ in binary32. Express
+        your answer as $2^{-k}$ and compare it with the table in the opening section.
+
+  \item Prove that for every normal $x$ we have
+        $|\operatorname{fl}(x)-x|\le\tfrac12\operatorname{ulp}(x)$, then explain
+        why that inequality cannot be replaced by equality for all $x$.
+
+  \item Assess this claim: \emph{because every IEEE-754 operation is correctly rounded,
+        the relative error of the final result of a program that uses only $+,-,\times,\div$ is always
+        at most a few $u$.} Decide whether it is true, false, or not supported by
+        evidence, and name one example from this chapter that supports your decision.
+
+  \item Compute by hand $(0.1+0.2)+0.3$ and $0.1+(0.2+0.3)$ as
+        fractions with power-of-two denominators, then show that the difference is one ulp.
+        Check with \texttt{math.fsum} and with \texttt{float.hex()}.
+        (Hint: write each number as $m/2^{55}$ or $m/2^{54}$ and
+        compute the numerators as integers.)
+
+  \item Repeat the computation of $(1-\cos x)/x^{2}$ for $x=10^{-7}$ with the double-angle
+        identity, then compare with $0.5-x^{2}/24+x^{4}/720$. What relative error
+        remains, and where does it come from?
+
+  \item For $a=1$, $b=10^{4}$, $c=1$, compute both roots with the naive formula and with
+        the stable form in binary64. Determine the condition number of the subtraction, then
+        predict how many digits are lost before running the program. Check
+        your prediction with Python.
+        (Hint: $\sqrt{10^{8}-4}\approx10^{4}-2\times10^{-4}$; compare with
+        $\operatorname{ulp}(10^{4})=2^{-39}$.)
+
+  \item Prove that pairwise summation over $n=2^{k}$ terms has a worst-case error
+        proportional to $ku\sum|x_{i}|$, not $nu\sum|x_{i}|$, by expanding
+        the summation tree and counting the depth of the tree.
+
+  \item Let $x_{i}=10^{-16}$ for $i=1,\dots,10^{6}$ and $x_{0}=1$. Compute
+        sequential summation and Kahan summation both by hand (a calculator may be
+        used), then explain why the Kahan answer differs even though
+        each of its steps is also rounded.
+        (Hint: in sequential summation every term lies below half an ulp
+        of the accumulator; in Kahan, the compensation $c$ keeps that remainder and adds it
+        back at the next step.)
+
+  \item A program computes the variance with
+        $\frac1n\sum x_{i}^{2}-\left(\frac1n\sum x_{i}\right)^{2}$ on data that
+        are all around $999$. Determine the condition number of that form, predict
+        how many digits are lost in binary32, and compare with the
+        two-pass form $\frac1n\sum(x_{i}-\bar{x})^{2}$. Explain why the second form is
+        better even though it requires two passes over the data.
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+What is really proved in this chapter are standard statements that do not
+depend on any particular machine: the bound $\operatorname{fl}(x)=x(1+\delta)$ with
+$|\delta|\le u$, the ulp lemma, Sterbenz's theorem, the error bound for sequential
+summation, and the condition-number inequality via the mean value theorem. The primary
+reference is Goldberg,
+\emph{What Every Computer Scientist Should Know About Floating-Point Arithmetic}
+(ACM Computing Surveys 23(1), 1991), sections ``Relative Error and Ulps'',
+``Cancellation'', ``Exactly Rounded Operations'', and ``Errors in Summation''. The Kahan
+bound is Theorem 8 of that work; its proof is in the appendix, taken from Knuth, and is
+not repeated here. For a systematic treatment of stability, the further reference is
+Higham, \emph{Accuracy and Stability of Numerical Algorithms}, the chapters on error
+analysis and summation.
+
+Three things are more often popularized than proved. First, the claim that
+``rounding error is random and cancels out''. That is true only as a statistical
+model for uncorrelated rounding, and it fails precisely in the most important case:
+accumulation in long sums is systematic, as the harmonic table shows. Second, the claim
+that the error can always be reduced with higher precision. For catastrophic
+cancellation, raising the precision only moves the breakdown point, it does not remove
+it: in binary64 that point lies at
+$x\approx1.5\times10^{-8}$, and in binary128 it lies around $10^{-17}$. Third, the claim
+that the ulp is an unambiguous unit of error. Goldberg shows that the
+ulp may be defined as the distance between numbers or as half that distance, and the
+difference between the two definitions appears as a factor of two in every bound. The
+figure ``$0.46$ ulp'' in the discussion of the square root in this chapter uses the first
+definition.
+
+The limits of validity of the results here must be stated. The whole analysis assumes a model of
+correct rounding and no \emph{fused multiply-add} that changes the order of operations,
+no rearrangement by the compiler, and no rounding mode other than
+\emph{to nearest}. On real hardware, vectorization and FMA instructions can change
+results bit for bit; that is not a violation of the standard, but it makes comparisons
+between machines non-deterministic. Error analysis also does not touch model error,
+data error, or truncation error: this chapter discusses only rounding error.
+
+Honest open questions. First, classical error analysis gives worst-case bounds,
+whereas what practitioners need is a tight estimate for the typical case;
+the probabilistic treatment of rounding is still an actively researched tool and not a
+finished theory. Second, for iterative algorithms and the solution of linear systems,
+rounding error interacts with the condition number of the matrix in such a way that
+naive bounds are far too pessimistic; backward analysis, which is the central idea of
+Higham and Wilkinson, gives a sharper framework but is not discussed here.
+Third, practical decisions such as ``is binary32 enough'' depend on the distribution of
+the data, and no answer holds in general.
+\end{untukpeneliti}
+
+\peta{This chapter follows Goldberg, \emph{What Every Computer Scientist Should Know About
+Floating-Point Arithmetic} (ACM Computing Surveys, 1991), sections ``Introduction'',
+``Relative Error and Ulps'', ``Cancellation'', ``Exactly Rounded Operations'',
+``Formats and Operations'', ``Special Quantities'', and ``Errors in Summation'', with
+Theorem 8 for the Kahan summation bound. For the real-analysis side of the limit ideas
+and the mean value theorem used in the proof of the condition number, see Abbott,
+\emph{Understanding Analysis}, sections 2.2 (Limit of a Sequence), 5.3 (The Mean Value
+Theorem), and 6.6 (Taylor Series). The example $0.1+0.2$, the decomposition of bit
+patterns, the analysis of $(1-\cos x)/x^{2}$, and all the numbers in the tables and the
+lab are computations of our own run with Python 3.14 and NumPy 2.5 and re-verified with
+ordinary fractions and 50-digit arithmetic. For an advanced treatment of stability
+and backward error, the reference commonly used is Higham, \emph{Accuracy and
+Stability of Numerical Algorithms}.}

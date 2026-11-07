@@ -1,0 +1,1134 @@
+% Judul penuh meluber 26,51 pt di kepala halaman; hanya mark header yang
+% dipendekkan (sekali pakai, lihat \judulpendek di preamble-en.tex).
+\judulpendek{Estimation, Confidence Intervals, and Testing}
+\chapter{Estimation, Confidence Intervals, and Hypothesis Testing}
+
+A team tests an attack detector on $50$ labeled examples, and the detector catches $33$ of
+them. The report written that night reads: recall $66$ percent. A second detector, tested on
+$100$ examples, catches $53$: recall $53$ percent. The morning meeting decides to use the
+first, because $66$ is larger than $53$, and that decision is finished in one minute.
+
+The arithmetic is correct: $33/50=0.66$. What is wrong is the assumption that this number
+points at one number. If those fifty examples are replaced by fifty other examples from the
+same collection, the result is no longer $33$; it wobbles, and the wobble is not small. After
+two hours of writing the program, the team is in fact holding two sentences of very different
+strength. The first sentence, ``on this data we see $66$ percent'', says almost nothing. The
+second, ``the true catch rate lies somewhere inside this interval'', says something usable,
+provided we know how wide that interval is and what that width means.
+
+Chapter 19 already gave two tools: the law of large numbers, which says the sample mean
+concentrates at the true value, and the central limit theorem, which says the error spreads
+normally with standard deviation $\sigma/\sqrt n$. Both are statements about many trials at
+once, and neither answers the question of the morning meeting: from one trial already
+finished, what sentence may we utter about a parameter we have never seen, and how often is
+that sentence wrong if the procedure is repeated. This chapter builds the answer, from
+estimators to p-values.
+
+\begin{untukanak}
+A farmer wants to know how many weeds there are in his field. The whole field is too large to
+inspect, so he takes twenty small plots spread around, then counts the weeds in each plot.
+From those twenty numbers he guesses the state of the whole field. The trouble is that a guess
+is always a single number, whereas the state of a field is never that simple.
+
+Now the part that makes one curious. In those twenty plots he finds no weeds at all. May he go
+home and say that his field is clean? Certainly not. It may be that there are really no weeds,
+and it may be that he merely happened to choose plots made of bare soil. All he can say is:
+if the weeds were plentiful, twenty empty plots would be almost impossible. From that he can
+compute an honest upper bound, for instance ``at most three in a hundred plots''.
+
+The same holds when a teacher grades a few students' quizzes and when a computer program is
+tested on a few examples.
+In this chapter we shall learn why one number is never enough, why the honest answer is always
+an interval, and why the interval widens when the evidence is thin.
+\end{untukanak}
+
+\section{Estimators, bias, and standard error}
+\tingkat{basic}
+
+Every statistical conclusion begins with one small decision: which quantity we compute from
+the data. The mean, a proportion, the sample standard deviation, all are functions of the data
+and require no knowledge of the parameter being sought. In everyday language: an estimator is
+a surveyor who guesses the height of a tree from the length of its shadow, and we need to know
+whether that surveyor is systematically off or merely unsteady.
+
+\kamus{estimator}{penaksir}{a surveyor who guesses the height of a tree from the length of
+its shadow, rather than from the tree itself}
+
+\begin{definisi}[Statistic and estimator]
+\index{estimator}
+Let $X_1,\dots,X_n$ be a random sample from a distribution that depends on a parameter
+$\theta$. A \emph{statistic} is a function of $X_1,\dots,X_n$ that does not contain
+$\theta$. A statistic used to guess $\theta$ is called an \emph{estimator} and written
+$\hat\theta$; the value obtained on one sample is called an \emph{estimate}.
+\end{definisi}
+
+An estimator is a random variable, because it is a function of random variables. Hence it has
+an expectation and a variance, and those two quantities determine its quality. The expectation
+answers the question ``does the guess keep missing in one direction'', while the variance
+answers ``how far does the guess wobble from sample to sample''.
+
+\begin{definisi}[Bias and unbiased estimator]
+\index{unbiased}
+The bias of the estimator $\hat\theta$ for $\theta$ is $\operatorname{bias}(\hat\theta)
+=\mathbb{E}[\hat\theta]-\theta$. An estimator is called \emph{unbiased} if its bias is zero,
+namely $\mathbb{E}[\hat\theta]=\theta$ for every possible value of $\theta$.
+\end{definisi}
+
+The sample mean is unbiased for $\mu$, and that was already used in the proof of the law of
+large numbers in Chapter 19, so we do not repeat it here. More interesting is the estimator
+used for the variance. With divisor $n$, the estimator
+$S_n^2=\frac1n\sum(X_i-\bar X_n)^2$ is biased downward; with divisor $n-1$, the estimator
+$S^2=\frac1{n-1}\sum(X_i-\bar X_n)^2$ is unbiased. The reason is that $\sum(X_i-\bar X_n)^2$
+loses one degree of freedom because $\bar X_n$ is itself computed from the same data, so its
+expectation is $(n-1)\sigma^2$ and not $n\sigma^2$. The divisor $n-1$ is a correction for that
+loss, not mere tidiness.
+
+The quality of an estimator is usually summarized by one number, the mean squared error. In
+everyday language: how large an error we expect, computed in a way that punishes large errors
+more heavily.
+
+\begin{definisi}[Mean squared error]
+\index{mean squared error}
+$\operatorname{MSE}(\hat\theta)=\mathbb{E}[(\hat\theta-\theta)^2]$.
+\end{definisi}
+
+\begin{teorema}[MSE decomposition]
+For an estimator $\hat\theta$ with finite variance,
+\[
+\operatorname{MSE}(\hat\theta)=\operatorname{bias}(\hat\theta)^2
++\operatorname{Var}(\hat\theta).
+\]
+\end{teorema}
+
+\begin{proof}[Proof]
+Write $\hat\theta-\theta=(\hat\theta-\mathbb{E}\hat\theta)
++(\mathbb{E}\hat\theta-\theta)$. Square it and take the expectation:
+\[
+\mathbb{E}[(\hat\theta-\theta)^2]
+=\mathbb{E}[(\hat\theta-\mathbb{E}\hat\theta)^2]
++2(\mathbb{E}\hat\theta-\theta)\,\mathbb{E}[\hat\theta-\mathbb{E}\hat\theta]
++(\mathbb{E}\hat\theta-\theta)^2 .
+\]
+The middle term vanishes because $\mathbb{E}[\hat\theta-\mathbb{E}\hat\theta]=0$, while the
+first term is the variance and the third is the bias squared.
+\end{proof}
+
+That identity explains why ``unbiased'' is not a championship title. An unbiased estimator may
+have a large variance, and a slightly biased estimator may have a far smaller variance so that
+its MSE is lower. To estimate $\mu$ from $n$ observations, the statistic $X_1$ is unbiased with
+variance $\sigma^2$, whereas $\bar X_n$ is unbiased with variance $\sigma^2/n$; at $n=20$ the
+difference is a factor of twenty.
+
+The second example shows a bias that must be computed, because it is used every day for
+proportions. If $K\sim\mathrm{Bin}(n,p)$ and $\hat p=K/n$, then
+$\hat p(1-\hat p)$ is the natural estimator for $p(1-p)$, that is the variance of one trial.
+Its expectation is
+\[
+\mathbb{E}[\hat p(1-\hat p)]
+=\mathbb{E}[\hat p]-\mathbb{E}[\hat p^2]
+=p-\Bigl(p^2+\frac{p(1-p)}{n}\Bigr)
+=p(1-p)\Bigl(1-\frac1n\Bigr),
+\]
+so its bias is $-p(1-p)/n$. For $p=0.3$ and $n=20$ the value is $p(1-p)=0.21$
+and the bias is $-0.0105$, that is five percent downward. At $n=200$ the bias is only
+$-0.00105$. A bias that shrinks like $1/n$ is typical: it disappears at infinity, but it is
+present in every finite sample.
+
+The second property demanded of an estimator is that it actually heads for the target as the
+data grow. In everyday language: with enough evidence, a wrong guess becomes increasingly
+impossible, not merely increasingly rare.
+
+\begin{definisi}[Consistent]
+\index{consistent}
+A sequence of estimators $\hat\theta_n$ is \emph{consistent} for $\theta$ if for every
+$\varepsilon>0$ we have $P(|\hat\theta_n-\theta|\ge\varepsilon)\to0$ as
+$n\to\infty$.
+\end{definisi}
+
+\begin{proposisi}[MSE going to zero suffices for consistency]
+\index{consistent}
+If $\operatorname{MSE}(\hat\theta_n)\to0$, then $\hat\theta_n$ is consistent for
+$\theta$.
+\end{proposisi}
+
+\begin{proof}[Proof]
+By Chebyshev's inequality, already proved in Chapter 19,
+\[
+P(|\hat\theta_n-\theta|\ge\varepsilon)
+\le\frac{\mathbb{E}[(\hat\theta_n-\theta)^2]}{\varepsilon^2}
+=\frac{\operatorname{MSE}(\hat\theta_n)}{\varepsilon^2}.
+\]
+For fixed $\varepsilon$ the right-hand side goes to zero, and the inequality closes the
+proof.
+\end{proof}
+
+Note that Chebyshev uses the MSE, not the variance. The bias term is squared, so a biased
+estimator is still consistent provided its bias goes to zero. Conversely, the estimator $X_1$
+is unbiased for every $n$ but never uses the rest of the data, so it is not consistent.
+
+The next quantity is used continually until the end of the chapter. The variance of an
+estimator says how far the guess wobbles, and its square root has a name of its own.
+
+\kamus{standard error}{galat baku}{the range of wobble of one guess, not the width of the whole
+data set}
+
+\begin{definisi}[Standard error]
+\index{standard error}
+The \emph{standard error} of the estimator $\hat\theta$ is $\operatorname{se}(\hat\theta)
+=\sqrt{\operatorname{Var}(\hat\theta)}$. If the formula contains an unknown parameter, the
+\emph{estimated} standard error is obtained by replacing that parameter with its estimate.
+\end{definisi}
+
+For a proportion, $\operatorname{se}(\hat p)=\sqrt{p(1-p)/n}$, and the estimated version is
+$\sqrt{\hat p(1-\hat p)/n}$. For the data $33$ out of $50$, $\hat p=0.66$ and
+\[
+\sqrt{\frac{0.66\cdot0.34}{50}}=\sqrt{0.004488}=0.066993 .
+\]
+For twelve measurements of delay time (in milliseconds),
+\begin{align*}
+&18.2,\ 19.1,\ 17.8,\ 20.3,\ 18.9,\ 19.7,\\
+&18.4,\ 21.0,\ 17.5,\ 19.9,\ 18.6,\ 20.1,
+\end{align*}
+the mean is $19.125$ and the sample standard deviation $1.082191$. The standard error is
+$1.082191/\sqrt{12}=0.312401$.
+That number does not say that the true mean is $0.312$ away from
+$19.125$; it says that guesses like this one, if repeated, wobble on a scale of about
+$0.31$. The confidence interval is the way to turn the last sentence into a sentence we can
+use.
+
+\section{Confidence intervals for a mean}
+\tingkat{intermediate}
+
+A single number without a measure of wobble is easily misused. What is needed is a pair of
+numbers that, with high probability, traps the parameter. In everyday language: we do not
+shoot at one point, we set a net and promise that the net catches the fish we are after on most
+throws.
+
+\kamus{confidence interval}{interval kepercayaan}{a net set with a certain width, and a promise
+that the net catches the target on most throws}
+
+\begin{definisi}[Confidence interval and coverage]
+\index{confidence interval}
+Let $C(X_1,\dots,X_n)$ be an interval computed from the data. $C$ is called a
+\emph{confidence interval} of level $1-\alpha$ for $\theta$ if
+$P_\theta(\theta\in C)\ge1-\alpha$ for every $\theta$. That probability is called the
+\emph{coverage} of the procedure.
+\end{definisi}
+
+Note where the probability sits: $P_\theta$ is computed before the data are taken, and what is
+random is $C$, not $\theta$. This is where misinterpretation most often occurs, and we return
+there once the formula exists.
+
+\begin{teorema}[The z-interval]
+\index{confidence interval}
+Let $X_1,\dots,X_n$ be independent and distributed $N(\mu,\sigma^2)$ with $\sigma$
+known. For $z=z_{1-\alpha/2}$, the interval
+\[
+C=\Bigl[\bar X_n-z\frac{\sigma}{\sqrt n},\ \bar X_n+z\frac{\sigma}{\sqrt n}\Bigr]
+\]
+has coverage exactly $1-\alpha$. For other distributions with finite variance, its
+coverage tends to $1-\alpha$ as $n\to\infty$.
+\end{teorema}
+
+\begin{proof}[Proof]
+Let $Z=\sqrt n(\bar X_n-\mu)/\sigma$. For a normal sample, $Z\sim N(0,1)$ exactly;
+for other distributions, $Z$ tends to $N(0,1)$ by the central limit theorem in Chapter 19.
+The inequality $\mu\in C$ is equivalent to $|Z|\le z$, because
+\[
+|\bar X_n-\mu|\le z\frac{\sigma}{\sqrt n}
+\iff \frac{\sqrt n\,|\bar X_n-\mu|}{\sigma}\le z .
+\]
+So $P(\mu\in C)=P(|Z|\le z)=1-\alpha$ in the normal case, and tends to $1-\alpha$
+in the general case.
+\end{proof}
+
+If $\sigma$ is unknown, as in almost all real data, replacing
+$\sigma$ by $s$ adds uncertainty and thickens the tails. The result uses the
+$t$ distribution with $n-1$ degrees of freedom, published by Gosset in 1908 under the pen
+name Student:
+\[
+C=\Bigl[\bar X_n-t_{n-1,1-\alpha/2}\frac{s}{\sqrt n},\
+\bar X_n+t_{n-1,1-\alpha/2}\frac{s}{\sqrt n}\Bigr],
+\]
+with coverage exactly $1-\alpha$ if the sample is normal. The proof requires the joint
+distribution of $\bar X_n$ and $s$ to be independent, and it is in Wasserman, \emph{All of
+Statistics}, Chapter 6. For the $n=12$ delay-time data above, $t_{11,0.975}=2.200985$, so
+the half-width is $2.200985\cdot0.312401=0.687591$ and the interval is
+$(18.4374;\ 19.8126)$. With $z=1.96$ the half-width is $0.612296$: admitting that
+$\sigma$ is unknown widens the interval by twelve percent at $n=12$, and by one
+percent at $n=100$.
+
+Now the interpretation, and here we must go slowly. Once the data are taken,
+$C$ is no longer a random variable: it is the fixed interval $(18.4374;\ 19.8126)$. The
+true mean $\mu$ is also a fixed number, only unknown. The sentence
+``the probability that $\mu$ lies inside $(18.4374;\ 19.8126)$ equals $0.95$''
+is therefore meaningless in this framework: no probability is left, because
+nothing is random. What has probability $0.95$ is \emph{the procedure}, and that is a
+statement about a trial not yet run.
+
+Figure~\ref{fig:dua-puluh-selang} runs that trial twenty times, with
+$\mu=19.125$ and $\sigma=1$ known: nineteen intervals contain $\mu$, one
+does not.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=4.15cm,y=0.235cm,font=\scriptsize]
+  \draw[->,layergrey] (17.80,0)--(20.22,0);
+  \draw[layergrey,densely dashed,thick] (19.125,0)--(19.125,21.4);
+  \node[above,font=\scriptsize] at (19.125,21.4) {$\mu=19.125$};
+  \foreach \y/\a/\b in {
+    1/18.5955/19.7271,
+    2/18.5211/19.6527,
+    3/18.7441/19.8757,
+    4/18.5895/19.7211,
+    5/18.4046/19.5362,
+    6/18.6636/19.7952,
+    7/18.9356/20.0672,
+    8/18.8326/19.9642,
+    9/18.3561/19.4876,
+    10/18.1939/19.3255,
+    11/18.3793/19.5109,
+    12/18.5711/19.7027,
+    14/18.4960/19.6276,
+    15/18.1995/19.3311,
+    16/18.3478/19.4794,
+    17/18.4021/19.5337,
+    18/18.4679/19.5995,
+    19/18.6780/19.8096,
+    20/18.8602/19.9917
+  } {
+    \draw[very thick,layerindigo] (\a,\y)--(\b,\y);
+    \draw[layerindigo] (\a,\y-0.22)--(\a,\y+0.22);
+    \draw[layerindigo] (\b,\y-0.22)--(\b,\y+0.22);
+  }
+  \draw[very thick,accent] (17.8880,13)--(19.0196,13);
+  \draw[accent] (17.8880,12.7)--(17.8880,13.3);
+  \draw[accent] (19.0196,12.7)--(19.0196,13.3);
+  \node[accent,anchor=west,font=\scriptsize] at (17.82,0.62) {one interval misses};
+  \foreach \t in {18,19,20} {\draw[layergrey] (\t,-0.2)--(\t,0.2);}
+  \foreach \t in {18,19,20} {\node[below,font=\scriptsize] at (\t,-0.45) {\t};}
+\end{tikzpicture}
+\caption{Twenty $95$ percent confidence intervals for $\mu$, each from one
+sample of size $n=12$ with $\sigma=1$ known, so the half-width is
+$1.96/\sqrt{12}=0.5658$ and the width is $1.1316$. The vertical dashed line is the
+true $\mu=19.125$. Nineteen intervals contain it; the interval in row
+13, namely $(17.8880;\,19.0196)$, does not. One failure in twenty is a
+reasonable number for a $95$ percent promise, not a sign of a broken procedure.}
+\label{fig:dua-puluh-selang}
+\end{figure}
+
+\begin{catatan}
+Three sentences that are true, and one that is false. True: ``this procedure catches $\mu$
+on $95$ percent of repeated trials''. True: ``we are $95$ percent confident that $\mu$
+lies between $18.44$ and $19.81$'', provided ``confident'' is read as a summary of
+repeated trials. True: ``this procedure is wrong in about five cases out of a hundred''.
+False: ``the probability that $\mu$ is in this interval is $0.95$''. The last sentence
+pretends to know something about $\mu$ that the data do not provide.
+\end{catatan}
+
+The width of an interval shrinks like $1/\sqrt n$, not $1/n$: halving it demands four times
+the data, making it a tenth demands a hundred times. This rule can be computed before the
+experiment starts, since a half-width $z\sigma/\sqrt n\le d$ is equivalent
+to $n\ge(z\sigma/d)^2$; with $\sigma=1$, $z=1.96$, and $d=0.1$, we need
+$n\ge385$.
+
+\begin{tangan}
+Prepare twenty cards, write the numbers $1$ to $20$ on the cards, one number per card.
+Shuffle, draw five cards without looking, add them up, then divide by five. Write the result on
+one line of paper. Return the five cards, shuffle again, repeat. Do this thirty times, always
+five cards, and arrange those numbers as points on one number line.
+
+What you should see: the points do not pile up at one number. The mean of all the
+cards is really $10.5$, and your points scatter around it, some $8$, some
+$13$. Now repeat the whole job with ten cards per draw, thirty
+times more. The second spread is narrower, but not by half: it narrows by roughly
+the square root of two, because the number of cards doubled. Paste the two rows of points side
+by side, and see for yourself that doubling the work only trims the wobble by about thirty
+percent.
+\end{tangan}
+
+\section{Proportions: Wald, Wilson, and the rule of three}
+\tingkat{intermediate}
+
+For proportions, the most widely used formula is the simplest version of the previous
+theorem: replace $\bar X_n$ by $\hat p$ and $\sigma/\sqrt n$ by the standard error of the
+proportion. In everyday language: we set a symmetric interval around the observed proportion,
+twice its standard error wide.
+
+\begin{definisi}[Wald interval]
+\index{wald interval}
+The Wald interval of level $1-\alpha$ for a proportion is
+\[
+\hat p\pm z\sqrt{\frac{\hat p(1-\hat p)}{n}},\qquad z=z_{1-\alpha/2}.
+\]
+\end{definisi}
+
+That formula is reasonable as long as $\hat p$ is far from zero and one. The difficulty
+appears exactly where the data are scarcest, and its shape is not smooth. If $\hat p=0$, the
+formula gives the interval $[0;\,0]$, of zero width: a claim of complete confidence that the
+event rate is zero, when all we have is the absence of events in $n$ trials. If $\hat p=1/20$,
+the lower limit is $-0.0455$, a number that is not a probability.
+
+The cause is not rounding. Wald uses $\hat p$ for two jobs at once: as the center point and as
+the variance estimator. When $\hat p$ approaches zero, the estimated variance shrinks with it,
+although the real uncertainty is precisely large on that scale.
+
+The way out is to invert the question: instead of assuming that $\hat p$ spreads normally
+around the true $p$, we ask which values of $p$ are still plausible given the observed data.
+The criterion is that the normalized distance between $\hat p$ and $p$ does not exceed $z$,
+with the variance in the denominator using $p$, not $\hat p$.
+
+\kamus{Wilson interval}{interval wilson}{an interval found by asking which values are still
+plausible, rather than by setting a symmetric interval around the guess}
+
+\begin{teorema}[Wilson interval]
+\index{wilson interval}
+For $0\le k\le n$, $\hat p=k/n$, and $z>0$, the set of $p\in[0,1]$ satisfying
+\[
+n(\hat p-p)^2\le z^2p(1-p)
+\]
+is a closed interval with endpoints
+\[
+\frac{\hat p+\dfrac{z^2}{2n}\ \pm\
+z\sqrt{\dfrac{\hat p(1-\hat p)}{n}+\dfrac{z^2}{4n^2}}}{1+\dfrac{z^2}{n}} .
+\]
+Both endpoints always lie in $[0,1]$, and the interval is never empty.
+\end{teorema}
+
+\begin{proof}[Proof]
+Rearrange the inequality into $(n+z^2)p^2-(2n\hat p+z^2)p+n\hat p^2\le0$.
+Its discriminant is
+\[
+(2n\hat p+z^2)^2-4(n+z^2)n\hat p^2
+=4z^2\Bigl(n\hat p(1-\hat p)+\frac{z^2}{4}\Bigr)\ge0,
+\]
+so the roots are real and the quadratic formula gives the form in the theorem statement after
+numerator and denominator are divided by $2n$.
+
+For the location, let $f(p)=n(\hat p-p)^2-z^2p(1-p)$. The coefficient of $p^2$ is
+$n+z^2>0$, so $\{f\le0\}$ is the interval $[r_-,r_+]$. Because
+$f(0)=n\hat p^2\ge0$, the point $0$ is not in the interior of that interval, so
+$r_-\ge0$; because $f(1)=n(1-\hat p)^2\ge0$, neither is the point $1$, so
+$r_+\le1$. Finally $f(\hat p)=-z^2\hat p(1-\hat p)\le0$ places $\hat p$ inside the
+interval, so the interval is not empty.
+\end{proof}
+
+Now compare the two on the same data. The following table uses $z=1.96$ and
+$95$ percent confidence intervals; every number is computed with the formulas above and
+rechecked with Python.
+
+\begin{center}
+\small
+\begin{tabular}{lrrrr}
+\hline
+data & $\hat p$ & Wald $95$ percent & Wilson $95$ percent & Wilson width \\
+\hline
+$33/50$  & 0,660 & $(0.5287;\ 0.7913)$ & $(0.5215;\ 0.7756)$ & 0,254 \\
+$53/100$ & 0,530 & $(0.4322;\ 0.6278)$ & $(0.4329;\ 0.6249)$ & 0,192 \\
+$13/20$  & 0,650 & $(0.4410;\ 0.8590)$ & $(0.4329;\ 0.8188)$ & 0,386 \\
+$1/20$   & 0,050 & $(-0.0455;\ 0.1455)$ & $(0.0089;\ 0.2361)$ & 0,227 \\
+$0/20$   & 0,000 & $(0;\ 0)$ & $(0;\ 0.1611)$ & 0,161 \\
+\hline
+\end{tabular}
+\end{center}
+
+The first two rows barely differ: when $\hat p$ is near one half, both are legitimate and
+agree to two decimal places. The fourth and fifth rows show the separation. At $1/20$ the Wald
+interval is \emph{narrower} than Wilson, $0.191$ against $0.227$, and that narrowness is
+the sign of an error: its lower limit falls outside $[0,1]$. At $0/20$ Wald gives zero width,
+whereas Wilson leaves room up to $0.1611$. The conclusion is not that Wilson is always
+better, but that the width of an interval cannot be judged without its coverage.
+
+For the zero-event case there is a special result older than Wilson and easier to remember. In
+everyday language: no events at all is not proof that the event rate is zero, and the upper
+limit is about three divided by the number of trials.
+
+\kamus{rule of three}{aturan tiga}{if no event occurs in a given number of trials,
+the event rate may still be as high as three divided by the number of trials}
+
+\begin{teorema}[Rule of three]
+\index{rule of three}
+Let $K\sim\mathrm{Bin}(n,p)$ and suppose $K=0$ is observed. The one-sided upper limit at the
+$95$ percent level is $p_{\mathrm{hi}}=1-0.05^{1/n}$, and
+\[
+p_{\mathrm{hi}}\le\frac{\ln 20}{n}<\frac{3}{n}.
+\]
+\end{teorema}
+
+\begin{proof}[Proof]
+The probability of observing zero events is $(1-p)^n$. Setting that probability equal to
+$0.05$ gives $(1-p_{\mathrm{hi}})^n=0.05$, that is
+$p_{\mathrm{hi}}=1-0.05^{1/n}=1-e^{-c/n}$ with $c=\ln 20=2.9957\ldots$ Because
+$1-e^{-x}\le x$ for $x\ge0$, we obtain $p_{\mathrm{hi}}\le c/n<3/n$.
+\end{proof}
+
+For $n=100$, the rule of three gives $3/100=0.03$, the exact limit $0.0295130$, and the
+two-sided Wilson upper limit at $k=0$ is $z^2/(n+z^2)=0.0369935$. All three numbers answer
+the same question with three different promises; the rule of three is the exact one-sided
+limit, Wilson a two-sided approximation. What is not allowed is to quote a number without
+naming the procedure.
+
+\section{Hypothesis tests and p-values}
+\tingkat{intermediate}
+
+Up to here the question took the form ``what is its value''. The next question takes the form
+``is its value equal to a particular number''. In everyday language, we file a charge that
+there is no effect, then check whether the data are surprising enough to overturn that charge.
+
+\begin{definisi}[Null hypothesis, alternative, and level]
+\index{null hypothesis}
+The \emph{null hypothesis} $H_0$ is a statement about the parameter to be tested; the
+\emph{alternative hypothesis} $H_1$ is the set of values held to be true if $H_0$ is
+rejected. The \emph{level} $\alpha$ is the probability of rejecting $H_0$ when $H_0$ is in fact
+true. The rejection rule is determined by one test statistic $T$ and one rejection region
+$R$: we reject $H_0$ if $T\in R$.
+\end{definisi}
+
+The level $\alpha$ is chosen before the data are seen, and therein lies the whole credibility
+of the procedure: we are willing to wrongly accuse in a small fraction of trials, and we state
+how large that fraction is. The p-value moves the same idea to a single data set.
+
+\begin{definisi}[p-value]
+\index{p-value}
+For data $x$ and test statistic $T$, the p-value is the probability of obtaining a result at
+least as extreme as the observed one if $H_0$ is true,
+\[
+\text{p-value} p=\sup_{\theta\in H_0}P_\theta\bigl(T\text{ as far as }T(x)\bigr).
+\]
+We reject $H_0$ at level $\alpha$ if the p-value $\le\alpha$.
+\end{definisi}
+
+The phrase ``at least as far'' needs to be fixed for a two-sided test, and the usual
+convention is to add the two tails: for a symmetric $z$ statistic, the
+p-value $=2(1-\Phi(|z|))$. That definition makes the p-value a random
+variable, and its behavior under $H_0$ can be stated exactly.
+
+\begin{teorema}[The p-value is uniform under $H_0$]
+\index{p-value}
+If $H_0$ is true and $T$ has a continuous distribution with distribution function $F_0$, then
+$P_{H_0}(\text{p-value} p\le\alpha)=\alpha$ for every $\alpha\in(0,1)$. Consequently
+$P_{H_0}(\text{p-value} p\le0.05)=0.05$: a test with the rule ``reject if the p-value
+$\le\alpha$'' has level exactly $\alpha$.
+\end{teorema}
+
+\begin{proof}[Proof]
+For a right one-sided test, the p-value $=1-F_0(T)$, so
+\[
+P_{H_0}(1-F_0(T)\le\alpha)
+=P_{H_0}\bigl(F_0(T)\ge1-\alpha\bigr)
+=P_{H_0}\bigl(T\ge F_0^{-1}(1-\alpha)\bigr)=\alpha,
+\]
+because $F_0(T)$ is uniformly distributed on $(0,1)$ when $F_0$ is continuous. For a two-sided
+test, the p-value depends on $|T|$ and the proof uses the same step on the
+distribution of $|T|$.
+\end{proof}
+
+That uniformity has a consequence often missed: under $H_0$ the p-value spreads evenly, so a
+p-value $=0.04$ appears in four percent of trials whose null hypothesis is true. What
+distinguishes two trials is not the single p-value but the power of each.
+
+\begin{bacakeras}
+Two voices, taking turns.
+
+``The p-value is point zero four. So the probability that there is no effect is four
+percent.''
+
+``No. The p-value counts the data, not the charge. If there were no effect, and
+this trial were repeated a hundred times, about four times the data would look this far out.''
+
+``So it is the data that get counted.''
+
+``Yes, the data. The charge is only a place to stand.''
+
+``And if the p-value is large?''
+
+``Then the data are not surprising. The silence of a scale is not proof that the goods are
+light.''
+
+Say it once more, slowly: the p-value is the probability of the data, not the probability of
+the charge. Repeat that line until it feels natural in the mouth: probability of the data, not
+probability of the charge.
+\end{bacakeras}
+
+
+\begin{resep}
+\begin{enumerate}
+  \item Write $H_0$ and $H_1$ as statements about one parameter, before
+        computing anything.
+  \item Fix $\alpha$ and its rejection region, then pause. Do not look at
+        the data yet.
+  \item Compute the test statistic with the standard error under $H_0$, then the p-value.
+  \item Compare the p-value with the $\alpha$ already fixed, and report the
+        interval together with that decision.
+\end{enumerate}
+A warning about order: step 2 must be finished before step 3. If $\alpha$ is chosen
+after the data are seen, $\alpha$ is no longer a promise but a record of the result, and step 4
+loses its meaning. What may not be swapped: step 2 and step 3.
+\end{resep}
+
+Now an example with numbers. For the data $33$ out of $50$ and $H_0\colon p=0.5$,
+the $z$ statistic uses the standard error under $H_0$, namely $\sqrt{0.25/50}=0.070711$:
+\[
+z=\frac{0.66-0.5}{0.070711}=2.2627,\qquad
+\text{p-value} p=2(1-\Phi(2.2627))=0.0237 .
+\]
+The exact binomial test on the same rule, $P(X\ge33)+P(X\le17)$ for
+$X\sim\mathrm{Bin}(50;0.5)$, gives $0.0328$. Both numbers reject $H_0$ at the five percent
+level, but the normal approximation reports a p-value almost thirty percent smaller. At $n=50$
+a difference that large is enough to flip the decision when the level is $0.03$; a good
+report states which test was used, not only its p-value.
+
+Figure~\ref{fig:dua-ekor} places those two limits on the distribution of $z$ under $H_0$: two
+tails of area $0.0250$ each, and the observed statistic $2.2627$ inside the right tail.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=11.2cm, height=5.4cm,
+  xmin=-4, xmax=4, ymin=0, ymax=0.46,
+  axis lines=left,
+  xtick={-1.96,0,1.96},
+  xticklabels={$-1.96$,$0$,$1.96$},
+  ytick=\empty,
+  tick label style={font=\small},
+  xlabel={value of $z$ if $H_0$ is true},
+  xlabel style={font=\small},
+]
+\addplot[fill=accent!25,draw=none,domain=-3.95:-1.96,samples=100]
+  {0.39894228*exp(-0.5*x^2)} \closedcycle;
+\addplot[fill=accent!25,draw=none,domain=1.96:3.95,samples=100]
+  {0.39894228*exp(-0.5*x^2)} \closedcycle;
+\addplot[very thick,layerindigo,domain=-3.95:3.95,samples=200]
+  {0.39894228*exp(-0.5*x^2)};
+\draw[densely dashed,layergrey] (axis cs:-1.96,0)--(axis cs:-1.96,0.0584);
+\draw[densely dashed,layergrey] (axis cs:1.96,0)--(axis cs:1.96,0.0584);
+\draw[very thick,accent] (axis cs:2.2627,0)--(axis cs:2.2627,0.0308);
+\node[font=\scriptsize] (tl) at (axis cs:-2.55,0.135) {$0.025$};
+\draw[-{Stealth[length=4pt]},layergrey] (tl)--(axis cs:-2.55,0.012);
+\node[accent,font=\scriptsize] (tz) at (axis cs:2.05,0.215) {$z=2.2627$};
+\draw[-{Stealth[length=4pt]},accent] (tz)--(axis cs:2.2627,0.055);
+\node[font=\scriptsize] (tr) at (axis cs:3.05,0.135) {$0.025$};
+\draw[-{Stealth[length=4pt]},layergrey] (tr)--(axis cs:3.05,0.004);
+\end{axis}
+\end{tikzpicture}
+\caption{The distribution of the statistic $z=\sqrt n(\hat p-p_0)/\sqrt{p_0(1-p_0)}$ when
+$H_0$ is true, for the data $33$ out of $50$ with $H_0\colon p=0.5$. The two dashed lines at
+$\pm1.96$ cut off the two shaded tails, each of area
+$1-\Phi(1.96)=0.0250$, so the two-sided level is $0.05$. The thick line at
+$2.2627$ is the statistic observed on that data; the right tail from that point has area
+$0.0118$, and twice that area is the p-value $0.0237$ that the normal test reports.}
+\label{fig:dua-ekor}
+\end{figure}
+
+A confidence interval and a hypothesis test are not two different procedures; they are two
+ways of reading the same set.
+
+\begin{proposisi}[Equivalence of interval and test]
+\index{confidence interval}
+For the Wald interval and the two-sided $z$-test that uses the standard error $\hat p$, we have
+that $p_0$ is contained in the Wald interval of level $1-\alpha$ if and only if $H_0\colon
+p=p_0$ is not rejected at level $\alpha$. More generally, the Wilson interval is the set of
+$p_0$ not rejected by the score test at level $\alpha$.
+\end{proposisi}
+
+\begin{proof}[Proof]
+For the Wald pair, both statements use the same inequality, namely
+$|\hat p-p_0|\le z\sqrt{\hat p(1-\hat p)/n}$: the first reads it as
+``$p_0$ lies inside the interval'', the second as ``the test statistic does not exceed
+$z$''. For Wilson, the set $\{p_0:n(\hat p-p_0)^2\le z^2p_0(1-p_0)\}$ is the
+definition of the score test turned around, and the Wilson theorem has already computed its
+endpoints.
+\end{proof}
+
+\section{Type I error, type II error, and power}
+\tingkat{advanced}
+
+Every binary decision can be wrong in two ways, and the two are not symmetric.
+In everyday language: a fire alarm can sound when there is no fire, and
+can stay silent when there is one. The first mistake sends us out of the house for nothing;
+the second is far more costly.
+
+\begin{definisi}[Type I error, type II error, and power]
+\index{type i error}
+A \emph{type I error} is rejecting $H_0$ when $H_0$ is true; its probability is the level
+$\alpha$. A \emph{type II error} is not rejecting $H_0$ when $H_1$ is true;
+its probability is written $\beta$. The \emph{power} of a test is $1-\beta$, the probability of
+rejecting $H_0$ when the effect sought is really there.
+\end{definisi}
+
+Figure~\ref{fig:dua-galat} arranges those four possibilities as a decision box,
+with probabilities from the exact computation at $n=20$, $p_0=0.5$, and $p_1=0.75$ that
+appears in the computational lab: $\alpha=0.0414$, power $0.6172$, so $\beta=0.3828$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[font=\small,
+  keputusan/.style={draw=layergrey,thick,rounded corners=2pt,
+    minimum width=4.3cm,minimum height=1.6cm,align=center,inner sep=4pt}]
+\node[keputusan,fill=layerjade!10] (a) at (0,0)
+  {does not reject $H_0$\\ correct, probability $1-\alpha=0.9586$};
+\node[keputusan,fill=accent!12] (b) at (5.1,0)
+  {rejects $H_0$\\ type I error, probability $\alpha=0.0414$};
+\node[keputusan,fill=accent!12] (c) at (0,-2.4)
+  {does not reject $H_0$\\ type II error, probability $\beta=0.3828$};
+\node[keputusan,fill=layerjade!10] (d) at (5.1,-2.4)
+  {rejects $H_0$\\ correct, power $1-\beta=0.6172$};
+\node[font=\scriptsize,above=2pt] at (0,1.0) {$H_0$ is true: $p=0.5$};
+\node[font=\scriptsize,above=2pt] at (5.1,1.0) {$H_1$ is true: $p=0.75$};
+\end{tikzpicture}
+\caption{The two kinds of error as four decision boxes. Top row: the actual
+state $H_0$ is true; bottom row: $H_1$ is true with $p=0.75$. Left column: the test
+does not reject; right column: the test rejects. The boxes in red are the two errors that
+cannot be suppressed together: shrinking $\alpha=0.0414$ enlarges
+$\beta=0.3828$, and conversely. The numbers are computed from the exact binomial
+distribution at $n=20$ with the rejection rule $k\le5$ or $k\ge15$.}
+\label{fig:dua-galat}
+\end{figure}
+
+Power is not a property of the test alone, but of the test together with the sample size and
+the size of the effect. Hence it must be computed for one value $p_1$ deemed important, not in
+general. For a two-sided test with $H_0\colon p=0.5$, $n=100$, and the rule to reject when
+$|z|>1.96$, the rejection region is $k\le40$ or $k\ge60$. The exact binomial computation
+gives size $0.0569$, not $0.05$, and power $0.8750$ at
+$p_1=0.65$, whereas the normal approximation gives $0.8508$. The normal approximation,
+namely
+\[
+1-\beta\approx\Phi\Bigl(\frac{(p_1-p_0)\sqrt n}{\sqrt{p_0(1-p_0)}}-z\Bigr),
+\]
+is close enough for planning, but the two-and-a-half-point difference is real and comes from
+the discreteness of the data.
+
+First lesson: the nominal level is seldom attained exactly. At $n=20$ the same rule rejects
+when $k\le5$ or $k\ge15$, with exact size $0.0414$; at $n=100$
+the size is $0.0569$. A discrete test cannot put a threshold between two whole
+numbers, so the actual level hangs on $n$ and $p_0$. Second lesson: at
+$n=20$ the power against $p_1=0.75$ is only $0.6172$, so almost four in ten
+trials of size twenty fail to find it.
+
+That last number opens the most costly misinterpretation: reading ``p-value
+$>0.05$'' as ``no effect''. First, the p-value is
+$P(\text{data}\mid H_0)$, not $P(H_0\mid\text{data})$; both are conditional probabilities
+with the conditions swapped, and we already met that swap in the diagnostic tests of
+Chapter 17. Second, a large p-value is a statement about the data, not about the world: scanty
+data cannot surprise anyone. Third, failure to reject can occur precisely because the test is
+weak, as at $n=20$ above.
+
+A small example makes all three concrete. Ten successes out of twenty trials against
+$H_0\colon p=0.5$ give a two-sided p-value of exactly $1$: that data set sits
+precisely in the middle. Is that proof that $p=0.5$? No. The $95$ percent Wilson interval
+for the same data is $(0.2993;\ 0.7007)$. So the true rate may be
+$0.30$, may be $0.70$, and this data set cannot tell it apart from $0.50$.
+A p-value $=1$ only means ``no direction of deviation'', and that is far less than what people
+usually read into it.
+
+\begin{tantangan}
+Two versions of a detector are tested on \mbox{$100\,000$} examples each. Version A catches
+\mbox{$66\,000$}, version B catches \mbox{$65\,000$}. A two-proportion test gives a p-value of about
+$0.0000026$, and the team writes in the report: ``A is better, $p<0.001$''. Does that
+sentence have the support of the data? Answer with one interval, not with a p-value.
+
+Hint 1: the p-value measures surprise, not the size of the effect. Compute the $95$ percent
+interval for the difference of the two proportions, and mind the units.
+
+Hint 2: the standard error of the difference is $0.002126$, so the interval runs from
+$0.0058$ to $0.0142$, that is zero point six to one point four percentage points.
+Compare it with the practical threshold the team itself uses: three percentage points.
+
+If you get stuck, go back to the section Type I error, type II error, and power.
+\end{tantangan}
+
+\begin{untukanak}
+A line judge is tasked with raising the flag when the ball goes out of the field. He raises the
+flag only when he sees the ball go out himself, clearly enough. If he does not raise the flag,
+does that mean the ball was always in? Certainly not. The ball may have gone out, but his view
+was blocked by another player, or the ball was very fast.
+
+The way he works is similar to the way a hypothesis test works. He is given one rule that must
+be settled before the match: how sure he must be before raising the flag. If the rule is too
+loose, he often raises the flag when the ball is in, and the crowd is angry. If the rule is too
+strict, he almost never raises the flag, and big fouls slip by. The two mistakes are
+different, and he cannot suppress both at once by carefulness alone.
+
+In this chapter we shall learn why ``no evidence'' is not the same as ``no foul'', why the
+number of observations matters as much as the rule chosen, and why a judge who never raises
+the flag is not a more careful judge.
+\end{untukanak}
+
+\section{Worked example: 33 out of 50 and 53 out of 100}
+\tingkat{intermediate}
+
+We return to the two detectors in the chapter opening and compute both intervals all the way.
+Every number below uses $z=1.96$, so $z^2=3.8416$.
+
+For A, $\hat p=0.66$ and $n=50$. The first term inside the Wilson root is
+$0.66\cdot0.34/50=0.2244/50=0.004488$; the second term
+$z^2/(4n^2)=3.8416/10000=0.00038416$; their sum is $0.00487216$ and its root
+$0.069801$. The center is
+\[
+\frac{0.66+3.8416/100}{1+3.8416/50}
+=\frac{0.698416}{1.076832}=0.648584,
+\]
+and the half-width is $1.96\cdot0.069801/1.076832=0.127048$. So the Wilson interval
+for A is $(0.5215;\ 0.7756)$, of width $0.2541$. The Wald interval for the
+same data uses standard error $0.066993$ and half-width
+$1.96\cdot0.066993=0.131303$, hence $(0.5287;\ 0.7913)$ of width
+$0.2626$.
+
+For B, $\hat p=0.53$ and $n=100$. The first term
+$0.53\cdot0.47/100=0.002491$, the second term $3.8416/40000=0.00009604$,
+the sum $0.00258704$ and its root $0.050863$. The center
+$(0.53+0.019208)/1.038416=0.528890$, the half-width
+$1.96\cdot0.050863/1.038416=0.096003$, hence $(0.4329;\ 0.6249)$ of width
+$0.1920$. Wald gives $(0.4322;\ 0.6278)$ of width $0.1956$.
+
+Now compare. The intervals A and B overlap on $(0.5215;\ 0.6249)$, an extent of
+$0.1034$: about $41$ percent of the length of A and $54$ percent of the length of B. The
+normal-based two-proportion test gives $z=1.5175$ and a two-sided p-value of $0.1291$.
+Although the raw numbers differ by thirteen points, this data set is not enough to conclude
+that A is better; the interval for A is also wider, because it is built from fifty examples.
+
+\kertas{Recompute part A without looking at the text: $0.66\cdot0.34$, divide by $50$,
+add $3.8416/10000$, take its root, then divide by $1.076832$ after
+multiplying by $1.96$. Check that the result is $0.127048$. Then answer: how many
+examples are needed for the width of the interval for A to fall to $0.15$, if $\hat p$
+stays $0.66$? Hint: the width is proportional to $1/\sqrt n$, and you already know the width
+at $n=50$.}
+
+\section{Computational lab: coverage, type I error, and power}
+\tingkat{advanced}
+
+Every claim above can be checked with a computer, and there is one claim that can be checked
+only that way: the actual coverage of a procedure. The key is knowing the true $p$, something
+that never happens with real data. Hence we work with simulation and with exact binomial
+computations.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from math import sqrt
+from scipy.stats import norm, binom
+
+z = norm.ppf(0.975)
+
+
+def wald(k, n):
+    p = k / n
+    se = sqrt(p * (1 - p) / n)
+    return p - z * se, p + z * se
+
+
+def wilson(k, n):
+    p = k / n
+    z2 = z * z
+    mid = (p + z2 / (2 * n)) / (1 + z2 / n)
+    half = z * sqrt(p * (1 - p) / n + z2 / (4 * n * n)) / (1 + z2 / n)
+    return mid - half, mid + half
+
+
+# 1. width of the 95% interval for several proportions
+print("== 1. width of the 95% interval ==")
+print("   n    k   phat  Wald width    Wilson width")
+for n in (20, 100):
+    for p in (0.00, 0.05, 0.25, 0.50, 0.66):
+        k = round(p * n)
+        a = wald(k, n)
+        b = wilson(k, n)
+        print("%4d %4d  %5.2f   %9.4f    %9.4f"
+              % (n, k, k / n, a[1] - a[0], b[1] - b[0]))
+
+# 2. exact coverage at p = 0.05
+print("== 2. exact coverage, p=0.05 ==")
+for n in (20, 50, 100):
+    for nama, f in (("Wald", wald), ("Wilson", wilson)):
+        c = 0.0
+        for k in range(n + 1):
+            lo, hi = f(k, n)
+            if lo <= 0.05 <= hi:
+                c += binom.pmf(k, n, 0.05)
+        print("n=%3d %-6s coverage=%.4f" % (n, nama, c))
+
+# 3. simulated coverage with a fixed seed
+rng = np.random.default_rng(20261024)
+R = 20000
+print("== 3. simulated coverage, R=%d ==" % R)
+for n in (20, 100):
+    X = rng.binomial(n, 0.05, R)
+    for nama, f in (("Wald", wald), ("Wilson", wilson)):
+        ok = 0
+        w = 0.0
+        for k in X:
+            lo, hi = f(int(k), n)
+            ok += (lo <= 0.05 <= hi)
+            w += hi - lo
+        print("n=%3d %-6s coverage=%.4f  width=%.4f" % (n, nama, ok / R, w / R))
+
+# 4. type I error and power for H0: p=0.5
+print("== 4. type I error and power, H0 p=0.5 ==")
+
+
+def tolak(k, n, p0=0.5):
+    return abs((k / n - p0) / sqrt(p0 * (1 - p0) / n)) > z
+
+
+for n in (20, 100):
+    rej = [k for k in range(n + 1) if tolak(k, n)]
+    lo = max(k for k in rej if k < n / 2)
+    hi = min(k for k in rej if k > n / 2)
+    print("n=%3d reject if k<=%d or k>=%d" % (n, lo, hi))
+    print("      exact size at p=0.5 : %.4f"
+          % sum(binom.pmf(k, n, 0.5) for k in rej))
+    for p1 in (0.65, 0.75):
+        ex = sum(binom.pmf(k, n, p1) for k in rej)
+        zc = (p1 - 0.5) / sqrt(0.25 / n)
+        ap = norm.cdf(zc - z) + norm.cdf(-zc - z)
+        print("      power at p=%.2f: exact %.4f  approx %.4f"
+              % (p1, ex, ap))
+
+# 4b. simulated type I error rate when H0 is true
+print("== 4b. simulated type I error, R=%d ==" % R)
+for n in (20, 100):
+    X0 = rng.binomial(n, 0.5, R)
+    tolak0 = np.abs((X0 / n - 0.5) / sqrt(0.25 / n)) > z
+    print("n=%3d p=0.5: reject=%.4f" % (n, tolak0.mean()))
+
+# 5. t-interval for 12 measurements
+x = np.array([18.2, 19.1, 17.8, 20.3, 18.9, 19.7,
+              18.4, 21.0, 17.5, 19.9, 18.6, 20.1])
+n = len(x)
+m = x.mean()
+s = x.std(ddof=1)
+from scipy.stats import t
+tq = t.ppf(0.975, n - 1)
+h = tq * s / sqrt(n)
+print("== 5. t-interval, n=12 ==")
+print("mean=%.6f  s=%.6f  se=%.6f" % (m, s, s / sqrt(n)))
+print("t=%.6f  half-width=%.6f  CI=(%.6f, %.6f)" % (tq, h, m - h, m + h))
+print("half-width with z=1.96: %.6f" % (z * s / sqrt(n)))
+\end{verbatim}
+\end{lab}
+
+The actual output, verbatim:
+
+\begin{verbatim}
+== 1. width of the 95% interval ==
+   n    k   phat  Wald width    Wilson width
+  20    0   0.00      0.0000       0.1611
+  20    1   0.05      0.1910       0.2272
+  20    5   0.25      0.3795       0.3568
+  20   10   0.50      0.4383       0.4014
+  20   13   0.65      0.4181       0.3860
+ 100    0   0.00      0.0000       0.0370
+ 100    5   0.05      0.0854       0.0902
+ 100   25   0.25      0.1697       0.1676
+ 100   50   0.50      0.1960       0.1923
+ 100   66   0.66      0.1857       0.1826
+== 2. exact coverage, p=0.05 ==
+n= 20 Wald   coverage=0.6389
+n= 20 Wilson coverage=0.9245
+n= 50 Wald   coverage=0.9199
+n= 50 Wilson coverage=0.9622
+n=100 Wald   coverage=0.8775
+n=100 Wilson coverage=0.9659
+== 3. simulated coverage, R=20000 ==
+n= 20 Wald   coverage=0.6430  width=0.1472
+n= 20 Wilson coverage=0.9224  width=0.2193
+n=100 Wald   coverage=0.8783  width=0.0829
+n=100 Wilson coverage=0.9667  width=0.0884
+== 4. type I error and power, H0 p=0.5 ==
+n= 20 reject if k<=5 or k>=15
+      exact size at p=0.5 : 0.0414
+      power at p=0.65: exact 0.2457  approx 0.2687
+      power at p=0.75: exact 0.6172  approx 0.6088
+n=100 reject if k<=40 or k>=60
+      exact size at p=0.5 : 0.0569
+      power at p=0.65: exact 0.8750  approx 0.8508
+      power at p=0.75: exact 0.9997  approx 0.9988
+== 4b. simulated type I error, R=20000 ==
+n= 20 p=0.5: reject=0.0430
+n=100 p=0.5: reject=0.0554
+== 5. t-interval, n=12 ==
+mean=19.125000  s=1.082191  se=0.312401
+t=2.200985  half-width=0.687591  CI=(18.437409, 19.812591)
+half-width with z=1.96: 0.612296
+\end{verbatim}
+
+Four things deserve reading from that output. First, parts 2 and 3 agree to almost
+three digits, and that agreement is itself a check, since a simulation with
+$R=20000$ repetitions can approach the exact computation only to about
+$\sqrt{0.25/20000}=0.0035$. At $p=0.05$ and $n=20$ the difference is $0.0041$ for
+Wald and $0.0021$ for Wilson. An honest simulation must report $R$.
+
+Second, the coverage of Wald at $n=20$ and $p=0.05$ is $0.6389$, not $0.95$.
+The cause can be computed by hand: the probability of observing zero events is $0.3585$,
+and at $k=0$ the Wald interval is $[0;0]$, which does not contain $0.05$; that single point
+alone consumes almost thirty-six points of coverage. Wilson fails only when
+$k\ge3$, whose probability is $0.0755$, and its failure is not total because its interval
+stays wide. That is why it reaches $0.9245$. Note also the width column: the mean
+Wald width $0.1472$ is smaller than the Wilson $0.2193$, and precisely therein lies the
+point. A narrower interval is not a better interval if it is narrow because it sits in the
+wrong place.
+
+Third, part 4 separates the size of a test from the nominal level: $0.0414$ at $n=20$ and
+$0.0569$ at $n=100$, both for the rule $|z|>1.96$; part 4b repeats it
+by simulation and lands close, $0.0430$ and $0.0554$. Power moves far more
+drastically: $0.2457$ at $n=20$ and $0.8750$ at $n=100$ for $p_1=0.65$.
+The normal approximation is not always on the safe side: at $n=20$ it reports $0.2687$
+while the truth is $0.2457$.
+
+Fourth, part 5 merely repeats the $t$-interval already computed in the text, with a
+difference in half-width between $t$ and $z$ of $0.075295$.
+
+The program does not prove any one of all those things. It checks claims already
+proved, and in two places it shows its own limits: exact coverage
+uses the distribution we assume to be true, so if the model is wrong, the number
+$0.9245$ means nothing; and simulation only measures how often
+the procedure succeeds under that model, not how right the model is.
+
+\begin{untukdosen}
+The teaching order I suggest: start from the morning meeting in the chapter opening, not from
+the definition of an estimator. Write $33/50$ and $53/100$ on the board, ask the class to choose, then
+ask what happens if those fifty examples are replaced. Out of that unease the
+definitions of estimator, bias, and standard error emerge as the answer. The MSE
+decomposition is proved at the board with one line of algebra. The interpretation of the
+confidence interval comes after that, as material for a lecture of its own, not a footnote.
+
+Two misconceptions appear most often. First, students read ``$95$ percent''
+as a conditional probability on data already in hand, then write ``the probability that $\mu$ is in
+this interval is $0.95$''; the symptom shows when they cannot explain what is
+random about an interval already computed. Second, they take a large p-value as
+proof that $H_0$ is true, and will compute the p-value for $10/20$ and then conclude that
+$p=0.5$ is established.
+
+A blackboard activity that works: split the class into two groups, one computing the
+Wald interval and one the Wilson interval for $1/20$, then have both defend their result
+in front of the class. The Wald group will find a negative lower limit and have to
+explain it. The sign that the class is ready to go on: they can name one example of a
+sample size that makes the p-value large although the effect is large, and can explain
+why that happens.
+\end{untukdosen}
+
+\section{Summary}
+\tingkat{basic}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item An estimator is a statistic that guesses a parameter, so it is a random variable with
+        an expectation and a variance. Its quality is measured by
+        $\operatorname{MSE}=\operatorname{bias}^2+\operatorname{Var}$; unbiasedness alone
+        guarantees nothing, and MSE going to zero guarantees consistency through
+        Chebyshev.
+  \item The standard error is the square root of the variance of the estimator, not the width
+        of the data. For a proportion its value is $\sqrt{\hat p(1-\hat p)/n}$, shrinking like
+        $1/\sqrt n$, so four times the data only cuts it in half.
+  \item A $95$ percent confidence interval is a statement about the procedure, not
+        about the parameter: the procedure catches the true value on $95$ percent
+        of repeated trials. Once the data are taken, the interval is fixed and no longer
+        carries a probability.
+  \item The Wald interval collapses near $0$ and $1$: at $0/20$ its width is zero, and at
+        $p=0.05$ with $n=20$ its coverage is only $0.6389$. The Wilson interval, the
+        result of inverting the score test, reaches $0.9245$ in the same setting.
+  \item If no event occurs in $n$ trials, the $95$ percent upper limit is about
+        $3/n$; for $n=100$ the exact limit is $0.0295130$ and the two-sided Wilson
+        limit $0.0369935$.
+  \item The p-value is the probability of data at least that extreme if $H_0$ is true, and
+        under $H_0$ it is uniformly distributed. A large p-value is not proof that $H_0$ is
+        true: at $n=20$ the power against $p=0.75$ is only $0.6172$.
+\end{itemize}
+\end{ringkasan}
+
+\section{Exercises}
+\tingkat{intermediate}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Assess this claim: ``Because the p-value equals $0.42$, the null hypothesis
+        $p=0.5$ is proved true.'' True, false, or not enough evidence? Name
+        the part that is right, the part that is wrong, and one additional computation that
+        would strengthen your answer.
+  \item Prove that $\mathbb{E}[\hat p(1-\hat p)]=p(1-p)(n-1)/n$ for
+        $\hat p=K/n$ with $K\sim\mathrm{Bin}(n,p)$, then determine the unbiased estimator
+        of $p(1-p)$ obtained from it. Check the result at $p=0.3$ and
+        $n=20$.
+  \item Prove that if $\operatorname{bias}(\hat\theta_n)\to0$ and
+        $\operatorname{Var}(\hat\theta_n)\to0$, then $\hat\theta_n$ is consistent for
+        $\theta$. Explain why that condition is weaker than
+        $\operatorname{MSE}\to0$ yet sufficient for the same conclusion.
+  \item Compute the $95$ percent Wilson and Wald intervals for $7/40$, then compare
+        their widths with $13/20$. Explain why the smaller width at $7/40$
+        is not a sign of higher precision, and check both intervals with
+        Python.
+  \item For $n=30$ and $H_0\colon p=0.5$ with a normal-based two-sided test,
+        determine the rejection region, compute its exact size, then compute its power at
+        $p_1=0.7$. Compare that power with $n=100$ at the same
+        $p_1$.
+  \item Prove that the Wald interval and the two-sided $z$-test using the standard error
+        $\hat p$ really are equivalent, by writing the two inequalities side by side.
+        Explain why the equivalence fails when the test uses the standard error under
+        $H_0$.
+  \item A report writes: ``there is no significant difference, $p=0.31$,
+        so the two methods are equally good''. Rewrite that sentence honestly, naming the
+        interval, the level, and the power. You may invent the numbers as long as they are
+        consistent.
+  \item For $n=100$ with not a single event, compute the rule of three, the exact one-sided
+        limit, and the Wilson upper limit. Explain why the three numbers differ, then
+        state which one may be used for the sentence ``at most $5$ percent''.
+  \item Compute the $90$ percent $t$-interval for the twelve delay-time data in this chapter,
+        then compare it with the $95\%$ interval. How much data is needed for the width
+        of the $95\%$ interval to fall by half, if $s$ does not change?
+\end{enumerate}
+
+Hints for the three hardest items. Item 3: write
+$\hat\theta_n-\theta=\operatorname{bias}_n+(\hat\theta_n-\mathbb{E}\hat\theta_n)$,
+then use the triangle inequality and Chebyshev on the second term. Item 6: the first inequality
+is $|\hat p-p_0|\le z\sqrt{\hat p(1-\hat p)/n}$, and a test that uses
+$\sqrt{p_0(1-p_0)/n}$ uses a different denominator, so the set of $p_0$ not
+rejected is no longer the Wald interval but a more complicated set. Item 5: the rejection
+region is $|k-15|>1.96\sqrt{30\cdot0.25}$, so $k\le9$ or $k\ge21$, and
+the power is computed by summing the binomial pmf at $p=0.7$ over those two tails.
+\end{latihan}
+
+\begin{untukpeneliti}
+What is really proved in this chapter: the MSE decomposition; consistency from MSE going to
+zero; exact coverage of the $z$-interval under the normal model; the closed form of the Wilson
+interval and its location in $[0,1]$; the rule of three as an exact one-sided limit together
+with the inequality $p_{\mathrm{hi}}<\ln 20/n$; the uniformity of the p-value under $H_0$ for a
+continuous statistic; and the equivalence of interval and test in the pairs mentioned.
+What is merely popular, not a theorem: that $95\%$ means a conditional probability on
+data already observed; that a large p-value supports $H_0$; and that a smaller interval width
+is always better, when a comparison of widths without coverage means nothing. The subnominal
+coverage of Wilson at some $(n,p)$ is also a computational fact, not a theorem.
+
+Primary source: Wasserman, \emph{All of Statistics}, Chapter 6 (Models, Statistical
+Inference, and Learning) for bias, MSE, and the interpretation of intervals; Chapter 9
+(Parametric Inference) for intervals and the plug-in method; Chapter 10 (Hypothesis Testing
+and p-values) for p-values, type I and II errors, power, and the relation of tests to
+intervals. The Wilson interval comes from E.~B. Wilson, ``Probable Inference, the Law of
+Succession, and Statistical Inference'' (1927); the rule of three from B.~D. Jovanovic and
+P.~S. Levy, ``A Look at the Rule of Three'' (1997). Neither is discussed by Wasserman, so the
+references are cited directly, not through an intermediate textbook.
+
+Limits of validity: the whole chapter works with independent and identically distributed
+samples, one parameter, and a known normal or binomial approximation. The $z$-interval is
+exact only under the normal model with $\sigma$ known; beyond that it is an asymptotic
+statement, and at small $n$ with heavy-tailed distributions its coverage can fall far below
+nominal. The Wilson interval is a score approximation, not an exact interval; exact intervals
+for proportions are computed from the binomial distribution and are wider. Every reported
+coverage is conditional on the binomial model being correct.
+
+Open questions worth a reader's work: how well proportion intervals behave when $n$ is not
+fixed but stops adaptively, as in sequential sampling; and how to build intervals for
+classification metrics computed from dependent data, for instance when one example appears in
+several cross-validation folds. Both are still research material.
+\end{untukpeneliti}
+
+\peta{Chapter 20 in Wasserman, \emph{All of Statistics}: Chapter 6 (Models, Statistical
+Inference, and Learning: estimators, bias, MSE, standard error, interpretation of intervals),
+Chapter 9 (Parametric Inference: confidence intervals and the plug-in method), Chapter 10
+(Hypothesis Testing and p-values: p-values, type I and II errors, power, equivalence of tests
+and intervals). The Wilson interval and the rule of three are taken from their original
+papers, Wilson (1927) and Jovanovic--Levy (1997), because Wasserman discusses neither. The law
+of large numbers, the central limit theorem, and Chebyshev's inequality used here are proved
+in Chapter 18; conditional probability and the error of swapping the conditions are discussed
+in Chapter 16. Chapter 25 continues this chapter for classification metrics, including the
+rule of three in the reporting of model evaluation.}

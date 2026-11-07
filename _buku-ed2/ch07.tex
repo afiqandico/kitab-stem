@@ -1,0 +1,1240 @@
+\chapter{Basis, Dimensi, dan Transformasi Linear}
+
+Sebuah detektor anomali tidak membaca lalu lintas jaringan mentah. Ia meringkasnya lebih
+dulu. Empat pencacah, misalnya koneksi gagal, paket keluar, lama sesi, dan banyaknya porta
+unik, diringkas menjadi tiga fitur oleh peta linear
+$F\colon\mathbb{R}^{4}\to\mathbb{R}^{3}$.
+Ambang keputusan hanya melihat $F(\mathbf{x})$.
+
+Pertanyaan yang menentukan: adakah $\boldsymbol{\delta}\neq\mathbf{0}$ dengan
+$F(\mathbf{x}+\boldsymbol{\delta})=F(\mathbf{x})$? Karena $F$ linear, syarat itu setara
+dengan
+$F(\boldsymbol{\delta})=\mathbf{0}$. Jawabannya subruang berdimensi
+$4-\operatorname{rank}F$; bila $F$ berpangkat tiga, ada satu garis penuh arah buta, dan
+penyerang dapat menggeser keempat pencacah sepanjang garis itu tanpa menggeser satu pun
+fitur.
+
+Untuk menjawabnya kita perlu tiga hal yang belum diberikan Bab 6: daftar koordinat terhadap
+basis, aturan memindahkan daftar itu ketika basis berganti, dan terjemahan peta linear
+menjadi matriks sehingga inti dapat dihitung dengan eliminasi. Bab 6 sudah menetapkan bahwa
+basis ada dan ukurannya tunggal; aksiomanya tidak diulang di sini.
+
+\begin{untukanak}
+Bayangkan sebuah lemari buku dengan banyak rak. Setiap buku punya tempat tetap. Kalau kita
+menata ulang lemarinya, buku-bukunya tidak berubah, tetapi alamat setiap buku berubah. Untuk
+mengatakan di mana sebuah buku berada, kita harus menyebut penataan yang sedang dipakai.
+Kawan kita yang memakai penataan lain akan menyebut alamat yang berbeda untuk buku yang
+sama,
+dan kalian berdua sama-sama benar.
+
+Ada juga rak khusus di belakang lemari. Buku yang dipindahkan ke sana tidak terlihat dari
+depan. Selama buku hanya berpindah di dalam rak itu, daftar buku di depan tidak berubah sama
+sekali.
+
+Pernahkah kamu memindahkan sesuatu ke tempat yang tidak diperiksa siapa pun? Kita akan tahu
+mengapa daftar alamat bisa berubah sementara isi
+lemari tetap, mengapa rak tersembunyi itu selalu punya ukuran tertentu, dan mengapa ada
+perubahan yang tidak menggeser ringkasan sama sekali.
+\end{untukanak}
+
+\section{Koordinat dan matriks transisi}
+\tingkat{menengah}
+
+Vektor di $\mathbb{R}^{3}$ sudah berupa daftar tiga angka; vektor di $P_{2}$ atau
+$M_{2\times2}(\mathbb{R})$ tidak. Supaya keduanya dapat dihitung dengan cara yang sama, kita
+perlu terjemahan yang mengubah setiap vektor menjadi daftar angka. Terjemahan itu bergantung
+pada basis, dan di situlah kesulitan bagian ini bermula.
+
+Ketunggalan sudah kita punya: lemma ketunggalan koordinat di Bab 6 menyatakan penulisan
+vektor dalam suatu basis selalu tunggal. Karena itu definisi berikut sah tanpa memilih di
+antara beberapa penulisan.
+
+\kamus{koordinat}{coordinate vector}{Alamat sebuah buku di lemari: isinya tetap, alamatnya
+bergantung cara menata rak.}
+
+\begin{definisi}[Vektor koordinat]
+Misalkan $B=(\mathbf{b}_{1},\dots,\mathbf{b}_{n})$ adalah basis terurut dari ruang vektor
+$V$
+atas $\mathbb{R}$. Untuk setiap $\mathbf{v}\in V$ ada skalar tunggal $a_{1},\dots,a_{n}$
+dengan $\mathbf{v}=a_{1}\mathbf{b}_{1}+\dots+a_{n}\mathbf{b}_{n}$. Kolom
+\[
+  [\mathbf{v}]_{B}=(a_{1},\dots,a_{n})^{\top}
+\]
+disebut \emph{vektor koordinat} $\mathbf{v}$ terhadap $B$.\index{koordinat}
+\end{definisi}
+
+Kata ``terurut'' bukan hiasan. Bila dua vektor basis ditukar, dua entri koordinat ikut
+bertukar sedangkan vektornya tetap. Satu himpunan basis belum menentukan daftar koordinat;
+urutannya juga menentukan.
+
+Satu peringatan: $[\mathbf{v}]_{B}$ bukan $\mathbf{v}$. Angka-angka itu hidup di
+$\mathbb{R}^{n}$, sedangkan $\mathbf{v}$ tinggal di $V$. Untuk $M_{2\times2}(\mathbb{R})$
+bedanya terasa: vektornya berisi empat angka, dan koordinatnya juga empat angka, tetapi
+tersusun sebagai kolom yang bergantung pada basis.
+
+Sifat penting pertama dari terjemahan ini: ia menghormati kedua operasi ruang vektor.
+
+\begin{proposisi}
+Untuk setiap basis $B$ dari ruang $V$ berdimensi $n$, peta
+$\varphi_{B}\colon V\to\mathbb{R}^{n}$ dengan $\varphi_{B}(\mathbf{v})=[\mathbf{v}]_{B}$
+bersifat linear, injektif, dan surjektif.
+\end{proposisi}
+
+\begin{proof}
+Ambil $\mathbf{v}=\sum_{i}a_{i}\mathbf{b}_{i}$ dan $\mathbf{w}=\sum_{i}c_{i}\mathbf{b}_{i}$.
+Maka $\mathbf{v}+\mathbf{w}=\sum_{i}(a_{i}+c_{i})\mathbf{b}_{i}$. Ketunggalan koordinat
+memaksa $[\mathbf{v}+\mathbf{w}]_{B}=(a_{i}+c_{i})=[\mathbf{v}]_{B}+[\mathbf{w}]_{B}$.
+Dengan cara yang sama, $[c\mathbf{v}]_{B}=c[\mathbf{v}]_{B}$.
+
+Untuk injektivitas, misalkan $[\mathbf{v}]_{B}=\mathbf{0}$. Maka semua koefisiennya nol,
+sehingga $\mathbf{v}=\sum_{i}0\cdot\mathbf{b}_{i}=\mathbf{0}$. Untuk surjektivitas, ambil
+sembarang $(a_{1},\dots,a_{n})\in\mathbb{R}^{n}$ dan bentuk
+$\mathbf{v}=\sum_{i}a_{i}\mathbf{b}_{i}$; koordinatnya tepat daftar itu.
+\end{proof}
+
+Peta $\varphi_{B}$ memindahkan pertanyaan tentang $V$ menjadi pertanyaan tentang kolom di
+$\mathbb{R}^{n}$, lalu memindahkannya kembali; pemindahan itu bergantung pada $B$. Koordinat
+ditulis sebagai kolom agar matriks bekerja dari kiri: koordinat masuk, dikalikan matriks,
+koordinat keluar. Dengan koordinat baris, setiap rumus harus ditranspos.
+
+\begin{bacakeras}
+Dua suara berdiri di depan kelas.
+
+``Berapa panjang meja ini?''
+``Tiga.''
+``Tiga apa?''
+``Tiga penggaris. Atau tiga jengkal. Atau tiga langkah. Pilih dulu alat ukurnya.''
+
+Begitu juga ruang vektor. Sebuah vektor belum punya alamat sampai kita memilih basis. Basis
+itu
+penggaris: ia memberi skala, memberi arah, dan memberi urutan. Ganti penggarisnya, ganti
+angkanya. Benda yang diukur tidak ikut berubah.
+
+Satu penggaris, satu angka. Dua penggaris, dua angka. Tanpa penggaris, tidak ada angka sama
+sekali.
+
+Hati-hati dengan penggaris yang jelek: dua garis skalanya hampir sejajar. Angka tetap
+keluar,
+tetapi angkanya gemetar, dan dua orang yang mengukur dengan sabar akan mendapat angka
+berbeda.
+
+Ulangi bersama: basis bukan bendanya, basis alat ukurnya. Yang berubah alamat, yang tetap
+isi.
+\end{bacakeras}
+
+Sekarang dua basis dipakai pada ruang yang sama. Setiap vektor punya dua daftar koordinat,
+dan kita ingin rumus yang mengubah daftar pertama menjadi daftar kedua. Matriks yang
+melakukan tugas itu disusun dari koordinat vektor basis lama dalam basis baru.
+
+\begin{definisi}[Matriks transisi]
+Misalkan $B=(\mathbf{b}_{1},\dots,\mathbf{b}_{n})$ dan
+$C=(\mathbf{c}_{1},\dots,\mathbf{c}_{n})$
+dua basis dari $V$. \emph{Matriks transisi} dari $B$ ke $C$ adalah matriks $n\times n$
+\[
+P_{C\leftarrow
+B}=\Bigl(\,[\mathbf{b}_{1}]_{C}\;\Big|\;\cdots\;\Big|\;[\mathbf{b}_{n}]_{C}\,\Bigr),
+\]
+yaitu matriks yang kolom ke-$j$-nya adalah $[\mathbf{b}_{j}]_{C}$.\index{transisi}
+\end{definisi}
+
+Yang perlu dibuktikan: mengalikan daftar koordinat lama dengan matriks ini menghasilkan
+daftar
+koordinat baru.
+
+\begin{teorema}
+Untuk setiap $\mathbf{v}\in V$ berlaku $[\mathbf{v}]_{C}=P_{C\leftarrow B}[\mathbf{v}]_{B}$.
+\end{teorema}
+
+\begin{proof}
+Tulis $\mathbf{v}=\sum_{j}a_{j}\mathbf{b}_{j}$, sehingga
+$[\mathbf{v}]_{B}=(a_{1},\dots,a_{n})^{\top}$.
+Kelinearan $\varphi_{C}$ memberi
+$[\mathbf{v}]_{C}=\sum_{j}a_{j}[\mathbf{b}_{j}]_{C}$. Ruas kanan itu tepat hasil kali
+matriks
+$P_{C\leftarrow B}$ dengan kolom $(a_{j})$, menurut definisi perkalian matriks dengan vektor.
+\end{proof}
+
+Akibat yang membuat matriks itu dapat dipakai dua arah.
+
+\begin{akibat}
+Matriks transisi selalu invertible, dan $P_{B\leftarrow C}=P_{C\leftarrow B}^{-1}$. Selain itu
+$P_{C\leftarrow B}=P_{C\leftarrow D}\,P_{D\leftarrow B}$ untuk tiga basis $B,C,D$ dari $V$.
+\end{akibat}
+
+\begin{proof}
+Teorema sebelumnya memberi $P_{B\leftarrow C}P_{C\leftarrow B}[\mathbf{v}]_{B}=[\mathbf{v}]_{B}$
+untuk semua $\mathbf{v}$. Karena $\varphi_{B}$ surjektif, hasil kali itu sama dengan matriks
+identitas. Argumen yang sama berlaku pada urutan sebaliknya, jadi kedua matriks saling
+invers. Untuk aturan rantai, terapkan teorema dua kali:
+$[\mathbf{v}]_{C}=P_{C\leftarrow D}[\mathbf{v}]_{D}=P_{C\leftarrow D}P_{D\leftarrow B}[\mathbf{v}]_{B}$,
+lalu bandingkan dengan $[\mathbf{v}]_{C}=P_{C\leftarrow B}[\mathbf{v}]_{B}$ pada $\mathbf{v}=\mathbf{b}_{j}$.
+\end{proof}
+
+Perhatikan bahwa $P_{C\leftarrow B}$ dan $P_{B\leftarrow C}$ bukan transpos satu sama lain; keduanya saling invers, dan itu berbeda. Arah subskrip dibaca dari kanan ke kiri, seperti komposisi peta: ambil vektor basis ke-$j$ dari $B$, lalu tanyakan alamatnya menurut $C$. Bila $B$ basis standar, kolom-kolom $P_{B\leftarrow C}$ adalah vektor-vektor $C$ itu sendiri.
+
+Ambil $B=(\mathbf{e}_{1},\mathbf{e}_{2},\mathbf{e}_{3})$
+dan $C=(\mathbf{b}'_{1},\mathbf{b}'_{2},\mathbf{b}'_{3})$ dengan
+\[
+  \mathbf{b}'_{1}=(1,1,0),\qquad \mathbf{b}'_{2}=(1,0,1),\qquad \mathbf{b}'_{3}=(0,1,1).
+\]
+Karena $B$ standar, matriks $P_{B\leftarrow C}$ memuat ketiga vektor itu sebagai kolom:
+\[
+  P_{B\leftarrow C}=\begin{pmatrix}1&1&0\\ 1&0&1\\ 0&1&1\end{pmatrix},
+  \qquad \det P_{B\leftarrow C}=-2\neq0 .
+\]
+Inversnya
+\[
+  P_{C\leftarrow B}=\frac{1}{2}\begin{pmatrix}1&1&-1\\ 1&-1&1\\ -1&1&1\end{pmatrix}.
+\]
+Untuk $\mathbf{v}=(3,8,11)$ kita peroleh
+\[
+  [\mathbf{v}]_{C}=P_{C\leftarrow B}[\mathbf{v}]_{B}
+  =\frac{1}{2}\begin{pmatrix}3+8-11\\ 3-8+11\\ -3+8+11\end{pmatrix}
+  =\begin{pmatrix}0\\ 3\\ 8\end{pmatrix}.
+\]
+Pemeriksaannya langsung: $3\mathbf{b}'_{2}+8\mathbf{b}'_{3}=(3,8,11)$. Sebaliknya
+$\mathbf{w}=(1,0,0)$ berkoordinat $(1/2,\,1/2,\,-1/2)$; entri pecahan wajar, karena
+koordinat
+hanyalah alamat.
+
+\section{Transformasi linear, inti, dan jangkauan}
+\tingkat{dasar}
+
+Bab 6 membahas ruang dan subruang, tetapi belum membahas peta di antaranya. Padahal
+pekerjaan utama aljabar linear adalah memindahkan vektor: memutar, memproyeksikan,
+menurunkan, meringkas.
+
+Aturan yang menghormati penjumlahan dan perkalian skalar disebut transformasi linear:
+menjumlahkan dulu lalu memetakan sama hasilnya dengan memetakan dulu lalu menjumlahkan.
+
+\begin{definisi}[Transformasi linear]
+Peta $T\colon V\to W$ antara dua ruang vektor atas $\mathbb{R}$ disebut
+\emph{transformasi linear} bila $T(\mathbf{u}+\mathbf{v})=T(\mathbf{u})+T(\mathbf{v})$ dan
+$T(c\mathbf{v})=cT(\mathbf{v})$ untuk semua $\mathbf{u},\mathbf{v}\in V$ dan $c\in\mathbb{R}$.
+\end{definisi}
+
+Kedua syarat setara dengan satu syarat,
+$T(c\mathbf{u}+\mathbf{v})=cT(\mathbf{u})+T(\mathbf{v})$. Konsekuensi pertama,
+$T(\mathbf{0})=\mathbf{0}$, dipakai untuk menolak kelinearan dengan cepat: peta
+$T(\mathbf{x})=\mathbf{x}+\mathbf{a}$ dengan $\mathbf{a}\neq\mathbf{0}$ langsung gugur.
+
+Sebaliknya $T(\mathbf{0})=\mathbf{0}$ tidak cukup. Peta $T(x,y)=(x^{2},y)$ memenuhinya,
+tetapi
+$T(2,0)=(4,0)$ sedangkan $2T(1,0)=(2,0)$. Kuadrat memutus kelinearan.\index{transformasi
+linear}
+
+Rotasi $90^{\circ}$, $R(x,y)=(-y,x)$, linear: $R(3,1)=(-1,3)$. Turunan $D\colon P_{3}\to P_{2}$, $D(p)=p'$, linear karena $(p+q)'=p'+q'$. Peta $T(x,y)=(x+y,\,2x+2y)$ juga linear, tetapi seluruh $\mathbb{R}^{2}$ jatuh ke satu garis; ia linear sekaligus merusak informasi.
+
+Ambil
+$A=\begin{pmatrix}2&1\\1&2\end{pmatrix}$ dan $T(\mathbf{x})=A\mathbf{x}$. Vektor $(1,0)$ pergi
+ke $(2,1)$ dan $(0,1)$ ke $(1,2)$, sehingga persegi satuan menjadi jajar genjang bertitik
+sudut
+$(0,0)$, $(2,1)$, $(3,3)$, $(1,2)$ dengan luas $3$, sebab $|2\cdot2-1\cdot1|=3$.
+Gambar~\ref{fig:kisi-07} memperlihatkan kisi sebelum dan sesudah peta: garis tetap garis, kisi
+tetap kisi, tetapi jarak dan luas tidak lagi sama.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.38,>=stealth,font=\scriptsize]
+  \foreach \k in {0,1,2,3}{
+    \draw[layergrey!45] (\k,0)--(\k,3);
+    \draw[layergrey!45] (0,\k)--(3,\k);
+    \draw[layerteal,thick] (2*\k,\k)--(2*\k+3,\k+6);
+    \draw[layerteal,thick] (\k,2*\k)--(\k+6,2*\k+3);}
+  \fill[accent!15] (0,0)--(1,0)--(1,1)--(0,1)--cycle;
+  \draw[accent,thick] (0,0)--(1,0)--(1,1)--(0,1)--cycle;
+  \fill[layerorange!25] (0,0)--(2,1)--(3,3)--(1,2)--cycle;
+  \draw[layerorange,very thick] (0,0)--(2,1)--(3,3)--(1,2)--cycle;
+  \draw[->,ink,thick] (-0.6,0)--(9.8,0) node[below right]{$x$};
+  \draw[->,ink,thick] (0,-0.6)--(0,9.8) node[left]{$y$};
+  \foreach \x/\y in {2/1,1/2,3/3}{
+    \fill[ink] (\x,\y) circle (1.8pt);
+    \node[ink,anchor=north west] at (\x+0.05,\y-0.05) {$(\x,\y)$};}
+  \node[layergrey,anchor=north west] at (0,-1.0) {tipis: kisi asal};
+  \node[layerteal,anchor=north west] at (4.0,-1.0) {tebal: kisi setelah dipetakan};
+\end{tikzpicture}
+\caption{Kisi satuan dan bayangannya di bawah $T(\mathbf{x})=A\mathbf{x}$ dengan
+$A=\begin{pmatrix}2&1\\1&2\end{pmatrix}$. Satu petak berubah menjadi jajar genjang bertitik
+sudut $(0,0)$, $(2,1)$, $(3,3)$, dan $(1,2)$, sehingga luasnya naik dari $1$ menjadi $3$.
+Kisi lama digambar tipis, kisi baru digambar tebal; keduanya tetap kisi.}
+\label{fig:kisi-07}
+\end{figure}
+
+\begin{tangan}
+Ambil selembar kertas berpetak, pensil, dan penggaris. Gambar sumbu mendatar dan sumbu
+tegak,
+lalu tandai perpotongannya sebagai pusat. Gambar sebuah rumah kecil: persegi lima petak,
+atap
+segitiga, pintu satu petak.
+
+Sekarang geser. Pindahkan setiap titik rumah itu tiga petak ke kanan dan dua petak ke atas.
+Jangan menebak; hitung. Titik yang tadinya satu petak ke kanan dan satu petak ke atas
+sekarang
+berada empat petak ke kanan dan tiga petak ke atas. Gambar ulang rumah itu. Bentuk dan
+ukurannya
+sama, hanya tempatnya berpindah.
+
+Sekarang putar. Putar kertas seperempat putaran searah jarum jam, lalu gambar ulang rumah
+yang
+sama. Panjang setiap sisi tetap, arah setiap sisi berubah.
+
+Yang harus terlihat: pada geseran, semua arah bertahan tetapi pusat ikut berpindah; pada
+putaran, pusat bertahan dan semua arah berubah. Karena geseran memindahkan pusat, geseran
+bukan
+transformasi linear. Putaran termasuk.
+\end{tangan}
+
+Kabar baiknya: untuk mengenal peta linear, cukup mengenal nilainya pada vektor basis.
+
+\begin{proposisi}
+Misalkan $B=(\mathbf{b}_{1},\dots,\mathbf{b}_{n})$ basis $V$ dan
+$\mathbf{w}_{1},\dots,\mathbf{w}_{n}\in W$ sebarang. Ada tepat satu peta linear
+$T\colon V\to W$ dengan $T(\mathbf{b}_{j})=\mathbf{w}_{j}$ untuk setiap $j$.
+\end{proposisi}
+
+\begin{proof}
+Untuk keberadaan, definisikan
+$T\bigl(\sum_{j}a_{j}\mathbf{b}_{j}\bigr)=\sum_{j}a_{j}\mathbf{w}_{j}$.
+Definisi ini tidak bergantung pada penulisan, karena koordinat terhadap basis tunggal. Untuk
+kelinearan, pakai kelinearan koordinat dari proposisi di bagian sebelumnya:
+$T(\mathbf{u}+\mathbf{v})=\sum_{j}(a_{j}+c_{j})\mathbf{w}_{j}=T(\mathbf{u})+T(\mathbf{v})$,
+dan serupa untuk perkalian skalar.
+
+Untuk ketunggalan, misalkan $S$ linear dan $S(\mathbf{b}_{j})=\mathbf{w}_{j}$. Untuk
+$\mathbf{v}=\sum_{j}a_{j}\mathbf{b}_{j}$ berlaku
+$S(\mathbf{v})=\sum_{j}a_{j}S(\mathbf{b}_{j})=\sum_{j}a_{j}\mathbf{w}_{j}=T(\mathbf{v})$.
+\end{proof}
+
+Akibat praktisnya: $n$ vektor di $W$ menentukan satu peta linear dari $V$ berdimensi $n$.
+Bila $W=\mathbb{R}^{m}$, data itu tidak lain matriks $m\times n$.
+
+Setiap peta linear membawa dua himpunan yang layak diperiksa: vektor yang dipetakan ke nol,
+dan nilai yang benar-benar tercapai.
+
+\kamus{inti}{kernel atau null space}{Daftar perubahan yang sama sekali tidak menggeser
+ringkasan.}
+
+\begin{definisi}[Inti, jangkauan, rank, dan nullity]
+Untuk $T\colon V\to W$ linear, \emph{inti} adalah
+$\ker T=\{\mathbf{v}\in V: T(\mathbf{v})=\mathbf{0}\}$ dan \emph{jangkauan} adalah
+$\operatorname{im}T=\{T(\mathbf{v}):\mathbf{v}\in V\}$. Bila $V$ berdimensi hingga,
+$\operatorname{nullity}(T)=\dim\ker T$ dan $\operatorname{rank}(T)=\dim\operatorname{im}T$.
+\end{definisi}
+
+Keduanya subruang, bukan sekadar himpunan.\index{inti}\index{jangkauan}
+
+\begin{lemma}
+$\ker T$ subruang $V$ dan $\operatorname{im}T$ subruang $W$.
+\end{lemma}
+
+\begin{proof}
+Keduanya memuat $\mathbf{0}$ karena $T(\mathbf{0})=\mathbf{0}$. Bila
+$\mathbf{u},\mathbf{v}\in\ker T$
+dan $c\in\mathbb{R}$, maka $T(\mathbf{u}+\mathbf{v})=\mathbf{0}$ dan
+$T(c\mathbf{u})=\mathbf{0}$,
+jadi $\ker T$ tertutup. Bila $\mathbf{u}=T(\mathbf{x})$ dan $\mathbf{v}=T(\mathbf{y})$, maka
+$\mathbf{u}+\mathbf{v}=T(\mathbf{x}+\mathbf{y})$ dan $c\mathbf{u}=T(c\mathbf{x})$ anggota
+$\operatorname{im}T$.
+\end{proof}
+
+Inti mengukur kegagalan injektivitas, dan hanya itu yang perlu diperiksa.
+
+\begin{proposisi}
+$T$ injektif jika dan hanya jika $\ker T=\{\mathbf{0}\}$.
+\end{proposisi}
+
+\begin{proof}
+Bila $T$ injektif, hanya $\mathbf{0}$ yang punya peta $\mathbf{0}$. Sebaliknya andaikan
+$\ker T=\{\mathbf{0}\}$ dan $T(\mathbf{u})=T(\mathbf{v})$. Maka $T(\mathbf{u}-\mathbf{v})=\mathbf{0}$,
+jadi $\mathbf{u}-\mathbf{v}\in\ker T$, sehingga $\mathbf{u}=\mathbf{v}$.
+\end{proof}
+
+Rank menghitung arah yang bertahan, nullity menghitung arah yang lenyap. Keduanya membagi
+dimensi ruang asal.
+
+\kamus{rank}{rank}{Banyaknya arah bebas yang masih bertahan setelah dipetakan.}
+
+Contoh kecil memperlihatkan kedua nasib itu. Ambil
+$B=\begin{pmatrix}1&2\\2&4\end{pmatrix}$. Maka $B\mathbf{e}_{1}=(1,2)$ dan
+$B\mathbf{e}_{2}=(2,4)$, dua vektor segaris, jadi $\operatorname{rank}(B)=1$. Arah $(1,2)$
+bertahan dan memanjang: $B(1,2)=(5,10)$. Arah $(2,-1)$ lenyap: $B(2,-1)=(0,0)$.
+Gambar~\ref{fig:arah} menggambar keduanya, dan rank-nullity menutup hitungan: $2=1+1$.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=0.60,>=stealth,font=\scriptsize]
+  \draw[layerjade!60,thin] (-0.7,-1.4)--(2.8,5.6);
+  \node[layerjade,anchor=west,rotate=63] at (2.0,4.3) {garis arah $(1,2)$};
+  \draw[->,ink,thick] (-1.0,0)--(3.3,0) node[below right]{$x$};
+  \draw[->,ink,thick] (0,-2.0)--(0,5.0) node[left]{$y$};
+  \draw[->,layergrey,thick] (0,0)--(1,0) node[below]{$\mathbf{e}_{1}$};
+  \draw[->,layergrey,thick] (0,0)--(0,1) node[left]{$\mathbf{e}_{2}$};
+  \draw[->,layerorange,very thick] (0,0)--(1,2) node[above left]{$B\mathbf{e}_{1}=(1,2)$};
+  \draw[->,layerbrown,very thick] (0,0)--(2,4) node[right]{$B\mathbf{e}_{2}=(2,4)$};
+  \draw[->,layerplum,thick,dashed] (0,0)--(1.8,-0.9) node[below right]{$(2,-1)$};
+  \node[layerplum,anchor=north] at (1.5,-1.6) {runtuh ke $\mathbf{0}$};
+  \fill[ink] (0,0) circle (1.6pt) node[below left,ink]{$\mathbf{0}$};
+\end{tikzpicture}
+\caption{Dua arah di bawah $B=\begin{pmatrix}1&2\\2&4\end{pmatrix}$. Arah $(1,2)$ bertahan dan
+memanjang menjadi $(5,10)$; arah $(2,-1)$ runtuh ke $\mathbf{0}$. Bayangan kedua vektor basis,
+$B\mathbf{e}_{1}=(1,2)$ dan $B\mathbf{e}_{2}=(2,4)$, terletak pada satu garis, jadi
+$\operatorname{rank}(B)=1$ dan $\operatorname{nullity}(B)=1$.}
+\label{fig:arah}
+\end{figure}
+
+Sekarang teorema pusat bab ini. Isinya: tidak ada dimensi yang hilang di tengah jalan.
+
+\begin{teorema}[Rank-nullity]
+Bila $V$ berdimensi hingga dan $T\colon V\to W$ linear, maka
+\[
+  \dim V=\dim\ker T+\dim\operatorname{im}T .
+\]
+\end{teorema}
+
+\begin{proof}
+Misalkan $\dim V=n$ dan $\dim\ker T=k$. Ambil basis
+$(\mathbf{u}_{1},\dots,\mathbf{u}_{k})$ dari $\ker T$. Menurut akibat perluasan basis di Bab 6,
+basis itu dapat dilengkapi menjadi basis $V$ dengan menambahkan $n-k$ vektor
+$\mathbf{w}_{1},\dots,\mathbf{w}_{n-k}$.
+
+Pertama, himpunan $\{T(\mathbf{w}_{1}),\dots,T(\mathbf{w}_{n-k})\}$ merentang
+$\operatorname{im}T$. Untuk sembarang $T(\mathbf{v})$, tulis
+$\mathbf{v}=\sum_{i}\alpha_{i}\mathbf{u}_{i}+\sum_{j}\beta_{j}\mathbf{w}_{j}$. Suku-suku
+$\mathbf{u}_{i}$ lenyap karena $T(\mathbf{u}_{i})=\mathbf{0}$, sehingga
+$T(\mathbf{v})=\sum_{j}\beta_{j}T(\mathbf{w}_{j})$.
+
+Kedua, himpunan itu bebas linear. Andaikan $\sum_{j}\beta_{j}T(\mathbf{w}_{j})=\mathbf{0}$.
+Maka $T\bigl(\sum_{j}\beta_{j}\mathbf{w}_{j}\bigr)=\mathbf{0}$, jadi
+$\sum_{j}\beta_{j}\mathbf{w}_{j}\in\ker T$, dan ada skalar $\alpha_{i}$ dengan
+$\sum_{j}\beta_{j}\mathbf{w}_{j}=\sum_{i}\alpha_{i}\mathbf{u}_{i}$. Pindahkan semua suku ke
+satu ruas:
+\[
+  \sum_{j}\beta_{j}\mathbf{w}_{j}-\sum_{i}\alpha_{i}\mathbf{u}_{i}=\mathbf{0}.
+\]
+Relasi itu berada di dalam basis $V$, sehingga semua koefisiennya nol; khususnya setiap
+$\beta_{j}=0$. Jadi $\{T(\mathbf{w}_{j})\}$ basis $\operatorname{im}T$, dan
+$\operatorname{rank}(T)=n-k$.
+\end{proof}
+
+Gambar~\ref{fig:batang} menyusun teorema itu sebagai dua batang. Untuk ruang berdimensi
+$4$ panjang totalnya selalu $4$: identitas memberi $4+0$, proyeksi yang membuang satu
+koordinat
+memberi $3+1$, dan peta fitur $G$ nanti memberi $2+2$. Yang bergeser hanya letak pemisahnya.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[x=1cm,y=1cm,font=\scriptsize,>=stealth]
+  \fill[layerjade!45] (0,2.4) rectangle (4,3.1);
+  \draw[layergrey] (0,2.4) rectangle (4,3.1);
+  \node at (2,2.75) {rank $4$};
+  \node[layerjade,anchor=east] at (-0.12,2.75) {identitas};
+  \node[layerjade,anchor=west] at (4.12,2.75) {nullity $0$};
+  \fill[layerteal!45] (0,1.2) rectangle (3,1.9);
+  \fill[layerorange!45] (3,1.2) rectangle (4,1.9);
+  \draw[layergrey] (0,1.2) rectangle (4,1.9);
+  \draw[layergrey] (3,1.2)--(3,1.9);
+  \node at (1.5,1.55) {rank $3$};
+  \node at (3.5,1.55) {$1$};
+  \node[layerteal,anchor=east] at (-0.12,1.55) {proyeksi};
+  \node[layerorange,anchor=west] at (4.12,1.55) {nullity $1$};
+  \fill[layerteal!45] (0,0) rectangle (2,0.7);
+  \fill[layerorange!45] (2,0) rectangle (4,0.7);
+  \draw[layergrey] (0,0) rectangle (4,0.7);
+  \draw[layergrey] (2,0)--(2,0.7);
+  \node at (1,0.35) {rank $2$};
+  \node at (3,0.35) {$2$};
+  \node[layerteal,anchor=east] at (-0.12,0.35) {peta fitur $G$};
+  \node[layerorange,anchor=west] at (4.12,0.35) {nullity $2$};
+  \draw[layergrey,dashed] (4,-0.25)--(4,3.4);
+  \node[layergrey,anchor=south] at (4,3.4) {$\dim V=4$};
+  \fill[layerteal!45] (0,-0.95) rectangle (0.35,-0.6);
+  \draw[layergrey] (0,-0.95) rectangle (0.35,-0.6);
+  \node[anchor=west] at (0.45,-0.78) {arah yang bertahan};
+  \fill[layerorange!45] (3.3,-0.95) rectangle (3.65,-0.6);
+  \draw[layergrey] (3.3,-0.95) rectangle (3.65,-0.6);
+  \node[anchor=west] at (3.75,-0.78) {arah yang lenyap};
+\end{tikzpicture}
+\caption{Rank-nullity sebagai dua batang yang jumlahnya tetap. Untuk $\dim V=4$: peta identitas
+memberi $4+0$, proyeksi yang membuang satu koordinat memberi $3+1$, dan peta fitur $G$ memberi
+$2+2$. Hanya letak pemisahnya yang bergeser; panjang totalnya tetap $4$.}
+\label{fig:batang}
+\end{figure}
+
+Dua akibat yang paling sering dipakai.
+
+\begin{akibat}
+Misalkan $\dim V=\dim W$ berhingga dan $T\colon V\to W$ linear. Maka $T$ injektif jika dan
+hanya jika $T$ surjektif. Selain itu
+$\operatorname{rank}(T)\le\min(\dim V,\dim W)$.
+\end{akibat}
+
+\begin{proof}
+Menurut rank-nullity, $\dim\ker T=n-\operatorname{rank}T$ dengan $n=\dim V$. Injektif tepat
+ketika $\dim\ker T=0$, yaitu $\operatorname{rank}T=n=\dim W$, yang berarti
+$\operatorname{im}T=W$ karena subruang berdimensi penuh memenuhi seluruh ruang. Implikasi
+sebaliknya diperoleh dengan membalik urutan argumen. Batas atas rank jelas dari
+$\operatorname{im}T\subseteq W$ dan dari rank-nullity.
+\end{proof}
+
+Sebagai gambaran angka, ambil $T\colon\mathbb{R}^{3}\to\mathbb{R}^{2}$ dengan
+$T(x,y,z)=(x-y,\,y-z)$. Karena $T(t,t,t)=(0,0)$, intinya garis $\{(t,t,t)\}$ dan nullity
+$1$.
+Bayangan $T(1,0,0)=(1,0)$ dan $T(0,0,1)=(0,-1)$ merentang $\mathbb{R}^{2}$, jadi rank $2$;
+rank-nullity: $3=1+2$.
+
+Bagi pemelajaran mesin, akibat itu keras. Peta fitur $\mathbb{R}^{n}\to\mathbb{R}^{m}$
+dengan $n>m$ tidak mungkin injektif, dan intinya berdimensi paling sedikit $n-m$. Setiap
+pemampatan dimensi menyimpan arah buta; pertanyaannya bukan apakah arah itu ada, melainkan
+apakah penyerang dapat menemukannya.
+
+Prosedur baku untuk basis inti: bawa matriks ke bentuk eselon tereduksi, tandai kolom
+tanpa pivot sebagai variabel bebas, lalu gilir setiap variabel bebas dengan nilai satu dan
+variabel bebas lain nol. Variabel pivot dibaca dari baris-barisnya. Hasilnya satu vektor per
+kolom tanpa pivot, bebas linear karena masing-masing punya posisi satu yang tidak dimiliki
+yang
+lain.
+
+Untuk jangkauan, prosedurnya berbeda dan sering tertukar dengan prosedur inti di atas. Empat
+langkah berikut cukup dihafal.
+
+\begin{resep}
+\begin{enumerate}
+  \item Susun matriks $A$, lalu bawa ke bentuk eselon baris tereduksi dengan eliminasi.
+  \item Tandai kolom yang memuat pivot. Kolom tanpa pivot bukan calon anggota basis.
+  \item Kembali ke matriks asli $A$, bukan ke bentuk eselonnya. Ambil kolom asli yang posisinya
+        sama dengan kolom pivot.
+  \item Periksa: banyaknya vektor terpilih sama dengan banyaknya baris tak nol, dan vektor itu
+        bebas linear.
+\end{enumerate}
+Peringatan urutan: langkah tiga tidak boleh mengambil kolom dari bentuk eselon. Operasi
+baris
+mengubah kolom, sedangkan ruang kolom tidak berubah. Mengambil kolom dari matriks eselon
+memberi jawaban salah walaupun banyaknya benar.
+\end{resep}
+
+Inti juga menjawab pertanyaan yang lebih umum: bila satu nilai sudah tercapai, semua
+prapetanya tersusun rapi. Di sini $T^{-1}(\mathbf{w})$ berarti himpunan prapeta, bukan peta
+invers.
+
+\begin{proposisi}
+Misalkan $T\colon V\to W$ linear dan $T(\mathbf{v}_{0})=\mathbf{w}$. Maka
+$T^{-1}(\mathbf{w})=\{\mathbf{v}_{0}+\mathbf{k}:\mathbf{k}\in\ker T\}$.
+\end{proposisi}
+
+\begin{proof}
+Bila $\mathbf{k}\in\ker T$, maka $T(\mathbf{v}_{0}+\mathbf{k})=\mathbf{w}+\mathbf{0}=\mathbf{w}$,
+jadi setiap $\mathbf{v}_{0}+\mathbf{k}$ termasuk prapeta $\mathbf{w}$. Sebaliknya, bila
+$T(\mathbf{v})=\mathbf{w}$, maka $T(\mathbf{v}-\mathbf{v}_{0})=\mathbf{0}$, sehingga
+$\mathbf{v}-\mathbf{v}_{0}\in\ker T$ dan $\mathbf{v}=\mathbf{v}_{0}+(\mathbf{v}-\mathbf{v}_{0})$.
+\end{proof}
+
+Himpunan masukan yang menghasilkan fitur sama adalah salinan inti yang digeser: bila intinya
+berdimensi satu, keluarganya satu garis, yaitu arah buta pada pembuka bab; bila berdimensi
+$k$,
+penyerang punya $k$ arah.
+
+\section{Matriks representasi dan komposisi}
+\tingkat{menengah}
+
+Sekarang dua alat sebelumnya digabung: koordinat mengubah vektor menjadi kolom, dan peta
+linear ditentukan nilainya pada basis. Gabungan keduanya menghasilkan matriks, tempat
+seluruh
+perhitungan dilakukan.
+
+Matriks representasi menyimpan bayangan setiap vektor basis sebagai satu kolom, ditulis
+dalam koordinat basis tujuan.
+
+\begin{definisi}[Matriks representasi]
+Misalkan $B=(\mathbf{b}_{1},\dots,\mathbf{b}_{n})$ basis $V$,
+$C=(\mathbf{c}_{1},\dots,\mathbf{c}_{m})$ basis $W$, dan $T\colon V\to W$ linear.
+\emph{Matriks representasi} $T$ terhadap $B$ dan $C$ adalah matriks $m\times n$
+\[
+[T]_{C\leftarrow
+B}=\Bigl(\,[T(\mathbf{b}_{1})]_{C}\;\Big|\;\cdots\;\Big|\;[T(\mathbf{b}_{n})]_{C}\,\Bigr).
+\]
+\end{definisi}
+
+Kolom-kolom itu diperoleh dengan menyelesaikan sistem, bukan menebak: untuk setiap $j$,
+selesaikan $\sum_{i}x_{i}\mathbf{c}_{i}=T(\mathbf{b}_{j})$, lalu tulis solusinya sebagai
+kolom
+ke-$j$. Bila $C$ basis standar, penyelesaian itu tidak perlu dikerjakan, karena koordinat
+terhadap basis standar adalah vektornya sendiri.
+
+Klaim berikut menjelaskan mengapa matriks itu berguna: ia bekerja dengan cara yang
+diharapkan.
+
+\begin{teorema}
+Untuk setiap $\mathbf{v}\in V$ berlaku
+$[T(\mathbf{v})]_{C}=[T]_{C\leftarrow B}\,[\mathbf{v}]_{B}$.
+\end{teorema}
+
+\begin{proof}
+Tulis $\mathbf{v}=\sum_{j}a_{j}\mathbf{b}_{j}$, jadi $[\mathbf{v}]_{B}=(a_{j})$. Kelinearan
+$T$ memberi $T(\mathbf{v})=\sum_{j}a_{j}T(\mathbf{b}_{j})$. Pengambilan koordinat juga
+linear,
+sehingga $[T(\mathbf{v})]_{C}=\sum_{j}a_{j}[T(\mathbf{b}_{j})]_{C}$, yaitu tepat hasil kali
+matriks dengan kolom $(a_{j})$.
+\end{proof}
+
+Dua akibat langsung. Peta linear dan matriksnya saling menentukan, karena nilai pada
+basis sudah cukup. Dan rank tidak berubah dalam penerjemahan itu.
+
+\begin{proposisi}
+$\operatorname{rank}(T)$ sama dengan rank matriks $[T]_{C\leftarrow B}$, dan $\ker T$
+berkorespondensi dengan ruang nol matriks itu. Rank matriks yang dimaksud adalah dimensi
+ruang
+kolomnya, sebagaimana sudah dipakai di Bab 6.
+\end{proposisi}
+
+\begin{proof}
+Kolom ke-$j$ matriks adalah koordinat $T(\mathbf{b}_{j})$, dan
+$\{T(\mathbf{b}_{j})\}$ merentang $\operatorname{im}T$. Pengambilan koordinat mempertahankan
+kombinasi linear, jadi dimensi jangkauan sama dengan dimensi ruang kolom. Teorema sebelumnya
+menunjukkan $T(\mathbf{v})=\mathbf{0}$ tepat ketika $[T(\mathbf{v})]_{C}=[T]_{C\leftarrow B}[\mathbf{v}]_{B}=\mathbf{0}$,
+yaitu ketika $[\mathbf{v}]_{B}$ berada di ruang nol matriks itu.
+\end{proof}
+
+Komposisi peta berpadanan dengan perkalian matriks. Itu bukan kebetulan, melainkan
+alasan perkalian matriks didefinisikan seperti sekarang.
+
+\begin{teorema}
+Misalkan $T\colon V\to W$ dan $S\colon W\to U$ linear, dengan basis $B,C,E$ pada ketiga ruang.
+Maka $[S\circ T]_{E\leftarrow B}=[S]_{E\leftarrow C}\,[T]_{C\leftarrow B}$.
+\end{teorema}
+
+\begin{proof}
+Untuk setiap $\mathbf{v}\in V$,
+\[
+  [(S\circ T)(\mathbf{v})]_{E}
+  =[S]_{E\leftarrow C}[T(\mathbf{v})]_{C}
+  =[S]_{E\leftarrow C}[T]_{C\leftarrow B}[\mathbf{v}]_{B}.
+\]
+Jadi matriks $[S]_{E\leftarrow C}[T]_{C\leftarrow B}$ memenuhi definisi matriks representasi
+untuk $S\circ T$. Matriks representasi tunggal: bila dua matriks memberi hasil sama pada
+semua $\mathbf{v}$, hasilnya sama khususnya pada $\mathbf{v}=\mathbf{b}_{j}$, sehingga
+kolom-kolomnya sama.
+\end{proof}
+
+Komposisi juga memberi uji invertibilitas lewat matriks.
+
+\begin{proposisi}
+Misalkan $B$ dan $C$ basis dari ruang $V$ berdimensi $n$, dan $T\colon V\to V$ linear. Maka
+$T$ invertible jika dan hanya jika $[T]_{C\leftarrow B}$ invertible, dan dalam hal itu
+$[T^{-1}]_{B\leftarrow C}=([T]_{C\leftarrow B})^{-1}$.
+\end{proposisi}
+
+\begin{proof}
+Bila $T$ invertible, maka $T^{-1}\circ T=I$ dan $T\circ T^{-1}=I$. Teorema komposisi memberi
+$[T^{-1}]_{B\leftarrow C}[T]_{C\leftarrow B}=I$ dan
+$[T]_{C\leftarrow B}[T^{-1}]_{B\leftarrow C}=I$, jadi kedua matriks saling invers.
+
+Sebaliknya, misalkan $A=[T]_{C\leftarrow B}$ invertible. Bila $T(\mathbf{v})=\mathbf{0}$, maka
+$A[\mathbf{v}]_{B}=\mathbf{0}$, sehingga $[\mathbf{v}]_{B}=\mathbf{0}$ dan
+$\mathbf{v}=\mathbf{0}$.
+Jadi $T$ injektif. Karena ruang asal dan ruang tujuan sama-sama berdimensi $n$, akibat
+rank-nullity membuat $T$ surjektif, sehingga $T$ invertible. Persamaan untuk matriks
+$T^{-1}$
+lalu diikuti dari bagian pertama.
+\end{proof}
+
+Dengan begitu pertanyaan tentang invers operator menjadi pertanyaan tentang invers
+matriks; jawaban tuntasnya ada di Bab 8.
+
+Kasus khusus yang paling sering dipakai adalah operator pada satu ruang, $T\colon V\to V$,
+dengan dua basis berbeda. Di sini kedua matriks terhubung oleh matriks transisi.
+
+\begin{teorema}[Perubahan basis]
+Misalkan $T\colon V\to V$ linear, $B$ dan $B'$ dua basis $V$, dan $P=P_{B\leftarrow B'}$.
+Maka
+\[
+  [T]_{B'}=P^{-1}[T]_{B}P .
+\]
+\end{teorema}
+
+\begin{proof}
+Tulis $T=I\circ T\circ I$ dengan $I$ peta identitas. Menurut teorema komposisi,
+\[
+  [T]_{B'\leftarrow B'}=[I]_{B'\leftarrow B}\,[T]_{B\leftarrow B}\,[I]_{B\leftarrow B'}.
+\]
+Matriks identitas terhadap dua basis adalah matriks transisi, jadi
+$[I]_{B'\leftarrow B}=P^{-1}$ dan $[I]_{B\leftarrow B'}=P$.
+\end{proof}\index{representasi}
+
+Dua matriks persegi yang terhubung seperti itu mendeskripsikan operator yang sama dari
+sudut pandang berbeda, jadi keduanya diberi nama sendiri.
+
+\begin{definisi}[Matriks serupa]
+Matriks $A$ dan $B$ berukuran $n\times n$ disebut \emph{serupa} bila ada matriks invertible
+$P$ dengan $B=P^{-1}AP$.\index{similaritas}
+\end{definisi}
+
+Similaritas karena itu nama lain untuk peta yang sama dilihat dari basis berbeda.
+
+\begin{proposisi}
+Dua matriks $n\times n$ serupa jika dan hanya jika keduanya merupakan matriks representasi
+satu operator linear yang sama terhadap dua basis.
+\end{proposisi}
+
+\begin{proof}
+Bila $B=P^{-1}AP$, ambil basis standar $B_{0}$ dan basis $B'$ yang kolom-kolomnya adalah
+kolom-kolom $P$. Maka $P=P_{B_{0}\leftarrow B'}$, dan teorema perubahan basis memberi
+$B=[T]_{B'}$ untuk operator $T(\mathbf{x})=A\mathbf{x}$. Sebaliknya, teorema yang sama
+memberi
+hubungan itu untuk setiap pasangan basis.
+\end{proof}
+
+Rank termasuk besaran yang tidak berubah: rank $[T]_{B'}$ sama dengan rank $T$, dan
+begitu pula rank $[T]_{B}$. Determinan dan trace juga invarian, tetapi keduanya baru
+didefinisikan di Bab 8 dan dibahas di Bab 9.
+
+Contoh kecil untuk operator turunan: $D\colon P_{2}\to P_{2}$, $D(p)=p'$, basis
+$B=(1,x,x^{2})$. Karena $D(1)=0$, $D(x)=1$, dan $D(x^{2})=2x$,
+\[
+  [D]_{B}=\begin{pmatrix}0&1&0\\ 0&0&2\\ 0&0&0\end{pmatrix}.
+\]
+Untuk $p=x^{2}+3x$ koordinatnya $(0,3,1)^{\top}$, dan matriks memberi $(3,\,2,\,0)^{\top}$,
+yaitu $3+2x$, tepat turunan $p$.
+
+\section{Isomorfisme, invarian dimensi, dan ruang peta linear}
+\tingkat{lanjut}
+
+Dua ruang berbeda dapat berperilaku sama. $P_{2}$ dan $\mathbb{R}^{3}$ berisi objek
+berbeda jenis, tetapi keduanya punya tiga arah bebas dan aturan penjumlahan yang sama
+bentuknya.
+
+Korespondensi yang mempertahankan seluruh struktur itu disebut isomorfisme: bijektif,
+linear, dan karena itu mempertahankan basis, dimensi, serta inti.
+
+\kamus{isomorfisme}{isomorphism}{Dua denah rumah yang gambarnya berbeda tetapi jumlah dan
+hubungan ruangannya sama.}
+
+\begin{definisi}[Isomorfisme]
+Peta linear $T\colon V\to W$ disebut \emph{isomorfisme} bila $T$ bijektif. Dua ruang disebut
+\emph{isomorf} bila ada isomorfisme antara keduanya, ditulis $V\cong W$.
+\end{definisi}
+
+Satu lemma sebelum teorema utamanya: isomorfisme memindahkan basis menjadi basis.
+
+\begin{lemma}
+Bila $T\colon V\to W$ isomorfisme dan $B$ basis $V$, maka $T(B)$ basis $W$.
+\end{lemma}
+
+\begin{proof}
+Misalkan $B=(\mathbf{b}_{1},\dots,\mathbf{b}_{n})$. Untuk kebebasan linear, andaikan
+$\sum_{j}c_{j}T(\mathbf{b}_{j})=\mathbf{0}$. Karena $T$ linear, vektor
+$\sum_{j}c_{j}\mathbf{b}_{j}$ dipetakan ke $\mathbf{0}$, jadi vektor itu ada di inti.
+Intinya
+hanya $\{\mathbf{0}\}$ karena $T$ injektif, sehingga semua $c_{j}=0$.
+Untuk merentang, ambil $\mathbf{w}\in W$. Ada $\mathbf{v}\in V$ dengan $T(\mathbf{v})=\mathbf{w}$
+karena $T$ surjektif, dan $\mathbf{v}=\sum_{j}a_{j}\mathbf{b}_{j}$ karena $B$ merentang.
+Maka
+$\mathbf{w}=\sum_{j}a_{j}T(\mathbf{b}_{j})$.
+\end{proof}
+
+Dengan lemma itu, kesamaan dimensi ternyata satu-satunya penghalang.
+
+\begin{teorema}
+Dua ruang berdimensi hingga atas $\mathbb{R}$ isomorf jika dan hanya jika dimensinya sama.
+\end{teorema}
+
+\begin{proof}
+Bila $V\cong W$ lewat $T$, lemma sebelumnya mengubah basis $V$ menjadi basis $W$ dengan
+banyaknya anggota sama, jadi $\dim V=\dim W$.
+
+Sebaliknya, misalkan $\dim V=\dim W=n$. Pilih basis $B$ pada $V$ dan $C$ pada $W$. Peta
+koordinat $\varphi_{B}\colon V\to\mathbb{R}^{n}$ dan $\varphi_{C}\colon W\to\mathbb{R}^{n}$
+bijektif dan linear. Maka $\varphi_{C}^{-1}\circ\varphi_{B}$ adalah peta linear bijektif
+dari
+$V$ ke $W$, karena komposisi peta linear bijektif juga bijektif dan linear.
+\end{proof}
+
+Kesimpulan itu langsung terasa pada ruang yang kita kenal.
+
+\begin{akibat}
+Setiap ruang berdimensi $n$ isomorf dengan $\mathbb{R}^{n}$. Secara khusus
+$P_{n-1}\cong\mathbb{R}^{n}$ dan $M_{2\times2}(\mathbb{R})\cong\mathbb{R}^{4}$.
+\end{akibat}
+
+Isomorfisme mempertahankan segala sesuatu yang didefinisikan dari operasi: kebebasan
+linear, rentang, inti, jangkauan, rank, dan nullity. Dua ruang isomorf tidak dapat dibedakan
+oleh alat bab ini; dimensi menjadi satu-satunya bilangan yang perlu dihitung untuk mengenali
+ruang berdimensi hingga.
+
+Ada jebakan tafsir. Isomorfisme tadi bergantung pada pemilihan
+basis; tidak ada isomorfisme kanonik antara $V$ dan $\mathbb{R}^{n}$. Karena itu ``$V$ sama
+dengan $\mathbb{R}^{n}$'' tidak benar, sedangkan ``$V$ isomorf dengan $\mathbb{R}^{n}$''
+benar.
+Polinomial berderajat kurang dari tiga dan tripel bilangan real adalah objek berbeda jenis,
+tetapi keduanya isomorf sebab setiap polinomial ditentukan tiga koefisiennya.
+
+Sekarang kumpulan semua peta linear antara dua ruang; himpunan itu sendiri ruang vektor.
+
+\begin{teorema}
+Himpunan $\mathcal{L}(V,W)$ dari semua peta linear $V\to W$, dengan operasi
+$(S+T)(\mathbf{v})=S(\mathbf{v})+T(\mathbf{v})$ dan $(cT)(\mathbf{v})=cT(\mathbf{v})$,
+adalah
+ruang vektor. Bila $\dim V=n$ dan $\dim W=m$, maka $\dim\mathcal{L}(V,W)=mn$. Pemetaan
+$T\mapsto[T]_{C\leftarrow B}$ adalah isomorfisme $\mathcal{L}(V,W)\to M_{m\times n}(\mathbb{R})$.
+\end{teorema}
+
+\begin{proof}
+$\mathcal{L}(V,W)$ termuat dalam ruang semua fungsi $V\to W$, yang merupakan ruang vektor
+menurut contoh di Bab 6. Peta nol linear. Jumlah dua peta linear linear, dan kelipatan
+skalar
+peta linear juga linear; jadi $\mathcal{L}(V,W)$ subruang, dan karena itu ruang vektor.
+
+Untuk klaim isomorfisme, misalkan $\Phi(T)=[T]_{C\leftarrow B}$. Kelinearan $\Phi$: kolom
+ke-$j$ dari $\Phi(S+cT)$ adalah $[S(\mathbf{b}_{j})+cT(\mathbf{b}_{j})]_{C}$, yang sama
+dengan
+$[S(\mathbf{b}_{j})]_{C}+c[T(\mathbf{b}_{j})]_{C}$ karena koordinat linear. Jadi
+$\Phi(S+cT)=\Phi(S)+c\Phi(T)$.
+
+Injektivitas: bila $\Phi(T)$ matriks nol, semua $[T(\mathbf{b}_{j})]_{C}=\mathbf{0}$, jadi
+$T(\mathbf{b}_{j})=\mathbf{0}$ untuk semua $j$, dan $T=\mathbf{0}$ karena peta linear
+ditentukan oleh nilainya pada basis.
+
+Surjektivitas: beri matriks $A=(a_{ij})$ berukuran $m\times n$. Definisikan
+$T(\mathbf{b}_{j})=\sum_{i}a_{ij}\mathbf{c}_{i}$ dan perluas secara linear; menurut
+proposisi
+tentang nilai pada basis, perluasan itu ada dan tunggal. Kolom ke-$j$ dari $\Phi(T)$ adalah
+$(a_{ij})_{i}$, jadi $\Phi(T)=A$.
+
+Karena $\Phi$ isomorfisme dan $\dim M_{m\times n}(\mathbb{R})=mn$, maka
+$\dim\mathcal{L}(V,W)=mn$.
+\end{proof}
+
+Hitungan itu memberi akibat langsung.
+
+\begin{akibat}
+$\dim\mathcal{L}(V,V)=n^{2}$ bila $\dim V=n$. Sebagai contoh,
+$\dim\mathcal{L}(P_{2},P_{2})=9$ dan $\dim\mathcal{L}(P_{2},\mathbb{R}^{2})=6$.
+\end{akibat}
+
+Hasil terakhir itu menjelaskan mengapa matriks bukan sekadar alat hitung. Ruang operator
+dan ruang matriks berdimensi sama dan terhubung oleh isomorfisme yang menghormati komposisi,
+sehingga setiap pernyataan tentang operator punya padanan tentang matriks. Yang tidak
+diwarisi
+adalah kesederhanaan bentuk: operator yang sama dapat rumit pada satu basis dan sederhana
+pada
+basis lain; mencari basis terbaik adalah program Bab 9.
+
+\begin{tantangan}
+Cari satu peta linear $T\colon\mathbb{R}^{3}\to\mathbb{R}^{3}$ yang memetakan persegi satuan
+pada bidang $xy$ ke persegi satuan lain dengan luas tetap $1$, tetapi
+$\operatorname{rank}(T)=2$. Jelaskan mengapa luas yang bertahan pada satu bidang tidak
+memaksa
+rank penuh.
+
+Petunjuk 1: periksa satu bidang, bukan seluruh ruang. Setelah itu tanyakan ke mana sumbu
+ketiga
+pergi.
+
+Petunjuk 2: letakkan rotasi $90^{\circ}$ pada dua koordinat pertama dan nolkan koordinat
+ketiga,
+sehingga $T(\mathbf{e}_{3})=\mathbf{0}$. Hitung rank dari bayangan $\mathbf{e}_{1}$ dan
+$\mathbf{e}_{2}$.
+
+Kalau mentok, kembali ke bagian Transformasi linear, inti, dan jangkauan, khususnya definisi
+rank dan akibat rank-nullity.
+\end{tantangan}
+
+\begin{untukanak}
+Dua kelas di sekolah bisa berbeda ukuran, tetapi punya jumlah kursi yang sama. Kalau
+jumlahnya
+sama, setiap murid kelas pertama dapat dipasangkan dengan satu kursi di kelas kedua, tanpa
+kursi
+kosong dan tanpa murid kebagian dua kursi. Untuk urusan menghitung kursi, kedua kelas
+setara.
+
+Yang tidak ikut setara adalah nama murid dan wajah mereka. Pemetaan kursi tidak mengatakan
+siapa duduk di mana; ia hanya memasangkan. Orang yang berbeda bisa membuat pemetaan berbeda,
+dan semuanya sah.
+
+Di bab ini kita akan tahu kapan dua ruang yang tampak berbeda boleh dianggap sama untuk
+keperluan hitungan, dan kapan anggapan itu menyesatkan. Kesetaraan itu selalu bergantung
+pada
+pilihan kita, bukan pada sesuatu yang sudah ada di ruangnya.
+
+Kalau dua kelas punya jumlah kursi sama, apakah kepala sekolah boleh menukar nama kelas
+begitu
+saja? Jawabannya tidak, dan alasannya ada di bab ini.
+\end{untukanak}
+
+\section{Contoh hitung}
+\tingkat{menengah}
+
+Tinjau matriks
+\[
+  A=\begin{pmatrix}1&2&1\\ 2&5&3\\ 3&7&4\end{pmatrix},
+  \qquad \text{baris ketiga}=\text{baris pertama}+\text{baris kedua}.
+\]
+Kita tentukan rank, nullity, dan kedua basisnya, lalu periksa operator yang sama pada basis
+lain.\index{rank}\index{nullity}
+
+Eliminasi baris:
+\[
+  \begin{pmatrix}1&2&1\\ 2&5&3\\ 3&7&4\end{pmatrix}
+  \xrightarrow[R_{3}\leftarrow R_{3}-3R_{1}]{R_{2}\leftarrow R_{2}-2R_{1}}
+  \begin{pmatrix}1&2&1\\ 0&1&1\\ 0&1&1\end{pmatrix}
+  \xrightarrow{R_{3}\leftarrow R_{3}-R_{2}}
+  \begin{pmatrix}1&2&1\\ 0&1&1\\ 0&0&0\end{pmatrix}.
+\]
+Lalu $R_{1}\leftarrow R_{1}-2R_{2}$ memberi bentuk eselon tereduksi
+\[
+  \begin{pmatrix}1&0&-1\\ 0&1&1\\ 0&0&0\end{pmatrix}.
+\]
+Ada dua baris tak nol, jadi $\operatorname{rank}A=2$ dan $\det A=0$; kolom pivot adalah kolom
+pertama dan kedua.
+
+Inti: dari $x_{1}-x_{3}=0$ dan $x_{2}+x_{3}=0$ kita peroleh $x_{1}=x_{3}$ dan
+$x_{2}=-x_{3}$.
+Jadi
+\[
+  \ker A=\operatorname{span}\{(1,-1,1)^{\top}\},\qquad \operatorname{nullity}(A)=1 .
+\]
+Rank-nullity terpenuhi: $3=2+1$.
+
+Jangkauan: kolom-kolom $A$ adalah $\mathbf{c}_{1}=(1,2,3)^{\top}$,
+$\mathbf{c}_{2}=(2,5,7)^{\top}$, dan $\mathbf{c}_{3}=(1,3,4)^{\top}$. Kolom pivot pertama
+dan
+kedua memberi basis $\{\mathbf{c}_{1},\mathbf{c}_{2}\}$. Kolom ketiga tidak bebas:
+$\mathbf{c}_{2}-\mathbf{c}_{1}=\mathbf{c}_{3}$, dan relasi itu persis vektor inti
+$(1,-1,1)$: $\mathbf{c}_{1}-\mathbf{c}_{2}+\mathbf{c}_{3}=\mathbf{0}$.
+
+Sekarang pandang $T(\mathbf{x})=A\mathbf{x}$ dan basis
+$B'=(\mathbf{b}'_{1},\mathbf{b}'_{2},\mathbf{b}'_{3})$ dengan
+$\mathbf{b}'_{1}=(1,1,0)$, $\mathbf{b}'_{2}=(1,0,1)$, $\mathbf{b}'_{3}=(0,1,1)$. Matriks
+transisinya dari basis standar $B$ adalah
+\[
+  P=P_{B\leftarrow B'}=\begin{pmatrix}1&1&0\\ 1&0&1\\ 0&1&1\end{pmatrix},
+  \qquad
+  P^{-1}=\frac{1}{2}\begin{pmatrix}1&1&-1\\ 1&-1&1\\ -1&1&1\end{pmatrix}.
+\]
+Bayangan vektor basis baru dihitung lebih dulu:
+\[
+  A\mathbf{b}'_{1}=\begin{pmatrix}3\\7\\10\end{pmatrix},\quad
+  A\mathbf{b}'_{2}=\begin{pmatrix}2\\5\\7\end{pmatrix},\quad
+  A\mathbf{b}'_{3}=\begin{pmatrix}3\\8\\11\end{pmatrix}.
+\]
+Maka
+\[
+  AP=\begin{pmatrix}3&2&3\\ 7&5&8\\ 10&7&11\end{pmatrix},
+  \qquad
+  [T]_{B'}=P^{-1}AP=\begin{pmatrix}0&0&0\\ 3&2&3\\ 7&5&8\end{pmatrix}.
+\]
+Periksa satu entri: baris pertama kolom pertama $\tfrac{1}{2}(3+7-10)=0$; baris kedua
+kolom ketiga $\tfrac{1}{2}(3-8+11)=3$. Sisanya mengikuti pola yang sama.
+
+Baris pertama yang seluruhnya nol bukan kebetulan: ketiga bayangan berada di dalam
+$\operatorname{span}(\mathbf{b}'_{2},\mathbf{b}'_{3})$, misalnya
+$A\mathbf{b}'_{3}=(3,8,11)=3\mathbf{b}'_{2}+8\mathbf{b}'_{3}$. Karena itu koordinat pertama
+setiap bayangan nol, dan jangkauan $T$ termuat dalam bidang koordinat pertama.
+
+Pola itu umum. Baris nol menandakan jangkauan yang termuat dalam subruang koordinat
+berdimensi lebih rendah; kolom nol menandakan vektor basis yang masuk ke inti. Kedua gejala
+hanya tampak pada basis yang dipilih, sedangkan rank dan nullity tidak berubah.
+
+Pemeriksaan menyeluruh:
+\[
+  \operatorname{rank}[T]_{B'}=2,\qquad \operatorname{trace}[T]_{B'}=0+2+8=10=\operatorname{trace}A,
+  \qquad \det[T]_{B'}=0=\det A .
+\]
+Kesamaan trace bukan kebetulan aritmetika. Entri diagonal ke-$j$ adalah koefisien
+$\mathbf{b}'_{j}$ pada bayangan $T(\mathbf{b}'_{j})$, yaitu seberapa besar $T$
+mempertahankan
+arah itu sendiri. Jumlahnya tidak bergantung pada arah yang dipilih, hanya pada operatornya,
+sehingga trace dipakai sebagai sidik jari murah: trace berbeda berarti tidak serupa, trace
+sama
+belum menjamin apa pun.
+
+Untuk $\mathbf{v}=(3,8,11)$ kita punya $[\mathbf{v}]_{B'}=(0,3,8)^{\top}$ dan
+\[
+  [T]_{B'}[\mathbf{v}]_{B'}=\begin{pmatrix}0\\30\\79\end{pmatrix},
+\]
+sedangkan $T(\mathbf{v})=A\mathbf{v}=(30,79,109)^{\top}$ dan koordinatnya
+$(0,30,79)^{\top}$. Keduanya cocok.
+
+Peta fitur $G\colon\mathbb{R}^{4}\to\mathbb{R}^{3}$
+diberi matriks
+\[
+  G=\begin{pmatrix}1&2&0&1\\ 0&1&1&1\\ 1&3&1&2\end{pmatrix},
+\]
+dengan baris ketiga sama dengan jumlah dua baris pertama. Eliminasi memberi bentuk eselon
+tereduksi
+\[
+  \begin{pmatrix}1&0&-2&-1\\ 0&1&1&1\\ 0&0&0&0\end{pmatrix},
+\]
+jadi $\operatorname{rank}G=2$ dan $\operatorname{nullity}(G)=4-2=2$. Dari
+$x_{1}=2x_{2}+x_{4}$ dan $x_{3}=-x_{2}-x_{4}$:
+\[
+  \mathbf{k}_{1}=(-2,1,-1,0)^{\top},\qquad \mathbf{k}_{2}=(-1,0,-1,1)^{\top}.
+\]
+Keduanya memenuhi $G\mathbf{k}_{i}=\mathbf{0}$ dan bebas linear, jadi perubahan yang tidak
+terlihat oleh ketiga fitur berbentuk bidang dua dimensi, bukan satu garis: penyerang dapat
+menggeser masukan ke arah mana pun di bidang itu tanpa menggerakkan skor.
+
+\kertas{Ulangi perhitungan dengan basis $B''=(\mathbf{b}'_{2},\mathbf{b}'_{3},\mathbf{b}'_{1})$,
+yaitu $B'$ yang dipermutasi. Ramalkan bagaimana baris nol dan entri lain berpindah, lalu
+hitung
+$[T]_{B''}$ lewat $Q^{-1}[T]_{B'}Q$ dengan $Q$ matriks permutasi yang sesuai. Periksa bahwa
+rank
+dan trace tidak berubah, dan jelaskan mengapa $\det A=0$ dapat disimpulkan langsung dari ``baris
+ketiga adalah jumlah dua baris pertama''.}
+
+Semua angka di atas diperiksa dengan aritmetika eksak (SymPy); pemeriksaan numpy dan
+scipy ada di bagian berikut, termasuk satu angka yang tidak persis nol karena pembulatan
+mesin.
+
+\section{Lab komputasi}
+\tingkat{lanjut}
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+from scipy.linalg import null_space
+
+A = np.array([[1., 2., 1.],
+              [2., 5., 3.],
+              [3., 7., 4.]])
+print("rank A  :", np.linalg.matrix_rank(A))
+print("det A   :", np.linalg.det(A))
+K = null_space(A)
+print("dim ker :", K.shape[1])
+print("basis ker:\n", np.round(K, 4))
+print("A @ K   :\n", np.round(A @ K, 12))
+
+P = np.array([[1., 1., 0.],
+              [1., 0., 1.],
+              [0., 1., 1.]])
+B = np.linalg.inv(P) @ A @ P
+print("[T]_B'  :\n", np.round(B, 10))
+print("selisih :", np.linalg.norm(B - np.linalg.inv(P) @ A @ P))
+print("trace   :", round(np.trace(B), 10), round(np.trace(A), 10))
+print("rank B  :", np.linalg.matrix_rank(B))
+print("cond P  :", np.linalg.cond(P))
+
+v = np.array([3., 8., 11.])
+print("[v]_B'  :", np.round(np.linalg.solve(P, v), 4))
+print("[Av]_B' :", np.round(np.linalg.solve(P, A @ v), 4))
+print("B[v]_B' :", np.round(B @ np.linalg.solve(P, v), 4))
+
+x0 = np.array([1., 0., 0.])
+d = 0.5 * K[:, 0]
+print("A@d     :", np.round(A @ d, 12))
+print("geser   :", np.linalg.norm(A @ (x0 + d) - A @ x0))
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+rank A  : 2
+det A   : 6.66133814775094e-16
+dim ker : 1
+basis ker:
+ [[ 0.5774]
+ [-0.5774]
+ [ 0.5774]]
+A @ K   :
+ [[-0.]
+ [ 0.]
+ [ 0.]]
+[T]_B'  :
+ [[0. 0. 0.]
+ [3. 2. 3.]
+ [7. 5. 8.]]
+selisih : 0.0
+trace   : 10.0 10.0
+rank B  : 2
+cond P  : 2.0000000000000004
+[v]_B'  : [0. 3. 8.]
+[Av]_B' : [ 0. 30. 79.]
+B[v]_B' : [ 0. 30. 79.]
+A@d     : [-0.  0.  0.]
+geser   : 6.280369834735101e-16
+\end{verbatim}
+\end{lab}
+
+Empat hal perlu dibaca dari keluaran itu.
+
+Pertama, $\det A$ bukan nol melainkan $6{,}66\times10^{-16}$. Matriks ini singular
+secara eksak, tetapi aritmetika pecahan biner tidak mengenal nol eksak.
+\texttt{matrix\_rank} membandingkan nilai singular terbesar dan terkecil, bukan ambang
+sederhana, sehingga rank tetap dilaporkan $2$; Bab 22 membahas mengapa ambang itu perlu.
+
+Pilihan nilai singular, bukan determinan: determinan mengukur volume, dan volume dapat
+sangat
+kecil tanpa rank berubah. Yang menentukan rank adalah perbandingan nilai singular terkecil
+dan
+terbesar.
+
+Kedua, \texttt{null\_space} mengembalikan vektor satuan dengan entri $0{,}5774$,
+$-0{,}5774$, dan $0{,}5774$, yaitu $(1,-1,1)^{\top}$ dibagi $\sqrt{3}$, dan
+$1/\sqrt{3}=0{,}57735$ sesuai. Arahnya sama dengan hasil tangan; panjangnya dinormalkan
+karena
+scipy memilih basis ortonormal. Basis kernel tidak tunggal, dimensinya tunggal.
+
+Ketiga, $[T]_{B'}$ yang dilaporkan numpy sama persis dengan hasil tangan, dan trace
+kedua matriks sama, $10$. Selisih $P^{-1}AP$ yang dihitung dua kali adalah $0{,}0$ karena
+$P$
+berisi bilangan bulat kecil. Bilangan kondisi $P$ bernilai $2{,}0000000000000004$, cukup
+kecil;
+basis buruk memperbesar galat, dan itu dibahas di Bab 10.
+
+Keempat, arah inti benar-benar buta bagi $T$. Mendorong $\mathbf{x}_{0}=(1,0,0)$ sejauh
+setengah vektor inti mengubah $\mathbf{x}_{0}$ secara nyata, tetapi $A\mathbf{x}$ hanya
+bergeser
+$6{,}28\times10^{-16}$, yaitu nol dalam presisi mesin.
+
+Peringatan terakhir menyangkut pilihan basis. Basis yang nyaris bergantung membuat koordinat
+meledak, dan angka yang dilaporkan kehilangan makna.
+
+\begin{lab}
+\begin{verbatim}
+Pb = np.array([[1., 1., 0.],
+               [1., 1.001, 0.],
+               [0., 0., 1.]])
+print("cond Pb:", np.linalg.cond(Pb))
+print("koord  :", np.linalg.inv(Pb) @ v)
+print("galat  :", np.linalg.norm(np.linalg.inv(Pb) @ (Pb @ v) - v))
+\end{verbatim}
+Keluaran sebenarnya:
+\begin{verbatim}
+cond Pb: 4002.00075012484
+koord  : [-4997.  5000.    11.]
+galat  : 4.823324033076557e-13
+\end{verbatim}
+\end{lab}
+
+Dua vektor basis pertama berbeda hanya pada digit ketiga, dan bilangan kondisi $P_{b}$
+mencapai $4002$. Koordinat $(3,8,11)$ meledak menjadi $(-4997,\,5000,\,11)$. Galat
+rekonstruksi
+masih $4{,}8\times10^{-13}$, tetapi galat relatif pada koordinat membesar sebesar faktor
+bilangan
+kondisi; dengan 16 digit presisi, sisanya tinggal sekitar 12. Pada basis yang lebih buruk
+sisa
+itu habis dan rank yang dilaporkan tidak dapat dipercaya.
+
+\begin{untukdosen}
+Urutan mengajar yang berhasil dipakai: koordinat lebih dulu, baru peta linear. Mahasiswa
+yang
+mengenal koordinat sebelum definisi abstrak lebih siap menerima matriks representasi, karena
+matriks muncul sebagai daftar koordinat, bukan benda baru. Setelah rank-nullity, masuk
+perubahan basis.
+
+Dua miskonsepsi khas. Pertama, menyamakan vektor dengan daftar koordinatnya, lalu bingung
+ketika dua basis memberi dua daftar untuk vektor yang sama. Kedua, arah matriks transisi
+terbalik. Cara cepat memeriksa: kolom harus berisi alamat vektor basis, dan subskrip dibaca
+kanan ke kiri.
+
+Aktivitas papan tulis: beri satu operator pada $\mathbb{R}^{2}$ dan dua basis. Minta separuh
+kelas menghitung $[T]_{B'}$ lewat definisi kolom, separuh lewat $P^{-1}AP$, lalu bandingkan
+di
+papan; kegaduhan yang muncul biasanya tepat pada arah $P$.
+
+Tanda kesiapan lanjut: mahasiswa dapat menjelaskan mengapa sebuah baris nol muncul pada
+matriks yang baru, tanpa menghitung ulang. Bila mereka menghubungkannya dengan jangkauan
+yang
+termuat di subruang koordinat, mereka siap masuk Bab 9.
+\end{untukdosen}
+
+\section{Ringkasan}
+\tingkat{dasar}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Koordinat $[\mathbf{v}]_{B}$ adalah daftar koefisien tunggal terhadap basis terurut;
+        peta $\mathbf{v}\mapsto[\mathbf{v}]_{B}$ linear dan bijektif, tetapi bergantung pada
+        basis.
+  \item Matriks transisi memuat koordinat basis lama dalam basis baru:
+        $[\mathbf{v}]_{C}=P_{C\leftarrow B}[\mathbf{v}]_{B}$, dengan
+        $P_{B\leftarrow C}=P_{C\leftarrow B}^{-1}$.
+  \item Peta linear ditentukan nilainya pada basis; $T$ injektif tepat ketika
+        $\ker T=\{\mathbf{0}\}$.
+  \item Rank-nullity: $\dim V=\dim\ker T+\dim\operatorname{im}T$; pada dimensi yang sama,
+        injektif setara dengan surjektif.
+  \item Matriks representasi memenuhi
+$[T(\mathbf{v})]_{C}=[T]_{C\leftarrow B}[\mathbf{v}]_{B}$, komposisi menjadi perkalian
+        matriks, dan $[T]_{B'}=P^{-1}[T]_{B}P$.
+  \item $\dim\mathcal{L}(V,W)=mn$ bila $\dim V=n$, $\dim W=m$; dua ruang berdimensi hingga
+        isomorf tepat ketika dimensinya sama.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Dengan $B'=(\mathbf{b}'_{1},\mathbf{b}'_{2},\mathbf{b}'_{3})$ seperti pada contoh
+hitung, tentukan $[\mathbf{w}]_{B'}$ untuk $\mathbf{w}=(2,-1,3)$, lalu periksa hasilnya
+        dengan mengalikan balik.
+
+\item Buktikan bahwa setiap isomorfisme $V\to\mathbb{R}^{n}$ berbentuk $\varphi_{B}$ untuk
+        suatu basis $B$, dan jelaskan mengapa isomorfisme ke $\mathbb{R}^{n}$ tidak tunggal.
+        (Petunjuk: ambil prapeta basis standar, lalu tunjukkan himpunan itu basis.)
+
+  \item Untuk $A=\begin{pmatrix}0&1&0\\ 0&0&2\\ 0&0&0\end{pmatrix}$, tentukan rank, nullity,
+        basis inti, dan basis jangkauan. Jelaskan hubungannya dengan operator turunan pada
+        $P_{2}$.
+
+\item Buktikan $\operatorname{rank}(S\circ T)\le\min(\operatorname{rank}S,\operatorname{rank}T)$
+        untuk peta linear yang terdefinisi. Gunakan
+        $\operatorname{im}(S\circ T)\subseteq\operatorname{im}S$ dan bandingkan inti.
+        (Petunjuk: untuk batas kedua, bandingkan $\ker T$ dengan $\ker(S\circ T)$ lewat
+        rank-nullity.)
+
+\item Nilai klaim ini: \emph{dua matriks persegi berukuran sama yang mempunyai rank sama
+pasti serupa.} Tentukan benar, salah, atau belum cukup bukti, dengan alasan dan contoh
+        penyangkal bila perlu.
+
+\item Misalkan $T\colon\mathbb{R}^{3}\to\mathbb{R}^{2}$ dengan
+        $T(x,y,z)=(x+2y,\;y+z)$. Hitung $[T]_{C\leftarrow B}$ untuk
+$B=(\,(1,0,0),(1,1,0),(1,1,1)\,)$ dan $C=(\,(1,1),(1,0)\,)$, lalu periksa rumusnya pada
+        $\mathbf{v}=(1,2,3)$.
+        (Petunjuk: $[T]_{C\leftarrow B}=C^{-1}AB$; hitung $AB$ lebih dulu, lalu selesaikan
+        $C\mathbf{x}=\mathbf{y}$ untuk setiap kolomnya.)
+
+  \item Buktikan: bila $U$ subruang $V$ berdimensi hingga dan $\dim U=\dim V$, maka $U=V$.
+
+  \item Buktikan bahwa bila $A$ dan $B$ serupa maka $\operatorname{nullity}(A)
+        =\operatorname{nullity}(B)$. Jelaskan mengapa pernyataan itu setara dengan
+        ``inti tidak bergantung pada basis''.
+
+  \item Peta fitur $F\colon\mathbb{R}^{4}\to\mathbb{R}^{3}$ diberikan oleh matriks
+        \[
+          F=\begin{pmatrix}1&0&2&1\\ 0&1&1&3\\ 1&1&3&4\end{pmatrix}.
+        \]
+        Tentukan rank dan nullity $F$, beri satu vektor inti tak nol, dan jelaskan mengapa
+        vektor itu merupakan arah perubahan yang tidak menggeser satu pun fitur.
+\end{enumerate}
+\end{latihan}
+
+\begin{untukpeneliti}
+Yang terbukti di bab ini adalah pernyataan berdimensi hingga atas medan $\mathbb{R}$:
+rank-nullity, ketunggalan matriks representasi, kesetaraan isomorfisme dengan kesamaan
+dimensi,
+dan $\dim\mathcal{L}(V,W)=mn$. Semuanya teorema, bukan konvensi. Klaim ``matriks adalah
+transformasinya'' hanya populer; tanpa pemilihan basis klaim itu tidak bermakna, dan contoh
+baris
+nol di atas menunjukkan bentuk matriks bergantung pada basis.
+
+Sumber primer: Axler, \emph{Linear Algebra Done Right} edisi ke-4, bagian 3A sampai 3D,
+memuat
+ruang peta linear, inti dan jangkauan, matriks, isomorfisme, serta perubahan basis;
+rank-nullity
+di sana disebut teorema fundamental untuk peta linear. Hoffman dan Kunze, \emph{Linear
+Algebra}
+edisi ke-2, Bab 3, lebih rapat namun setara.
+
+Pertanyaan terbuka yang jujur. Klasifikasi operator hingga similaritas tidak diberikan di
+sini; Bab 9 hanya sampai diagonalisasi. Secara numerik, keputusan rank bergantung pada
+ambang dan
+bilangan kondisi; bab ini memakai hasil pustaka tanpa membahas stabilitasnya, utang yang
+dibayar
+di Bab 22. Batas keberlakuan: di ruang berdimensi tak hingga seluruh argumen runtuh,
+rank-nullity
+gagal, dan isomorfisme tidak lagi setara dengan kesamaan dimensi.
+\end{untukpeneliti}
+
+\peta{Bab ini mengikuti Anton, \emph{Elementary Linear Algebra} edisi ke-11, bagian 4.4, 4.6,
+4.8, dan 8.1 sampai 8.5, dengan padanan abstrak di Axler, \emph{Linear Algebra Done Right}
+edisi
+ke-4, Bab 3, dan Hoffman-Kunze, \emph{Linear Algebra} edisi ke-2, Bab 3.}

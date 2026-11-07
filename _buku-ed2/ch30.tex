@@ -1,0 +1,1028 @@
+\chapter{Batas Serangan: Gradien Dikaburkan dan Evasi NIDS}
+
+Sebuah kelompok mahasiswa menambahkan satu baris pembulatan pada masukan model, lalu
+melaporkan bahwa serangan mereka sendiri gagal total: tingkat keberhasilan turun dari
+tujuh belas persen menjadi nol koma nol dua persen. Angka itu masuk ke ringkasan
+eksekutif, lalu ke slide, lalu ke abstrak. Dua minggu kemudian seorang penguji meminta
+satu hal: buktikan bahwa gradien yang dipakai penyerang masih menunjuk arah yang benar.
+Ternyata tidak. Pembulatan datar di hampir semua tempat, jadi turunannya nol, jadi
+penyerang melangkah nol, jadi serangan yang gagal itu sebenarnya serangan yang tidak
+pernah terjadi. Ketika penguji mengganti turunannya dengan pendekatan yang masuk akal,
+tingkat keberhasilan kembali ke tujuh belas persen dalam hitungan menit.
+
+Bab ini tentang kesalahan itu. Kesalahan pertama sederhana: pembulatan menghapus gradien,
+dan menghapus gradien berarti membuat penyerang buta, bukan membuat model kuat. Kesalahan
+kedua lebih menarik: ada kalanya pengaburan gradien memang menaikkan biaya serangan,
+sehingga sebagian ketahanan itu nyata. Membedakan keduanya menuntut percobaan, bukan
+retorika.
+
+Paruh kedua bab membawa persoalan yang sama ke tempat yang jauh lebih berisik: sistem
+pengesanan pencerobohan jaringan, atau NIDS. Di sana paket harus tetap sampai, protokol
+harus tetap sah, keputusan diambil dalam milidetik, dan modelnya dilatih ulang setiap
+hari. Semua itu membuat serangan evasi yang cantik di atas kertas menjadi tidak praktis
+di lapangan. Tetapi ``tidak praktis'' bukan ``mustahil''.
+
+\section{Gradien yang menghilang, dan rasa aman yang lahir darinya}
+\tingkat{dasar}
+
+Bab 29 mengajarkan dua serangan yang bertumpu pada satu benda: gradien kerugian
+terhadap masukan. Serangan satu langkah mengambil arah tanda gradien dan melangkah
+sejauh $\varepsilon$,
+
+\begin{equation}
+x' = x + \varepsilon\,\operatorname{sign}\bigl(\nabla_x L(x,y)\bigr),
+\end{equation}
+
+sedangkan serangan banyak langkah mengulang langkah kecil dan memproyeksikan hasilnya
+kembali ke bola $\ell_\infty$ berjari-jari $\varepsilon$,
+
+\begin{equation}
+x_{t+1} = \Pi_{B(x,\varepsilon)}\Bigl(x_t - \alpha\,\operatorname{sign}
+\bigl(\nabla_x L(x_t,y)\bigr)\Bigr).
+\end{equation}
+
+Keduanya bekerja karena satu alasan yang sudah muncul di bab tentang linearisasi:
+untuk gangguan kecil, kerugian bisa didekati oleh fungsi linear, sehingga arah yang
+paling cepat menaikkan kerugian adalah arah gradien. Kalau gradien itu benar, serangan
+bekerja dengan biaya satu kali mundur. Kalau gradien itu salah, penyerang menjadi buta.
+Dua kalimat itu tidak setara dengan ``kalau gradien salah, model aman''. Penyerang yang
+buta masih bisa menebak, dan tebakan tanpa gradien, misalnya derau acak pada paket, tetap
+bisa berhasil pada sebagian kasus. Yang hilang hanyalah jalan termurah, bukan seluruh
+jalan.
+
+\index{gradien dikaburkan}
+Istilah \emph{gradien dikaburkan} menunjuk keadaan ketika
+gradien yang dilihat penyerang tidak memberi informasi yang cukup tentang arah yang
+sebenarnya menaikkan kerugian, bukan karena modelnya kuat, melainkan karena cara model
+itu dibungkus. Athalye, Carlini, Wagner dan rekan-rekan memberi nama yang lebih tegas
+untuk gejala ini: rasa aman palsu. Dalam tinjauan mereka atas sembilan pertahanan dari
+sebuah konferensi pembelajaran mesin, tujuh bergantung pada gradien yang dikaburkan;
+enam ditembus sepenuhnya dan satu sebagian, dengan biaya serangan yang kira-kira sama
+dengan serangan biasa.
+
+\begin{untukanak}
+Bayangkan seorang guru yang tidak ingin muridnya menyontek, jadi ia menutup buku
+catatan dengan lakban. Murid yang jujur memang jadi kesulitan. Tetapi murid yang
+kreatif tidak berhenti: ia melihat bahwa jawaban soal nomor satu selalu lebih besar
+daripada nomor dua, lalu menebak seluruh lembar dari pola itu. Lakban itu tidak
+menghapus jawaban; ia hanya menghalangi satu jalan menuju jawaban.
+
+Model yang membulatkan masukannya bekerja seperti lakban itu. Angka yang masuk ke
+model dipotong ke kelipatan tertentu, misalnya dua angka di belakang koma, sehingga
+perubahan kecil tidak terlihat sama sekali. Program yang mencoba mencari arah
+``naikkan sedikit demi sedikit'' akan menemukan bahwa tidak ada yang berubah, lalu
+menyerah dan melaporkan bahwa modelnya kebal. Laporan itu salah, dan bukan karena
+programnya bodoh. Program itu hanya bertanya dengan cara yang tidak cocok.
+
+Sekarang bagian yang paling penting untuk diingat. Model yang sama masih bisa salah
+kalau angkanya diubah cukup banyak sehingga melewati batas potongan. Jadi pertanyaan
+yang benar bukan ``apakah serangan kecil berhasil'', melainkan ``berapa besar perubahan
+yang dibutuhkan''. Bab ini mengajarkan cara mengajukan pertanyaan itu, dan cara mengenali
+laporan yang tidak pernah mengajukannya.
+\end{untukanak}
+
+Mengapa pembulatan menghapus gradien? Karena pembulatan adalah fungsi tangga. Ambil
+$q>0$ dan definisikan $Q_q(t)=q\,\mathrm{round}(t/q)$, kelipatan $q$ terdekat. Pada
+selang $kq-q/2 \le t < kq+q/2$ fungsi ini bernilai tetap $kq$, sehingga turunannya nol
+di dalam selang dan tidak terdefinisi di titik batas. Himpunan titik batas itu berukuran
+nol, jadi untuk fungsi mulus apa pun $f$, komposisi $f\circ Q_q$ punya gradien nol di
+hampir semua titik.
+
+\begin{proposisi}
+Misalkan $Q_q\colon\mathbb{R}^d\to\mathbb{R}^d$ bekerja koordinat demi koordinat
+seperti di atas, dan misalkan $f\colon\mathbb{R}^d\to\mathbb{R}$ terdiferensiasi
+kontinu. Maka $\nabla (f\circ Q_q)(x)=0$ untuk hampir setiap $x\in\mathbb{R}^d$.
+\end{proposisi}
+
+\begin{proof}
+Partisi $\mathbb{R}^d$ menjadi kotak-kotak setengah terbuka bersisi $q$, yang dibatasi
+hiperbidang $x_j=k_jq\pm q/2$. Pada interior setiap kotak, $Q_q$
+bernilai konstan, sehingga $f\circ Q_q$ juga konstan dan gradiennya nol. Komplemen dari
+gabungan semua interior itu adalah gabungan dari hiperbidang batas, yang berukuran
+nol. Jadi gradiennya nol di hampir semua titik.
+\end{proof}
+
+\begin{akibat}
+Serangan satu langkah yang memakai gradien eksak dari $f\circ Q_q$ menghasilkan
+$x'=x$ untuk setiap $\varepsilon>0$. Tingkat keberhasilan yang terukur karena itu
+tepat nol, dan ``akurasi di bawah serangan'' yang dilaporkan sama persis dengan akurasi
+bersih.
+\end{akibat}
+
+Akibat ini adalah inti seluruh bab. Pernyataan itu bukan tentang kekuatan model; ia
+tentang aritmetika penyerang, dan angka nol pada tabel hasil tidak mengukur ketahanan,
+melainkan ketiadaan langkah. Kalau kolom ``akurasi di bawah serangan'' identik dengan
+akurasi bersih sampai dua angka di belakang koma, Anda bukan melihat pertahanan yang
+berhasil, melainkan penyerang yang berhenti.
+
+\begin{bacakeras}
+Dua suara. Yang pertama membawa peta, yang kedua membawa senter.
+
+--- Lihat. Petanya sudah kubuat kabur. Semua jalan menanjak kuhapus, tidak ada panah,
+tidak ada angka.
+--- Kalau begitu gunungnya hilang.
+--- Bukan. Gunungnya masih di sana.
+--- Jadi yang hilang cuma gambarnya?
+--- Yang hilang cuma gambarnya.
+--- Orang yang mencium bau tanah masih bisa naik.
+--- Masih bisa.
+--- Orang yang melempar kerikil lalu mendengar pantulannya juga masih bisa.
+--- Juga masih bisa.
+--- Berarti petamu bukan tembok.
+--- Petamu bukan tembok. Petamu hanya peta yang menolak menjawab.
+
+Ulangi baris terakhir tiga kali, makin pelan: peta yang menolak menjawab bukan tembok.
+Bukan tembok. Bukan tembok.
+\end{bacakeras}
+
+Athalye dan rekan-rekan membagi mekanismenya menjadi tiga keluarga. Keluarga pertama,
+gradien hancur, muncul ketika bagian dari model tidak terdiferensiasi atau
+terdiferensiasi tetapi tidak berguna, seperti pembulatan, penyaringan median, dan
+kompresi. Keluarga kedua, gradien acak, muncul ketika model mengacak sesuatu pada setiap
+panggilan, sehingga gradien satu panggilan tidak berlaku untuk panggilan berikutnya.
+Keluarga ketiga, gradien hilang atau meledak, muncul ketika pertahanan menekan gradien
+saat pelatihan, sehingga gradien menjadi terlalu kecil atau terlalu besar untuk dipakai
+melangkah.
+
+Ketiganya punya satu ciri bersama: ia membuat pengukuran terlihat lebih baik tanpa
+membuat model lebih baik, dan karena pengukuran biasanya satu-satunya bukti yang
+dilaporkan, kesalahan ini menyebar cepat. Bab ini tidak mengatakan bahwa semua pertahanan
+seperti itu tidak berguna; sebagian menaikkan biaya serangan, dan biaya itu nyata. Yang
+salah adalah menyimpulkan ketahanan dari pengukuran yang rusak.
+
+\section{Tujuh cara mengaburkan gradien}
+\tingkat{menengah}
+
+Tabel berikut merangkum tujuh teknik yang paling sering muncul, keluarga mekanismenya,
+dan gejala yang seharusnya membuat Anda curiga. Angka pada kolom terakhir bukan
+diagnosis, melainkan pemicu pertanyaan.
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.6cm}p{4.6cm}p{2.1cm}p{6.4cm}@{}}
+\hline
+No & Teknik & Keluarga & Gejala yang terlihat \\
+\hline
+1 & Kuantisasi masukan atau keluaran & hancur & gradien nol; akurasi serangan sama dengan akurasi bersih \\
+2 & Praproses tak terdiferensiasi: median, blur, kompresi & hancur & gradien nol, atau melonjak tanpa pola \\
+3 & Penyaringan dan penolakan sampel & hancur & keputusan diskrit; tidak ada gradien \\
+4 & Transformasi acak: ubah ukuran, bingkai, geser & acak & gradien berbeda tiap panggilan \\
+5 & Pengklasifikasi acak dan ansambel acak & acak & satu sampel menunjuk arah salah \\
+6 & Gradien ditekan saat pelatihan & hilang & gradien kecil padahal kerugian besar \\
+7 & Pertahanan berbasis optimisasi banyak langkah & hilang & gradien meledak; serangan tidak konvergen \\
+\hline
+\end{tabular}
+\end{center}
+
+\index{kuantisasi}
+Teknik pertama, kuantisasi, sudah dibuktikan di atas, dan efeknya eksak: bukan
+kira-kira nol, tetapi nol. Teknik kedua bekerja dengan cara yang sama tetapi lebih
+kotor. Penyaringan median mengganti setiap nilai dengan median lingkungannya, sehingga
+fungsinya tetap datar di sebagian besar tempat, tetapi batas antar potongannya tidak lagi
+berjarak seragam. Kompresi seperti JPEG membuang komponen frekuensi tinggi; turunannya
+ada tetapi tidak stabil, dan gradien beda hingga bisa berubah tanda ketika langkahnya
+digeser. Gejalanya khas: gradien bukan nol, melainkan sampah berskala besar.
+
+Teknik ketiga adalah bentuk pengaburan paling kasar. Model menolak menjawab untuk masukan
+yang dianggap aneh, misalnya yang jaraknya ke pusat data terlalu jauh, lalu mengembalikan
+label ``tidak diketahui''. Bagi penyerang ini bukan gradien yang buruk, melainkan tidak
+ada gradien: fungsinya fungsi indikator, yang turunannya nol di semua tempat kecuali di
+permukaan keputusan. Pertahanan semacam ini juga menolak data baru yang sah, dan data sah
+adalah alasan sistem itu dipasang.
+
+Teknik keempat dan kelima adalah keluarga acak. Pada yang keempat, masukan diubah acak
+sebelum masuk model: gambar diperbesar, digeser satu piksel, atau sebagian fiturnya
+dihapus. Pada yang kelima, yang diacak adalah modelnya: satu ansambel dipilih acak pada
+setiap panggilan, atau prediksi diambil dari rata-rata banyak model. Pada keduanya,
+gradien satu panggilan adalah gradien satu realisasi, sedangkan yang dihadapi penyerang
+adalah sebaran realisasi. Sampel gradien buruk bukan karena bias, melainkan karena
+variansi: tanda dari arah yang berubah-ubah bukan arah yang baik.
+
+\index{penyaringan acak}
+Teknik keenam menyerang dari dalam. Pelatihan sengaja membuat
+gradien kecil di sekitar titik data, misalnya dengan menghukum norma gradien atau
+memakai aktivasi yang jenuh, sehingga permukaan kerugian sangat datar di sekitar contoh
+dan curam di tempat lain. Penyerang yang melangkah sejauh $\varepsilon$ di daerah datar
+tidak ke mana-mana, dan gradiennya memang kecil, tetapi bukan karena modelnya benar.
+Teknik ketujuh adalah kerabatnya: masukan dibersihkan lebih dulu oleh prosedur
+optimisasi banyak langkah sebelum diklasifikasikan, dan gradien dari pipa itu mudah
+meledak.
+
+Gambar~\ref{fig:permukaan} memperlihatkan bentuk permukaan yang lahir dari kuantisasi
+pada dua koordinat. Setiap dataran mendatar di sana adalah satu anak tangga. Di dalam
+satu dataran, kerugian tidak berubah sama sekali, sehingga penyerang yang melangkah
+kecil berhenti di tempat --- tiga panah pendek pada gambar itu. Penyerang yang boleh
+melangkah cukup jauh bisa menyeberang ke dataran berikutnya, dan panah putus-putus
+menunjukkan penyeberangan itu.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.80\linewidth, height=7.2cm,
+  view={52}{24},
+  xlabel={$u$}, ylabel={$v$}, zlabel={$L$},
+  domain=-0.35:0.35, y domain=-0.35:0.35,
+  samples=27, samples y=27,
+  zmin=0, zmax=0.52,
+  tick label style={font=\scriptsize},
+  label style={font=\small},
+  colormap={peta}{color=(layerteal!10) color=(layerteal!60)},
+  colorbar=false, axis line style={layergrey}, tick style={layergrey},
+]
+\addplot3[surf, shader=faceted, faceted color=layergrey!40, line width=0.15pt]
+  {0.1*round(10*((x-0.15)^2+(y-0.10)^2))};
+\draw[-latex, accent, line width=1pt] (axis cs:0.02,0.02,0) -- (axis cs:0.10,0.06,0);
+\draw[-latex, accent, line width=1pt] (axis cs:0.02,0.02,0) -- (axis cs:-0.02,0.08,0);
+\draw[-latex, accent, line width=1pt] (axis cs:0.02,0.02,0) -- (axis cs:0.04,-0.05,0);
+\node[circle, fill=accent, inner sep=1.5pt] at (axis cs:0.02,0.02,0) {};
+\draw[-latex, layerteal, line width=1.2pt, dashed]
+  (axis cs:0.02,0.02,0) -- (axis cs:0.30,0.30,0.10);
+\node[font=\footnotesize, accent, anchor=north west] at (axis cs:0.09,0.05,0)
+  {$\nabla L=0$};
+\node[font=\footnotesize, layerteal, anchor=south west] at (axis cs:0.28,0.28,0.12)
+  {BPDA};
+\end{axis}
+\end{tikzpicture}
+\caption{Permukaan kerugian yang dibuat datar oleh kuantisasi:
+$L(u,v)=\frac{1}{10}\operatorname{round}(10\,s)$ dengan
+$s=(u-0{,}15)^2+(v-0{,}10)^2$.
+Tiap dataran setinggi $0{,}1$ adalah satu anak tangga: di dalamnya $\nabla L=0$,
+jadi tiga panah pendek dari titik merah tidak mengubah ketinggian sama sekali.
+Panah putus-putus menyeberang ke anak tangga berikutnya, dan hanya penyerang yang
+bersedia melangkah sejauh jarak antar-batas yang sampai ke sana.}
+\label{fig:permukaan}
+\end{figure}
+
+\begin{tangan}
+Bahan: satu penggaris panjang, satu uang logam, satu teman, satu meja.
+
+Ganjal satu ujung penggaris dengan buku sehingga landainya miring, lalu letakkan uang
+logam di tengahnya. Tutup matamu dan tahan uang itu dengan satu jari. Temanmu mengetuk
+meja pelan-pelan, tidak beraturan, dan tugasmu menebak ke arah mana penggaris menanjak
+--- hanya dari getaran yang sampai ke jarimu.
+
+Ulangi sepuluh kali dan catat benar atau salah. Lalu minta temanmu mengetuk lebih keras,
+dan ulangi sepuluh kali. Lalu minta ia berhenti mengetuk sama sekali, dan ulangi lagi.
+
+Yang harus kamu lihat: ketukan keras tidak membuat tebakanmu benar. Ketukan yang berhenti
+membuat tebakanmu murni tebakan, sekitar separuh benar, tidak lebih baik daripada melempar
+koin. Getaran memberitahu bahwa ada sesuatu yang bergerak; ia tidak memberitahu arah.
+Itulah bedanya gradien yang buruk dan gradien yang tidak ada.
+\end{tangan}
+
+Ketujuh teknik itu menghasilkan tujuh gejala. Lima pertama adalah daftar Athalye dan
+rekan-rekan; dua terakhir kami tambahkan dari tipologi yang sama.
+
+\begin{enumerate}
+  \item \textbf{Serangan tidak dibatasi.} Laporan mengizinkan gangguan sebesar apa pun,
+        lalu menyimpulkan ketahanan dari serangan yang tidak memperhatikan batas.
+  \item \textbf{Serangan memakai satu sampel acak.} Pada pertahanan yang mengacak,
+        penyerang menarik satu realisasi lalu melaporkan kegagalannya. Yang diukur adalah
+        satu lemparan dadu, bukan peluang menang.
+  \item \textbf{Serangan hanya satu langkah.} Serangan satu langkah mudah terhenti oleh
+        permukaan kerugian yang tidak rata, dan ketahanan yang disimpulkannya hilang
+        begitu langkahnya diulang.
+  \item \textbf{Menaikkan herotan tidak menaikkan keberhasilan.} Bila anggaran diperbesar
+        tetapi keberhasilan tidak bergerak, yang rusak biasanya gradiennya.
+  \item \textbf{Gradien dilaporkan nol atau NaN.} Ini gejala paling telanjang: gradien
+        yang seluruhnya nol pada model tak konstan menandakan potongan tak
+        terdiferensiasi, bukan permukaan yang rata.
+  \item \textbf{Akurasi di bawah serangan sama dengan akurasi bersih.} Tambahan kami.
+        Kesamaan sampai beberapa angka di belakang koma pada beberapa $\varepsilon$
+        berbeda adalah tanda serangan yang tidak bergerak.
+  \item \textbf{Tidak ada serangan adaptif.} Tambahan kami. Pertahanan diuji hanya
+        dengan serangan yang dirancang sebelum pertahanan itu ada, sehingga belum diuji
+        oleh penyerang yang tahu dirinya sedang diuji.
+\end{enumerate}
+
+\kamus{gradien dikaburkan}{obfuscated gradient}{gradien yang diberikan kepada penyerang
+tidak menunjuk arah yang benar, biasanya karena ada potongan tak terdiferensiasi atau
+acak di dalam pipa, bukan karena modelnya kuat}
+
+\kamus{kuantisasi}{quantization}{penggantian setiap nilai dengan kelipatan terdekat dari
+suatu jarak tetap; hasilnya fungsi tangga yang turunannya nol di hampir semua tempat}
+
+\kamus{serangan adaptif}{adaptive attack}{serangan yang dirancang dengan mengetahui
+pertahanan yang sedang diuji, termasuk mengetahui bahwa gradiennya mungkin rusak}
+
+Daftar gejala itu berguna untuk menolak klaim lemah, tetapi tidak untuk menerima klaim
+kuat: pertahanan bisa lolos ketujuhnya dan tetap rapuh, dan sebaliknya bisa memicu satu
+gejala dan tetap menaikkan biaya serangan.
+
+
+\section{Menembus: BPDA, EOT, dan reparameterisasi}
+\tingkat{lanjut}
+
+Kalau gradien yang tersedia salah, penyerang punya tiga pilihan. Ganti gradien yang salah
+dengan gradien fungsi yang mendekatinya; rata-ratakan gradien atas keacakan yang membuatnya
+berubah-ubah; atau pindahkan pekerjaan ke ruang lain, di mana pertahanannya tidak
+mengaburkan apa pun. Ketiganya punya nama, dan ketiganya bekerja karena alasan berbeda.
+
+\index{bpda}
+Pilihan pertama disebut \emph{backward pass differentiable approximation}, disingkat
+BPDA. Idenya sesederhana bunyinya: pada perhitungan maju pakai fungsi yang sebenarnya,
+termasuk pembulatan atau penyaringan; pada perhitungan mundur lewati potongan itu
+seolah-olah ia identitas. Bila model terbungkus adalah $h(x)=f\bigl(g(x)\bigr)$,
+penyerang memakai
+
+\begin{equation}
+\widehat{\nabla}_x h(x) \;=\; \nabla f\bigl(g(x)\bigr),
+\end{equation}
+
+yaitu gradien $f$ yang dievaluasi di titik setelah dibungkus, bukan gradien dari
+komposisi. Untuk pembulatan, ini berarti penyerang berhenti bertanya ``berapa turunan
+pembulatan'' dan mulai bertanya ``kalau angkanya sudah dibulatkan, ke arah mana $f$
+paling cepat naik''.
+
+Mengapa pendekatan ini masuk akal? Karena kesalahannya dibatasi oleh seberapa jauh $g$
+menggeser titik, bukan oleh seberapa aneh bentuk $g$.
+
+\begin{proposisi}
+Misalkan $f$ terdiferensiasi kontinu dengan gradien yang Lipschitz, yaitu
+$\lVert \nabla f(u)-\nabla f(v)\rVert \le L\lVert u-v\rVert$ untuk semua $u,v$, dan
+misalkan $g$ memenuhi $\lVert g(x)-x\rVert\le\delta$. Maka
+\begin{equation}
+\bigl\lVert \nabla f\bigl(g(x)\bigr)-\nabla f(x)\bigr\rVert \;\le\; L\,\delta .
+\end{equation}
+\end{proposisi}
+
+\begin{proof}
+Tulis $v=g(x)-x$ dan gunakan teorema nilai rata-rata dalam bentuk integral,
+\begin{equation}
+\nabla f(x+v)-\nabla f(x) = \int_0^1 H_f(x+tv)\,v\,dt,
+\end{equation}
+dengan $H_f$ matriks Hessian. Karena norma spektral $H_f$ dibatasi $L$,
+\begin{equation}
+\bigl\lVert \nabla f(x+v)-\nabla f(x)\bigr\rVert
+\le \int_0^1 \lVert H_f(x+tv)\rVert\,\lVert v\rVert\,dt
+\le L\lVert v\rVert \le L\delta .
+\end{equation}
+\end{proof}
+
+Proposisi ini menjelaskan kapan BPDA boleh dipercaya. Kalau pembulatan hanya menggeser
+masukan sejauh $q/2$ dan $f$ cukup mulus pada skala itu, galat gradiennya kecil dan
+langkah serangan tetap menuju arah yang benar. Kalau $q$ besar sehingga penggeseran itu
+sebanding dengan skala lekukan $f$, batas $L\delta$ menjadi besar dan tidak ada jaminan.
+Proposisi ini tidak mengatakan $\widehat{\nabla}$ adalah gradien $h$; gradien itu tidak
+ada. Ia hanya mengatakan bahwa arah yang dipakai dekat dengan arah yang benar untuk $f$
+di titik yang sudah dibungkus.
+
+Pilihan kedua adalah \emph{expectation over transformation}, disingkat EOT. Untuk
+pertahanan acak, penyerang tidak menghadapi satu fungsi melainkan sebaran fungsi.
+Yang masuk akal dimaksimalkan bukan kerugian pada satu realisasi, melainkan harapan
+kerugian atas realisasi,
+
+\begin{equation}
+\overline{L}(x) \;=\; \mathbb{E}_{T\sim\mathcal{T}}\; L\bigl(f_T(x),y\bigr),
+\end{equation}
+
+dengan $T$ menyatakan keacakan yang dipakai pertahanan, misalnya topeng fitur atau
+parameter transformasi.
+
+\index{eot}
+\begin{lemma}
+Bila $\mathcal{T}$ berhingga dan $\nabla_x L\bigl(f_T(x),y\bigr)$ terbatas seragam
+dalam $T$, maka
+\begin{equation}
+\nabla_x \overline{L}(x) \;=\; \mathbb{E}_{T}\;\nabla_x L\bigl(f_T(x),y\bigr).
+\end{equation}
+Selain itu, rata-rata $m$ sampel bebas,
+$\frac{1}{m}\sum_{i=1}^{m}\nabla_x L\bigl(f_{T_i}(x),y\bigr)$, adalah penaksir tak bias
+dengan variansi yang mengecil sebanding $1/m$.
+\end{lemma}
+
+\begin{proof}
+Karena $\mathcal{T}$ berhingga, harapan adalah jumlah berhingga, dan turunan boleh
+masuk ke dalam jumlah karena turunan adalah operator linear. Penaksir rata-rata punya
+harapan yang sama dengan tiap sukunya, jadi tak bias, dan variansinya adalah variansi
+satu suku dibagi $m$ karena sampelnya bebas.
+\end{proof}
+
+Lemma ini menjawab keberatan yang sering muncul: kalau pertahanannya acak, bukankah
+serangan apa pun hanya kebetulan? Tidak, selama penyerang boleh memanggil model
+berkali-kali. Keacakan menaikkan biaya, karena penyerang perlu $m$ panggilan per langkah,
+tetapi tidak mengubah arah yang dituju; yang berubah hanya ketelitian taksiran. Ini
+contoh pertama dari pola yang berulang sepanjang bab: pertahanan yang menaikkan biaya itu
+nyata, sedangkan yang hanya menyulitkan pengukuran itu semu.
+
+Pilihan ketiga adalah reparameterisasi. Alih-alih menyerang $x$, penyerang menyerang
+variabel yang menghasilkan $x$ melalui transformasi yang tidak dikaburkan. Kalau
+pertahanan membungkus model dengan fungsi $g$ yang punya invers, penyerang bekerja di
+ruang $z$ dengan $x=g^{-1}(z)$ dan mengoptimalkan $z$. Ini berguna ketika $g$ adalah
+rotasi atau transformasi linier lain yang tidak menghilangkan informasi, dan tidak
+berguna ketika $g$ menghilangkan informasi: tidak ada $z$ yang bisa memulihkan angka
+yang sudah dibuang.
+
+Dalam praktik, ketiga pilihan itu dipakai bersama, ditambah dua kebiasaan. Pertama: mulai
+dari beberapa titik awal acak di dalam bola $\varepsilon$, karena permukaan kerugian yang
+tidak cembung membuat satu titik awal mudah terjebak. Kedua: jangan berhenti pada satu
+nilai $\varepsilon$. Ketahanan yang diukur pada satu anggaran adalah ketahanan yang tidak
+diukur.
+
+\begin{resep}
+Empat langkah menguji klaim pertahanan, dalam urutan ini.
+\begin{enumerate}
+  \item \textbf{Tulis anggaran lebih dulu.} Tetapkan $\varepsilon$ atau batas byte,
+        jumlah kueri, dan waktu. Angka ini tidak boleh berubah setelah hasil pertama
+        keluar.
+  \item \textbf{Serang lewat transfer, tanpa kueri.} Latih model pengganti pada data
+        yang kamu punya, buat contoh adversarial di sana, lalu kirim ke model korban.
+        Langkah ini mengukur apakah pertahanan itu hanya menghalangi satu model.
+  \item \textbf{Belanjakan sisa kueri secara adaptif.} Baru sekarang pakai BPDA atau
+        EOT pada korban, dan catat kueri per langkah, bukan hanya hasil akhirnya.
+  \item \textbf{Laporkan keduanya.} Keberhasilan transfer, keberhasilan adaptif, dan
+        biaya masing-masing, selalu bersama akurasi bersih.
+\end{enumerate}
+Peringatan urutan: langkah 2 harus selesai sebelum langkah 3. Kalau kamu mengukur
+transfer setelah melihat hasil adaptif, kamu sudah tahu contoh mana yang berhasil,
+dan angka transfernya bocor ke depan.
+\end{resep}
+
+\kamus{bpda}{backward pass differentiable approximation}{teknik mengganti gradien
+potongan yang tidak terdiferensiasi dengan gradien fungsi di titik sesudah potongan itu,
+seolah potongan tersebut identitas}
+
+\kamus{eot}{expectation over transformation}{serangan yang memaksimalkan harapan
+kerugian atas keacakan pertahanan, biasanya dengan merata-ratakan gradien dari beberapa
+realisasi}
+
+\begin{untukdosen}
+Bagian ini biasanya diajarkan dalam urutan yang salah, yaitu definisi BPDA lebih dulu.
+Urutan yang lebih baik adalah sebaliknya: tunjukkan model yang akurasinya tidak bergerak
+sedikit pun ketika diserang, minta mahasiswa menebak mengapa, lalu tunjukkan gradiennya
+nol. Hampir semua akan menebak ``modelnya kuat'', dan keheningan sesudahnya adalah momen
+belajar tersendiri.
+
+Dua kesalahan perlu diantisipasi. Pertama, menyimpulkan bahwa BPDA ``menghapus''
+pertahanan; yang benar, BPDA mengembalikan akses ke arah yang kira-kira benar, dan
+kegunaannya bergantung pada besarnya $\delta$ relatif terhadap skala lekukan model.
+Kedua, menyimpulkan bahwa pertahanan acak tidak berguna karena EOT ada; yang benar,
+pertahanan acak menaikkan biaya per langkah secara linear terhadap $m$, sehingga
+pertahanan itu mengubah anggaran penyerang, bukan arah serangan. Latihan di akhir bab
+memaksa mahasiswa menghitung biaya itu, bukan menyebutnya.
+\end{untukdosen}
+
+\section{Contoh hitung: satu titik pada model mainan}
+\tingkat{menengah}
+
+\begin{untukanak}
+Seorang penjaga toko punya kebiasaan aneh: setiap harga dibulatkan ke rupiah terdekat
+sebelum dicatat. Kalau ada pembeli yang diam-diam menggeser harga sebesar satu sen,
+catatan penjaga tidak berubah sama sekali. Pembeli itu bisa menyimpulkan bahwa tidak
+ada gunanya menggeser harga, lalu berhenti mencoba. Kesimpulannya salah, tetapi
+alasannya masuk akal: yang ia ukur memang tidak bergerak.
+
+Sekarang bayangkan pembeli lain. Ia tidak bertanya apakah catatan berubah karena
+geseran satu sen; ia bertanya ke arah mana catatan paling cepat naik, lalu menggeser
+harga cukup jauh sehingga pembulatannya berubah. Catatan penjaga pun berubah, dan
+pembeli itu berhasil tanpa melanggar aturan apa pun. Yang membedakan keduanya bukan
+kepandaian, melainkan pertanyaan yang diajukan.
+
+Model yang memakai pembulatan bekerja seperti penjaga itu. Program yang hanya mencoba
+geseran kecil akan berhenti dan melaporkan bahwa modelnya aman; program yang mengerti
+pembulatan akan melangkah lebih jauh. Jadi ketika membaca laporan bahwa sebuah model
+tidak bisa dikalahkan, tanyakan dulu: penyerangnya berhenti karena kalah, atau karena ia
+hanya mencoba satu cara?
+\end{untukanak}
+
+Sebelum percaya pada tabel, kita hitung satu titik dengan tangan. Modelnya dibuat
+sesederhana mungkin: delapan fitur dengan bobot semuanya satu, jadi skornya adalah
+jumlah kedelapan fitur. Datanya berasal dari dua sebaran normal berpusat $-0{,}5$ dan
+$+0{,}5$, dengan akurasi bersih sekitar $92$ persen. Pertahanannya adalah pembulatan ke
+kelipatan $q=0{,}05$ pada setiap fitur, ditambah penyaringan acak berpeluang hapus $r$
+yang mengalikan sisanya dengan $1/(1-r)$. Anggaran penyerang $\varepsilon=0{,}25$ pada
+norma $\ell_\infty$.
+
+Ambil satu contoh yang benar berlabel $+1$,
+
+\begin{equation}
+x_0 = (0{,}30;\ 0{,}20;\ 0{,}15;\ 0{,}10;\ 0{,}05;\ 0{,}00;\ -0{,}10;\ -0{,}08).
+\end{equation}
+
+Jumlahnya $0{,}62$, jadi model menjawab $+1$ dengan margin yang tipis. Sesudah
+pembulatan, vektor yang masuk ke pengklasifikasi adalah
+$(0{,}30;0{,}20;0{,}15;0{,}10;0{,}05;0{,}00;-0{,}10;-0{,}10)$ dan skornya $0{,}60$.
+Perhatikan bahwa satu koordinat bergeser dari $-0{,}08$ ke $-0{,}10$: itulah kerja
+pembulatan.
+
+Sekarang bandingkan dua penyerang. Penyerang naif menghitung turunan fungsi yang
+sebenarnya, yaitu turunan dari komposisi yang memuat pembulatan. Karena pembulatan
+datar di sekitar $x_0$, turunannya nol di kedelapan koordinat, sehingga langkahnya
+$x_0 + \varepsilon\cdot 0 = x_0$. Skornya tetap $0{,}60$ dan labelnya tetap $+1$.
+Laporan penyerang itu akan berbunyi: serangan gagal, akurasi bertahan seratus persen
+dari akurasi bersih.
+
+Penyerang kedua memakai BPDA. Ia tidak bertanya tentang turunan pembulatan; ia
+mengevaluasi gradien pengklasifikasi di titik yang sudah dibulatkan, yaitu vektor
+$(1,1,\dots,1)$, lalu melangkah berlawanan arah label sejauh $\varepsilon$ pada setiap
+koordinat,
+
+\begin{equation}
+x_1 = x_0 - 0{,}25\cdot(1,1,\dots,1)
+= (0{,}05;\ -0{,}05;\ -0{,}10;\ -0{,}15;\ -0{,}20;\ -0{,}25;\ -0{,}35;\ -0{,}33).
+\end{equation}
+
+Sesudah pembulatan, vektor itu menjadi
+\[
+(0{,}05;\ -0{,}05;\ -0{,}10;\ -0{,}15;\ -0{,}20;\ -0{,}25;\ -0{,}35;\ -0{,}35)
+\]
+dengan skor $-1{,}40$. Labelnya berbalik menjadi $-1$. Satu langkah, biaya satu kali
+perhitungan gradien, dan model yang tadi dilaporkan kebal ternyata salah dengan margin
+yang tidak tipis.
+
+Contoh ini menunjukkan sesuatu yang lebih tajam daripada ``BPDA bekerja''. Penyerang
+kedua tidak memakai informasi yang tidak dimiliki penyerang pertama: keduanya tahu
+arsitektur, bobot, dan $q$. Yang berbeda hanya satu keputusan, yaitu menghormati potongan
+tak terdiferensiasi atau melewatinya. Jadi ``ketahanan'' yang dilaporkan penyerang pertama
+bukan properti model, melainkan properti notasi penyerang itu sendiri.
+
+\begin{contoh}
+Pada model yang sama, dengan $q=0{,}05$, $r=0{,}5$, dan seed tetap, gradien beda
+hingga dengan langkah $h=10^{-5}$ bernilai nol pada $15\,998$ dari $16\,000$ entri;
+dua entri sisanya tepat $q/h=5\,000$, karena titiknya kebetulan berada di batas anak
+tangga. Norma gradien beda hingga yang diambil nilai tengahnya nol, sedangkan norma
+gradien BPDA untuk satu topeng yang menyisakan empat fitur adalah $4$. Tetapi arah satu
+topeng masih jauh dari arah bobot, dengan kosinus antara $0{,}35$ dan $0{,}94$ atas
+$200$ topeng. Rata-rata gradien atas $200$ topeng memberi vektor bernorma $2{,}738$ dan
+kosinus $0{,}9982$ terhadap vektor bobot.
+\end{contoh}
+
+Angka itu menggambarkan tiga hal. Pertama, gradien yang hancur bukan hanya kecil; ia bisa
+juga besar dan salah, dan dua entri yang melonjak akan mendominasi setiap langkah
+sehingga serangan naif gagal dengan cara yang tampak acak. Kedua, BPDA memulihkan arah
+dengan hampir sempurna: kosinus $0{,}9982$ berarti sudutnya sekitar tiga derajat. Ketiga,
+norma gradien BPDA untuk satu topeng, yaitu $4$, berbeda dari norma harapannya, $2{,}738$;
+perbedaan skala itu tidak merusak serangan yang memakai tanda, tetapi merusak yang memakai
+besaran gradien, dan itu sebabnya EOT tetap perlu.
+
+\kertas{Hitung ulang contoh di atas tanpa melihat teks. Jumlahkan $x_0$, bulatkan ke
+kelipatan $0{,}05$, lalu jumlahkan lagi; cocokkan bahwa hasilnya $0{,}60$. Kurangi
+setiap koordinat dengan $0{,}25$, bulatkan lagi, jumlahkan, dan cocokkan bahwa hasilnya
+$-1{,}40$. Sesudah itu jawab: berapa nilai $q$ terkecil yang membuat serangan BPDA satu
+langkah ini gagal membalik label, dan mengapa nilai itu bergantung pada margin awal
+$0{,}60$ dan bukan pada $\varepsilon$ saja?}
+
+\section{Lab komputasi: akurasi di tiap tingkat pengaburan}
+\tingkat{lanjut}
+
+\begin{figure}[!htb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.86\linewidth, height=5.6cm,
+  xlabel={anggaran $\varepsilon$ pada norma $\ell_\infty$},
+  ylabel={keberhasilan serangan (\%)},
+  xmin=0.03, xmax=0.37, ymin=-0.6, ymax=30,
+  xtick={0.05,0.10,0.15,0.20,0.25,0.30,0.35},
+  xticklabels={0{,}05,0{,}10,0{,}15,0{,}20,0{,}25,0{,}30,0{,}35},
+  ytick={0,5,10,15,20,25,30},
+  tick label style={font=\footnotesize},
+  label style={font=\small},
+  legend style={font=\scriptsize, at={(0.02,0.98)}, anchor=north west,
+                draw=layergrey!35, fill=white, fill opacity=0.92, text opacity=1},
+  grid=major, grid style={layergrey!15},
+  axis line style={layergrey},
+]
+\addplot[color=layerindigo, mark=*, mark size=1.5pt, line width=1pt]
+  coordinates {(0.05,2.38) (0.10,5.27) (0.15,8.66) (0.20,12.84)
+               (0.25,17.40) (0.30,22.32) (0.35,27.71)};
+\addlegendentry{tanpa pembulatan, penyerang BPDA}
+\addplot[color=accent, mark=square*, mark size=1.4pt, line width=1pt, dashed]
+  coordinates {(0.05,2.34) (0.10,5.33) (0.15,8.72) (0.20,12.92)
+               (0.25,17.48) (0.30,22.46) (0.35,27.79)};
+\addlegendentry{pembulatan $q=0{,}05$, penyerang BPDA}
+\addplot[color=layergrey, mark=triangle*, mark size=1.6pt, line width=0.9pt,
+         dotted]
+  coordinates {(0.05,0.00) (0.10,0.01) (0.15,0.01) (0.20,0.01)
+               (0.25,0.01) (0.30,0.02) (0.35,0.02)};
+\addlegendentry{pembulatan $q=0{,}05$, penyerang naif}
+\end{axis}
+\end{tikzpicture}
+\caption{Keberhasilan serangan terhadap $\varepsilon$ pada model mainan delapan fitur,
+$2\,000$ contoh, rata-rata lima seed. Pada $\varepsilon=0{,}25$ ketiga kurva memberi
+$17{,}40$, $17{,}48$, dan $0{,}01$ persen; pada $\varepsilon=0{,}35$ memberi
+$27{,}71$, $27{,}79$, dan $0{,}02$ persen. Dua kurva pertama berimpit di dalam
+simpangan antar-seed, yang besarnya $0{,}35$ sampai $1{,}08$ poin persen.}
+\label{fig:kurva-epsilon}
+\end{figure}
+
+Sekarang kita ulang percobaan itu pada dua ribu contoh, lima seed, dan beberapa tingkat
+pengaburan, hanya dengan \texttt{numpy}. Yang perlu diperhatikan bukan kode itu sendiri,
+melainkan satu keputusan di dalamnya: fungsi \texttt{fgsm} menghitung gradien dengan beda
+hingga pada fungsi yang sudah dibungkus, sedangkan \texttt{pgd} memakai gradien
+pengklasifikasi di titik sesudah pembungkusan. Hasilnya, disapu pada tujuh nilai
+$\varepsilon$, ada di Gambar~\ref{fig:kurva-epsilon}.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+D, N, EPS = 8, 2000, 0.25
+W = np.ones(D)
+
+def data(rng, n, mu=0.5):
+    y = 2 * rng.integers(0, 2, n) - 1
+    return rng.normal(mu * y[:, None], 1.0, (n, D)), y
+
+def quant(x, q):
+    return x if q == 0 else np.round(x / q) * q
+
+def mask(shape, r, rng):
+    if r == 0:
+        return np.ones(shape)
+    return (rng.random(shape) >= r) / (1 - r)
+
+def logit(x, q, m):
+    return (quant(x, q) * m) @ W
+
+def fgsm(X, y, q, r, rng):
+    m, h = mask(X.shape, r, rng), 1e-5
+    G = np.zeros_like(X)
+    for j in range(D):
+        e = np.zeros(D)
+        e[j] = h
+        G[:, j] = (logit(X + e, q, m) - logit(X - e, q, m)) / (2 * h)
+    return X - EPS * y[:, None] * np.sign(G)
+
+def pgd(X, y, q, r, rng, m_eot=1, steps=40):
+    Xa, a = X.copy(), EPS / 8
+    for _ in range(steps):
+        G = sum(W * mask(X.shape, r, rng) for _ in range(m_eot))
+        Xa = np.clip(Xa - a * y[:, None] * np.sign(G / m_eot),
+                     X - EPS, X + EPS)
+    return Xa
+
+def run(seed, q, r):
+    rng = np.random.default_rng(seed)
+    X, y = data(rng, N)
+    def pred(Z):
+        return np.sign(logit(Z, q, mask(Z.shape, r, rng)))
+    ok = pred(X) == y
+    def succ(Z):
+        return 100 * np.mean(pred(Z)[ok] != y[ok])
+    return (100 * ok.mean(), succ(fgsm(X, y, q, r, rng)),
+            succ(pgd(X, y, q, r, rng)), succ(pgd(X, y, q, r, rng, 20)))
+
+print("  q     r   bersih   naif   bpda1   eot")
+for q, r in ((0.00, 0.0), (0.01, 0.0), (0.05, 0.0),
+             (0.05, 0.5), (0.20, 0.0)):
+    M = np.array([run(s, q, r) for s in (1, 2, 3, 4, 5)]).mean(0)
+    print("%5.2f %5.2f  %6.2f  %5.2f  %5.2f  %5.2f"
+          % (q, r, M[0], M[1], M[2], M[3]))
+\end{verbatim}
+
+Keluaran program itu, apa adanya:
+
+\begin{verbatim}
+  q     r   bersih   naif   bpda1   eot
+ 0.00  0.00   92.02  17.40  17.40  17.40
+ 0.01  0.00   92.00   0.02  17.40  17.40
+ 0.05  0.00   91.97   0.01  17.48  17.48
+ 0.05  0.50   82.87  12.16  25.48  25.67
+ 0.20  0.00   91.77   0.00  17.65  17.65
+\end{verbatim}
+\end{lab}
+
+Bacalah tabel itu baris demi baris. Baris pertama adalah garis dasar tanpa pengaburan:
+akurasi bersih $92{,}02$ persen, keberhasilan serangan satu langkah $17{,}40$ persen.
+Angka itu kecil karena $\varepsilon=0{,}25$ memang kecil dibanding sebaran datanya,
+bukan karena serangannya lemah.
+
+Baris kedua adalah inti bab ini. Dengan $q=0{,}01$, akurasi bersih hampir tidak berubah,
+$92{,}00$ persen, tetapi keberhasilan naif jatuh dari $17{,}40$ menjadi $0{,}02$ persen,
+sekitar $870$ kali lebih kecil. Penyerang yang memakai BPDA mendapat $17{,}40$ persen,
+persis garis dasar. Pertahanan itu tidak mengubah apa pun yang bisa diamati penyerang
+yang menghitung dengan benar; ia hanya mengubah apa yang dilihat penyerang yang salah
+menghitung.
+
+Baris ketiga mengulang hal yang sama pada $q=0{,}05$: naif $0{,}01$ persen, BPDA
+$17{,}48$ persen, akurasi bersih $91{,}97$ persen. Menaikkan $q$ lima kali lipat tidak
+mengubah keberhasilan BPDA, tetapi membuat laporan naif terlihat lebih baik. Itulah
+gejala keempat dari daftar di bagian dua, dalam bentuk angka.
+
+Baris keempat menambahkan penyaringan acak $r=0{,}5$, dan dua hal terjadi sekaligus.
+Akurasi bersih turun dari $91{,}97$ ke $82{,}87$ persen, karena membuang separuh fitur dan
+mengalikan sisanya dengan dua menaikkan variansi skor. Keberhasilan BPDA naik ke $25{,}48$
+persen, di atas garis dasar, bukan karena pertahanannya lebih buruk melainkan karena contoh
+yang masih benar setelah pengaburan punya margin lebih kecil.
+
+Baris kelima menunjukkan bahwa kuantisasi kasar tidak menyelamatkan model. Dengan
+$q=0{,}20$, sebanding dengan $\varepsilon$, keberhasilan BPDA $17{,}65$ persen, sedikit di
+atas garis dasar: titik yang berada dekat batas anak tangga hanya perlu dorongan kecil untuk
+menyeberang.
+
+Variansi antar seed kecil tetapi tidak nol: pada $q=0{,}05$ dengan $r=0$ simpangan bakunya
+sekitar $0{,}6$ poin persen, pada baris dengan penyaringan acak sekitar $1{,}4$ poin. Galat
+baku satu proporsi pada $2\,000$ contoh dan tingkat $0{,}17$ kira-kira $0{,}8$ poin, jadi
+kedua angka itu sejalan dengan pengambilan sampel biasa.
+
+Ada empat hal yang tidak diukur percobaan ini. Pertama, modelnya linier, sehingga gradien
+BPDA hampir sempurna dan kosinus $0{,}9982$ terlalu bagus untuk model nyata. Kedua,
+penyerang mengetahui $q$ dan $r$. Ketiga, hanya satu nilai $\varepsilon$ yang diuji.
+Keempat, tidak ada pencarian hyperparameter serangan. Semua itu membuat angka di atas
+menjadi batas bawah keberhasilan serangan, bukan batas atas.
+
+
+Kekurangan ketiga itu bisa ditutup, dan hasilnya ada di Gambar~\ref{fig:kurva-epsilon}.
+Program yang sama dijalankan pada tujuh nilai $\varepsilon$ dari $0{,}05$ sampai
+$0{,}35$, lima seed, tanpa penyaringan acak. Kurva model tanpa pembulatan dan kurva
+model dengan pembulatan $q=0{,}05$ hampir berimpit: pada $\varepsilon=0{,}25$ keduanya
+memberi $17{,}40$ dan $17{,}48$ persen, dan pada $\varepsilon=0{,}35$ keduanya memberi
+$27{,}71$ dan $27{,}79$ persen. Kurva penyerang naif tetap di bawah $0{,}02$ persen
+sepanjang rentang itu. Pertahanan ini karena itu tidak menggeser kurva dan tidak
+mematahkannya; ia hanya menambah kurva ketiga yang datar.
+
+
+\section{Studi kasus: NIDS, dan mengapa evasinya tetap tidak praktis}
+\tingkat{lanjut}
+
+Sampai di sini kita berurusan dengan vektor fitur yang boleh diubah sesuka hati. Sistem
+pengesanan pencerobohan jaringan, atau NIDS, adalah dunia yang berbeda.
+\index{nids}
+Sebuah NIDS membaca aliran paket, mengekstrak ciri seperti durasi aliran,
+jumlah paket, jumlah byte, bendera TCP, dan waktu antar-kedatangan, lalu memutuskan
+apakah aliran itu serangan. Keputusan harus diambil cepat, sering dalam milidetik, untuk
+ribuan aliran per detik.
+
+Gambar~\ref{fig:rantai} menaruh rantai itu pada satu baris. Yang perlu diperhatikan
+bukan kotaknya, melainkan tanda merah di antara rekonstruksi aliran dan ekstraksi ciri.
+Di situlah penyerang bekerja: ia tidak menyentuh model, ia menyentuh paket, dan paket
+itulah yang menentukan nilai ciri yang masuk ke model. Semua yang ada di kanan tanda itu
+hanya melihat akibat; semua yang ada di kiri adalah sebab yang bisa ia kendalikan, dengan
+batasan protokol yang dibahas sesudah ini.
+
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[font=\footnotesize,
+  tahap/.style={draw=layergrey!70, fill=layergrey!6, rounded corners=1.5pt,
+    align=center, inner sep=3pt, minimum height=1.1cm, text width=1.95cm},
+  panah/.style={-latex, layergrey, line width=0.8pt}]
+\node[tahap] (n1) at (0,0) {paket\\di kabel};
+\node[tahap] (n2) at (2.50,0) {rekonstruksi\\aliran};
+\node[tahap] (n3) at (5.00,0) {ekstraksi\\ciri};
+\node[tahap] (n4) at (7.50,0) {penyetelan\\skala};
+\node[tahap] (n5) at (10.00,0) {model\\NIDS};
+\node[tahap] (n6) at (12.50,0) {ambang\\keputusan};
+\draw[panah] (n1) -- (n2);
+\draw[panah] (n2) -- (n3);
+\draw[panah] (n3) -- (n4);
+\draw[panah] (n4) -- (n5);
+\draw[panah] (n5) -- (n6);
+\node[circle, fill=accent, inner sep=2pt] (sisip) at (3.75,0) {};
+\draw[accent, line width=0.8pt] (sisip) -- ++(0,0.62);
+\node[accent, anchor=south, font=\scriptsize] at (3.75,0.66)
+  {titik sisipan: waktu dan ukuran paket};
+\node[layergrey, anchor=north, font=\scriptsize, align=center] at (12.5,-0.62)
+  {peringatan atau blokir};
+\draw[-latex, layergrey, line width=0.6pt] (n6.south) -- (12.5,-0.5);
+\end{tikzpicture}
+\caption{Rantai pemrosesan NIDS, dari kabel sampai keputusan. Tanda merah adalah satu
+titik sisipan yang bisa dipakai penyerang: ciri seperti jumlah paket, jumlah byte, dan
+waktu antar-kedatangan seluruhnya ditentukan di kiri tanda itu, sedangkan model di
+kanannya hanya membaca akibatnya. Pertahanan yang menambahkan pengaburan di kanan tanda
+tidak menyentuh sebab, dan itulah batas yang dibahas di bagian ini.}
+\label{fig:rantai}
+\end{figure}
+
+\kamus{nids}{network intrusion detection system}{sistem yang memantau lalu lintas
+jaringan dan memutuskan apakah suatu aliran paket merupakan serangan}
+
+\kamus{ruang masalah}{problem space}{ruang objek nyata yang boleh diubah penyerang,
+misalnya paket dan waktu, berbeda dari ruang fitur tempat model bekerja}
+
+Kesulitan pertama adalah jarak antara dua ruang. Serangan biasanya dirumuskan di ruang
+fitur, sedangkan penyerang mengirim paket: setiap perubahan fitur harus diterjemahkan
+menjadi perubahan paket yang tetap sah menurut protokol dan tetap menjalankan fungsi
+jahatnya, dan terjemahan itu tidak selalu ada. Beberapa fitur bahkan tidak bisa diubah
+pengirim, karena jumlah paket dan byte arah balik ditentukan sistem penerima.
+
+Kesulitan kedua adalah korelasi antar fitur. Durasi berkaitan dengan jumlah paket dan
+waktu antar-kedatangan, dan bendera TCP berkaitan dengan protokol transpor, sehingga
+penyerang tidak bisa menaikkan durasi sambil menurunkan kedua waktu antar-kedatangan;
+fitur diskret seperti nomor protokol dan panjang paket menambah batas.
+
+Kesulitan ketiga adalah waktu. Serangan yang membutuhkan sepuluh ribu kueri berarti lalu
+lintas nyata yang lewat dan tercatat, dan jejak adalah hal pertama yang dilihat analis.
+Biaya nyata adalah pertahanan nyata; ketiadaan gradien bukan.
+
+Angka dari literatur membuat jarak itu konkret. Pada data CSE-CIC-IDS2018 dengan lima
+puluh fitur tersaring, tiga model dilatih dan diuji pada dua puluh persen data, lalu
+diserang dengan FGSM, PGD, dan BIM. Sebelum serangan ketiganya nyaris sempurna: akurasi
+$0{,}997$ untuk ANN, $0{,}998$ untuk SVM, dan $0{,}997$ untuk CNN. Pada hari serangan,
+dengan pengetahuan penuh, FGSM menjatuhkan ANN ke $0{,}756$ dengan F1 $0{,}677$, CNN ke
+$0{,}842$ dengan F1 $0{,}863$, dan SVM ke $0{,}150$ dengan F1 $0{,}000$. PGD sedikit
+lebih kuat pada CNN, $0{,}584$ dengan F1 $0{,}689$, dan BIM memberi $0{,}688$ dengan F1
+$0{,}751$.
+
+Angka itu terlihat seperti kemenangan penyerang, dan pada model statis memang demikian;
+tetapi percobaan yang sama melanjutkan dengan model yang dilatih ulang setiap hari.
+Dengan pengetahuan tentang model berumur satu hari, SVM kembali ke $0{,}998$, ANN ke
+$0{,}938$, dan CNN ke $0{,}957$ dengan F1 $0{,}959$, dan pada hari kedua angkanya antara
+$0{,}966$ dan $0{,}998$. Pelatihan ulang itu tidak memakai contoh adversarial, jadi
+pemulihannya bukan hasil pertahanan adversarial melainkan akibat fakta bahwa gradien yang
+dihitung pada model kemarin tidak lagi menunjuk arah yang benar.
+
+Inilah versi NIDS dari seluruh bab: pengaburan gradien yang disengaja rapuh, karena
+penyerang bisa menembusnya dengan BPDA, sedangkan pengaburan yang datang dari perubahan
+model lebih tahan lama, sebab penyerang harus memperbarui pengetahuannya, dan memperbarui
+pengetahuan berarti memperoleh akses, dan akses meninggalkan jejak. Bedanya bukan pada
+teknik, melainkan pada siapa yang membayar biaya.
+
+\index{transferabilitas}
+Penulis tinjauan itu menyusun pohon serangan dan taksonomi masalah kepraktisan, lalu
+menyimpulkan bahwa hanya tiga jalur yang layak. Jalur pertama adalah gangguan buta:
+menambahkan byte acak pada paket UDP, atau pada paket TCP dengan bendera PSH, sambil
+menghitung ulang checksum supaya protokolnya sah. Jalur ini tidak memerlukan pengetahuan
+model dan tidak memerlukan kueri, jadi ia kebal terhadap pelatihan ulang, tetapi ia tidak
+punya arah. Jalur kedua adalah kueri lewat saluran samping, yang menuntut akses jaringan
+berkelanjutan dan bergantung pada indikator yang berubah menurut beban jaringan dan
+perangkat keras. Jalur ketiga adalah model pengganti yang dilatih dari data tangkapan
+botnet sendiri, yang bekerja lewat transferabilitas tetapi menuntut data latih yang masih
+baru.
+
+Ketiga jalur itu nyata, dan penulisnya menekankan bahwa jarak antara penelitian dan
+praktik lebar serta bahwa asumsi model ancaman dalam banyak makalah terlalu murah hati
+kepada penyerang.
+
+\index{evasi}
+Kerja penulis sendiri, yang akan kami sebut catatan kerja dan bukan hasil yang sudah
+diterbitkan, bergerak di sisi lain persoalan yang sama. Pada satu kumpulan data aliran
+jaringan, sebuah model mencapai F1 $0{,}967037$ dari $46\,558$ atas $48\,145$ contoh uji.
+Pertanyaannya bukan ``apakah serangan berhasil'', melainkan ``berapa fitur yang harus
+diubah agar sebuah contoh berpindah sisi batas keputusan sambil tetap sah menurut
+protokol''. Dengan program linier campuran bilangan bulat, jawabannya bergantung tajam
+pada jumlah fitur yang boleh berubah: pada tujuh fitur, tidak satu pun dari lima puluh
+contoh bisa diseberangkan; pada dua puluh fitur, tiga puluh tiga dari lima puluh bisa.
+Rasio jarak ke batas antara contoh yang berhasil dan contoh kendali sekitar $3{,}28$
+untuk model linier dan $2{,}13$ untuk jaringan saraf.
+
+\index{aturan tiga}
+Dua angka lagi menunjukkan kehati-hatian. Dari dua puluh ribu kandidat yang diuji untuk
+konsistensi protokol tidak ada yang lolos; dengan aturan tiga, batas atas $95$ persen
+untuk laju itu sekitar $0{,}019$ persen. Pada model dengan margin keselamatan yang
+diperbesar, syaratnya berbentuk $\varepsilon+40\delta$ dengan
+$\delta=1{,}245\times10^{-7}$, sehingga anggaran efektifnya $0{,}150004981$ dan bukan
+$0{,}15$.
+
+Batas catatan kerja itu harus disebut bersama hasilnya. Ia memakai satu kumpulan data,
+lima puluh contoh uji, dan dua keluarga model. Ia memverifikasi ketiadaan serangan yang
+memenuhi syarat, bukan menemukan serangan. Angka $0$ dari $20\,000$ adalah pernyataan
+tentang generator kandidat yang dipakai, bukan tentang semua paket yang mungkin, dan
+hasilnya tidak mengatakan apa pun tentang NIDS dinamis.
+
+Sekarang kesimpulan yang harus diucapkan jelas. Model mainan di bagian lima tidak
+membuktikan apa pun tentang NIDS nyata; ia menunjukkan bahwa pembulatan yang menghapus
+gradien menghasilkan laporan yang menyesatkan, dan bahwa mekanisme itu bisa ditembus
+dengan biaya wajar. Ia tidak mengukur biaya serangan di ruang paket. Yang bisa dibawa
+dari bab ini adalah kebiasaan: setiap kali sebuah pertahanan melaporkan keberhasilan nol,
+tanyakan gradiennya, lalu tanyakan siapa yang membayar biaya.
+
+\begin{tantangan}
+Sebuah makalah melaporkan pertahanan yang menurunkan keberhasilan serangan dari $96$
+persen ke $3$ persen, dengan akurasi bersih yang tidak berubah sama sekali. Penyerang
+mereka memakai FGSM satu langkah, $\varepsilon=8/255$, gradien eksak, satu titik awal,
+dan satu seed. Pertanyaannya: apakah ketahanan itu nyata, dan percobaan termurah apa
+yang paling cepat membuktikan bahwa angka $3$ persen itu artefak?
+
+Petunjuk pertama: perhatikan apa yang tidak dibayar. Pertahanan yang benar-benar
+menaikkan biaya hampir selalu membayar sesuatu, entah akurasi, entah latensi, entah
+jumlah parameter.
+
+Petunjuk kedua: kalau gradien dihitung melalui potongan tak terdiferensiasi, angka
+$3$ persen itu bukan keberhasilan serangan, melainkan sisa contoh yang kebetulan lahir
+dekat batas keputusan. Ulangi dengan PGD empat puluh langkah, BPDA, dan tiga titik awal;
+lalu sapu $\varepsilon$ dan laporkan kurvanya.
+
+Kalau mentok, kembali ke bagian tiga.
+\end{tantangan}
+
+\begin{untukpeneliti}
+Tiga hal di bagian ini sering salah dikutip. Pertama, kategori gradien hancur, acak, dan
+hilang adalah taksonomi dari makalah obfuscated gradients; daftar tujuh teknik di bagian
+dua adalah dekomposisi pedagogis kami. Di makalah itu ada tiga kategori, sembilan
+pertahanan yang diuji, tujuh di antaranya bergantung pada gradien yang dikaburkan, dan
+enam yang ditembus sepenuhnya ditambah satu yang ditembus sebagian.
+
+Kedua, BPDA bukan penyelesaian umum. Batas galat $L\delta$ hanya berlaku bila $f$ mulus
+dan $\delta$ kecil terhadap skala lekukan; pada pembulatan dengan $q$ sebanding dengan
+$\varepsilon$ jaminan itu kosong. Sebaliknya, EOT bukan obat untuk serangan yang salah
+arah: merata-ratakan arah yang salah tetap menghasilkan arah yang salah.
+
+Ketiga, hasil NIDS yang kami kutip berasal dari percobaan ruang fitur dengan pengetahuan
+penuh dan pelatihan ulang harian, bukan dari serangan ruang paket yang dijalankan. Ia
+mendukung klaim sempit: pelatihan ulang memulihkan akurasi terhadap serangan yang memakai
+gradien model lama. Ia tidak mendukung klaim bahwa NIDS kebal terhadap penyerang yang
+boleh mengubah paket.
+\end{untukpeneliti}
+
+\section{Daftar periksa sebelum menulis bahwa serangan berhasil}
+\tingkat{dasar}
+
+Bagian ini adalah ringkasan yang bisa dipakai langsung. Setiap butir adalah pertanyaan
+yang harus bisa dijawab sebelum sebuah klaim tentang serangan atau pertahanan masuk ke
+abstrak.
+
+\begin{enumerate}
+  \item \textbf{Model ancaman ditulis lengkap.} Apa yang diketahui penyerang: arsitektur,
+        bobot, data latih, probabilitas, atau hanya label? Berapa kueri yang boleh ia
+        lakukan, dan berapa lama?
+  \item \textbf{Serangan dibatasi pada anggaran yang masuk akal.} Sebutkan $\varepsilon$
+        dan normanya, atau batas byte dan paket bila bekerja di ruang masalah. Serangan
+        tanpa batas mengukur sesuatu yang tidak dihadapi siapa pun.
+  \item \textbf{Serangan bersifat adaptif.}
+        \index{serangan adaptif}
+        Penyerang harus mengetahui pertahanan yang diuji, termasuk kemungkinan bahwa
+        gradiennya rusak. Pertahanan yang hanya diuji oleh serangan dari makalah
+        sebelumnya belum diuji.
+  \item \textbf{Gradien diperiksa sebelum dipercaya.} Laporkan norma gradien, bagian
+        entri yang nol, dan korelasinya dengan arah yang benar. Gradien nol pada model
+        tak konstan adalah temuan, bukan hasil.
+  \item \textbf{Keberhasilan dilaporkan bersama akurasi bersih.} Pertahanan yang
+        menurunkan akurasi bersih dari $92$ ke $60$ persen tidak boleh dibandingkan
+        langsung dengan yang mempertahankan $92$ persen.
+  \item \textbf{Beberapa seed, dengan rata-rata dan simpangan.} Satu seed adalah satu
+        lemparan dadu; selisih dua baris yang lebih kecil daripada simpangannya bukan
+        selisih.
+  \item \textbf{Kurva, bukan satu titik.} Sapu nilai $\varepsilon$, jumlah langkah,
+        jumlah sampel EOT, dan jumlah kueri. Pertahanan yang baik menggeser kurva;
+        yang semu hanya menggeser satu titik.
+  \item \textbf{Anggaran komputasi penyerang disebut:} berapa kali model dipanggil,
+        berapa jam, berapa GPU? Serangan yang berhasil setelah sejuta kueri bukan
+        serangan yang sama dengan yang berhasil setelah seratus.
+  \item \textbf{Kode dan bobot tersedia.} Klaim yang tidak bisa diulang tidak bisa
+        diperiksa. Bila pelepasan tidak mungkin, prosedur dan hyperparameter harus cukup
+        rinci untuk direkonstruksi.
+  \item \textbf{Hasil negatif dilaporkan sebagai hasil negatif.} Pertahanan yang gagal
+        adalah informasi; laporan yang berhasil karena serangannya dihentikan sebelum
+        waktunya adalah kesalahan yang mahal.
+\end{enumerate}
+
+\kamus{aturan tiga}{rule of three}{bila tidak ada kejadian dalam $n$ percobaan bebas,
+batas atas $95$ persen untuk peluang kejadian itu kira-kira $3/n$}
+
+\begin{ringkasan}
+\begin{itemize}
+  \item Gradien yang dikaburkan membuat penyerang buta, bukan membuat model kuat.
+        Ketujuh teknik itu menghasilkan gejala yang sama: pengukuran terlihat membaik
+        tanpa ada yang membaik.
+  \item Untuk fungsi tangga seperti pembulatan, gradien komposisi nol di hampir semua
+        titik, sehingga serangan satu langkah menghasilkan $x'=x$ dan ``akurasi di bawah
+        serangan'' sama persis dengan akurasi bersih.
+  \item BPDA mengganti gradien potongan yang tidak terdiferensiasi dengan gradien
+        pengklasifikasi di titik sesudah potongan. Galatnya dibatasi $L\delta$: masuk
+        akal ketika penggeseran kecil terhadap skala lekukan, tidak memberi jaminan
+        ketika tidak.
+  \item EOT memaksimalkan harapan kerugian atas keacakan pertahanan; rata-rata $m$
+        sampel tak bias dengan variansi sebanding $1/m$. Keacakan menaikkan biaya per
+        langkah, bukan mengubah arah.
+  \item Pada model mainan delapan fitur dengan $\varepsilon=0{,}25$, pembulatan
+        $q=0{,}01$ menjatuhkan keberhasilan naif dari $17{,}40$ ke $0{,}02$ persen,
+        sedangkan BPDA tetap $17{,}40$ persen; $q=0{,}20$ juga tidak menahan BPDA.
+  \item Pada NIDS, FGSM menjatuhkan akurasi SVM dari $0{,}998$ ke $0{,}150$, tetapi
+        pelatihan ulang harian memulihkannya ke $0{,}998$. Pertahanan yang tahan lama di
+        sana datang dari biaya akses dan batasan protokol, bukan dari pengaburan gradien.
+\end{itemize}
+\end{ringkasan}
+
+\section{Latihan}
+\tingkat{menengah}
+
+\begin{latihan}
+\begin{enumerate}
+  \item Sebuah makalah menulis: ``Pertahanan kami menurunkan keberhasilan serangan dari
+        $98$ menjadi $0$ persen pada $\varepsilon=8/255$.'' Sebutkan tiga pemeriksaan
+        sebelum menerima kalimat itu, dan apa yang diharapkan pada tiap pemeriksaan bila
+        pertahanannya hanya mengaburkan gradien.
+  \item Turunkan batas galat BPDA untuk $f(x)=w\cdot x+b$, tunjukkan galatnya nol, lalu
+        jelaskan mengapa hasil itu tidak berlaku untuk model dua lapis beraktivasi ReLU.
+  \item Pada model mainan bagian empat, tentukan nilai $q$ terkecil yang membuat satu
+        langkah BPDA gagal membalik label $x_0$, nyatakan sebagai fungsi margin awal dan
+        $\varepsilon$, lalu periksa dengan program.
+  \item Anda punya $1\,000$ kueri. Pertahanan mengacak topeng fitur dengan $r=0{,}5$ dan
+        menolak menjawab bila lebih dari separuh fitur hilang. Hitung berapa langkah PGD
+        yang bisa dijalankan dengan $m=20$ dan dengan $m=1$, lalu jelaskan apa yang Anda
+        peroleh dan apa yang Anda bayar.
+  \item Ulang percobaan bagian lima dengan model dua lapis beraktivasi ReLU. Laporkan
+        akurasi bersih, keberhasilan naif, dan keberhasilan BPDA untuk tiga nilai $q$,
+        lalu jelaskan mengapa kosinusnya tidak lagi mendekati satu.
+  \item Sebuah NIDS membaca lima puluh fitur, tujuh di antaranya bendera biner dan tiga
+        nomor protokol. Hitung berapa fitur yang benar-benar bisa diubah penyerang, sebut
+        asumsinya, dan bandingkan dengan gambar $32\times32$ yang punya $3\,072$ nilai.
+  \item Jelaskan mengapa pelatihan ulang harian memulihkan akurasi terhadap serangan
+        bergradien tetapi tidak terhadap gangguan buta. Kaitkan dengan lemma EOT dan
+        definisi serangan adaptif.
+  \item Rancang percobaan yang memisahkan dua hipotesis: (a) pertahanan menaikkan biaya
+        serangan, (b) pertahanan hanya merusak pengukuran. Sebutkan metrik, jumlah seed,
+        bentuk kurva, dan hasil seperti apa yang membuat Anda menerima (a).
+\end{enumerate}
+\end{latihan}
+
+\peta{Bab 30 pada Athalye dkk., \emph{Obfuscated Gradients Give a False Sense of
+Security} (2018): bagian 3 untuk tiga keluarga gradien yang dikaburkan, bagian 4 untuk
+BPDA dan serangan adaptif, bagian 6 untuk daftar periksa. Pada Madry dkk., \emph{Towards
+Deep Learning Models Resistant to Adversarial Attacks} (2018): bagian 3 untuk PGD dan
+titik awal acak. Pada elShehaby dan Matrawy, \emph{Evasion Adversarial Attacks Remain
+Impractical Against ML-based Network Intrusion Detection Systems}, untuk pohon serangan,
+taksonomi kepraktisan, dan percobaan pelatihan ulang. Pada Bab 20 buku ini untuk aturan
+tiga, dan pada Bab 27 untuk FGSM dan PGD.}
