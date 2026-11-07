@@ -1,13 +1,13 @@
-"""Pemeriksa angka kunci Lampiran D untuk Bab 1-5. Setiap angka yang dikutip
-`lampiran-kunci/kunci-01-05.tex` diuji dengan assert di sini; skrip berhenti
-dengan galat bila ada yang meleset.
+"""Key-number checker for Appendix D, Chapters 1-5. Every number quoted by
+`lampiran-kunci/kunci-01-05.tex` is tested with an assert here; the script stops
+with an error if any of them is off.
 
-Jalankan dari `_buku-ed2/`:  python3 tools/cek-kunci-01-05.py
-(keluaran: satu baris ringkas per bab, lalu `OK: seluruh angka kunci cocok`)
+Run from `_buku-ed2/`:  python3 tools/cek-kunci-01-05.py
+(output: one summary line per chapter, then `OK: seluruh angka kunci cocok`)
 
-Cakupan jujur: hanya Bab 1-5. Angka kunci Bab 6-32 diperiksa ad-hoc lewat skrip
-per bab saat penulisan dan skrip itu tidak diarsipkan; lihat "Batas yang jujur"
-di README-ED2.md.
+Honest scope: Chapters 1-5 only. The key numbers for Chapters 6-32 were checked ad hoc with
+per-chapter scripts while writing, and those scripts were not archived; see "Batas yang jujur"
+in README-ED2.md.
 """
 import math
 from decimal import Decimal, getcontext
@@ -15,7 +15,7 @@ from fractions import Fraction as F
 
 getcontext().prec = 60
 
-# ---------- BAB 1 ----------
+# ---------- CHAPTER 1 ----------
 assert [sum(k * k for k in range(1, n + 1)) for n in (1, 2, 3)] == [1, 5, 14]
 assert all(sum(k * k for k in range(1, n + 1)) == n * (n + 1) * (2 * n + 1) // 6
            for n in range(1, 40))
@@ -28,10 +28,10 @@ assert fails == [40, 41, 44, 49, 56, 65, 76, 81, 82, 84, 87, 89, 91, 96]
 assert sum(1 for n in fails if isprime(n) or isprime(n + 1)) == 5
 assert f41[40] == 41 ** 2 and f41[41] == 41 * 43
 assert not any(2 ** n > n * n for n in (2, 3, 4)) and all(2 ** n > n * n for n in range(5, 60))
-assert 2 ** 2 - 1 == 3 and isprime(3)           # n=2 mematahkan klaim butir 9
+assert 2 ** 2 - 1 == 3 and isprime(3)           # n=2 breaks the claim of item 9
 print(f"BAB 1: 87/101 prima; {len(fails)} gagal; n0=5; n=2 -> 3 prima")
 
-# ---------- BAB 2 ----------
+# ---------- CHAPTER 2 ----------
 def stirling(n, k):
     S = [[0] * (k + 1) for _ in range(n + 1)]
     S[0][0] = 1
@@ -60,7 +60,7 @@ assert enum[29] == (7, 3) and enum[40] == (10, 1)
 assert sum(1 for p in range(1, 11) if math.gcd(p, 11 - p) == 1) == 10   # phi(11)
 print(f"BAB 2: S(5,2)=15 Bell=52 pi(7,5)=83 invers(1000)=(34,10) posisi30=(7,3) posisi41=(10,1)")
 
-# ---------- BAB 3 ----------
+# ---------- CHAPTER 3 ----------
 assert max(2 - F(1, n) for n in range(1, 99)) < 2 and min(2 - F(1, n) for n in range(1, 99)) == 1
 for q, want in ((F(1), F(5, 4)), (F(7, 5), F(169, 120))):
     h = (2 - q * q) / (2 * q + 2)
@@ -80,12 +80,12 @@ assert [f"{float(errs[i]):.3g}" for i in (4, 5)] == ['9.97e-19', '4.97e-37']
 print(f"BAB 3: sup=2 inf=1; 5/4 & 169/120; x2=97/56; galat x4,x5={[f'{float(errs[i]):.3g}' for i in (4,5)]}; "
       f"nisbah {ratio} -> 1/2")
 
-# ---------- BAB 4 ----------
+# ---------- CHAPTER 4 ----------
 thr = (F(11) / F(1, 1000) - 12) / 9
 assert thr == F(10988, 9) and int(thr) == 1220
-assert f"{11 / (9 * 1221 + 12):.4e}" == '9.9991e-04'          # galat pada n=1221
+assert f"{11 / (9 * 1221 + 12):.4e}" == '9.9991e-04'          # error at n=1221
 xs_, ys_ = (lambda n: 1 + (-1) ** n + 1 / n), (lambda n: (-1) ** n * (1 + 1 / n))
-assert xs_(1000) == 2 + 1 / 1000 and xs_(999) == 1 / 999      # genap -> 2, ganjil -> 0
+assert xs_(1000) == 2 + 1 / 1000 and xs_(999) == 1 / 999      # even -> 2, odd -> 0
 assert ys_(1000) == 1 + 1 / 1000 and ys_(999) == -(1 + 1 / 999)
 x, e, n = 1.0, {1: 1.0}, 1
 while n < 60:
@@ -98,13 +98,13 @@ assert err(4998) == F(1, 1000) and err(4999) < F(1, 1000) and err(4997) > F(1, 1
 print(f"BAB 4: N=1220 galat(n=1221)=9.9991e-04; galat<1e-6 di n=12, <1e-12 di n=21; "
       f"galat(4998)=1/1000 tepat, galat(4999)={float(err(4999)):.7f}")
 
-# ---------- BAB 5 ----------
+# ---------- CHAPTER 5 ----------
 r = F(3, 5)
 s20 = sum(r ** k for k in range(21))
 assert f"{float(s20):.10f}" == '2.4999451576'
 assert s20 + r ** 21 / (1 - r) == F(5, 2) == s20 + (F(5, 2) - s20)
 assert f"{float(F(5, 2) - s20):.4e}" == '5.4842e-05' == f"{float(r ** 21 / (1 - r)):.4e}"
-assert abs((1 + 1e-6) ** (1e6) - math.e) < 1e-3          # uji rasio (c): limit 1/e
+assert abs((1 + 1e-6) ** (1e6) - math.e) < 1e-3          # ratio test (c): limit 1/e
 N = 10 ** 6
 import numpy as np
 s = float(np.sum(1.0 / np.arange(1, N + 1, dtype=np.float64) ** 2))

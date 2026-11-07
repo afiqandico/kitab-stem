@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
-"""Uji kerangka edisi kedua: gerbang mutu + kompilasi main.tex.
+"""Second-edition skeleton test: quality gates + main.tex compilation.
 
-Menguji `build_ed2.py` dengan sandbox `tempfile`, bukan naskah asli:
-kontrol positif (28 bab uji lolos), kontrol negatif per gerbang, lalu
-kompilasi `main.tex` (pdflatex + makeindex) sampai PDF.
+Tests `build_ed2.py` with a `tempfile` sandbox, not the real manuscript:
+positive control (28 test chapters pass), negative control per gate, then
+compilation of `main.tex` (pdflatex + makeindex) all the way to PDF.
 
-Pemakaian:  python3 test_gerbang.py      -> exit 0 bila semua cek lolos
+Usage:  python3 test_gerbang.py      -> exit 0 when every check passes
 """
 from __future__ import annotations
 import os, re, shutil, subprocess, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-# TEXINPUTS yang di-export di shell bisa menyedot berkas dari repo masuk ke sandbox:
-# uji "sandbox" lalu diam-diam menguji buku asli, dan gerbang overfull jadi tidak sahih.
-# Semua subprocess uji berjalan tanpa variabel itu.
+# A TEXINPUTS exported in the shell can pull files from the repo into the sandbox:
+# the "sandbox" test then silently tests the real book, and the overfull gate becomes invalid.
+# Every test subprocess runs without that variable.
 ENV = {k: v for k, v in os.environ.items() if k != "TEXINPUTS"}
 FILL = ("Kita menuliskan prosa uji yang cukup panjang agar penghitung kata badan "
         "mencapai ambang gerbang mutu dan tidak dianggap pendek oleh pemeriksa. ") * 260
@@ -88,7 +88,7 @@ import build_ed2  # noqa: E402
 
 
 def judul_peta() -> dict[int, str]:
-    """Judul bab menurut tabel peta di main.tex — satu sumber: build_ed2."""
+    """Chapter titles according to the map table in main.tex — one source: build_ed2."""
     return build_ed2.judul_peta()
 
 
@@ -100,8 +100,8 @@ def stub(n: int) -> str:
     chap = (f"\\chapter[Ringkas {n}]{{{judul}}}" if len(judul) > 55
             else f"\\chapter{{{judul}}}")
     s = STUB.replace("\\chapter{Bab Uji 0}", chap)
-    # label gambar harus unik antar bab: pdf() menolak label ganda di rakitan,
-    # dan sandbox menyalin 32 bab, jadi sufiks nomor bab wajib ada.
+    # figure labels must be unique across chapters: pdf() rejects duplicate labels in the build,
+    # and the sandbox copies 32 chapters, so the chapter-number suffix is mandatory.
     for lab in ("fig:uji-a", "fig:uji-b"):
         s = s.replace("{" + lab + "}", "{" + lab + f"-{n:02d}" + "}")
     return s
@@ -127,8 +127,8 @@ def main() -> int:
         os.makedirs(d)
         shutil.copy(os.path.join(HERE, "build_ed2.py"), d)
         shutil.copy(os.path.join(HERE, "main.tex"), d)
-        # lampiran kunci jawaban ikut disalin: main.tex \input berkas itu, dan sandbox
-        # harus menguji rakitan yang sebenarnya, bukan versi tanpa lampiran D
+        # the answer-key appendix is copied too: main.tex \input's those files, and the sandbox
+        # must test the real build, not a version without appendix D
         kunci = os.path.join(HERE, "lampiran-kunci")
         if os.path.isdir(kunci):
             shutil.copytree(kunci, os.path.join(d, "lampiran-kunci"))
@@ -194,15 +194,15 @@ def main() -> int:
                                              count=1, flags=re.S), "gambar=1")
         negatif("ch23.tex", lambda s: s.replace(r"\kertas{", FIG2 + "\n" + r"\kertas{", 1),
                 "gambar=4")
-        # istilah \kamus yang tidak punya entri glosarium harus membuat check merah
+        # a \kamus term with no glossary entry must turn the check red
         negatif("ch24.tex", lambda s: s.replace(r"\kamus{Basis}", r"\kamus{Istilahbaru}", 1),
                 "tanpa entri glosarium: 1")
 
         rc, out = check_gerbang(d)
         ok("pulih: exit 0 setelah semua mutasi", rc == 0, out.splitlines()[-1])
 
-        # sandbox harus mulai dari nol: log/aux sisa run lain bisa membuat pagination
-        # dan overfull run ini tidak dapat dipercaya
+        # the sandbox must start from zero: log/aux left by another run can make this
+        # run's pagination and overfull report untrustworthy
         for sisa in ("main.log", "main.aux", "main.toc", "main.lof", "main.idx", "main.ind"):
             if os.path.exists(os.path.join(d, sisa)):
                 os.remove(os.path.join(d, sisa))
@@ -216,7 +216,7 @@ def main() -> int:
         baris = open(os.path.join(d, "main.log"), errors="replace").read().splitlines()
         log = "\n".join(baris)
         errs = [l for l in baris if l.startswith("!")]
-        # sertakan baris sesudah 'Overfull' supaya kegagalan menyebut teks penyebabnya
+        # include the line after 'Overfull' so a failure names the offending text
         gemuk = []
         for i, l in enumerate(baris):
             m_ov = re.search(r"Overfull \\hbox \(([\d.]+)pt", l)

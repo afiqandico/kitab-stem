@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Verifikasi ad-hoc gelombang 4 (Bab 21-25): 21.5, 21.9, 22.10, 25.5, 25.9.
+"""Ad-hoc verification of wave 4 (Chapters 21-25): 21.5, 21.9, 22.10, 25.5, 25.9.
 
-Ad-hoc, bukan suite proyek. Cek teks (cacat hilang / pengganti ada) DAN angka.
-Butir 25.9 diuji dengan MENJALANKAN ULANG blok lab yang diekstrak dari ch25.tex,
-bukan dengan menyalin angka dari laporan auditor.
+Ad-hoc, not a project suite. Checks text (defect gone / replacement present) AND numbers.
+Item 25.9 is tested by RERUNNING the lab block extracted from ch25.tex,
+not by copying numbers from the auditor's report.
 """
 import os
 import re
@@ -104,7 +104,7 @@ cek("22.10: kappa = 4,0e6", abs(x.mean() ** 2 / x.var() - 3.997e6) / 3.997e6 < 5
 cek("25.5 ID: vonis 'Salah'", "Salah. Teorema itu" in i25)
 cek("25.5 EN: vonis 'False'", "False. The theorem is about" in e25)
 
-# --- 25.9 (jalankan ulang lab) -----------------------------------------
+# --- 25.9 (rerun the lab) ----------------------------------------------
 cek("25.9 ID: tabel saturasi ada", "rentang $Z_{1}$" in i25 and "\\begin{tabular}" in i25)
 cek("25.9 EN: tabel saturasi ada", "range of $Z_{1}$" in e25)
 cek("25.9: klaim 'belum dijalankan' hilang",

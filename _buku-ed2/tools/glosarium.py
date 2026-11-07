@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
-"""Glosarium buku edisi kedua: satu entri untuk setiap istilah `\\kamus` di bab.
+"""Second-edition book glossary: one entry for every `\\kamus` term in the chapters.
 
-Dulu glosarium memuat 86 entri pilihan, sementara 32 bab memakai 161 istilah
-berbeda di kotak `\\kamus`. Skrip ini menyimpan definisi seluruh istilah itu
-dan menuliskannya ulang ke `main.tex` dalam urutan abjad, supaya:
+The glossary used to hold 86 selected entries, while 32 chapters used 161 different
+terms in the `\\kamus` boxes. This script stores the definitions of all those terms
+and rewrites them into `main.tex` in alphabetical order, so that:
 
-  * setiap istilah teknis yang dipakai buku punya definisi di satu tempat, dan
-  * urutan abjad dihasilkan mesin, bukan diketik tangan.
+  * every technical term the book uses has a definition in one place, and
+  * the alphabetical order is produced by machine, not typed by hand.
 
-Pemakaian:
-    python3 tools/glosarium.py tulis     # tulis ulang blok glosarium main.tex
-    python3 tools/glosarium.py cek       # laporkan istilah \\kamus yang belum ada
-    python3 tools/glosarium.py daftar    # cetak entri yang tersimpan di sini
+Usage:
+    python3 tools/glosarium.py tulis     # rewrite the main.tex glossary block
+    python3 tools/glosarium.py cek       # report \\kamus terms that are missing
+    python3 tools/glosarium.py daftar    # print the entries stored here
 
-Gerbang yang sama ada di `build_ed2.py check` (tanda `glosarium-kurang=N`), jadi
-lupa menambah entri membuat `make check` merah, bukan sekadar catatan.
+The same gate lives in `build_ed2.py check` (marker `glosarium-kurang=N`), so
+forgetting to add an entry turns `make check` red instead of being just a note.
 """
 from __future__ import annotations
 
@@ -29,10 +29,10 @@ AWAL = "\\chapter{Glosarium}"
 AKHIR = "% ---------------------------- lampiran C"
 
 def arg(teks: str, i: int) -> tuple[str, int]:
-    """Baca satu argumen berkurung mulai di `teks[i]` (harus '{'), sadar kurawal bersarang.
+    """Read one braced argument starting at `teks[i]` (must be '{'), aware of nested braces.
 
-    Regex `\\{[^{}]*\\}` tidak cukup: banyak analogi memuat `$...^{7}$`, sehingga istilah
-    diam-diam terlewat. Fungsi ini menghitung kedalaman kurung, jadi `$2^{7}$` utuh.
+    The regex `\\{[^{}]*\\}` is not enough: many analogies contain `$...^{7}$`, so terms
+    are silently missed. This function counts brace depth, so `$2^{7}$` stays whole.
     """
     if i >= len(teks) or teks[i] != "{":
         return "", i
@@ -49,14 +49,14 @@ def arg(teks: str, i: int) -> tuple[str, int]:
 
 
 def normal(s: str) -> str:
-    """Bentuk pembanding: tanpa spasi pinggir, tanpa kurung kurawal, huruf kecil."""
+    """Comparison form: no surrounding spaces, no curly braces, lowercase."""
     return re.sub(r"\s+", " ", s.strip().strip("{}")).lower()
 
 
-# ---------------------------------------------------------------- entri baru
-# Kunci: istilah persis seperti di kotak \kamus. Nilai: (label, definisi).
-# Definisi ditulis ulang dari pemakaian istilah itu di bab asalnya, bukan
-# diterjemahkan dari kamus; setiap angka dan rumus harus benar apa adanya.
+# ---------------------------------------------------------------- new entries
+# Key: the term exactly as it appears in the \kamus box. Value: (label, definition).
+# Definitions are rewritten from the term's usage in its source chapter, not
+# translated from a dictionary; every number and formula must be right as it stands.
 BARU: dict[str, tuple[str, str]] = {
     "adjoin": ("Adjoin",
                "matriks kofaktor yang disusun transpos; dipakai menuliskan invers sebagai satu "
@@ -486,9 +486,9 @@ BARU: dict[str, tuple[str, str]] = {
 }
 
 
-# ------------------------------------------------------------------- mesin
+# ------------------------------------------------------------------ engine
 def baca_entri() -> dict[str, tuple[str, str]]:
-    """Entri yang sudah ada di main.tex: {kunci normal: (label, definisi)}."""
+    """Entries already in main.tex: {normal key: (label, definition)}."""
     teks = open(MAIN, encoding="utf-8").read()
     awal = teks.find(AWAL)
     akhir = teks.find(AKHIR)
@@ -507,7 +507,7 @@ def baca_entri() -> dict[str, tuple[str, str]]:
 
 
 def daftar_kamus() -> dict[str, str]:
-    """{istilah normal: nama berkas} untuk setiap \\kamus di bab."""
+    """{normal term: file name} for every \\kamus in the chapters."""
     out = {}
     for p in sorted(glob.glob(os.path.join(HERE, "ch*.tex"))):
         teks = open(p, encoding="utf-8").read()
@@ -522,9 +522,9 @@ def gabung() -> dict[str, tuple[str, str]]:
     entri = baca_entri()
     for kunci, (label, badan) in BARU.items():
         entri.setdefault(normal(kunci), (label, badan))
-    # kunci BARU adalah istilah \kamus, kunci entri lama adalah label; keduanya bisa
-    # bertemu di satu label (mis. istilah "sistem floating-point" -> label yang sama),
-    # jadi buang duplikat berdasarkan label dan pertahankan definisi dari main.tex.
+    # BARU keys are \kamus terms, old entry keys are labels; the two can
+    # meet at one label (e.g. the term "sistem floating-point" -> the same label),
+    # so drop duplicates by label and keep the definition from main.tex.
     unik: dict[str, tuple[str, str]] = {}
     for label, badan in entri.values():
         unik.setdefault(label.casefold(), (label, badan))

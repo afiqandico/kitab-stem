@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Ambil ulang salinan sumber materi belakang dari edisi Indonesia.
+"""Re-fetch the copies of the back-matter sources from the Indonesian edition.
 
-Gerbang `cek-belakang.py` membandingkan terjemahan dengan sumber Indonesia. Salinan
-sumber di `belakang/_sumber/` TIDAK boleh basi: kalau `../_buku-ed2/main.tex` berubah
-dan salinan tidak, gerbang akan membandingkan terjemahan dengan teks lama dan bisa
-meloloskan kesalahan. Karena itu salinan dibuat ulang dari penanda (bukan nomor baris,
-yang bergeser setiap suntingan).
+The `cek-belakang.py` gate compares the translation against the Indonesian source. The
+source copies in `belakang/_sumber/` MUST NOT go stale: if `../_buku-ed2/main.tex` changes
+and the copy does not, the gate compares the translation against the old text and can
+let errors through. That is why the copies are rebuilt from markers (not line numbers,
+which shift with every edit).
 
-    python3 tools/ambil-sumber.py          # tulis ulang belakang/_sumber/
-    python3 tools/ambil-sumber.py --cek    # 0 bila salinan masih sama dengan sumber
+    python3 tools/ambil-sumber.py          # rewrite belakang/_sumber/
+    python3 tools/ambil-sumber.py --cek    # 0 when the copy still matches the source
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ EN = os.path.dirname(HERE)
 ID = os.path.join(os.path.dirname(EN), "_buku-ed2")
 SUMBER = os.path.join(EN, "belakang", "_sumber")
 
-# (nama, penanda awal, penanda akhir) - potongan main.tex edisi Indonesia.
+# (name, start marker, end marker) - slices of the Indonesian edition's main.tex.
 POTONGAN = {
     "depan-a": ("\\chapter*{Kata Pengantar}", "\\chapter*{Cara Membaca: Empat Jalur}"),
     "depan-b": ("\\chapter*{Cara Membaca: Empat Jalur}", "\\chapter*{Peta Ketergantungan Bab}"),
@@ -36,7 +36,7 @@ KUNCI = ("kunci-01-05", "kunci-06-15", "kunci-16-23", "kunci-24-32")
 
 
 def bersihkan(teks: list[str]) -> str:
-    """Buang komentar pemisah dan baris kosong di ujung, seperti versi yang dipakai."""
+    """Drop separator comments and trailing blank lines, like the version in use."""
     while teks and (not teks[-1].strip() or teks[-1].lstrip().startswith("%")):
         teks.pop()
     return "\n".join(teks) + "\n"
@@ -50,8 +50,8 @@ def bangun() -> dict[str, str]:
         j = main.index(akhir, i + len(awal))
         baris = main[i:j].split("\n")
         if nama == "lampD":
-            # \input diisi main-en.tex dengan berkas Inggris; nomor berkas Indonesia
-            # tidak boleh ikut terbaca sebagai isi naskah.
+            # \input is filled with English files by main-en.tex; the Indonesian file
+            # names must not be read as part of the manuscript body.
             baris = [b for b in baris if not b.startswith("\\input{")]
         hasil[nama] = bersihkan(baris)
     for nama in KUNCI:

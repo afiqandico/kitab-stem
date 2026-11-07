@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Verifikasi ad-hoc dua perbaikan kunci (6.5 dan 9.9) di kedua edisi.
+"""Ad-hoc verification of two key fixes (6.5 and 9.9) in both editions.
 
-Bukan suite proyek: hanya memeriksa bahwa (a) teks yang salah sudah hilang,
-(b) teks pengganti ada, (c) klaim pengganti BENAR secara numerik, (d) kedua
-edisi memuat klaim yang sama. Kompilasi diuji terpisah lewat build_ed2.py pdf.
+Not a project suite: it only checks that (a) the wrong text is gone,
+(b) the replacement text is present, (c) the replacement claim is numerically CORRECT,
+(d) both editions carry the same claim. Compilation is tested separately via build_ed2.py pdf.
 """
 import os
 import re
@@ -36,7 +36,7 @@ def blok(path, bab, sampai):
 id06, en06 = blok(ID, 6, 7), blok(EN, 6, 7)
 id09, en09 = blok(ID, 9, 10), blok(EN, 9, 10)
 
-# --- (a) teks cacat hilang, (b) pengganti ada -------------------------------
+# --- (a) defective text gone, (b) replacement present -----------------------
 cek("ID 6.5: 'ketiga vektor pembangun' sudah tidak ada", "ketiga vektor pembangun" not in id06)
 cek("ID 6.5: 'keempat vektor pembangun' ada", "keempat vektor pembangun" in id06)
 cek("EN 6.5: 'three spanning vectors' sudah tidak ada", "three spanning vectors" not in en06)
@@ -51,7 +51,7 @@ cek("EN 9.9: menyebut Schur triangular form", "Schur" in en09 and "triangular" i
 cek("ID 9.9: menyatakan B tidak punya P dan D", "tidak punya" in id09)
 cek("EN 9.9: menyatakan B tidak punya P dan D", "no $P$ and $D$" in en09)
 
-# --- (c) klaim pengganti benar secara numerik ------------------------------
+# --- (c) replacement claim is numerically correct --------------------------
 cek("6.5: rank tiga vektor = 2 (klaim lama salah)",
     np.linalg.matrix_rank(np.array([[1, 0, 0], [0, 1, 0], [1, 1, 0]])) == 2)
 cek("6.5: rank empat pembangun = 3 (klaim baru)",
@@ -61,8 +61,8 @@ B = sp.Matrix([[-1, 4, 0], [-1, 3, 0], [1, -2, 2]])
 lam = [1, 1, 2]
 from scipy.linalg import schur as schur_np
 
-Tn, Qn = schur_np(np.array(B, dtype=float))       # B = Q T Q^T, T segitiga atas
-T = Tn                                            # tetap float: klaim diuji bertoleransi
+Tn, Qn = schur_np(np.array(B, dtype=float))       # B = Q T Q^T, T upper triangular
+T = Tn                                            # stays float: the claim is tested with tolerance
 cek("9.9: Schur mereproduksi B (Q T Q^T)", np.allclose(Qn @ Tn @ Qn.T, np.array(B, float)))
 cek("9.9: B defektif (tidak dapat didiagonalkan)", B.is_diagonalizable() is False)
 cek("9.9: B-I berperingkat 2 -> ruang eigen 1 dimensi", (B - sp.eye(3)).rank() == 2)
@@ -81,7 +81,7 @@ cek("9.9: tr(T^10) = tr(B^10) = sum lam^10 = 1026 (tol 1e-6)",
     f"T={np.trace(np.linalg.matrix_power(T,10)):.9f}, B={sp.trace(B**10)}")
 cek("9.9: trace B^10 dari matriks tercetak = 1026", (-19) + 21 + 1024 == 1026)
 
-# --- (d) kedua edisi menyatakan angka yang sama ---------------------------
+# --- (d) both editions state the same numbers -----------------------------
 def angka(t):
     math = " ".join(re.findall(r"\$[^$]+\$", t))
     math = re.sub(r"\\[a-zA-Z]+", "", math)
@@ -92,7 +92,7 @@ cek("paritas 9.9: multiset angka ID == EN", angka(id09) == angka(en09),
     f"ID-only={sorted(set(angka(id09)) - set(angka(en09)))} EN-only={sorted(set(angka(en09)) - set(angka(id09)))}")
 cek("paritas 6.5: multiset angka ID == EN", angka(id06) == angka(en06))
 
-# --- gelombang 2: butir 12.2, 13.7, 14.5 ----------------------------------
+# --- wave 2: items 12.2, 13.7, 14.5 ---------------------------------------
 id12, en12 = blok(ID, 12, 13), blok(EN, 12, 13)
 id13, en13 = blok(ID, 13, 14), blok(EN, 13, 14)
 id14, en14 = blok(ID, 14, 15), blok(EN, 14, 15)
@@ -116,8 +116,8 @@ cek("ID 13.7: batas 1/2 delta f(x0)", "\\tfrac12\\delta f(x_{0})>0" in id13)
 cek("EN 13.7: 'half-width' sudah tidak ada", "half-width" not in en13)
 cek("EN 13.7: batas 1/2 delta f(x0)", "\\tfrac12\\delta f(x_{0})>0" in en13)
 
-# f(x)=x pada [0,1], x0=1 (titik ujung): batas lama (delta*f) melebihi integral
-# sebenarnya, batas baru (delta*f/2) tidak. Integral dihitung, bukan ditebak.
+# f(x)=x on [0,1], x0=1 (endpoint): the old bound (delta*f) exceeds the true
+# integral, the new bound (delta*f/2) does not. The integral is computed, not guessed.
 _x = sp.Symbol("x")
 _integral = sp.integrate(_x, (_x, 0, 1))
 _delta, _fx0 = sp.Rational(9, 10), sp.Integer(1)

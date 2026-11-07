@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Verifikasi ad-hoc perbaikan gelombang 3 (Bab 16-20): 18.8, 18.10, 19.10, 20.4, 20.7.
+"""Ad-hoc verification of the wave-3 fixes (Chapters 16-20): 18.8, 18.10, 19.10, 20.4, 20.7.
 
-Ad-hoc, bukan suite proyek. Tiap cek menuntut (a) teks cacat hilang, (b) teks
-pengganti ada, (c) angka pengganti benar menurut perhitungan eksak/numerik.
+Ad-hoc, not a project suite. Each check demands (a) the defective text is gone, (b) the
+replacement text is present, (c) the replacement numbers are correct per exact/numeric computation.
 """
 import os
 import re
@@ -29,7 +29,7 @@ def blok(path, bab):
     s = open(path, encoding="utf-8").read()
     m = re.search(r"\\section\*\{(?:Bab|Chapter) %d:.*?(?=\\section\*\{(?:Bab|Chapter) %d:)" % (bab, bab + 1),
                   s, re.S)
-    if not m and bab == 23:                      # bab terakhir berkas: sampai akhir
+    if not m and bab == 23:                      # last chapter in the file: up to the end
         m = re.search(r"\\section\*\{(?:Bab|Chapter) 23:.*", s, re.S)
     assert m, f"blok {bab} tidak ditemukan di {path}"
     return m.group(0)
@@ -69,12 +69,12 @@ cek("18.8: integral f_Y = 1/6 + 13/6 = 7/3", i1 == sp.Rational(1, 6) and i2 == s
 cek("ID 19.10: contoh (-1)^n X", "X_{n}=(-1)^{n}X" in i19)
 cek("ID 19.10: contoh salah '(-1)^n' tunggal hilang", "$X_{n}=(-1)^{n}$" not in i19)
 cek("EN 19.10: contoh (-1)^n X", "X_{n}=(-1)^{n}X" in e19)
-# marginal tetap Rademacher, tetapi |X_n - X| = 2 untuk n ganjil
+# marginal stays Rademacher, but |X_n - X| = 2 for odd n
 X = (-1, 1)
 for n_ in (1, 2):
     marg = sorted((-1) ** n_ * x for x in X)
     assert marg == [-1, 1], marg
-# dorongan-maju: P(X_n = v) dihitung, lalu dibandingkan dengan pmf Rademacher
+# push-forward: P(X_n = v) is computed, then compared with the Rademacher pmf
 from fractions import Fraction as F
 
 pmf = {v: F(1, 2) for v in (-1, 1)}          # X ~ Rademacher

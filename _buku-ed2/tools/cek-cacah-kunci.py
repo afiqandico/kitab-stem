@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Gerbang pemetaan butir: setiap latihan bab harus punya tepat satu butir kunci.
+"""Item-mapping gate: every chapter exercise set must have exactly one key item.
 
-Bukan gerbang kebenaran isi (itu tugas audit), hanya cacah & penomoran:
-- hitung `\\item` level teratas di lingkungan `latihan` setiap bab (item bersarang
-  seperti soal pilihan ganda Bab 1 tidak ikut dihitung),
-- hitung `\\item` level teratas di blok `\\section*{Bab N: ...}` pada lampiran kunci,
-- laporkan bab yang cacahnya tidak sama, blok yang hilang, atau label `N.k` yang
-  tidak berurutan.
+Not a content-correctness gate (that is the audit's job), only counting and numbering:
+- count top-level `\\item` in the `latihan` environment of each chapter (nested items
+  such as the multiple-choice questions in Chapter 1 are not counted),
+- count top-level `\\item` in the `\\section*{Bab N: ...}` block of the answer-key appendix,
+- report chapters whose counts differ, missing blocks, or `N.k` labels that are
+  not in sequence.
 
-Pakai: python3 tools/cek-cacah-kunci.py [--verbose]
-Keluar 0 bila semua 32 bab 1:1, 1 bila ada selisih.
+Usage: python3 tools/cek-cacah-kunci.py [--verbose]
+Exit 0 when all 32 chapters are 1:1, 1 when there is a mismatch.
 """
 from __future__ import annotations
 
@@ -21,12 +21,12 @@ HERE = __file__.rsplit("/tools/", 1)[0]
 
 
 def top_level_items(seg: str) -> int:
-    """Hitung `\\item` milik enumerate terluar segmen, bukan milik yang bersarang.
+    """Count `\\item` belonging to the outermost enumerate of a segment, not nested ones.
 
-    Trap yang sudah menggigit: kedalaman dihitung dari 0, sehingga enumerate
-    pembungkus `latihan`/blok kunci sendiri menaikkan kedalaman ke 1 dan
-    penghitung mengembalikan 0 -- lalu 0 == 0 dilaporkan "OK" (false green).
-    Karena itu butir dihitung pada kedalaman 1, dan jumlah 0 ditolak pemanggil.
+    Trap that has already bitten: depth is counted from 0, so the wrapper enumerate
+    of `latihan`/the key block itself raises depth to 1 and the counter returns 0 --
+    then 0 == 0 is reported "OK" (false green). That is why items are counted
+    at depth 1, and a count of 0 is rejected by the caller.
     """
     depth = 0
     n = 0
@@ -61,11 +61,11 @@ def key_blocks() -> dict[int, str]:
 
 
 def key_labels(block: str) -> list[int]:
-    """Label `\\textbf{N.k}` kalau berkas memakainya, untuk cek urutan."""
+    """`\\textbf{N.k}` labels, if the file uses them, to check the ordering."""
     head = re.search(r"\[label=\\textbf\{(\d+)\.\\arabic\*\\}\]", block)
     if not head:
         return []
-    return [1]  # penanda bahwa penomoran otomatis; tidak ada label eksplisit
+    return [1]  # marker that numbering is automatic; there are no explicit labels
 
 
 def main() -> int:

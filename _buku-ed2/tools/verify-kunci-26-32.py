@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Verifikasi perbaikan gelombang 5-6 (Bab 26-32): 26.2, 27.9, 28.2, 28.3, 28.5,
-28.9, 29 (teks bab), 30.3, 31.9, 32.6.
+"""Verification of the wave 5-6 fixes (Chapters 26-32): 26.2, 27.9, 28.2, 28.3, 28.5,
+28.9, 29 (chapter text), 30.3, 31.9, 32.6.
 
-Ad-hoc, bukan suite proyek. Tiap butir menuntut (a) teks cacat hilang dari kedua
-edisi, (b) teks pengganti ada di kedua edisi, (c) klaim pengganti benar menurut
-hitungan (aritmetika eksak, aljabar linear, atau Lean 4 yang dijalankan ulang).
-Kompilasi diuji terpisah lewat build_ed2.py pdf dan cek-en.py --pdf.
+Ad-hoc, not a project suite. Each item demands (a) the defective text gone from both
+editions, (b) the replacement text present in both editions, (c) the replacement claim true per
+computation (exact arithmetic, linear algebra, or a rerun of Lean 4).
+Compilation is tested separately via build_ed2.py pdf and cek-en.py --pdf.
 """
 import os
 import subprocess
@@ -34,7 +34,7 @@ def cek(nama, ok, bukti=""):
         gagal.append(nama)
 
 
-# --- teks kedua edisi -------------------------------------------------------
+# --- text of both editions --------------------------------------------------
 cek("26.2 ID/EN memuat suku silang kedua",
     "Suku silang kedua lenyap" in KI and "second\n        cross term vanishes" in KE)
 cek("27.9 ID/EN: 8,62 alarm salah, bukan 'delapan'",
@@ -61,7 +61,7 @@ cek("29 ID/EN: teks bab 89,06 (tabel), 89,28 hilang",
     "89{,}06$ persen" in CHI and "89.06$ percent" in CHE
     and "89{,}28" not in CHI and "89.28" not in CHE)
 
-# --- aritmetika ------------------------------------------------------------
+# --- arithmetic ------------------------------------------------------------
 rng = np.random.default_rng(0)
 N, f, b, s = 400_000, 1.3, 0.4, 0.5
 eps = rng.normal(0, s, N)
@@ -94,7 +94,7 @@ cek("32.6: HZH=X dan HSH|0> = e^{iπ/4}S†|+>",
     and np.allclose(H @ S @ H @ np.array([1, 0]),
                     np.exp(1j * np.pi / 4) * Sd @ np.array([1, 1]) / np.sqrt(2)))
 
-# --- Lean: perbaikan lulus, klaim lama gagal -------------------------------
+# --- Lean: the fix passes, the old claim fails -----------------------------
 def lean(berkas):
     env = dict(os.environ)
     elan = os.path.expanduser("~/.elan/bin")
