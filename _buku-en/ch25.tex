@@ -40,6 +40,165 @@ forward, and why that backward pass gives an answer exactly as accurate as runni
 twenty-six times.
 \end{untukanak}
 
+\section{Understanding bridge: from story to symbol}
+\tingkat{basic}
+
+The formulas in this chapter are easier to read if the order is reversed: a story without
+symbols, then arithmetic on paper, then symbols as shorthand for steps we have already
+performed ourselves.
+
+\subsection{Plain analogy: how much, not who}
+
+The assembly-line analogy answered ``who should change''. It did not answer ``how much''.
+Picture three taps in a row above one bucket, with a target line on the wall. The third tap
+feels closest, but it can only pass on what the second tap sends; the first tap matters
+most, yet its effect depends on the two taps between it and the bucket. What we need is not
+turning every tap and re-measuring, but one number per tap: how many millimetres does the
+water rise if this tap moves a little? One pass, traced backwards from the bucket.
+
+\subsection{Compute by hand first}
+
+\begin{contoh}
+One neuron, four numbers: weight $w = 0.5$, bias $b = 0.1$, input $x = 2.0$, correct
+answer $y = 1$, learning rate $\eta = 0.1$. Follow the steps in order; every number here
+can be checked on an ordinary calculator.
+
+\begin{enumerate}
+  \item Raw score: $w x = 0.5 \times 2.0 = 1.0$, plus the bias gives $z = 1.1$.
+  \item Probability: $e^{-1.1} = 0.33287$, so $\sigma = 1/(1+0.33287) = 0.7502601$.
+  \item Loss: because $y = 1$ only one term survives, $L = -\ln 0.7502601 = 0.2873353$.
+  \item Gap between probability and truth: $\sigma - y = 0.7502601 - 1 = -0.2497399$.
+  \item Chain rule to the weight: multiply that gap by the input, $-0.2497399 \times 2.0
+        = -0.4994798$. The bias is not multiplied by anything, so it keeps $-0.2497399$.
+  \item Move: $w' = 0.5 - 0.1(-0.4994798) = 0.5499480$ and $b' = 0.1 - 0.1(-0.2497399)
+        = 0.1249740$. The new score is $z' = 1.2248699$, the new probability $0.7729194$,
+        the new loss $0.2575805$: down $0.0297549$ from $0.2873353$.
+\end{enumerate}
+
+Mind the sign in step 5: the gradient is negative, and because we \emph{subtract} it, the
+weight rises. The minus sign in the update rule is not decoration; it reverses the
+direction.
+\end{contoh}
+
+One check you must not skip: replace the analytic derivative by a finite difference, that
+is, evaluate the loss at $w + 0.000001$ and $w - 0.000001$ and divide the difference by
+$0.000002$. The answer is $-0.4994798$, equal to seven digits. When the hand result and the
+numeric result disagree, the sign is almost always what is wrong.
+
+\subsection{Symbol dictionary}
+
+The symbols below appear in any book on neural networks. Nothing here needs memorising:
+reading each one aloud takes a single sentence, and that sentence is what we computed above.
+
+\begin{description}
+  \item[$\partial L/\partial w$] read ``del L del w'': if weight $w$ moves a little, how
+        much does the loss $L$ change? In our example the answer is $-0.4994798$ (step 5).
+  \item[$z = Wx + b$] read ``z equals W times x plus b'': the raw score before it is
+        squeezed into a probability. The one-number version of this formula is step 1.
+  \item[$\sigma(z)$] read ``sigma of z'': the S-shaped function that keeps the score
+        between zero and one. In step 2 it gives $0.7502601$.
+  \item[$\nabla_w L$] read ``nabla w L'': every derivative of the loss with respect to
+        every weight at once; its arrow answers ``which way does the loss fall fastest''.
+        Its entries are numbers like the one in step 5, only many.
+\end{description}
+
+\subsection{Why does this matter for security?}
+
+The same derivative that repairs a model also breaks it. An attacker needs one number: if
+one input feature moves a little, how much does the loss rise? In our example $x$ has
+derivative $-0.1248699$, so shrinking $x$ raises the loss. Moving it by $1.9$ sends $x$ to
+$0.1$, the probability drops to $0.5374298$, and the loss rises from $0.2873353$ to
+$0.6209570$, a factor of $2.16$. One feature, one direction, one step.
+
+For the defender the same question runs backwards: which feature has the largest
+derivative? That feature is the cheapest to fake, so it most needs rounding, clipping, or
+sanity checks. Chapter 29 uses this recipe in full, with perturbation size $\epsilon$ and
+the formula $x_{\mathrm{adv}} = x + \epsilon \cdot \operatorname{sign}(\nabla_x L)$.
+
+\begin{catatan}
+A warning that is easily missed: on real systems an attacker rarely computes the gradient
+exactly; it is estimated by changing the input many times. That estimate is more expensive
+and noisier, but it still works. A closed model is therefore not a defence.
+\end{catatan}
+
+\subsection{Hand computation drills}
+
+Work with a calculator, write on paper, then compare. Answers sit in parentheses.
+
+\begin{catatan}
+\begin{enumerate}
+  \item Repeat the whole example with $b = 0.3$, everything else unchanged. Compute $z$,
+        $\sigma$, $L$, $\partial L/\partial w$, $\partial L/\partial b$.
+        ($z = 1.3$; $\sigma = 0.7858350$; $L = 0.2410085$; $-0.4283300$; $-0.2141650$.)
+  \item Repeat the original example with $\eta = 0.5$. What are $w'$, $b'$, and the new
+        loss? ($w' = 0.7497399$; $b' = 0.2248699$; $L' = 0.1640633$, down $0.1232720$.)
+  \item Repeat the original example with $y = 0$, everything else unchanged. What is
+        $\partial L/\partial w$ now, and which way does the weight move?
+        ($0.7502601$ and $1.5005202$; positive, so the weight falls.)
+  \item In the original example, move $x$ by $\epsilon = 0.5$ in the direction that raises
+        the loss. What are the new $x$ and the new loss? ($x = 1.5$; $L = 0.3558651$.)
+\end{enumerate}
+\end{catatan}
+
+\subsection{From paper to code}
+
+The code below runs the same six steps, with variable names that point at their step.
+Nothing here is new: every line is one of the lines above.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+# One example, the same numbers as in "Compute by hand first".
+x, y = 2.0, 1.0
+w, b, eta = 0.5, 0.1, 0.1
+
+# Step 1: z = w*x + b  (raw score)
+z = w*x + b
+print("Step 1  z        =", round(z, 7))
+
+# Step 2: sigma(z) = 1/(1+e^-z)  (squeeze the score into 0..1)
+s = 1/(1+np.exp(-z))
+print("Step 2  sigma    =", round(s, 7))
+
+# Step 3: L = -ln(s)  (loss; y=1 leaves a single term)
+L = -np.log(s)
+print("Step 3  L        =", round(L, 7))
+
+# Step 4: dL/dz = sigma - y  (probability minus reality)
+dLdz = s - y
+print("Step 4  dL/dz    =", round(dLdz, 7))
+
+# Step 5: chain rule down to weight and bias
+dLdw, dLdb = dLdz*x, dLdz
+print("Step 5  dL/dw    =", round(dLdw, 7), " dL/db =", round(dLdb, 7))
+
+# Step 6: one gradient-descent step
+w2, b2 = w - eta*dLdw, b - eta*dLdb
+s2 = 1/(1+np.exp(-(w2*x + b2)))
+print("Step 6  w', b'   =", round(w2, 7), round(b2, 7),
+      " L' =", round(-np.log(s2), 7))
+
+# Check: analytic gradient against a finite difference.
+def loss(ww, bb):
+    return -np.log(1/(1+np.exp(-(ww*x + bb))))
+h = 1e-6
+print("finite difference dL/dw =", round((loss(w+h, b)-loss(w-h, b))/(2*h), 7),
+      " dL/db =", round((loss(w, b+h)-loss(w, b-h))/(2*h), 7))
+
+# Gradient with respect to the INPUT: this is what attacks a model (Chapter 29).
+dLdx = dLdz*w
+xa = x + 1.9*np.sign(dLdx)          # the sign of the gradient sets the direction
+sa = 1/(1+np.exp(-(w*xa + b)))
+print("dL/dx =", round(dLdx, 7), " x_adv =", round(xa, 4),
+      " sigma =", round(sa, 7), " L =", round(-np.log(sa), 7))
+\end{verbatim}
+
+The output must match the paper: $1.1$, $0.7502601$, $0.2873353$, $-0.2497399$,
+$-0.4994798$, then $0.2575805$. If one number is off, do not patch the code: find the step
+that differs on paper.
+\end{lab}
+
 \section{Linear thresholds and the perceptron}
 \tingkat{basic}
 

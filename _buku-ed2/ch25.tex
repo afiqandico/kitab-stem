@@ -42,6 +42,166 @@ mengalir maju, dan mengapa telusur mundur itu memberi jawaban yang sama tepatnya
 menjalankan lini dua puluh enam kali.
 \end{untukanak}
 
+\section{Jembatan pemahaman: dari cerita ke simbol}
+\tingkat{dasar}
+
+Rumus di bab ini lebih mudah dibaca kalau urutannya dibalik: cerita tanpa simbol, lalu
+hitungan di kertas, lalu simbol sebagai singkatan dari langkah yang sudah kita jalankan.
+
+\subsection{Analogi nyata: seberapa besar, bukan siapa}
+
+Analogi tukang tadi menjawab pertanyaan ``siapa yang harus diubah''. Yang belum dijawab
+adalah ``seberapa besar''. Bayangkan tiga keran berderet di atas satu ember dengan satu
+garis sasaran. Memutar keran ketiga paling terasa, tetapi keran itu hanya mengalirkan
+kiriman keran kedua; membuka keran pertama paling menentukan, tetapi besar pengaruhnya
+bergantung pada dua keran di antaranya. Yang kita butuhkan bukan memutar semua keran lalu
+mengukur ulang, melainkan satu angka per keran: berapa milimeter tinggi air berubah kalau
+keran ini diputar sedikit? Satu kali jalan, telusuri mundur dari ember ke keran pertama.
+
+\subsection{Hitung manual dulu}
+
+\begin{contoh}
+Satu neuron, empat angka: bobot $w = 0.5$, bias $b = 0.1$, masukan $x = 2.0$, jawaban benar
+$y = 1$, dan tingkat belajar $\eta = 0.1$. Ikuti langkahnya berurutan; setiap angka di sini
+bisa diperiksa dengan kalkulator biasa.
+
+\begin{enumerate}
+  \item Skor mentah: $w x = 0.5 \times 2.0 = 1.0$, ditambah bias menjadi $z = 1.1$.
+  \item Peluang: $e^{-1.1} = 0.33287$, jadi $\sigma = 1/(1+0.33287) = 0.7502601$.
+  \item Kerugian: karena $y = 1$, cukup satu suku, $L = -\ln 0.7502601 = 0.2873353$.
+  \item Selisih peluang dan kenyataan: $\sigma - y = 0.7502601 - 1 = -0.2497399$.
+  \item Aturan rantai ke bobot: kalikan selisih itu dengan masukan, $-0.2497399 \times 2.0
+        = -0.4994798$. Ke bias tidak dikalikan apa pun, jadi tetap $-0.2497399$.
+  \item Geser: $w' = 0.5 - 0.1(-0.4994798) = 0.5499480$ dan $b' = 0.1 - 0.1(-0.2497399)
+        = 0.1249740$. Skor baru $z' = 1.2248699$, peluang baru $0.7729194$, kerugian baru
+        $0.2575805$. Turun $0.0297549$ dari $0.2873353$.
+\end{enumerate}
+
+Perhatikan tanda di Langkah 5: gradien negatif, dan karena kita \emph{mengurangi} bobot
+dengan gradien, bobot justru naik. Tanda minus di rumus geser bukan hiasan; ia yang
+membalik arah.
+\end{contoh}
+
+Pemeriksaan yang tidak boleh dilewat: hitung kerugian pada $w + 0.000001$ dan
+$w - 0.000001$, bagi selisihnya dengan $0.000002$. Hasilnya $-0.4994798$, sama sampai tujuh
+angka. Kalau manual dan numerik berbeda, yang salah hampir selalu tanda.
+
+\subsection{Kamus baca simbol}
+
+Simbol berikut muncul di buku mana pun tentang jaringan saraf. Tidak ada yang perlu
+dihafal: bacanya cukup satu kalimat, dan kalimat itu sudah kita hitung sendiri di atas.
+
+\begin{description}
+  \item[$\partial L/\partial w$] dibaca ``del L del w'', artinya: kalau bobot $w$ digeser
+        sedikit, berapa perubahan kerugian $L$? Di contoh kita jawabannya $-0.4994798$
+        (Langkah 5).
+  \item[$z = Wx + b$] dibaca ``z sama dengan W kali x tambah b'', artinya skor mentah
+        sebelum ditekan menjadi peluang. Versi satu angka dari rumus ini adalah Langkah 1.
+  \item[$\sigma(z)$] dibaca ``sigma dari z'', artinya fungsi kurva S yang menekan skor agar
+        selalu di antara nol dan satu. Di Langkah 2 hasilnya $0.7502601$.
+  \item[$\nabla_w L$] dibaca ``nabla w L'', artinya kumpulan semua turunan kerugian
+        terhadap seluruh bobot sekaligus; tanda panahnya menjawab ``ke arah mana kerugian
+        paling cepat turun''. Isinya angka-angka seperti Langkah 5, hanya banyak.
+\end{description}
+
+\subsection{Kenapa ini penting untuk keamanan?}
+
+Turunan yang sama yang dipakai memperbaiki model juga dipakai merusaknya. Penyerang hanya
+butuh satu angka: kalau satu ciri masukan digeser sedikit, berapa kerugian naik? Di contoh
+kita $x$ punya turunan $-0.1248699$, jadi mengecilkan $x$ menaikkan kerugian. Menggeser
+$1.9$ membuat $x$ menjadi $0.1$, peluang jatuh ke $0.5374298$, kerugian naik dari $0.2873353$ ke
+$0.6209570$, yaitu $2.16$ kali lipat. Satu ciri, satu arah, satu langkah.
+
+Bagi pihak bertahan, pertanyaan yang sama dipakai terbalik: ciri mana yang turunannya
+paling besar? Ciri itulah yang paling murah dipalsukan, sehingga paling perlu dibulatkan,
+dipangkas, atau diperiksa keanehannya. Bab 29 memakai resep ini secara utuh, dengan nama
+gangguan $\epsilon$ dan rumus
+$x_{\mathrm{adv}} = x + \epsilon \cdot \operatorname{sign}(\nabla_x L)$.
+
+\begin{catatan}
+Peringatan yang sering terlewat: pada sistem nyata penyerang jarang bisa menghitung gradien
+eksak; ia menaksirnya dengan mengubah masukan berkali-kali. Taksiran itu lebih mahal dan
+lebih berisik, tetapi tetap bekerja. Karena itu ``modelnya tertutup'' bukan pertahanan.
+\end{catatan}
+
+\subsection{Latihan menghitung dengan tangan}
+
+Kerjakan dengan kalkulator, tulis di kertas, baru cocokkan. Jawaban ada di tanda kurung.
+
+\begin{catatan}
+\begin{enumerate}
+  \item Ulangi seluruh contoh dengan $b = 0.3$ dan angka lain tetap. Hitung $z$, $\sigma$,
+        $L$, $\partial L/\partial w$, $\partial L/\partial b$.
+        ($z = 1.3$; $\sigma = 0.7858350$; $L = 0.2410085$; $-0.4283300$; $-0.2141650$.)
+  \item Ulangi contoh asli dengan $\eta = 0.5$. Berapa $w'$, $b'$, dan kerugian barunya?
+        ($w' = 0.7497399$; $b' = 0.2248699$; $L' = 0.1640633$, turun $0.1232720$.)
+  \item Ulangi contoh asli dengan $y = 0$, angka lain tetap. Berapa $\partial L/\partial w$
+        sekarang, dan ke arah mana bobot bergerak?
+        ($0.7502601$ dan $1.5005202$; positif, jadi bobot turun.)
+  \item Pada contoh asli, geser $x$ sebesar $\epsilon = 0.5$ ke arah yang menaikkan
+        kerugian. Berapa $x$ baru dan kerugiannya? ($x = 1.5$; $L = 0.3558651$.)
+\end{enumerate}
+\end{catatan}
+
+\subsection{Dari kertas ke kode}
+
+Kode berikut menjalankan enam langkah yang sama, dengan nama variabel yang menunjuk ke
+langkahnya. Tidak ada yang baru di sini: setiap baris adalah satu langkah di atas.
+
+\begin{lab}
+\begin{verbatim}
+import numpy as np
+
+# Data satu contoh, sama dengan angka di "Hitung manual dulu".
+x, y = 2.0, 1.0
+w, b, eta = 0.5, 0.1, 0.1
+
+# Langkah 1: z = w*x + b  (skor mentah)
+z = w*x + b
+print("Langkah 1  z        =", round(z, 7))
+
+# Langkah 2: sigma(z) = 1/(1+e^-z)  (tekan skor jadi peluang 0..1)
+s = 1/(1+np.exp(-z))
+print("Langkah 2  sigma    =", round(s, 7))
+
+# Langkah 3: L = -ln(s)  (kerugian; y=1 jadi cukup satu suku)
+L = -np.log(s)
+print("Langkah 3  L        =", round(L, 7))
+
+# Langkah 4: dL/dz = sigma - y  (selisih peluang dan kenyataan)
+dLdz = s - y
+print("Langkah 4  dL/dz    =", round(dLdz, 7))
+
+# Langkah 5: aturan rantai ke bobot dan bias
+dLdw, dLdb = dLdz*x, dLdz
+print("Langkah 5  dL/dw    =", round(dLdw, 7), " dL/db =", round(dLdb, 7))
+
+# Langkah 6: satu langkah penurunan gradien
+w2, b2 = w - eta*dLdw, b - eta*dLdb
+s2 = 1/(1+np.exp(-(w2*x + b2)))
+print("Langkah 6  w', b'   =", round(w2, 7), round(b2, 7),
+      " L' =", round(-np.log(s2), 7))
+
+# Pemeriksa: gradien hasil aturan rantai vs beda hingga numerik.
+def loss(ww, bb):
+    return -np.log(1/(1+np.exp(-(ww*x + bb))))
+h = 1e-6
+print("cek beda hingga dL/dw =", round((loss(w+h, b)-loss(w-h, b))/(2*h), 7),
+      " dL/db =", round((loss(w, b+h)-loss(w, b-h))/(2*h), 7))
+
+# Gradien terhadap MASUKAN: inilah yang dipakai menyerang model (Bab 29).
+dLdx = dLdz*w
+xa = x + 1.9*np.sign(dLdx)          # tanda gradien menentukan arah geser
+sa = 1/(1+np.exp(-(w*xa + b)))
+print("dL/dx =", round(dLdx, 7), " x_adv =", round(xa, 4),
+      " sigma =", round(sa, 7), " L =", round(-np.log(sa), 7))
+\end{verbatim}
+
+Keluarannya harus sama dengan hitungan kertas: $1.1$, $0.7502601$, $0.2873353$,
+$-0.2497399$, $-0.4994798$, lalu $0.2575805$. Kalau satu angka meleset, jangan menambal
+kodenya: cari dulu langkah mana di kertas yang berbeda.
+\end{lab}
+
 \section{Ambang linear dan perceptron}
 \tingkat{dasar}
 

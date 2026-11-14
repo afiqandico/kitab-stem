@@ -19,7 +19,7 @@ appendices, index, colophon, references), assembled to a single PDF in 2026-10-2
 | `main-en.tex` | assembler: title page, 6 parts + part intros, 32 chapters, appendices A–D, index, colophon, references |
 | Chapters | ch01–ch32 (32/32) |
 | Back matter | `belakang/*-en.tex`, 13 parts, ~20 000 words: preface, how-to-read (4 tracks), dependency map, Appendix A notation, Appendix B glossary (217 entries), Appendix C grading criteria, Appendix D answer keys (304 items), colophon, references (34 entries) |
-| Assembled PDF | **638 pages, 3802746 bytes**, sha256 `64e0e90f06a8aa6dac840800a619a89d073b60ccb41824821c4d2da272172f9c`; built by `tools/cek-en.py --pdf` into `main-en.pdf` (not in git) — the release copy is `Kitab-STEM-Why-Machines-Can-Be-Wrong.pdf` at the repository root |
+| Assembled PDF | **638 pages, 3802746 bytes**, sha256 `64e0e90f06a8aa6dac840800a619a89d073b60ccb41824821c4d2da272172f9c`; built by `tools/cek-en.py --pdf` into `main-en.pdf` (not in git) — the release copy is `../pdf/Kitab-STEM-Why-Machines-Can-Be-Wrong.pdf` |
 
 Gate state on the finished book:
 

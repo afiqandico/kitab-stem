@@ -112,11 +112,18 @@ cek("25.9: klaim 'belum dijalankan' hilang",
 
 src = open(f"{ID}/ch25.tex", encoding="utf-8").read()
 labs = re.findall(r"\\begin\{lab\}\s*\\begin\{verbatim\}\n(.*?)\\end\{verbatim\}", src, re.S)
-kode = labs[1]
+# Blok lab di ch25 bertambah setelah bab disunting: definisi model tidak lagi di blok pertama.
+# Jalankan blok berurutan (seperti pembaca menjalankannya) sampai semua nama model terdefinisi.
 ns = {"__name__": "lab"}
 import contextlib, io
-with contextlib.redirect_stdout(io.StringIO()):
-    exec(kode, ns)
+for _blok in labs:
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            exec(_blok, ns)
+    except Exception:
+        continue
+    if all(n in ns for n in ("X", "y", "fwd", "grads", "init", "bce")):
+        break
 X, y, fwd, grads, init, bce = ns["X"], ns["y"], ns["fwd"], ns["grads"], ns["init"], ns["bce"]
 
 

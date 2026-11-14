@@ -6,13 +6,13 @@ paths (child, undergraduate, lecturer, researcher), worked examples whose number
 come from actual executions, exercises, and answer keys.
 
 **Author:** Afiq Andico Pangimpian
-**Edition:** First, 2026 · **32 chapters**, 6 parts, 304 exercises, 304 keys
-**License:** text CC BY 4.0 · code MIT · **Book pages:** 643 (ID) / 638 (EN)
+**Edition:** Second (v2.0.0), 2026-11-14 · **32 chapters**, 6 parts, 304 exercises, 304 keys
+**License:** text CC BY 4.0 · code MIT · **Book pages:** 646 (ID) / 640 (EN)
 
 | File | Content |
 |---|---|
-| `Kitab-STEM-Kenapa-Mesin-Bisa-Salah.pdf` | Indonesian edition, 643 pages, 3.54 MB |
-| `Kitab-STEM-Why-Machines-Can-Be-Wrong.pdf` | English edition, 638 pages, 3.80 MB |
+| `Kitab-STEM-Kenapa-Mesin-Bisa-Salah.pdf` | Indonesian edition, 646 pages, 3.56 MB |
+| `Kitab-STEM-Why-Machines-Can-Be-Wrong.pdf` | English edition, 640 pages, 3.64 MB |
 | `_buku-ed2/` | LaTeX source of the Indonesian edition + quality gates + verification tools |
 | `_buku-en/` | LaTeX source of the English edition + translation-parity gates |
 
@@ -37,12 +37,15 @@ make pdf     # build the Indonesian PDF
 cd _buku-en && python3 tools/cek-en.py --pdf   # build + English PDF gate
 ```
 
-Builds are **reproducible**: two consecutive builds produce an identical sha256.
+Builds are **reproducible**: two consecutive builds, and a build from a separate checkout of
+these sources, produce an identical sha256. The English build deletes its auxiliary files
+first — building on top of a stale `main-en.aux/.toc/.ind` used to shift the output by one
+byte (`...507` vs `...506`) while every gate still reported zero problems.
 
-| Artifact | sha256 |
-|---|---|
-| Indonesian edition | `d66d9c2f30704c30df98d0e666acc2f14f8be00988fcb102cc966fca6de614e9` |
-| English edition | `64e0e90f06a8aa6dac840800a619a89d073b60ccb41824821c4d2da272172f9c` |
+| Artifact | Pages | sha256 |
+|---|---|---|
+| Indonesian edition | 646 | `19b819485925e6aaf672a9bd8e88be5b3757781f2ec5d744cba0cb3f7d80e236` |
+| English edition | 640 | `356febf8d63e2afbb1208e8c89eee39fe6fcdb0b8439c5342c8809cc21ff0259` |
 
 ## Verification you can run yourself
 

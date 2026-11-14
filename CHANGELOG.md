@@ -2,11 +2,40 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased] — second edition
+## [2.0.0] — 2026-11-14
 
-Work in progress, not released. Working files: `_buku-ed2/` (`SPEC-BAB-ED2.md`,
-`PANDUAN-BAB-ED2.md`, `AUDIT-KUNCI.md`, `ch06.tex`). No second-edition PDF has been
-published, so nothing can be cited as v2 yet.
+Second edition, Indonesian and English editions rebuilt from source. This is the first
+citable v2 artifact; v1.0.0 remains available from its own release.
+
+### Added
+
+- `Kitab-STEM-Kenapa-Mesin-Bisa-Salah.pdf` — Indonesian edition, **646 pages**,
+  3,727,813 bytes, sha256 `19b819485925e6aaf672a9bd8e88be5b3757781f2ec5d744cba0cb3f7d80e236`.
+- `Kitab-STEM-Why-Machines-Can-Be-Wrong.pdf` — English edition, **640 pages**,
+  3,814,507 bytes, sha256 `356febf8d63e2afbb1208e8c89eee39fe6fcdb0b8439c5342c8809cc21ff0259`.
+- 32 chapters per language (v1 had 13). Exercise-key coverage checker reports 304 exercise
+  items and 304 keyed items, 1:1 in every chapter.
+- `_buku-ed2/` and `_buku-en/` sources now carry their checkers and audit notes, so the
+  published PDFs can be rebuilt from this repository alone.
+
+### Changed
+
+- `CITATION.cff` version 2.0.0, released 2026-11-14.
+
+### Fixed
+
+- The English build depended on leftover auxiliary files. Building on top of a stale
+  `main-en.aux/.toc/.ind` produced a PDF with a different sha256 while every gate still
+  reported zero problems. `_buku-en/tools/cek-en.py --pdf` now deletes those files before
+  the first pass. Two consecutive builds, and a build from a separate checkout, now agree
+  byte for byte.
+
+### Reproducibility
+
+- Both editions build deterministically (`SOURCE_DATE_EPOCH=1792857600`,
+  `FORCE_SOURCE_DATE=1`). Verified by rebuilding from a second copy of the published
+  sources: identical sha256 for both PDFs.
+
 
 ## [1.0.2] — 2026-11-13
 
@@ -41,7 +70,8 @@ First release, two languages; text under CC BY 4.0 and code under MIT.
 - `CITATION.cff` (CFF 1.2.0) with licence `CC-BY-4.0` and `language: id`.
 - `Makefile` that builds the PDFs from the LaTeX sources in `_buku/` and `_buku-en/`.
 
-[Unreleased]: https://github.com/afiqandico/kitab-stem/compare/v1.0.2...HEAD
+[2.0.0]: https://github.com/afiqandico/kitab-stem/releases/tag/v2.0.0
+[Unreleased]: https://github.com/afiqandico/kitab-stem/compare/v2.0.0...HEAD
 [1.0.2]: https://github.com/afiqandico/kitab-stem/releases/tag/v1.0.2
 [1.0.1]: https://github.com/afiqandico/kitab-stem/releases/tag/v1.0.1
 [1.0.0]: https://github.com/afiqandico/kitab-stem/releases/tag/v1.0.0

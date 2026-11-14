@@ -129,7 +129,7 @@ Untuk $\mathbf{w}\in\mathbb{R}^{d}$ dan $\varepsilon>0$,
   \mathbf{w}^{\top}\boldsymbol{\delta}
   =\varepsilon\lVert\mathbf{w}\rVert_1,
 \]
-dan maksimum tercapai pada $\delta_j=\varepsilon\,\mathrm{sign}(w_j)$ untuk setiap
+dan maksimum tercapai pada $\delta_j=\varepsilon\,\operatorname{sign}(w_j)$ untuk setiap
 koordinat dengan $w_j\neq0$.
 \end{lemma}
 
@@ -139,7 +139,7 @@ $|\delta_j|\le\varepsilon$,
 \[
   \sum_j w_j\delta_j\le\sum_j|w_j|\,|\delta_j|\le\varepsilon\sum_j|w_j|.
 \]
-Bila $\delta_j=\varepsilon\,\mathrm{sign}(w_j)$, maka $w_j\delta_j=\varepsilon|w_j|$
+Bila $\delta_j=\varepsilon\,\operatorname{sign}(w_j)$, maka $w_j\delta_j=\varepsilon|w_j|$
 untuk setiap $j$, sehingga batas itu tercapai. Koordinat dengan $w_j=0$ tidak
 memengaruhi nilai, jadi pilihannya bebas.
 \end{proof}
@@ -149,7 +149,7 @@ bersama lemma tadi. Hasilnya resep yang oleh Goodfellow dan rekan disebut
 \emph{fast gradient sign method}:
 \[
   \mathbf{x}^{\mathrm{adv}}
-  =\mathbf{x}+\varepsilon\,\mathrm{sign}\bigl(\nabla_{\mathbf{x}}L(\mathbf{x},y)\bigr).
+  =\mathbf{x}+\varepsilon\,\operatorname{sign}\bigl(\nabla_{\mathbf{x}}L(\mathbf{x},y)\bigr).
 \]
 Kalimat sehari-harinya begini. Gradien memberi tahu ke arah mana galat naik paling
 cepat, tetapi kita hanya boleh berjalan sejauh $\varepsilon$; yang dipakai hanya tanda
@@ -241,9 +241,9 @@ mengikuti.
 
 Untuk model linear, sisa itu nol dan FGSM bukan hampiran melainkan jawaban eksak.
 Goodfellow dan rekan memakai kasus regresi logistik untuk menunjukkan hal ini. Di
-situ tanda gradien galat terhadap masukan adalah $-\mathrm{sign}(\mathbf{w})$ dikali
+situ tanda gradien galat terhadap masukan adalah $-\operatorname{sign}(\mathbf{w})$ dikali
 label, sehingga
-$\mathbf{w}^{\top}\mathrm{sign}(\mathbf{w})=\lVert\mathbf{w}\rVert_1$ dan margin
+$\mathbf{w}^{\top}\operatorname{sign}(\mathbf{w})=\lVert\mathbf{w}\rVert_1$ dan margin
 model menyusut tepat sebesar $\varepsilon\lVert\mathbf{w}\rVert_1$. Karena itu
 pelatihan adversarial pada regresi logistik bisa ditulis sebagai penalti
 $\zeta\bigl(y(\varepsilon\lVert\mathbf{w}\rVert_1-\mathbf{w}^{\top}\mathbf{x}-b)\bigr)$,
@@ -297,7 +297,7 @@ Misalkan $\Pi$ adalah proyeksi ke $S(\mathbf{x})$. Serangan \emph{projected grad
 descent} (PGD) menghitung
 \[
   \mathbf{x}_{t+1}=\Pi\Bigl(\mathbf{x}_t+\alpha\,
-  \mathrm{sign}\bigl(\nabla_{\mathbf{x}}L(\mathbf{x}_t,y)\bigr)\Bigr),
+  \operatorname{sign}\bigl(\nabla_{\mathbf{x}}L(\mathbf{x}_t,y)\bigr)\Bigr),
   \qquad \mathbf{x}_0=\mathbf{x},
 \]
 dengan $\alpha>0$ adalah ukuran langkah. Bila $\mathbf{x}_0$ diambil acak di dalam
@@ -311,7 +311,7 @@ Empat langkah menjalankan serangan iteratif terbatas:
         bersih sebelum satu pun gangguan dibuat.
   \item Mulai dari $\mathbf{x}$ atau dari titik acak di dalam bola, hitung gradien
         galat terhadap masukan, lalu ambil tandanya saja.
-  \item Langkah: $\mathbf{x}_{t+1}=\mathbf{x}_t+\alpha\,\mathrm{sign}(\mathbf{g})$,
+  \item Langkah: $\mathbf{x}_{t+1}=\mathbf{x}_t+\alpha\,\operatorname{sign}(\mathbf{g})$,
         proyeksikan ke bola $\varepsilon$, lalu ke $[0,1]$.
   \item Ulangi, lalu laporkan akurasi pada beberapa jumlah langkah dan beberapa
         $\varepsilon$; bandingkan dengan FGSM yang memakai $\alpha=\varepsilon$.
@@ -692,7 +692,7 @@ $\lVert\mathbf{d}\rVert_1=1+3+0+2=6$ dan
 $\lVert\mathbf{d}\rVert_2=\sqrt{1+9+0+4}=\sqrt{14}\approx3{,}7417$.
 
 Serangan tak bersasaran harus menurunkan margin. Menurut lemma, penurunan terbesar
-dicapai oleh $\boldsymbol{\delta}=-\varepsilon\,\mathrm{sign}(\mathbf{d})
+dicapai oleh $\boldsymbol{\delta}=-\varepsilon\,\operatorname{sign}(\mathbf{d})
 =\varepsilon(-1;1;0;-1)$, dan besarnya penurunan adalah
 $\varepsilon\lVert\mathbf{d}\rVert_1=6\varepsilon$. Maka margin setelah serangan
 adalah $1{,}5-6\varepsilon$, dan label berubah ketika
@@ -727,7 +727,7 @@ $\boldsymbol{\delta}=\varepsilon\mathbf{d}/\lVert\mathbf{d}\rVert_2$. Maka
 $\varepsilon^{*}=1{,}5/\sqrt{14}\approx0{,}4009$. Anggaran $\ell_2$ yang memberi
 kerusakan sama besarnya dengan $\varepsilon=0{,}25$ pada $\ell_\infty$ adalah
 $0{,}4009$; keduanya memindahkan contoh ke titik yang sama, yaitu titik potong
-$\mathbf{x}-\varepsilon\,\mathrm{sign}(\mathbf{d})$. Ini contoh kecil dari aturan
+$\mathbf{x}-\varepsilon\,\operatorname{sign}(\mathbf{d})$. Ini contoh kecil dari aturan
 umum: angka $\varepsilon$ tidak bisa dibandingkan antar norma.
 
 Sekarang bagian yang sering ditanyakan: apakah PGD lebih kuat pada model ini? Tiap

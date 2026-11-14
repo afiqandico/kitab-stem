@@ -10,7 +10,9 @@ from __future__ import annotations
 import os, re, subprocess, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT_PDF = os.path.join(os.path.dirname(HERE), "Kitab-STEM-Kenapa-Mesin-Bisa-Salah.pdf")
+OUT_PDF = os.path.join(os.path.dirname(HERE), "pdf", "draf",
+                       "Kitab-STEM-Kenapa-Mesin-Bisa-Salah-draf-ed2.pdf")
+os.makedirs(os.path.dirname(OUT_PDF), exist_ok=True)  # pdf/draf/ ikut dibuat bila belum ada
 CH = [f"ch{i:02d}" for i in range(1, 33)]
 
 BANNED = re.compile(r"\\documentclass|\\usepackage|\\begin\{document\}|"

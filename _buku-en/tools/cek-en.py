@@ -187,6 +187,16 @@ def cek_bab(n: str) -> list[str]:
 
 def main(argv: list[str]) -> int:
     if "--pdf" in argv:
+        # Rakitan harus independen dari sisa rakitan sebelumnya. Terbukti 2026-11-14:
+        # membangun di atas .aux/.toc/.ind basi menghasilkan PDF 3.814.507 byte dengan
+        # sha berbeda dari rakitan bersih, sementara gerbang tetap melaporkan 0 masalah.
+        # Karena itu berkas bantu dibuang dulu, bukan diandalkan.
+        for sisa in ("main-en.aux", "main-en.toc", "main-en.idx", "main-en.ind",
+                     "main-en.lof", "main-en.lot", "main-en.out"):
+            try:
+                os.remove(os.path.join(EN, sisa))
+            except FileNotFoundError:
+                pass
         env_pdf = dict(os.environ, SOURCE_DATE_EPOCH="1792857600", FORCE_SOURCE_DATE="1")
         def latex() -> subprocess.CompletedProcess:
             return subprocess.run(["pdflatex", "-interaction=nonstopmode", "main-en.tex"],

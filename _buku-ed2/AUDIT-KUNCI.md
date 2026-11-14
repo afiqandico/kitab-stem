@@ -1,45 +1,45 @@
-# Answer-key audit rules for Chapters 6–32 (read by EVERY auditor)
+# Aturan audit kunci jawaban Bab 6–32 (dibaca SETIAP auditor)
 
-Your task: check whether **the answer key really answers its exercise** and whether
-**every number in it is correct**. The parity gate only proves that the ID and EN editions
-agree; it does NOT prove correctness. Errors that slipped through before: a key answering
-a statement different from its exercise, a missing `n-1` factor, a reversed inequality direction,
-`16 GiB` where it should read `16 TiB`.
+Tugasmu: memeriksa apakah **kunci jawaban benar-benar menjawab soalnya** dan apakah
+**setiap angka di dalamnya benar**. Gerbang paritas hanya membuktikan edisi ID dan EN
+sama; ia TIDAK membuktikan kebenaran. Kesalahan yang dulu lolos: kunci menjawab
+pernyataan yang berbeda dari soalnya, faktor `n-1` hilang, arah ketaksamaan terbalik,
+`16 GiB` padahal `16 TiB`.
 
-## Sources to read (do not change anything)
+## Sumber yang dibaca (jangan mengubah apa pun)
 
-- Exercises: `chNN.tex`, the `\begin{latihan} ... \end{latihan}` environment.
-- Key: `lampiran-kunci/kunci-*.tex`, the block from `\section*{Bab NN: ...}` up to
-  the next `\section*{` or the end of the file. Item k = the k-th `\item`.
-- The mapping is already verified: 304 exercise items ↔ 304 key items, 1:1. **Do not**
-  propose adding or removing items.
+- Soal: `chNN.tex`, lingkungan `\begin{latihan} ... \end{latihan}`.
+- Kunci: `lampiran-kunci/kunci-*.tex`, blok `\section*{Bab NN: ...}` sampai
+  `\section*{` berikutnya atau akhir berkas. Butir ke-k = `\item` ke-k.
+- Pemetaan sudah diverifikasi: 304 butir soal ↔ 304 butir kunci, 1:1. **Jangan**
+  mengusulkan menambah/menghapus butir.
 
-## Hard prohibitions
+## Larangan keras
 
-1. **Do not edit any file.** You only report; the parent applies
-   the fixes to both editions. (Editing it yourself makes the ID/EN editions diverge.)
-2. **Do not invent numbers.** Every number you claim must have real computation
-   output in your report: command + result. If the exercise says "run the lab
-   block", write `BUTUH-LAB` — do not guess.
-3. **Do not judge style, length, or prose quality.** Only: does the key answer
-   that exercise, and are its numbers correct.
-4. Legitimate asymmetry: one exercise may have several routes; a key taking a different route
-   is still CORRECT if its result and claims are correct.
+1. **Jangan menyunting berkas apa pun.** Kamu hanya melapor; induk yang menerapkan
+   perbaikan ke kedua edisi. (Menyunting sendiri membuat edisi ID/EN menyimpang.)
+2. **Jangan mengarang angka.** Setiap angka yang kamu klaim harus punya output
+   perhitungan nyata di laporanmu: perintah + hasil. Bila soal berupa "jalankan blok
+   lab", tulis `BUTUH-LAB` — jangan menebak.
+3. **Jangan menilai gaya, panjang, atau mutu prosa.** Hanya: apakah kunci menjawab
+   soal itu, dan apakah angkanya benar.
+4. Asimetri yang sah: satu soal boleh punya beberapa jalan; kunci yang berbeda jalan
+   tetap BENAR bila hasil dan klaimnya benar.
 
-## Procedure per item
+## Prosedur per butir
 
-1. Read exercise k and key k. Ask: does the key answer **exactly** what
-   the exercise asks (object, direction, condition, quantity)?
-2. Extract every testable claim: numbers, matrices, roots, probabilities, dimensions,
-   eigenvalues, complexity, explicit computed results.
-3. Recompute with Python (`source ~/venv/bin/activate`; numpy/scipy/sympy
-   are available). For Chapter 28 (Lean) run `~/.elan/bin/lean` on a temporary file
-   in `~/.hermes/cache/scratch/`, not in the repo. Remember: the axioms of `omega` are
-   `[propext, Quot.sound]` and it does not close non-linear goals.
-4. Compare. Numerical tolerance: relative 1e-9 for exact, 1e-6 for float,
-   unless the exercise states a rounding.
+1. Baca soal ke-k dan kunci ke-k. Tanyakan: apakah kunci menjawab **persis** yang
+   diminta soal (objek, arah, syarat, kuantitas)?
+2. Ekstrak setiap klaim yang bisa diuji: angka, matriks, akar, peluang, dimensi,
+   nilai eigen, kompleksitas, hasil hitung eksplisit.
+3. Hitung ulang dengan Python (`source ~/venv/bin/activate`; numpy/scipy/sympy
+   tersedia). Untuk Bab 28 (Lean) jalankan `~/.elan/bin/lean` pada berkas sementara
+   di `~/.hermes/cache/scratch/`, jangan di repo. Ingat: `omega` aksiomanya
+   `[propext, Quot.sound]` dan tidak menutup tujuan non-linear.
+4. Bandingkan. Toleransi numerik: relatif 1e-9 untuk eksak, 1e-6 untuk float,
+   kecuali soal menyatakan pembulatan.
 
-## Report format (concise, required)
+## Format laporan (ringkas, wajib)
 
 ```
 BAB NN — 9 butir: 8 BENAR, 1 SALAH
@@ -51,7 +51,7 @@ BAB NN — 9 butir: 8 BENAR, 1 SALAH
 - NN.7 RAGU
   alasan: <1 baris>; butuh: <apa>
 ```
-A `BENAR` item needs only one line: `NN.2 BENAR (dim W=1; numpy rank=1)`.
-Close with: `RINGKASAN: benar=X salah=Y ragu=Z butuh-lab=W`.
+Butir BENAR cukup satu baris: `NN.2 BENAR (dim W=1; numpy rank=1)`.
+Tutup dengan: `RINGKASAN: benar=X salah=Y ragu=Z butuh-lab=W`.
 
-Do not copy the chapter content back. The report must be < 120 lines.
+Jangan menyalin ulang isi bab. Laporan harus < 120 baris.
