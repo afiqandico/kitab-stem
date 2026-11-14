@@ -5,8 +5,8 @@ title: "Kenapa Mesin Bisa Salah? Dari Aljabar Linear sampai Keamanan Machine Lea
 authors:
   - family-names: "Pangimpian"
     given-names: "Afiq Andico"
-version: "1.0.2"
-date-released: "2026-11-13"
+version: "2.0.0"
+date-released: "2026-11-14"
 license: "CC-BY-4.0"
 repository-code: "https://github.com/afiqandico/kitab-stem"
 language: "id"
